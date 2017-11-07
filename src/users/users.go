@@ -274,18 +274,38 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 	return users.NewGetUsersIDFollowersOK().WithPayload(list)
 }
 
-func LoadUser(tx *sql.Tx, id int64) (*models.User, error) {
-	const q = `
-	SELECT id, name, show_name,
-	is_online, 
-	name_color, avatar_color, avatar
-	FROM short_users
-	WHERE id = $1`
+const loadUserQuery = `
+SELECT id, name, show_name,
+is_online, 
+name_color, avatar_color, avatar
+FROM short_users
+WHERE `
 
+func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
-	err := tx.QueryRow(q, id).Scan(&user.ID, &user.Name, &user.ShowName,
+	err := tx.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
 		&user.NameColor, &user.AvatarColor, &user.Avatar)
 
-	return &user, err
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Print(err)
+		}
+
+		return &user, false
+	}
+
+	return &user, true
+}
+
+// LoadAuthUser returns short profile of the authorized user or false if the key is invalid or expired.
+func LoadAuthUser(tx *sql.Tx, apiKey string) (*models.User, bool) {
+	const q = loadUserQuery + "api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
+	return loadUser(tx, q, apiKey)
+}
+
+// LoadUserById returns short user profile by its ID.
+func LoadUserById(tx *sql.Tx, id int64) (*models.User, bool) {
+	const q = loadUserQuery + "id = $1"
+	return loadUser(tx, q, id)
 }

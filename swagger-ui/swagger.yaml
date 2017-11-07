@@ -215,10 +215,11 @@ definitions:
           $ref: '#/definitions/User'
       isVotable:
         type: boolean
-      commentsCount:
+      commentCount:
         type: integer
-      isPositiveVoted:
-        type: boolean
+      vote:
+        type: string
+        enum: [not, pos, neg]
       isFavorited:
         type: boolean
       isWatching:
@@ -253,8 +254,9 @@ definitions:
         minimum: 1
       rating:
         type: integer
-      positive:
-        type: boolean
+      vote:
+        type: string
+        enum: [not, pos, neg]
   FavoriteStatus:
     type: object
     properties:

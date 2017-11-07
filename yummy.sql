@@ -793,6 +793,24 @@ CREATE TRIGGER cnt_tlog_entries_del
     WHEN (OLD.visible_for = 0)
     EXECUTE PROCEDURE yummy.dec_tlog_entries();
 
+CREATE VIEW yummy.feed AS
+SELECT id, created_at, rating, 
+    title, content, word_count,
+    entry_privacy.type AS entry_privacy,
+    is_votable, comments_count,
+    long_users.id AS author_id,
+    long_users.name AS author_name, 
+    long_users.show_name AS author_show_name,
+    long_users.is_online AS author_is_online,
+    long_users.name_color AS author_name_color, 
+    long_users.avatar_color AS author_avatar_color, 
+    long_users.avatar AS author_avatar,
+    long_users.privacy AS author_privacy
+FROM yummy.long_users, yummy.entries, yummy.entry_privacy
+WHERE long_users.id = entries.author_id 
+    AND entry_privacy.id = entries.visible_for
+ORDER BY entries.created_at DESC
+
 
 
 -- CREATE TABLE "tags" -----------------------------------------
