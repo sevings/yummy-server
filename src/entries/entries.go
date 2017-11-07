@@ -1,9 +1,15 @@
 package entries
 
 import (
-	"log"
 	"database/sql"
+	"log"
 	"regexp"
+	"time"
+
+	"github.com/go-openapi/strfmt"
+
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
@@ -12,10 +18,14 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
-
+	api.MePostUsersMeEntriesHandler = me.PostUsersMeEntriesHandlerFunc(newMyTlogPoster(db))
 }
 
-wordRe := regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
+var wordRe *regexp.Regexp
+
+func init() {
+	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
+}
 
 const postEntryQuery = `
 INSERT INTO entries (author_id, title, content, word_count, 
@@ -23,42 +33,62 @@ INSERT INTO entries (author_id, title, content, word_count,
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, created_at`
 
-func createEntry(tx *sql.Tx, apiKey *string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
-	author, found := users.LoadAuthUser(tx, apiKey)
+func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+	author, found := users.LoadAuthUser(tx, &apiKey)
 	if !found {
 		return nil, false
 	}
 
-	wordCount := 0
-	contentWords := wordRe.findAllStringIndex(content, -1)
+	var wordCount int64
+	contentWords := wordRe.FindAllStringIndex(content, -1)
 	if contentWords != nil {
-		wordCount += len(contentWords) / 2
+		wordCount += int64(len(contentWords) / 2)
 	}
-	titleWords := wordsRe.findAllStringIndex(title, -1)
+	titleWords := wordRe.FindAllStringIndex(title, -1)
 	if titleWords != nil {
-		wordCount += len(titleWords) / 2
+		wordCount += int64(len(titleWords) / 2)
 	}
 
 	var entryID int64
-	var createdAt string
-	err := tx.QueryRow(postEntryQuery, author.ID, title, content, wordCount, 
+	var createdAt time.Time
+	err := tx.QueryRow(postEntryQuery, author.ID, title, content, wordCount,
 		privacy, isVotable).Scan(&entryID, &createdAt)
 	if err != nil {
 		log.Print(err)
 		return nil, false
 	}
 
-	var entry models.Entry {
-		ID: entryID, 
-		CreatedAt: createdAt, 
-		Title: title, 
-		Content: content, 
+	entry := models.Entry{
+		ID:        entryID,
+		CreatedAt: strfmt.DateTime(createdAt),
+		Title:     title,
+		Content:   content,
 		WordCount: wordCount,
-		VisibleFor: privacy,
-		Author: &author
+		Privacy:   privacy,
+		Author:    author,
 	}
 
 	return &entry, true
+}
+
+func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Responder {
+	return func(params me.PostUsersMeEntriesParams) middleware.Responder {
+		tx, err := db.Begin()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		entry, created := createEntry(tx, params.XUserKey,
+			*params.Title, params.Content, *params.Privacy, *params.IsVotable)
+
+		if !created {
+			tx.Rollback()
+			return me.NewPostUsersMeEntriesForbidden()
+		}
+
+		tx.Commit()
+		return me.NewPostUsersMeEntriesOK().WithPayload(entry)
+	}
 }
 
 const feedQueryStart = `
@@ -73,7 +103,7 @@ author_name_color, author_avatar_color, author_avatar `
 const feedQueryWhere = `
 feed.entry_privacy = 'all' AND feed.author_privacy = 'all' `
 
-const liveFeedQuery = feedQueryStart + "WHERE" + liveFeedQueryWhere + "FROM feed LIMIT $1 OFFSET $2"
+const liveFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + "FROM feed LIMIT $1 OFFSET $2"
 
 const authFeedQueryStart = feedQueryStart + `,
 entry_votes.positive AS vote,
@@ -89,7 +119,7 @@ const authLiveFeedQueryWhere = `
 
 const authLiveFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + " LIMIT $2 OFFSET $3"
 
-func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64}) (*models.Feed, error) {
+func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Feed, error) {
 	var feed models.Feed
 	rows, err := tx.Query(query, limit, offset)
 	if err != nil {
@@ -104,7 +134,7 @@ func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64}) (*models.Fe
 			&entry.Privacy,
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
-			&author.IsOnline, 
+			&author.IsOnline,
 			&author.NameColor, &author.AvatarColor, &author.Avatar)
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)
@@ -113,7 +143,7 @@ func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64}) (*models.Fe
 	return &feed, rows.Err()
 }
 
-func loadAuthFeed()(tx *sql.Tx, query string, userID int64, limit, offset int64) (*models.Feed, error) {
+func loadAuthFeed(tx *sql.Tx, query string, userID int64, limit, offset int64) (*models.Feed, error) {
 	var feed models.Feed
 	rows, err := tx.Query(query, userID, limit, offset)
 	if err != nil {
@@ -129,7 +159,7 @@ func loadAuthFeed()(tx *sql.Tx, query string, userID int64, limit, offset int64)
 			&entry.Privacy,
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
-			&author.IsOnline, 
+			&author.IsOnline,
 			&author.NameColor, &author.AvatarColor, &author.Avatar,
 			&vote, &entry.IsFavorited, &entry.IsWatching)
 
@@ -152,7 +182,7 @@ func loadAuthFeed()(tx *sql.Tx, query string, userID int64, limit, offset int64)
 }
 
 func loadFeed(tx *sql.Tx, authQuery, notAuthQuery string, apiKey *string, limit, offset int64) (*models.Feed, error) {
-	userID, found := usres.FindAuthUser(tx, apiKey)
+	userID, found := users.FindAuthUser(tx, apiKey)
 	if !found {
 		return loadNotAuthFeed(tx, authQuery, limit, offset)
 	}

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	accountImpl "github.com/sevings/yummy-server/src/account"
+	entruesImpl "github.com/sevings/yummy-server/src/entries"
 	usersImpl "github.com/sevings/yummy-server/src/users"
 
 	"github.com/didip/tollbooth"
@@ -101,6 +102,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 
 	accountImpl.ConfigureAPI(db, api)
 	usersImpl.ConfigureAPI(db, api)
+	entruesImpl.ConfigureAPI(db, api)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -212,9 +214,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams) middleware.Responder {
 		return middleware.NotImplemented("operation comments.PostEntriesIDComments has not yet been implemented")
 	})
-	api.MePostUsersMeEntriesHandler = me.PostUsersMeEntriesHandlerFunc(func(params me.PostUsersMeEntriesParams) middleware.Responder {
-		return middleware.NotImplemented("operation me.PostUsersMeEntries has not yet been implemented")
-	})
+
 	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation comments.PutCommentsID has not yet been implemented")
 	})

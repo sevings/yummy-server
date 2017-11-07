@@ -278,7 +278,7 @@ const loadUserQuery = `
 SELECT id, name, show_name,
 is_online, 
 name_color, avatar_color, avatar
-FROM short_users
+FROM long_users
 WHERE `
 
 func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
@@ -299,13 +299,17 @@ func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 }
 
 // LoadAuthUser returns short profile of the authorized user or false if the key is invalid or expired.
-func LoadAuthUser(tx *sql.Tx, apiKey string) (*models.User, bool) {
+func LoadAuthUser(tx *sql.Tx, apiKey *string) (*models.User, bool) {
+	if apiKey == nil {
+		return nil, false
+	}
+
 	const q = loadUserQuery + "api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
-	return loadUser(tx, q, apiKey)
+	return loadUser(tx, q, *apiKey)
 }
 
-// LoadUserById returns short user profile by its ID.
-func LoadUserById(tx *sql.Tx, id int64) (*models.User, bool) {
+// LoadUserByID returns short user profile by its ID.
+func LoadUserByID(tx *sql.Tx, id int64) (*models.User, bool) {
 	const q = loadUserQuery + "id = $1"
 	return loadUser(tx, q, id)
 }
