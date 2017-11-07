@@ -24,11 +24,11 @@ type Entry struct {
 	// author
 	Author *User `json:"author,omitempty"`
 
+	// comment count
+	CommentCount int64 `json:"commentCount,omitempty"`
+
 	// comments
 	Comments []*Comment `json:"comments"`
-
-	// comments count
-	CommentsCount int64 `json:"commentsCount,omitempty"`
 
 	// content
 	Content string `json:"content,omitempty"`
@@ -42,9 +42,6 @@ type Entry struct {
 
 	// is favorited
 	IsFavorited bool `json:"isFavorited,omitempty"`
-
-	// is positive voted
-	IsPositiveVoted bool `json:"isPositiveVoted,omitempty"`
 
 	// is votable
 	IsVotable bool `json:"isVotable,omitempty"`
@@ -64,15 +61,18 @@ type Entry struct {
 	// visible for
 	VisibleFor []*User `json:"visibleFor"`
 
+	// vote
+	Vote string `json:"vote,omitempty"`
+
 	// word count
 	WordCount int64 `json:"wordCount,omitempty"`
 }
 
 /* polymorph Entry author false */
 
-/* polymorph Entry comments false */
+/* polymorph Entry commentCount false */
 
-/* polymorph Entry commentsCount false */
+/* polymorph Entry comments false */
 
 /* polymorph Entry content false */
 
@@ -81,8 +81,6 @@ type Entry struct {
 /* polymorph Entry id false */
 
 /* polymorph Entry isFavorited false */
-
-/* polymorph Entry isPositiveVoted false */
 
 /* polymorph Entry isVotable false */
 
@@ -95,6 +93,8 @@ type Entry struct {
 /* polymorph Entry title false */
 
 /* polymorph Entry visibleFor false */
+
+/* polymorph Entry vote false */
 
 /* polymorph Entry wordCount false */
 
@@ -123,6 +123,11 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateVisibleFor(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateVote(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -259,6 +264,49 @@ func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
 			}
 		}
 
+	}
+
+	return nil
+}
+
+var entryTypeVotePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not","pos","neg"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		entryTypeVotePropEnum = append(entryTypeVotePropEnum, v)
+	}
+}
+
+const (
+	// EntryVoteNot captures enum value "not"
+	EntryVoteNot string = "not"
+	// EntryVotePos captures enum value "pos"
+	EntryVotePos string = "pos"
+	// EntryVoteNeg captures enum value "neg"
+	EntryVoteNeg string = "neg"
+)
+
+// prop value enum
+func (m *Entry) validateVoteEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, entryTypeVotePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Entry) validateVote(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Vote) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVoteEnum("vote", "body", m.Vote); err != nil {
+		return err
 	}
 
 	return nil

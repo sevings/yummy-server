@@ -1,7 +1,7 @@
 package yummy
 
 import (
-	"github.com/sevings/yummy/gen/models"
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // NewError returns error object with some message

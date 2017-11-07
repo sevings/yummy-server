@@ -19,16 +19,16 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/sevings/yummy/gen/restapi/operations/account"
-	"github.com/sevings/yummy/gen/restapi/operations/comments"
-	"github.com/sevings/yummy/gen/restapi/operations/design"
-	"github.com/sevings/yummy/gen/restapi/operations/entries"
-	"github.com/sevings/yummy/gen/restapi/operations/favorites"
-	"github.com/sevings/yummy/gen/restapi/operations/me"
-	"github.com/sevings/yummy/gen/restapi/operations/relations"
-	"github.com/sevings/yummy/gen/restapi/operations/users"
-	"github.com/sevings/yummy/gen/restapi/operations/votes"
-	"github.com/sevings/yummy/gen/restapi/operations/watchings"
+	"github.com/sevings/yummy-server/gen/restapi/operations/account"
+	"github.com/sevings/yummy-server/gen/restapi/operations/comments"
+	"github.com/sevings/yummy-server/gen/restapi/operations/design"
+	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
+	"github.com/sevings/yummy-server/gen/restapi/operations/favorites"
+	"github.com/sevings/yummy-server/gen/restapi/operations/me"
+	"github.com/sevings/yummy-server/gen/restapi/operations/relations"
+	"github.com/sevings/yummy-server/gen/restapi/operations/users"
+	"github.com/sevings/yummy-server/gen/restapi/operations/votes"
+	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
 )
 
 // NewYummyAPI creates a new Yummy instance

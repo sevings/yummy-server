@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	accountImpl "github.com/sevings/yummy/src/account"
-	usersImpl "github.com/sevings/yummy/src/users"
+	accountImpl "github.com/sevings/yummy-server/src/account"
+	usersImpl "github.com/sevings/yummy-server/src/users"
 
 	"github.com/didip/tollbooth"
 	errors "github.com/go-openapi/errors"
@@ -18,18 +18,18 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/yummy/gen/restapi/operations"
-	"github.com/sevings/yummy/gen/restapi/operations/account"
-	"github.com/sevings/yummy/gen/restapi/operations/comments"
-	"github.com/sevings/yummy/gen/restapi/operations/entries"
-	"github.com/sevings/yummy/gen/restapi/operations/favorites"
-	"github.com/sevings/yummy/gen/restapi/operations/me"
-	"github.com/sevings/yummy/gen/restapi/operations/relations"
-	"github.com/sevings/yummy/gen/restapi/operations/users"
-	"github.com/sevings/yummy/gen/restapi/operations/votes"
-	"github.com/sevings/yummy/gen/restapi/operations/watchings"
+	"github.com/sevings/yummy-server/gen/restapi/operations"
+	"github.com/sevings/yummy-server/gen/restapi/operations/account"
+	"github.com/sevings/yummy-server/gen/restapi/operations/comments"
+	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
+	"github.com/sevings/yummy-server/gen/restapi/operations/favorites"
+	"github.com/sevings/yummy-server/gen/restapi/operations/me"
+	"github.com/sevings/yummy-server/gen/restapi/operations/relations"
+	"github.com/sevings/yummy-server/gen/restapi/operations/users"
+	"github.com/sevings/yummy-server/gen/restapi/operations/votes"
+	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
 
-	"github.com/sevings/yummy/gen/models"
+	"github.com/sevings/yummy-server/gen/models"
 
 	goconf "github.com/zpatrick/go-config"
 

@@ -5,10 +5,10 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy/gen/models"
-	"github.com/sevings/yummy/gen/restapi/operations"
-	"github.com/sevings/yummy/gen/restapi/operations/me"
-	"github.com/sevings/yummy/gen/restapi/operations/users"
+	"github.com/sevings/yummy-server/gen/models"
+	"github.com/sevings/yummy-server/gen/restapi/operations"
+	"github.com/sevings/yummy-server/gen/restapi/operations/me"
+	"github.com/sevings/yummy-server/gen/restapi/operations/users"
 )
 
 // ConfigureAPI creates operations handlers
@@ -283,7 +283,7 @@ WHERE `
 
 func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
-	err := tx.QueryRow(query, id).Scan(&user.ID, &user.Name, &user.ShowName,
+	err := tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
 		&user.NameColor, &user.AvatarColor, &user.Avatar)
 

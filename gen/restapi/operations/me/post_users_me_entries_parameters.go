@@ -24,11 +24,14 @@ func NewPostUsersMeEntriesParams() PostUsersMeEntriesParams {
 	var (
 		isVotableDefault = bool(true)
 		privacyDefault   = string("all")
+		titleDefault     = string("")
 	)
 	return PostUsersMeEntriesParams{
 		IsVotable: &isVotableDefault,
 
 		Privacy: &privacyDefault,
+
+		Title: &titleDefault,
 	}
 }
 
@@ -50,6 +53,7 @@ type PostUsersMeEntriesParams struct {
 	XUserKey string
 	/*
 	  Required: true
+	  Max Length: 30000
 	  In: formData
 	*/
 	Content string
@@ -64,7 +68,9 @@ type PostUsersMeEntriesParams struct {
 	*/
 	Privacy *string
 	/*
+	  Max Length: 500
 	  In: formData
+	  Default: ""
 	*/
 	Title *string
 	/*
@@ -171,6 +177,19 @@ func (o *PostUsersMeEntriesParams) bindContent(rawData []string, hasKey bool, fo
 
 	o.Content = raw
 
+	if err := o.validateContent(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostUsersMeEntriesParams) validateContent(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -229,10 +248,25 @@ func (o *PostUsersMeEntriesParams) bindTitle(rawData []string, hasKey bool, form
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var titleDefault string = string("")
+		o.Title = &titleDefault
 		return nil
 	}
 
 	o.Title = &raw
+
+	if err := o.validateTitle(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostUsersMeEntriesParams) validateTitle(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+		return err
+	}
 
 	return nil
 }

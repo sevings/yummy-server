@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"regexp"
 
-	"github.com/sevings/yummy/gen/models"
-	"github.com/sevings/yummy/gen/restapi/operations"
-	"github.com/sevings/yummy/src/users"
+	"github.com/sevings/yummy-server/gen/models"
+	"github.com/sevings/yummy-server/gen/restapi/operations"
+	"github.com/sevings/yummy-server/src/users"
 )
 
 // ConfigureAPI creates operations handlers

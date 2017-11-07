@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/sevings/yummy/src"
+	"github.com/sevings/yummy-server/src"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy/gen/models"
-	"github.com/sevings/yummy/gen/restapi/operations/me"
+	"github.com/sevings/yummy-server/gen/models"
+	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 )
 
 const myProfileQuery = `
@@ -39,7 +39,7 @@ func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
 
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
-	profile.Design = &models.ProfileAO1Design{}
+	profile.Design = &models.Design{}
 	profile.Counts = &models.ProfileAO1Counts{}
 
 	var nameColor string
@@ -117,7 +117,7 @@ func loadRelatedToMeUsers(db *sql.DB, query, apiKey, relation string, limit, off
 	}
 	defer tx.Commit()
 
-	userID, found := findAuthUser(tx, &apiKey)
+	userID, found := FindAuthUser(tx, &apiKey)
 	if !found {
 		return me.NewGetUsersMeFollowersForbidden().WithPayload(yummy.NewError("invalid_api_key"))
 	}

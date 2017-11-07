@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/yummy/gen/models"
-	"github.com/sevings/yummy/gen/restapi/operations"
-	"github.com/sevings/yummy/gen/restapi/operations/account"
-	yummy "github.com/sevings/yummy/src"
+	"github.com/sevings/yummy-server/gen/models"
+	"github.com/sevings/yummy-server/gen/restapi/operations"
+	"github.com/sevings/yummy-server/gen/restapi/operations/account"
+	yummy "github.com/sevings/yummy-server/src"
 )
 
 // ConfigureAPI creates operations handlers
@@ -233,7 +233,7 @@ func loadAuthProfile(tx *sql.Tx, query string, args ...interface{}) (*models.Aut
 
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
-	profile.Design = &models.ProfileAO1Design{}
+	profile.Design = &models.Design{}
 	profile.Counts = &models.ProfileAO1Counts{}
 	profile.Account = &models.AuthProfileAO1Account{}
 

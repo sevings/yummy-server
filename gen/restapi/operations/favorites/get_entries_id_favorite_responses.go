@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/yummy/gen/models"
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetEntriesIDFavoriteOKCode is the HTTP code returned for type GetEntriesIDFavoriteOK

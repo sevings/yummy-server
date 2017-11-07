@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy/gen/restapi/operations/users"
+	"github.com/sevings/yummy-server/gen/restapi/operations/users"
 )
 
 const profileQueryByID = profileQuery + "WHERE long_users.id = $1"

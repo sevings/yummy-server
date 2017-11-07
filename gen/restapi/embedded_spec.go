@@ -1785,11 +1785,14 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
+            "default": "",
             "name": "title",
             "in": "formData"
           },
           {
+            "maxLength": 30000,
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -2268,14 +2271,14 @@ func init() {
         "author": {
           "$ref": "#/definitions/User"
         },
+        "commentCount": {
+          "type": "integer"
+        },
         "comments": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Comment"
           }
-        },
-        "commentsCount": {
-          "type": "integer"
         },
         "content": {
           "type": "string"
@@ -2290,9 +2293,6 @@ func init() {
           "minimum": 1
         },
         "isFavorited": {
-          "type": "boolean"
-        },
-        "isPositiveVoted": {
           "type": "boolean"
         },
         "isVotable": {
@@ -2321,6 +2321,14 @@ func init() {
           "items": {
             "$ref": "#/definitions/User"
           }
+        },
+        "vote": {
+          "type": "string",
+          "enum": [
+            "not",
+            "pos",
+            "neg"
+          ]
         },
         "wordCount": {
           "type": "integer"
@@ -2606,11 +2614,16 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
-        "positive": {
-          "type": "boolean"
-        },
         "rating": {
           "type": "integer"
+        },
+        "vote": {
+          "type": "string",
+          "enum": [
+            "not",
+            "pos",
+            "neg"
+          ]
         }
       }
     },
