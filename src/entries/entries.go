@@ -94,7 +94,7 @@ func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Re
 const feedQueryStart = `
 SELECT id, created_at, rating, 
 title, content, word_count,
-entry_privacy.type AS privacy,
+entry_privacy,
 is_votable, comments_count,
 author_id, author_name, author_show_name,
 author_is_online,
@@ -103,7 +103,9 @@ author_name_color, author_avatar_color, author_avatar `
 const feedQueryWhere = `
 feed.entry_privacy = 'all' AND feed.author_privacy = 'all' `
 
-const liveFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + "FROM feed LIMIT $1 OFFSET $2"
+const feedQueryEnd = " FROM feed LIMIT $1 OFFSET $2"
+
+const liveFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + feedQueryEnd
 
 const authFeedQueryStart = feedQueryStart + `,
 entry_votes.positive AS vote,
@@ -117,7 +119,27 @@ const authLiveFeedQueryWhere = `
 	AND feed.entry_privacy = 'all' 
 	AND (feed.author_privacy = 'all' OR feed.author_privacy = 'registered') `
 
-const authLiveFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + " LIMIT $2 OFFSET $3"
+const authFeedQueryEnd = " LIMIT $2 OFFSET $3"
+
+const authLiveFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + authFeedQueryEnd
+
+const anonymousFeedQueryWhere = " feed.entry_privacy = 'anonymous' "
+
+const anonymousFeedQuery = feedQueryStart + "WHERE" + anonymousFeedQueryWhere + feedQueryEnd
+
+const anonymousAuthFeedQueryStart = feedQueryStart + `,
+false,
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id) AS favorited,
+EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) AS watching 
+FROM feed`
+
+const anonymousAuthFeedQuery = anonymousAuthFeedQueryStart + "WHERE" + anonymousFeedQueryWhere + authFeedQueryEnd
+
+const bestfeedQueryWhere = " AND feed.rating > 5 "
+
+const bestFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + bestfeedQueryWhere + feedQueryEnd
+
+const authBestFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + bestfeedQueryWhere + authFeedQueryEnd
 
 func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Feed, error) {
 	var feed models.Feed
@@ -192,4 +214,12 @@ func loadFeed(tx *sql.Tx, authQuery, notAuthQuery string, apiKey *string, limit,
 
 func loadLiveFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
 	return loadFeed(tx, authLiveFeedQuery, liveFeedQuery, apiKey, limit, offset)
+}
+
+func loadAnonymousFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	return loadFeed(tx, anonymousAuthFeedQuery, anonymousFeedQuery, apiKey, limit, offset)
+}
+
+func loadBestFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	return loadFeed(tx, authBestFeedQuery, bestFeedQuery, apiKey, limit, offset)
 }
