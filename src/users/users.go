@@ -283,9 +283,12 @@ WHERE `
 
 func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
+	var nameColor string
+	var avatarColor string
+
 	err := tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
-		&user.NameColor, &user.AvatarColor, &user.Avatar)
+		&nameColor, &avatarColor, &user.Avatar)
 
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -294,6 +297,9 @@ func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 
 		return &user, false
 	}
+
+	user.NameColor = models.Color(nameColor)
+	user.AvatarColor = models.Color(avatarColor)
 
 	return &user, true
 }

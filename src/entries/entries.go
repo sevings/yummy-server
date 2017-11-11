@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 
 	"github.com/sevings/yummy-server/gen/models"
@@ -19,6 +20,9 @@ import (
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.MePostUsersMeEntriesHandler = me.PostUsersMeEntriesHandlerFunc(newMyTlogPoster(db))
+	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
+	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(db))
+	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(db))
 }
 
 var wordRe *regexp.Regexp
@@ -28,9 +32,8 @@ func init() {
 }
 
 const postEntryQuery = `
-INSERT INTO entries (author_id, title, content, word_count, 
-    (SELECT "type" from entry_privacy WHERE id = $5, is_votable)
-VALUES ($1, $2, $3, $4, $5, $6)
+INSERT INTO entries (author_id, title, content, word_count, visible_for, is_votable)
+VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
 RETURNING id, created_at`
 
 func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
@@ -41,12 +44,13 @@ func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVo
 
 	var wordCount int64
 	contentWords := wordRe.FindAllStringIndex(content, -1)
-	if contentWords != nil {
-		wordCount += int64(len(contentWords) / 2)
-	}
+	wordCount += int64(len(contentWords))
+
 	titleWords := wordRe.FindAllStringIndex(title, -1)
-	if titleWords != nil {
-		wordCount += int64(len(titleWords) / 2)
+	wordCount += int64(len(titleWords))
+
+	if privacy == "followers" {
+		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
 	var entryID int64
@@ -103,16 +107,16 @@ author_name_color, author_avatar_color, author_avatar `
 const feedQueryWhere = `
 feed.entry_privacy = 'all' AND feed.author_privacy = 'all' `
 
-const feedQueryEnd = " FROM feed LIMIT $1 OFFSET $2"
+const feedQueryEnd = "LIMIT $1 OFFSET $2"
 
-const liveFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + feedQueryEnd
+const liveFeedQuery = feedQueryStart + " FROM feed WHERE" + feedQueryWhere + feedQueryEnd
 
 const authFeedQueryStart = feedQueryStart + `,
 entry_votes.positive AS vote,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id) AS favorited,
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) AS watching 
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
+EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watching 
 FROM feed
-LEFT JOIN entry_votes ON entries.id = entry_votes.entry_id
+LEFT JOIN entry_votes ON feed.id = entry_votes.entry_id
 WHERE entry_votes.user_id = $1  `
 
 const authLiveFeedQueryWhere = `
@@ -125,19 +129,19 @@ const authLiveFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + authFeed
 
 const anonymousFeedQueryWhere = " feed.entry_privacy = 'anonymous' "
 
-const anonymousFeedQuery = feedQueryStart + "WHERE" + anonymousFeedQueryWhere + feedQueryEnd
+const anonymousFeedQuery = feedQueryStart + " FROM feed WHERE" + anonymousFeedQueryWhere + feedQueryEnd
 
 const anonymousAuthFeedQueryStart = feedQueryStart + `,
 false,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id) AS favorited,
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) AS watching 
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
+EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watching 
 FROM feed`
 
-const anonymousAuthFeedQuery = anonymousAuthFeedQueryStart + "WHERE" + anonymousFeedQueryWhere + authFeedQueryEnd
+const anonymousAuthFeedQuery = anonymousAuthFeedQueryStart + " WHERE " + anonymousFeedQueryWhere + authFeedQueryEnd
 
 const bestfeedQueryWhere = " AND feed.rating > 5 "
 
-const bestFeedQuery = feedQueryStart + "WHERE" + feedQueryWhere + bestfeedQueryWhere + feedQueryEnd
+const bestFeedQuery = feedQueryStart + " FROM feed WHERE " + feedQueryWhere + bestfeedQueryWhere + feedQueryEnd
 
 const authBestFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + bestfeedQueryWhere + authFeedQueryEnd
 
@@ -203,23 +207,66 @@ func loadAuthFeed(tx *sql.Tx, query string, userID int64, limit, offset int64) (
 	return &feed, rows.Err()
 }
 
-func loadFeed(tx *sql.Tx, authQuery, notAuthQuery string, apiKey *string, limit, offset int64) (*models.Feed, error) {
+func loadFeed(db *sql.DB, authQuery, notAuthQuery string, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tx.Commit()
+
 	userID, found := users.FindAuthUser(tx, apiKey)
 	if !found {
-		return loadNotAuthFeed(tx, authQuery, limit, offset)
+		return loadNotAuthFeed(tx, notAuthQuery, limit, offset)
 	}
 
-	return loadAuthFeed(tx, notAuthQuery, userID, limit, offset)
+	return loadAuthFeed(tx, authQuery, userID, limit, offset)
 }
 
-func loadLiveFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
-	return loadFeed(tx, authLiveFeedQuery, liveFeedQuery, apiKey, limit, offset)
+func loadLiveFeed(db *sql.DB, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	return loadFeed(db, authLiveFeedQuery, liveFeedQuery, apiKey, limit, offset)
 }
 
-func loadAnonymousFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
-	return loadFeed(tx, anonymousAuthFeedQuery, anonymousFeedQuery, apiKey, limit, offset)
+func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams) middleware.Responder {
+	return func(params entries.GetEntriesLiveParams) middleware.Responder {
+		feed, err := loadLiveFeed(db, params.XUserKey, *params.Limit, *params.Skip)
+		if err != nil {
+			log.Print(err)
+			return entries.NewGetEntriesLiveOK()
+		}
+
+		return entries.NewGetEntriesLiveOK().WithPayload(feed)
+	}
 }
 
-func loadBestFeed(tx *sql.Tx, apiKey *string, limit, offset int64) (*models.Feed, error) {
-	return loadFeed(tx, authBestFeedQuery, bestFeedQuery, apiKey, limit, offset)
+func loadAnonymousFeed(db *sql.DB, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	//! \todo do not load authors
+	return loadFeed(db, anonymousAuthFeedQuery, anonymousFeedQuery, apiKey, limit, offset)
+}
+
+func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams) middleware.Responder {
+	return func(params entries.GetEntriesAnonymousParams) middleware.Responder {
+		feed, err := loadAnonymousFeed(db, params.XUserKey, *params.Limit, *params.Skip)
+		if err != nil {
+			log.Print(err)
+			return entries.NewGetEntriesAnonymousOK()
+		}
+
+		return entries.NewGetEntriesAnonymousOK().WithPayload(feed)
+	}
+}
+
+func loadBestFeed(db *sql.DB, apiKey *string, limit, offset int64) (*models.Feed, error) {
+	return loadFeed(db, authBestFeedQuery, bestFeedQuery, apiKey, limit, offset)
+}
+
+func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams) middleware.Responder {
+	return func(params entries.GetEntriesBestParams) middleware.Responder {
+		feed, err := loadBestFeed(db, params.XUserKey, *params.Limit, *params.Skip)
+		if err != nil {
+			log.Print(err)
+			return entries.NewGetEntriesBestOK()
+		}
+
+		return entries.NewGetEntriesBestOK().WithPayload(feed)
+	}
 }

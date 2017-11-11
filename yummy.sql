@@ -794,10 +794,10 @@ CREATE TRIGGER cnt_tlog_entries_del
     EXECUTE PROCEDURE yummy.dec_tlog_entries();
 
 CREATE VIEW yummy.feed AS
-SELECT id, created_at, rating, 
-    title, content, word_count,
+SELECT entries.id, entries.created_at, rating, 
+    entries.title, content, word_count,
     entry_privacy.type AS entry_privacy,
-    is_votable, comments_count,
+    is_votable, entries.comments_count,
     long_users.id AS author_id,
     long_users.name AS author_name, 
     long_users.show_name AS author_show_name,
@@ -809,7 +809,7 @@ SELECT id, created_at, rating,
 FROM yummy.long_users, yummy.entries, yummy.entry_privacy
 WHERE long_users.id = entries.author_id 
     AND entry_privacy.id = entries.visible_for
-ORDER BY entries.created_at DESC
+ORDER BY entries.created_at DESC;
 
 
 

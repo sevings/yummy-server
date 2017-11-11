@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -97,6 +98,8 @@ func openDatabase(config *goconf.Config) *sql.DB {
 }
 
 func configureAPI(api *operations.YummyAPI) http.Handler {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	config := loadConfig()
 	db := openDatabase(config)
 
@@ -146,12 +149,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation comments.GetCommentsID has not yet been implemented")
 	})
-	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(func(params entries.GetEntriesAnonymousParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesAnonymous has not yet been implemented")
-	})
-	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(func(params entries.GetEntriesBestParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesBest has not yet been implemented")
-	})
+
 	api.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(func(params entries.GetEntriesFriendsParams) middleware.Responder {
 		return middleware.NotImplemented("operation entries.GetEntriesFriends has not yet been implemented")
 	})
@@ -170,9 +168,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams) middleware.Responder {
 		return middleware.NotImplemented("operation watchings.GetEntriesIDWatching has not yet been implemented")
 	})
-	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesLive has not yet been implemented")
-	})
+
 	api.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(func(params relations.GetRelationsFromIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation relations.GetRelationsFromID has not yet been implemented")
 	})
