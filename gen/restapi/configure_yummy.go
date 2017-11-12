@@ -12,6 +12,7 @@ import (
 
 	accountImpl "github.com/sevings/yummy-server/src/account"
 	entriesImpl "github.com/sevings/yummy-server/src/entries"
+	favoritesImpl "github.com/sevings/yummy-server/src/favorites"
 	usersImpl "github.com/sevings/yummy-server/src/users"
 	votesImpl "github.com/sevings/yummy-server/src/votes"
 
@@ -107,6 +108,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	usersImpl.ConfigureAPI(db, api)
 	entriesImpl.ConfigureAPI(db, api)
 	votesImpl.ConfigureAPI(db, api)
+	favoritesImpl.ConfigureAPI(db, api)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -157,9 +159,6 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	})
 	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(func(params comments.GetEntriesIDCommentsParams) middleware.Responder {
 		return middleware.NotImplemented("operation comments.GetEntriesIDComments has not yet been implemented")
-	})
-	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(func(params favorites.GetEntriesIDFavoriteParams) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.GetEntriesIDFavorite has not yet been implemented")
 	})
 
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams) middleware.Responder {

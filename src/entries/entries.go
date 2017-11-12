@@ -98,10 +98,10 @@ func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Re
 // CanViewEntry returns true if the user is allowed to read the entry.
 func CanViewEntry(tx *sql.Tx, userID, entryID int64) bool {
 	const q = `
-		SELECT id 
+		SELECT TRUE 
 		FROM feed
-		WHERE id = $2 
-			AND ((entry_privacy = 'all' 
+		WHERE id = $2 AND (author_id = $1
+			OR ((entry_privacy = 'all' 
 				AND (author_privacy = 'all'
 					OR (author_privacy = 'registered' AND $1 > 0)
 					OR EXISTS(SELECT 1 FROM relation, relations, entries
@@ -112,19 +112,13 @@ func CanViewEntry(tx *sql.Tx, userID, entryID int64) bool {
 			OR (entry_privacy = 'some' 
 				AND EXISTS(SELECT 1 FROM entries_privacy
 					WHERE user_id = $1 AND entry_id = $2))
-			OR (entry_privacy = 'me' AND author_id = $1)
-			OR entry_privacy = 'anonymous')
-	`
+			OR entry_privacy = 'anonymous'))`
 
-	var id int64
-	err := tx.QueryRow(q, userID, entryID).Scan(&id)
-	switch {
-	case err == nil:
-		return true
-	case err == sql.ErrNoRows:
-		return false
+	var allowed bool
+	err := tx.QueryRow(q, userID, entryID).Scan(&allowed)
+	if err != nil && err != sql.ErrNoRows {
+		log.Print(err)
 	}
 
-	log.Print(err)
-	return false
+	return allowed
 }
