@@ -27,20 +27,17 @@ const feedQueryEnd = "LIMIT $1 OFFSET $2"
 const liveFeedQuery = feedQueryStart + " FROM feed WHERE" + feedQueryWhere + feedQueryEnd
 
 const authFeedQueryStart = feedQueryStart + `,
-entry_votes.positive AS vote,
+votes.positive AS vote,
 EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
 EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watching 
 FROM feed
-LEFT JOIN entry_votes ON feed.id = entry_votes.entry_id
-WHERE entry_votes.user_id = $1  `
-
-const authLiveFeedQueryWhere = `
-	AND feed.entry_privacy = 'all' 
+LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS votes ON feed.id = votes.entry_id
+WHERE feed.entry_privacy = 'all' 
 	AND (feed.author_privacy = 'all' OR feed.author_privacy = 'registered') `
 
 const authFeedQueryEnd = " LIMIT $2 OFFSET $3"
 
-const authLiveFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + authFeedQueryEnd
+const authLiveFeedQuery = authFeedQueryStart + authFeedQueryEnd
 
 const anonymousFeedQueryWhere = " feed.entry_privacy = 'anonymous' "
 
@@ -58,7 +55,7 @@ const bestfeedQueryWhere = " AND feed.rating > 5 "
 
 const bestFeedQuery = feedQueryStart + " FROM feed WHERE " + feedQueryWhere + bestfeedQueryWhere + feedQueryEnd
 
-const authBestFeedQuery = authFeedQueryStart + authLiveFeedQueryWhere + bestfeedQueryWhere + authFeedQueryEnd
+const authBestFeedQuery = authFeedQueryStart + bestfeedQueryWhere + authFeedQueryEnd
 
 func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Feed, error) {
 	var feed models.Feed
