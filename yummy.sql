@@ -1022,13 +1022,13 @@ CREATE TRIGGER cnt_entry_votes_ins_dec
 CREATE TRIGGER cnt_entry_votes_upd_inc
     AFTER UPDATE ON yummy.entry_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = true)
+    WHEN (NEW."positive" = true AND NEW."positive" <> OLD."positive")
     EXECUTE PROCEDURE yummy.inc_entry_votes2();
 
 CREATE TRIGGER cnt_entry_votes_upd_dec
     AFTER UPDATE ON yummy.entry_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = false)
+    WHEN (NEW."positive" = false AND NEW."positive" <> OLD."positive")
     EXECUTE PROCEDURE yummy.dec_entry_votes2();
 
 CREATE TRIGGER cnt_entry_votes_del_dec

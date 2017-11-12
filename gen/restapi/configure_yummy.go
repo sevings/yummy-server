@@ -220,9 +220,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.FavoritesPutEntriesIDFavoriteHandler = favorites.PutEntriesIDFavoriteHandlerFunc(func(params favorites.PutEntriesIDFavoriteParams) middleware.Responder {
 		return middleware.NotImplemented("operation favorites.PutEntriesIDFavorite has not yet been implemented")
 	})
-	api.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(func(params votes.PutEntriesIDVoteParams) middleware.Responder {
-		return middleware.NotImplemented("operation votes.PutEntriesIDVote has not yet been implemented")
-	})
+
 	api.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(func(params watchings.PutEntriesIDWatchingParams) middleware.Responder {
 		return middleware.NotImplemented("operation watchings.PutEntriesIDWatching has not yet been implemented")
 	})
