@@ -11,8 +11,9 @@ import (
 	"time"
 
 	accountImpl "github.com/sevings/yummy-server/src/account"
-	entruesImpl "github.com/sevings/yummy-server/src/entries"
+	entriesImpl "github.com/sevings/yummy-server/src/entries"
 	usersImpl "github.com/sevings/yummy-server/src/users"
+	votesImpl "github.com/sevings/yummy-server/src/votes"
 
 	"github.com/didip/tollbooth"
 	errors "github.com/go-openapi/errors"
@@ -105,7 +106,8 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 
 	accountImpl.ConfigureAPI(db, api)
 	usersImpl.ConfigureAPI(db, api)
-	entruesImpl.ConfigureAPI(db, api)
+	entriesImpl.ConfigureAPI(db, api)
+	votesImpl.ConfigureAPI(db, api)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -162,9 +164,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(func(params favorites.GetEntriesIDFavoriteParams) middleware.Responder {
 		return middleware.NotImplemented("operation favorites.GetEntriesIDFavorite has not yet been implemented")
 	})
-	api.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(func(params votes.GetEntriesIDVoteParams) middleware.Responder {
-		return middleware.NotImplemented("operation votes.GetEntriesIDVote has not yet been implemented")
-	})
+
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams) middleware.Responder {
 		return middleware.NotImplemented("operation watchings.GetEntriesIDWatching has not yet been implemented")
 	})
