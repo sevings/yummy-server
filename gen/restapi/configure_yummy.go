@@ -29,7 +29,6 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 	"github.com/sevings/yummy-server/gen/restapi/operations/relations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/users"
-	"github.com/sevings/yummy-server/gen/restapi/operations/votes"
 	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
 
 	"github.com/sevings/yummy-server/gen/models"
@@ -135,9 +134,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	api.FavoritesDeleteEntriesIDFavoriteHandler = favorites.DeleteEntriesIDFavoriteHandlerFunc(func(params favorites.DeleteEntriesIDFavoriteParams) middleware.Responder {
 		return middleware.NotImplemented("operation favorites.DeleteEntriesIDFavorite has not yet been implemented")
 	})
-	api.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(func(params votes.DeleteEntriesIDVoteParams) middleware.Responder {
-		return middleware.NotImplemented("operation votes.DeleteEntriesIDVote has not yet been implemented")
-	})
+
 	api.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams) middleware.Responder {
 		return middleware.NotImplemented("operation watchings.DeleteEntriesIDWatching has not yet been implemented")
 	})

@@ -16,6 +16,7 @@ import (
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(newEntryVoteLoader(db))
 	api.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(newEntryVoter(db))
+	api.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(newEntryUnvoter(db))
 }
 
 func entryVoteStatus(tx *sql.Tx, userID, entryID int64) (*models.VoteStatus, error) {
@@ -115,6 +116,17 @@ func canVoteForEntry(tx *sql.Tx, userID, entryID int64) (bool, error) {
 	return false, nil
 }
 
+func loadEntryRating(tx *sql.Tx, entryID int64) (int64, error) {
+	const q = `
+		SELECT rating
+		FROM entries
+		WHERE id = $1`
+
+	var rating int64
+	err := tx.QueryRow(q, entryID).Scan(&rating)
+	return rating, err
+}
+
 func voteForEntry(tx *sql.Tx, userID, entryID int64, positive bool) (*models.VoteStatus, error) {
 	const voteQ = `
 		INSERT INTO entry_votes (user_id, entry_id, positive)
@@ -127,16 +139,14 @@ func voteForEntry(tx *sql.Tx, userID, entryID int64, positive bool) (*models.Vot
 		return nil, err
 	}
 
-	const ratingQ = `
-		SELECT rating
-		FROM entries
-		WHERE id = $1`
-
-	var status = models.VoteStatus{ID: entryID}
-
-	err = tx.QueryRow(ratingQ, entryID).Scan(&status.Rating)
+	rating, err := loadEntryRating(tx, entryID)
 	if err != nil {
 		return nil, err
+	}
+
+	var status = models.VoteStatus{
+		ID:     entryID,
+		Rating: rating,
 	}
 
 	switch {
@@ -155,10 +165,10 @@ func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams) middleware.Res
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer tx.Commit()
 
 		userID, found := users.FindAuthUser(tx, &params.XUserKey)
 		if !found {
+			tx.Rollback()
 			return votes.NewPutEntriesIDVoteForbidden()
 		}
 
@@ -168,19 +178,94 @@ func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams) middleware.Res
 				log.Print(err)
 			}
 
+			tx.Rollback()
 			return votes.NewPutEntriesIDVoteNotFound()
 		}
 
 		if !canVote {
+			tx.Rollback()
 			return votes.NewPutEntriesIDVoteForbidden()
 		}
 
 		status, err := voteForEntry(tx, userID, params.ID, *params.Positive)
 		if err != nil {
 			log.Print(err)
+			tx.Rollback()
 			return votes.NewPutEntriesIDVoteNotFound()
 		}
 
+		tx.Commit()
+
 		return votes.NewPutEntriesIDVoteOK().WithPayload(status)
+	}
+}
+
+func unvoteEntry(tx *sql.Tx, userID, entryID int64) (*models.VoteStatus, error) {
+	const q = `
+		DELETE FROM entry_votes
+		WHERE user_id = $1 AND entry_id = $2
+		RETURNING positive`
+
+	var pos bool
+	err := tx.QueryRow(q, userID, entryID).Scan(&pos)
+	if err != nil {
+		return nil, err
+	}
+
+	rating, err := loadEntryRating(tx, entryID)
+	if err != nil {
+		return nil, err
+	}
+
+	var status = models.VoteStatus{
+		ID:     entryID,
+		Rating: rating,
+		Vote:   models.EntryVoteNot,
+	}
+
+	return &status, nil
+}
+
+func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams) middleware.Responder {
+	return func(params votes.DeleteEntriesIDVoteParams) middleware.Responder {
+		tx, err := db.Begin()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		userID, found := users.FindAuthUser(tx, &params.XUserKey)
+		if !found {
+			tx.Rollback()
+			return votes.NewDeleteEntriesIDVoteForbidden()
+		}
+
+		canVote, err := canVoteForEntry(tx, userID, params.ID)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Print(err)
+			}
+
+			tx.Rollback()
+			return votes.NewDeleteEntriesIDVoteNotFound()
+		}
+
+		if !canVote {
+			tx.Rollback()
+			return votes.NewDeleteEntriesIDVoteForbidden()
+		}
+
+		status, err := unvoteEntry(tx, userID, params.ID)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Print(err)
+			}
+
+			tx.Rollback()
+			return votes.NewDeleteEntriesIDVoteNotFound()
+		}
+
+		tx.Commit()
+
+		return votes.NewDeleteEntriesIDVoteOK().WithPayload(status)
 	}
 }
