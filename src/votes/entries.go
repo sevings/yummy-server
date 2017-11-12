@@ -6,18 +6,10 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
-	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/votes"
 	"github.com/sevings/yummy-server/src/entries"
 	"github.com/sevings/yummy-server/src/users"
 )
-
-// ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
-	api.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(newEntryVoteLoader(db))
-	api.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(newEntryVoter(db))
-	api.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(newEntryUnvoter(db))
-}
 
 func entryVoteStatus(tx *sql.Tx, userID, entryID int64) (*models.VoteStatus, error) {
 	const q = `
