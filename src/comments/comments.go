@@ -9,9 +9,9 @@ import (
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
+	"github.com/sevings/yummy-server/src"
 	"github.com/sevings/yummy-server/src/entries"
 	"github.com/sevings/yummy-server/src/users"
-	"github.com/sevings/yummy-server/src"
 )
 
 // ConfigureAPI creates operations handlers
@@ -32,8 +32,9 @@ const commentQuery = `
 		is_online,
 		name_color, avatar_color, avatar
 	FROM comments
+	JOIN short_users ON comments.author_id = short_users.id
 	LEFT JOIN (SELECT comment_id, positive FROM comment_votes WHERE user_id = $1) AS votes 
-		ON comments.id = votes.comment_id
+		ON comments.id = votes.comment_id 
 `
 
 func commentVote(userID int64, vote sql.NullBool) string {
@@ -50,20 +51,26 @@ func commentVote(userID int64, vote sql.NullBool) string {
 }
 
 func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, error) {
-	const q = commentQuery + "WHERE comments.id = $2 AND comments.author_id = short_users.id"
+	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullBool
-	comment := models.Comment {
+	comment := models.Comment{
 		Author: &models.User{},
 	}
-	
+
+	var nameColor string
+	var avatarColor string
+
 	err := tx.QueryRow(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating,
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
-		&comment.Author.IsOnline, 
-		&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
-	
+		&comment.Author.IsOnline,
+		&nameColor, &avatarColor, &comment.Author.Avatar)
+
+	comment.Author.NameColor = models.Color(nameColor)
+	comment.Author.AvatarColor = models.Color(avatarColor)
+
 	comment.Vote = commentVote(userID, vote)
 	return &comment, err
 }
@@ -75,7 +82,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
 				if err != sql.ErrNoRows {
-					log.print(err)
+					log.Print(err)
 				}
 
 				return comments.NewGetCommentsIDNotFound(), false
@@ -112,7 +119,7 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
 				if err != sql.ErrNoRows {
-					log.print(err)
+					log.Print(err)
 				}
 
 				return comments.NewGetCommentsIDNotFound(), false
@@ -122,13 +129,13 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.
 				return comments.NewGetCommentsIDForbidden(), false
 			}
 
-			err = editComment(tx, params.ID, *params.Content)
+			err = editComment(tx, params.ID, params.Content)
 			if err != nil {
 				log.Print(err)
 				return comments.NewGetCommentsIDNotFound(), false
 			}
 
-			comment.Content = *params.Content
+			comment.Content = params.Content
 			return comments.NewPutCommentsIDOK().WithPayload(comment), true
 		})
 	}
@@ -178,7 +185,7 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middlew
 				return comments.NewDeleteCommentsIDForbidden(), false
 			}
 
-			err = deleteComment(tx, params.ID)
+			err := deleteComment(tx, params.ID)
 			if err != nil {
 				log.Print(err)
 				return comments.NewDeleteCommentsIDNotFound(), false
@@ -202,17 +209,21 @@ func loadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) (*
 	}
 
 	for rows.Next() {
-		var comment models.comment
+		comment := models.Comment{Author: &models.User{}}
 		var vote sql.NullBool
 		rows.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.Rating,
 			&vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
-			&comment.Author.IsOnline, 
+			&comment.Author.IsOnline,
 			&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
-		
+
 		comment.Vote = commentVote(userID, vote)
 		list.Comments = append(list.Comments, &comment)
+	}
+
+	for i, j := 0, len(list.Comments)-1; i < j; i, j = i+1, j-1 {
+		list.Comments[i], list.Comments[j] = list.Comments[j], list.Comments[i]
 	}
 
 	return &list, rows.Err()
@@ -229,7 +240,7 @@ func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams
 
 			list, err := loadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
 			if err != nil {
-				log.print(err)
+				log.Print(err)
 				return comments.NewGetEntriesIDCommentsNotFound(), false
 			}
 
@@ -244,8 +255,8 @@ func postComment(tx yummy.AutoTx, author *models.User, entryID int64, content st
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at`
 
-	comment := models.Comment {
-		Author: &author,
+	comment := models.Comment{
+		Author:  author,
 		Content: content,
 		EntryID: entryID,
 	}

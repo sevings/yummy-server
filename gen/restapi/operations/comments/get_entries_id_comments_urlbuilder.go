@@ -18,6 +18,9 @@ import (
 type GetEntriesIDCommentsURL struct {
 	ID int64
 
+	Limit *int64
+	Skip  *int64
+
 	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
@@ -55,6 +58,26 @@ func (o *GetEntriesIDCommentsURL) Build() (*url.URL, error) {
 		_basePath = "/api/v1"
 	}
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
+
+	qs := make(url.Values)
+
+	var limit string
+	if o.Limit != nil {
+		limit = swag.FormatInt64(*o.Limit)
+	}
+	if limit != "" {
+		qs.Set("limit", limit)
+	}
+
+	var skip string
+	if o.Skip != nil {
+		skip = swag.FormatInt64(*o.Skip)
+	}
+	if skip != "" {
+		qs.Set("skip", skip)
+	}
+
+	result.RawQuery = qs.Encode()
 
 	return &result, nil
 }

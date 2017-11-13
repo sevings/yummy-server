@@ -9,6 +9,7 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 	"github.com/sevings/yummy-server/gen/restapi/operations/users"
+	yummy "github.com/sevings/yummy-server/src"
 )
 
 // ConfigureAPI creates operations handlers
@@ -131,7 +132,7 @@ FROM users
 WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
 
 // FindAuthUser returns ID of the authorized user or false if the key is invalid or expired.
-func FindAuthUser(tx *sql.Tx, apiKey *string) (int64, bool) {
+func FindAuthUser(tx yummy.AutoTx, apiKey *string) (int64, bool) {
 	if apiKey == nil {
 		return 0, false
 	}
@@ -281,7 +282,7 @@ name_color, avatar_color, avatar
 FROM long_users
 WHERE `
 
-func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
+func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
 	var nameColor string
 	var avatarColor string
@@ -305,7 +306,7 @@ func loadUser(tx *sql.Tx, query string, arg interface{}) (*models.User, bool) {
 }
 
 // LoadAuthUser returns short profile of the authorized user or false if the key is invalid or expired.
-func LoadAuthUser(tx *sql.Tx, apiKey *string) (*models.User, bool) {
+func LoadAuthUser(tx yummy.AutoTx, apiKey *string) (*models.User, bool) {
 	if apiKey == nil {
 		return nil, false
 	}
@@ -315,7 +316,7 @@ func LoadAuthUser(tx *sql.Tx, apiKey *string) (*models.User, bool) {
 }
 
 // LoadUserByID returns short user profile by its ID.
-func LoadUserByID(tx *sql.Tx, id int64) (*models.User, bool) {
+func LoadUserByID(tx yummy.AutoTx, id int64) (*models.User, bool) {
 	const q = loadUserQuery + "id = $1"
 	return loadUser(tx, q, id)
 }

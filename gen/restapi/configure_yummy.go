@@ -11,30 +11,20 @@ import (
 	"time"
 
 	accountImpl "github.com/sevings/yummy-server/src/account"
+	commentsImpl "github.com/sevings/yummy-server/src/comments"
 	entriesImpl "github.com/sevings/yummy-server/src/entries"
 	favoritesImpl "github.com/sevings/yummy-server/src/favorites"
 	usersImpl "github.com/sevings/yummy-server/src/users"
 	votesImpl "github.com/sevings/yummy-server/src/votes"
 	watchingsImpl "github.com/sevings/yummy-server/src/watchings"
-	commentsImpl "github.com/sevings/yummy-server/src/comments"
 
 	"github.com/didip/tollbooth"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/yummy-server/gen/restapi/operations"
-	"github.com/sevings/yummy-server/gen/restapi/operations/account"
-	"github.com/sevings/yummy-server/gen/restapi/operations/comments"
-	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
-	"github.com/sevings/yummy-server/gen/restapi/operations/favorites"
-	"github.com/sevings/yummy-server/gen/restapi/operations/me"
-	"github.com/sevings/yummy-server/gen/restapi/operations/relations"
-	"github.com/sevings/yummy-server/gen/restapi/operations/users"
-	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
-
 	"github.com/sevings/yummy-server/gen/models"
+	"github.com/sevings/yummy-server/gen/restapi/operations"
 
 	goconf "github.com/zpatrick/go-config"
 

@@ -4,13 +4,11 @@ import (
 	"database/sql"
 	"log"
 	"regexp"
-	"time"
-
-	"github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
+	yummy "github.com/sevings/yummy-server/src"
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
@@ -92,7 +90,7 @@ func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Re
 }
 
 // CanViewEntry returns true if the user is allowed to read the entry.
-func CanViewEntry(tx *sql.Tx, userID, entryID int64) bool {
+func CanViewEntry(tx yummy.AutoTx, userID, entryID int64) bool {
 	const q = `
 		SELECT TRUE 
 		FROM feed

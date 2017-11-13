@@ -428,7 +428,8 @@ func init() {
             "minLength": 1,
             "type": "string",
             "name": "content",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -924,6 +925,12 @@ func init() {
         "parameters": [
           {
             "$ref": "#/parameters/userKey"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/skip"
           }
         ],
         "responses": {
@@ -963,7 +970,8 @@ func init() {
             "minLength": 1,
             "type": "string",
             "name": "content",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -2216,6 +2224,17 @@ func init() {
           "type": "integer",
           "format": "int64",
           "minimum": 1
+        },
+        "rating": {
+          "type": "integer"
+        },
+        "vote": {
+          "type": "string",
+          "enum": [
+            "not",
+            "pos",
+            "neg"
+          ]
         }
       },
       "example": {

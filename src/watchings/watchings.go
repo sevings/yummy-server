@@ -48,7 +48,7 @@ func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams) midd
 
 		canView := entries.CanViewEntry(tx, userID, params.ID)
 		if !canView {
-			return watchings.NewGetEntriesIWatchingNotFound()
+			return watchings.NewGetEntriesIDWatchingNotFound()
 		}
 
 		status := watchingStatus(tx, userID, params.ID)

@@ -1087,7 +1087,7 @@ CREATE OR REPLACE FUNCTION yummy.inc_comments() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE yummy.users
         SET comments_count = comments_count + 1
-        WHERE id = NEW.user_id;
+        WHERE id = NEW.author_id;
         
         UPDATE yummy.entries
         SET comments_count = comments_count + 1
@@ -1105,7 +1105,7 @@ CREATE OR REPLACE FUNCTION yummy.dec_comments() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE yummy.users
         SET comments_count = comments_count - 1
-        WHERE id = OLD.user_id;
+        WHERE id = OLD.author_id;
         
         UPDATE yummy.entries
         SET comments_count = comments_count - 1

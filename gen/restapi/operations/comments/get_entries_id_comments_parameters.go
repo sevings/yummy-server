@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
@@ -19,8 +20,15 @@ import (
 // NewGetEntriesIDCommentsParams creates a new GetEntriesIDCommentsParams object
 // with the default values initialized.
 func NewGetEntriesIDCommentsParams() GetEntriesIDCommentsParams {
-	var ()
-	return GetEntriesIDCommentsParams{}
+	var (
+		limitDefault = int64(50)
+		skipDefault  = int64(0)
+	)
+	return GetEntriesIDCommentsParams{
+		Limit: &limitDefault,
+
+		Skip: &skipDefault,
+	}
 }
 
 // GetEntriesIDCommentsParams contains all the bound params for the get entries ID comments operation
@@ -44,6 +52,18 @@ type GetEntriesIDCommentsParams struct {
 	  In: path
 	*/
 	ID int64
+	/*
+	  Maximum: 100
+	  Minimum: 1
+	  In: query
+	  Default: 50
+	*/
+	Limit *int64
+	/*
+	  In: query
+	  Default: 0
+	*/
+	Skip *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -52,12 +72,24 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 	var res []error
 	o.HTTPRequest = r
 
+	qs := runtime.Values(r.URL.Query())
+
 	if err := o.bindXUserKey(r.Header[http.CanonicalHeaderKey("X-User-Key")], true, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qSkip, qhkSkip, _ := qs.GetOK("skip")
+	if err := o.bindSkip(qSkip, qhkSkip, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,6 +154,63 @@ func (o *GetEntriesIDCommentsParams) validateID(formats strfmt.Registry) error {
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (o *GetEntriesIDCommentsParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var limitDefault int64 = int64(50)
+		o.Limit = &limitDefault
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("limit", "query", "int64", raw)
+	}
+	o.Limit = &value
+
+	if err := o.validateLimit(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetEntriesIDCommentsParams) validateLimit(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetEntriesIDCommentsParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var skipDefault int64 = int64(0)
+		o.Skip = &skipDefault
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("skip", "query", "int64", raw)
+	}
+	o.Skip = &value
 
 	return nil
 }

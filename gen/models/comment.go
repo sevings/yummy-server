@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -35,6 +37,12 @@ type Comment struct {
 	// id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
+
+	// rating
+	Rating int64 `json:"rating,omitempty"`
+
+	// vote
+	Vote string `json:"vote,omitempty"`
 }
 
 /* polymorph Comment author false */
@@ -46,6 +54,10 @@ type Comment struct {
 /* polymorph Comment entryId false */
 
 /* polymorph Comment id false */
+
+/* polymorph Comment rating false */
+
+/* polymorph Comment vote false */
 
 // Validate validates this comment
 func (m *Comment) Validate(formats strfmt.Registry) error {
@@ -67,6 +79,11 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateID(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateVote(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -129,6 +146,49 @@ func (m *Comment) validateID(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var commentTypeVotePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["not","pos","neg"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		commentTypeVotePropEnum = append(commentTypeVotePropEnum, v)
+	}
+}
+
+const (
+	// CommentVoteNot captures enum value "not"
+	CommentVoteNot string = "not"
+	// CommentVotePos captures enum value "pos"
+	CommentVotePos string = "pos"
+	// CommentVoteNeg captures enum value "neg"
+	CommentVoteNeg string = "neg"
+)
+
+// prop value enum
+func (m *Comment) validateVoteEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, commentTypeVotePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Comment) validateVote(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Vote) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateVoteEnum("vote", "body", m.Vote); err != nil {
 		return err
 	}
 

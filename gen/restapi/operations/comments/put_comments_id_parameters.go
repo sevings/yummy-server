@@ -41,10 +41,11 @@ type PutCommentsIDParams struct {
 	*/
 	XUserKey string
 	/*
+	  Required: true
 	  Min Length: 1
 	  In: formData
 	*/
-	Content *string
+	Content string
 	/*
 	  Required: true
 	  Minimum: 1
@@ -123,15 +124,18 @@ func (o *PutCommentsIDParams) validateXUserKey(formats strfmt.Registry) error {
 }
 
 func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("content", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("content", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Content = &raw
+	o.Content = raw
 
 	if err := o.validateContent(formats); err != nil {
 		return err
@@ -142,7 +146,7 @@ func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats
 
 func (o *PutCommentsIDParams) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("content", "formData", (*o.Content), 1); err != nil {
+	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
 		return err
 	}
 

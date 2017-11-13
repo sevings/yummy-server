@@ -1360,6 +1360,10 @@ paths:
           description: vote status
           schema:
             $ref: '#/definitions/VoteStatus'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
