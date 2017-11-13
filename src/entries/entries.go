@@ -8,7 +8,6 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
-	yummy "github.com/sevings/yummy-server/src"
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
@@ -87,32 +86,4 @@ func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Re
 		tx.Commit()
 		return me.NewPostUsersMeEntriesOK().WithPayload(entry)
 	}
-}
-
-// CanViewEntry returns true if the user is allowed to read the entry.
-func CanViewEntry(tx yummy.AutoTx, userID, entryID int64) bool {
-	const q = `
-		SELECT TRUE 
-		FROM feed
-		WHERE id = $2 AND (author_id = $1
-			OR ((entry_privacy = 'all' 
-				AND (author_privacy = 'all'
-					OR (author_privacy = 'registered' AND $1 > 0)
-					OR EXISTS(SELECT 1 FROM relation, relations, entries
-							  WHERE from_id = $1 AND to_id = entries.author_id
-								  AND entries.id = $2
-						 		  AND relation.type = 'followed'
-						 		  AND relations.type = relation.id)))
-			OR (entry_privacy = 'some' 
-				AND EXISTS(SELECT 1 FROM entries_privacy
-					WHERE user_id = $1 AND entry_id = $2))
-			OR entry_privacy = 'anonymous'))`
-
-	var allowed bool
-	err := tx.QueryRow(q, userID, entryID).Scan(&allowed)
-	if err != nil && err != sql.ErrNoRows {
-		log.Print(err)
-	}
-
-	return allowed
 }

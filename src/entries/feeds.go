@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/sevings/yummy-server/src"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
+	"github.com/sevings/yummy-server/src/comments"
 	"github.com/sevings/yummy-server/src/users"
 )
 
@@ -37,7 +40,7 @@ LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS vot
 WHERE feed.entry_privacy = 'all' 
 	AND (feed.author_privacy = 'all' OR feed.author_privacy = 'registered') `
 
-const authFeedQueryEnd =  feedQueryOrder + "LIMIT $2 OFFSET $3"
+const authFeedQueryEnd = feedQueryOrder + "LIMIT $2 OFFSET $3"
 
 const authLiveFeedQuery = authFeedQueryStart + authFeedQueryEnd
 
@@ -59,6 +62,23 @@ const bestFeedQuery = feedQueryStart + " FROM feed WHERE " + feedQueryWhere + be
 
 const authBestFeedQuery = authFeedQueryStart + bestfeedQueryWhere + authFeedQueryEnd
 
+func reverse(feed *models.Feed) {
+	for i, j := 0, len(feed.Entries)-1; i < j; i, j = i+1, j-1 {
+		feed.Entries[i], feed.Entries[j] = feed.Entries[j], feed.Entries[i]
+	}
+}
+
+func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
+	for _, entry := range feed.Entries {
+		cmt, err := comments.LoadEntryComments(tx, userID, entry.ID, 5, 0)
+		if err != nil {
+			log.Print(err)
+		}
+
+		entry.Comments = cmt
+	}
+}
+
 func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Feed, error) {
 	var feed models.Feed
 	rows, err := tx.Query(query, limit, offset)
@@ -79,6 +99,9 @@ func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Fee
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)
 	}
+
+	reverse(&feed)
+	loadComments(tx, 0, &feed)
 
 	return &feed, rows.Err()
 }
@@ -114,9 +137,10 @@ func loadAuthFeed(tx *sql.Tx, query string, userID int64, limit, offset int64) (
 
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)
-
-		//! \todo load last comments
 	}
+
+	reverse(&feed)
+	loadComments(tx, userID, &feed)
 
 	return &feed, rows.Err()
 }

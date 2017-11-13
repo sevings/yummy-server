@@ -10,7 +10,6 @@ import (
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/src"
-	"github.com/sevings/yummy-server/src/entries"
 	"github.com/sevings/yummy-server/src/users"
 )
 
@@ -88,7 +87,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.
 				return comments.NewGetCommentsIDNotFound(), false
 			}
 
-			canView := entries.CanViewEntry(tx, userID, comment.EntryID)
+			canView := yummy.CanViewEntry(tx, userID, comment.EntryID)
 			if !canView {
 				return comments.NewGetCommentsIDNotFound(), false
 			}
@@ -196,13 +195,14 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middlew
 	}
 }
 
-func loadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) (*models.CommentList, error) {
+// LoadEntryComments loads comments for entry.
+func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([]*models.Comment, error) {
 	const q = commentQuery + `
 		WHERE entry_id = $2
 		ORDER BY created_at DESC
 		LIMIT $3 OFFSET $4`
 
-	var list models.CommentList
+	var list []*models.Comment
 	rows, err := tx.Query(q, userID, entryID, limit, offset)
 	if err != nil {
 		return nil, err
@@ -219,32 +219,33 @@ func loadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) (*
 			&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
 
 		comment.Vote = commentVote(userID, vote)
-		list.Comments = append(list.Comments, &comment)
+		list = append(list, &comment)
 	}
 
-	for i, j := 0, len(list.Comments)-1; i < j; i, j = i+1, j-1 {
-		list.Comments[i], list.Comments[j] = list.Comments[j], list.Comments[i]
+	for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
+		list[i], list[j] = list[j], list[i]
 	}
 
-	return &list, rows.Err()
+	return list, rows.Err()
 }
 
 func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams) middleware.Responder {
 	return func(params comments.GetEntriesIDCommentsParams) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
 			userID, _ := users.FindAuthUser(tx, params.XUserKey)
-			canView := entries.CanViewEntry(tx, userID, params.ID)
+			canView := yummy.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewGetEntriesIDCommentsNotFound(), false
 			}
 
-			list, err := loadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
+			list, err := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)
 				return comments.NewGetEntriesIDCommentsNotFound(), false
 			}
 
-			return comments.NewGetEntriesIDCommentsOK().WithPayload(list), true
+			res := models.CommentList{Comments: list}
+			return comments.NewGetEntriesIDCommentsOK().WithPayload(&res), true
 		})
 	}
 }
@@ -278,7 +279,7 @@ func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams) mid
 				return comments.NewPostEntriesIDCommentsForbidden(), false
 			}
 
-			canView := entries.CanViewEntry(tx, user.ID, params.ID)
+			canView := yummy.CanViewEntry(tx, user.ID, params.ID)
 			if !canView {
 				return comments.NewPostEntriesIDCommentsNotFound(), false
 			}

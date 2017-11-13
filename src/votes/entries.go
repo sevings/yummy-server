@@ -7,7 +7,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations/votes"
-	"github.com/sevings/yummy-server/src/entries"
+	yummy "github.com/sevings/yummy-server/src"
 	"github.com/sevings/yummy-server/src/users"
 )
 
@@ -56,7 +56,7 @@ func newEntryVoteLoader(db *sql.DB) func(votes.GetEntriesIDVoteParams) middlewar
 			return votes.NewGetEntriesIDVoteForbidden()
 		}
 
-		canView := entries.CanViewEntry(tx, userID, params.ID)
+		canView := yummy.CanViewEntry(tx, userID, params.ID)
 		if !canView {
 			return votes.NewGetEntriesIDVoteNotFound()
 		}

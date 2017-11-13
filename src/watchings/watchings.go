@@ -8,7 +8,7 @@ import (
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
-	"github.com/sevings/yummy-server/src/entries"
+	yummy "github.com/sevings/yummy-server/src"
 	"github.com/sevings/yummy-server/src/users"
 )
 
@@ -46,7 +46,7 @@ func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams) midd
 			return watchings.NewGetEntriesIDWatchingForbidden()
 		}
 
-		canView := entries.CanViewEntry(tx, userID, params.ID)
+		canView := yummy.CanViewEntry(tx, userID, params.ID)
 		if !canView {
 			return watchings.NewGetEntriesIDWatchingNotFound()
 		}
