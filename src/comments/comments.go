@@ -17,6 +17,7 @@ import (
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(newCommentLoader(db))
 	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(newCommentEditor(db))
+	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(db))
 }
 
 func loadComment(tx *sql.Tx, userID, commentID int64) (*models.Comment, error) {
@@ -105,7 +106,7 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.
 			log.Fatal(err)
 		}
 		
-		userID, found := users.FindAuthUser(tx, params.XUserKey)
+		userID, found := users.FindAuthUser(tx, &params.XUserKey)
 		if !found {
 			tx.Rollback()
 			return comments.NewGetCommentsIDForbidden()
@@ -136,5 +137,68 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.
 		tx.Commit()
 		comment.Content = *params.Content
 		return comments.NewPutCommentsIDOK().WithPayload(comment)
+	}
+}
+
+func commentAuthor(tx *sql.Tx, commentID int64) (int64, bool) {
+	const q = `
+		SELECT author_id
+		FROM comments
+		WHERE id = $1`
+
+	var authorID int64
+	err := tx.QueryRow(q, commentID).Scan(&authorID)
+	if err == nil {
+		return authorID, true
+	}
+
+	if err != sql.ErrNoRows {
+		log.Print(err)
+	}
+
+	return 0, false
+}
+
+func deleteComment(tx *sql.Tx, commentID int64) error {
+	const q = `
+		DELETE FROM comments
+		WHERE id = $1`
+
+	_, err := tx.Exec(q, commentID)
+	return err
+}
+
+func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middleware.Responder {
+	return func(params comments.DeleteCommentsIDParams) middleware.Responder {
+		tx, err := db.Begin()
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		userID, found := users.FindAuthUser(tx, &params.XUserKey)
+		if !found {
+			tx.Rollback()
+			return comments.NewDeleteCommentsIDForbidden()
+		}
+
+		authorID, found := commentAuthor(tx, params.ID)
+		if !found {
+			tx.Rollback()
+			return comments.NewDeleteCommentsIDNotFound()			
+		}
+		if authorID != userID {
+			tx.Rollback()
+			return comments.NewDeleteCommentsIDForbidden()			
+		}
+
+		err = deleteComment(tx, params.ID)
+		if err != nil {
+			log.Print(err)
+			tx.Rollback()
+			return comments.NewDeleteCommentsIDNotFound()
+		}
+
+		tx.Commit()
+		return comments.NewDeleteCommentsIDOK()
 	}
 }
