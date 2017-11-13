@@ -308,6 +308,11 @@ definitions:
       content:
         type: string
         minLength: 1
+      rating:
+        type: integer
+      vote:
+        type: string
+        enum: [not, pos, neg]
     example:
       id: 999
       entryId: 152

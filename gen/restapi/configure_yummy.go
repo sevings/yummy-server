@@ -15,6 +15,8 @@ import (
 	favoritesImpl "github.com/sevings/yummy-server/src/favorites"
 	usersImpl "github.com/sevings/yummy-server/src/users"
 	votesImpl "github.com/sevings/yummy-server/src/votes"
+	watchingsImpl "github.com/sevings/yummy-server/src/watchings"
+	commentsImpl "github.com/sevings/yummy-server/src/comments"
 
 	"github.com/didip/tollbooth"
 	errors "github.com/go-openapi/errors"
@@ -109,6 +111,8 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	entriesImpl.ConfigureAPI(db, api)
 	votesImpl.ConfigureAPI(db, api)
 	favoritesImpl.ConfigureAPI(db, api)
+	watchingsImpl.ConfigureAPI(db, api)
+	commentsImpl.ConfigureAPI(db, api)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -120,116 +124,9 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.UrlformConsumer = runtime.DiscardConsumer
-
 	api.MultipartformConsumer = runtime.DiscardConsumer
-
 	api.JSONProducer = runtime.JSONProducer()
-
-	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation comments.DeleteCommentsID has not yet been implemented")
-	})
-	api.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.DeleteEntriesID has not yet been implemented")
-	})
-	api.FavoritesDeleteEntriesIDFavoriteHandler = favorites.DeleteEntriesIDFavoriteHandlerFunc(func(params favorites.DeleteEntriesIDFavoriteParams) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.DeleteEntriesIDFavorite has not yet been implemented")
-	})
-
-	api.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.DeleteEntriesIDWatching has not yet been implemented")
-	})
-	api.RelationsDeleteRelationsFromIDHandler = relations.DeleteRelationsFromIDHandlerFunc(func(params relations.DeleteRelationsFromIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.DeleteRelationsFromID has not yet been implemented")
-	})
-	api.RelationsDeleteRelationsToIDHandler = relations.DeleteRelationsToIDHandlerFunc(func(params relations.DeleteRelationsToIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.DeleteRelationsToID has not yet been implemented")
-	})
-
-	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation comments.GetCommentsID has not yet been implemented")
-	})
-
-	api.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(func(params entries.GetEntriesFriendsParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesFriends has not yet been implemented")
-	})
-	api.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(func(params entries.GetEntriesIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesID has not yet been implemented")
-	})
-	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(func(params comments.GetEntriesIDCommentsParams) middleware.Responder {
-		return middleware.NotImplemented("operation comments.GetEntriesIDComments has not yet been implemented")
-	})
-
-	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.GetEntriesIDWatching has not yet been implemented")
-	})
-
-	api.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(func(params relations.GetRelationsFromIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.GetRelationsFromID has not yet been implemented")
-	})
-	api.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(func(params relations.GetRelationsToIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.GetRelationsToID has not yet been implemented")
-	})
-
-	api.UsersGetUsersByNameNameEntriesHandler = users.GetUsersByNameNameEntriesHandlerFunc(func(params users.GetUsersByNameNameEntriesParams) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersByNameNameEntries has not yet been implemented")
-	})
-	api.UsersGetUsersByNameNameFavoritesHandler = users.GetUsersByNameNameFavoritesHandlerFunc(func(params users.GetUsersByNameNameFavoritesParams) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersByNameNameFavorites has not yet been implemented")
-	})
-
-	api.UsersGetUsersIDEntriesHandler = users.GetUsersIDEntriesHandlerFunc(func(params users.GetUsersIDEntriesParams) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersIDEntries has not yet been implemented")
-	})
-	api.UsersGetUsersIDFavoritesHandler = users.GetUsersIDFavoritesHandlerFunc(func(params users.GetUsersIDFavoritesParams) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersIDFavorites has not yet been implemented")
-	})
-
-	api.MeGetUsersMeEntriesHandler = me.GetUsersMeEntriesHandlerFunc(func(params me.GetUsersMeEntriesParams) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetUsersMeEntries has not yet been implemented")
-	})
-	api.MeGetUsersMeFavoritesHandler = me.GetUsersMeFavoritesHandlerFunc(func(params me.GetUsersMeFavoritesParams) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetUsersMeFavorites has not yet been implemented")
-	})
-
-	api.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(func(params account.PostAccountVerificationParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountVerification has not yet been implemented")
-	})
-	api.AccountGetAccountVerificationEmailHandler = account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.GetAccountVerificationEmail has not yet been implemented")
-	})
-
-	api.EntriesPostEntriesAnonymousHandler = entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.PostEntriesAnonymous has not yet been implemented")
-	})
-	api.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams) middleware.Responder {
-		return middleware.NotImplemented("operation comments.PostEntriesIDComments has not yet been implemented")
-	})
-
-	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation comments.PutCommentsID has not yet been implemented")
-	})
-	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(func(params entries.PutEntriesIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation entries.PutEntriesID has not yet been implemented")
-	})
-	api.FavoritesPutEntriesIDFavoriteHandler = favorites.PutEntriesIDFavoriteHandlerFunc(func(params favorites.PutEntriesIDFavoriteParams) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.PutEntriesIDFavorite has not yet been implemented")
-	})
-
-	api.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(func(params watchings.PutEntriesIDWatchingParams) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.PutEntriesIDWatching has not yet been implemented")
-	})
-	api.RelationsPutRelationsFromIDHandler = relations.PutRelationsFromIDHandlerFunc(func(params relations.PutRelationsFromIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.PutRelationsFromID has not yet been implemented")
-	})
-	api.RelationsPutRelationsToIDHandler = relations.PutRelationsToIDHandlerFunc(func(params relations.PutRelationsToIDParams) middleware.Responder {
-		return middleware.NotImplemented("operation relations.PutRelationsToID has not yet been implemented")
-	})
-	api.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(func(params me.PutUsersMeParams) middleware.Responder {
-		return middleware.NotImplemented("operation me.PutUsersMe has not yet been implemented")
-	})
-
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
@@ -271,6 +168,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
 		err := models.Error{Message: "Too many requests"}
 		data, _ := err.MarshalBinary()
+		w.Truncate()
 		w.Write(data)
 	})
 	return tollbooth.LimitFuncHandler(lmt, handleUi)
