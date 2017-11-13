@@ -168,7 +168,6 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
 		err := models.Error{Message: "Too many requests"}
 		data, _ := err.MarshalBinary()
-		w.Truncate()
 		w.Write(data)
 	})
 	return tollbooth.LimitFuncHandler(lmt, handleUi)

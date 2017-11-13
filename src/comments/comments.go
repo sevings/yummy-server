@@ -16,6 +16,7 @@ import (
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(newCommentLoader(db))
+	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(newCommentEditor(db))
 }
 
 func loadComment(tx *sql.Tx, userID, commentID int64) (*models.Comment, error) {
@@ -72,14 +73,68 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.
 				log.print(err)
 			}
 
+			tx.Rollback()
 			return comments.NewGetCommentsIDNotFound()
 		}
 
 		canView := entries.CanViewEntry(tx, userID, params.ID)
 		if !canView {
+			tx.Rollback()
 			return comments.NewGetCommentsIDNotFound()
 		}
 
+		tx.Commit()
 		return comments.NewGetCommentsIDOK().WithPayload(comment)
+	}
+}
+
+func editComment(tx *sql.Tx, commentID int64, content string) error {
+	const q = `
+		UPDATE comments
+		SET content = $2
+		WHERE id = $1`
+
+	_, err := tx.Exec(q, commentID, content)
+	return err
+}
+
+func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.Responder {
+	return func(params comments.PutCommentsIDParams) middleware.Responder {
+		tx, err := db.Begin()
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		userID, found := users.FindAuthUser(tx, params.XUserKey)
+		if !found {
+			tx.Rollback()
+			return comments.NewGetCommentsIDForbidden()
+		}
+
+		comment, err := loadComment(tx, userID, params.ID)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.print(err)
+			}
+
+			tx.Rollback()
+			return comments.NewGetCommentsIDNotFound()
+		}
+
+		if comment.Author.ID != userID {
+			tx.Rollback()
+			return comments.NewGetCommentsIDForbidden()
+		}
+
+		err = editComment(tx, params.ID, *params.Content)
+		if err != nil {
+			log.Print(err)
+			tx.Rollback()
+			return comments.NewGetCommentsIDNotFound()
+		}
+
+		tx.Commit()
+		comment.Content = *params.Content
+		return comments.NewPutCommentsIDOK().WithPayload(comment)
 	}
 }
