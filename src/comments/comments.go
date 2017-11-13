@@ -21,6 +21,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(db))
 
 	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(newEntryCommentsLoader(db))
+	api.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(newCommentPoster(db))
 }
 
 const commentQuery = `
@@ -233,6 +234,50 @@ func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams
 			}
 
 			return comments.NewGetEntriesIDCommentsOK().WithPayload(list), true
+		})
+	}
+}
+
+func postComment(tx yummy.AutoTx, author *models.User, entryID int64, content string) (*models.Comment, bool) {
+	const q = `
+		INSERT INTO comments (author_id, entry_id, content)
+		VALUES ($1, $2, $3)
+		RETURNING id, created_at`
+
+	comment := models.Comment {
+		Author: &author,
+		Content: content,
+		EntryID: entryID,
+	}
+
+	err := tx.QueryRow(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
+	if err != nil {
+		log.Print(err)
+		return nil, false
+	}
+
+	return &comment, true
+}
+
+func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams) middleware.Responder {
+	return func(params comments.PostEntriesIDCommentsParams) middleware.Responder {
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			user, found := users.LoadAuthUser(tx, &params.XUserKey)
+			if !found {
+				return comments.NewPostEntriesIDCommentsForbidden(), false
+			}
+
+			canView := entries.CanViewEntry(tx, user.ID, params.ID)
+			if !canView {
+				return comments.NewPostEntriesIDCommentsNotFound(), false
+			}
+
+			comment, ok := postComment(tx, user, params.ID, params.Content)
+			if !ok {
+				return comments.NewPostEntriesIDCommentsNotFound(), false
+			}
+
+			return comments.NewPostEntriesIDCommentsOK().WithPayload(comment), true
 		})
 	}
 }

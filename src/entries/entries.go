@@ -53,23 +53,19 @@ func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVo
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
-	var entryID int64
-	var createdAt time.Time
-	err := tx.QueryRow(postEntryQuery, author.ID, title, content, wordCount,
-		privacy, isVotable).Scan(&entryID, &createdAt)
-	if err != nil {
-		log.Print(err)
-		return nil, false
-	}
-
 	entry := models.Entry{
-		ID:        entryID,
-		CreatedAt: strfmt.DateTime(createdAt),
 		Title:     title,
 		Content:   content,
 		WordCount: wordCount,
 		Privacy:   privacy,
 		Author:    author,
+	}
+
+	err := tx.QueryRow(postEntryQuery, author.ID, title, content, wordCount,
+		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
+	if err != nil {
+		log.Print(err)
+		return nil, false
 	}
 
 	return &entry, true
