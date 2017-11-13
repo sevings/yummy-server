@@ -11,6 +11,7 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/src/entries"
 	"github.com/sevings/yummy-server/src/users"
+	"github.com/sevings/yummy-server/src"
 )
 
 // ConfigureAPI creates operations handlers
@@ -62,30 +63,24 @@ func loadComment(tx *sql.Tx, userID, commentID int64) (*models.Comment, error) {
 
 func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.Responder {
 	return func(params comments.GetCommentsIDParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		
-		userID, _ := users.FindAuthUser(tx, params.XUserKey)
-		comment, err := loadComment(tx, userID, params.ID)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.print(err)
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID, _ := users.FindAuthUser(tx, params.XUserKey)
+			comment, err := loadComment(tx, userID, params.ID)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.print(err)
+				}
+
+				return comments.NewGetCommentsIDNotFound(), false
 			}
 
-			tx.Rollback()
-			return comments.NewGetCommentsIDNotFound()
-		}
+			canView := entries.CanViewEntry(tx, userID, params.ID)
+			if !canView {
+				return comments.NewGetCommentsIDNotFound(), false
+			}
 
-		canView := entries.CanViewEntry(tx, userID, params.ID)
-		if !canView {
-			tx.Rollback()
-			return comments.NewGetCommentsIDNotFound()
-		}
-
-		tx.Commit()
-		return comments.NewGetCommentsIDOK().WithPayload(comment)
+			return comments.NewGetCommentsIDOK().WithPayload(comment), true
+		})
 	}
 }
 
@@ -101,42 +96,34 @@ func editComment(tx *sql.Tx, commentID int64, content string) error {
 
 func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.Responder {
 	return func(params comments.PutCommentsIDParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		
-		userID, found := users.FindAuthUser(tx, &params.XUserKey)
-		if !found {
-			tx.Rollback()
-			return comments.NewGetCommentsIDForbidden()
-		}
-
-		comment, err := loadComment(tx, userID, params.ID)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.print(err)
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID, found := users.FindAuthUser(tx, &params.XUserKey)
+			if !found {
+				return comments.NewGetCommentsIDForbidden(), false
 			}
 
-			tx.Rollback()
-			return comments.NewGetCommentsIDNotFound()
-		}
+			comment, err := loadComment(tx, userID, params.ID)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.print(err)
+				}
 
-		if comment.Author.ID != userID {
-			tx.Rollback()
-			return comments.NewGetCommentsIDForbidden()
-		}
+				return comments.NewGetCommentsIDNotFound(), false
+			}
 
-		err = editComment(tx, params.ID, *params.Content)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return comments.NewGetCommentsIDNotFound()
-		}
+			if comment.Author.ID != userID {
+				return comments.NewGetCommentsIDForbidden(), false
+			}
 
-		tx.Commit()
-		comment.Content = *params.Content
-		return comments.NewPutCommentsIDOK().WithPayload(comment)
+			err = editComment(tx, params.ID, *params.Content)
+			if err != nil {
+				log.Print(err)
+				return comments.NewGetCommentsIDNotFound(), false
+			}
+
+			comment.Content = *params.Content
+			return comments.NewPutCommentsIDOK().WithPayload(comment), true
+		})
 	}
 }
 
@@ -170,35 +157,27 @@ func deleteComment(tx *sql.Tx, commentID int64) error {
 
 func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middleware.Responder {
 	return func(params comments.DeleteCommentsIDParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		
-		userID, found := users.FindAuthUser(tx, &params.XUserKey)
-		if !found {
-			tx.Rollback()
-			return comments.NewDeleteCommentsIDForbidden()
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID, found := users.FindAuthUser(tx, &params.XUserKey)
+			if !found {
+				return comments.NewDeleteCommentsIDForbidden(), false
+			}
 
-		authorID, found := commentAuthor(tx, params.ID)
-		if !found {
-			tx.Rollback()
-			return comments.NewDeleteCommentsIDNotFound()			
-		}
-		if authorID != userID {
-			tx.Rollback()
-			return comments.NewDeleteCommentsIDForbidden()			
-		}
+			authorID, found := commentAuthor(tx, params.ID)
+			if !found {
+				return comments.NewDeleteCommentsIDNotFound(), false
+			}
+			if authorID != userID {
+				return comments.NewDeleteCommentsIDForbidden(), false
+			}
 
-		err = deleteComment(tx, params.ID)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return comments.NewDeleteCommentsIDNotFound()
-		}
+			err = deleteComment(tx, params.ID)
+			if err != nil {
+				log.Print(err)
+				return comments.NewDeleteCommentsIDNotFound(), false
+			}
 
-		tx.Commit()
-		return comments.NewDeleteCommentsIDOK()
+			return comments.NewDeleteCommentsIDOK(), true
+		})
 	}
 }
