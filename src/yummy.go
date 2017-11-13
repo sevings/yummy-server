@@ -4,8 +4,14 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/sevings/yummy-server/gen/models"
 	"github.com/go-openapi/runtime/middleware"
 )
+
+// NewError returns error object with some message
+func NewError(msg string) *models.Error {
+	return &models.Error{Message: msg}
+}
 
 type AutoTx interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
@@ -30,7 +36,7 @@ func Transact(db *sql.DB, txFunc func(AutoTx) (middleware.Responder, bool)) midd
 		err = tx.Commit()
 	} else {
 		err = tx.Rollback()
-	}	
+	}
 
 	if err != nil {
 		log.Print(err)
