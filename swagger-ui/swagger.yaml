@@ -1511,6 +1511,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/userKey'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
       tags:
         - comments
       responses:

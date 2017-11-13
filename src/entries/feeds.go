@@ -22,7 +22,9 @@ author_name_color, author_avatar_color, author_avatar `
 const feedQueryWhere = `
 feed.entry_privacy = 'all' AND feed.author_privacy = 'all' `
 
-const feedQueryEnd = "LIMIT $1 OFFSET $2"
+const feedQueryOrder = " ORDER BY created_at DESC "
+
+const feedQueryEnd = feedQueryOrder + "LIMIT $1 OFFSET $2"
 
 const liveFeedQuery = feedQueryStart + " FROM feed WHERE" + feedQueryWhere + feedQueryEnd
 
@@ -35,7 +37,7 @@ LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS vot
 WHERE feed.entry_privacy = 'all' 
 	AND (feed.author_privacy = 'all' OR feed.author_privacy = 'registered') `
 
-const authFeedQueryEnd = " LIMIT $2 OFFSET $3"
+const authFeedQueryEnd =  feedQueryOrder + "LIMIT $2 OFFSET $3"
 
 const authLiveFeedQuery = authFeedQueryStart + authFeedQueryEnd
 

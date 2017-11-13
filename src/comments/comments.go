@@ -19,45 +19,51 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(newCommentLoader(db))
 	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(newCommentEditor(db))
 	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(db))
+
+	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(newEntryCommentsLoader(db))
+}
+
+const commentQuery = `
+	SELECT comments.id, entry_id,
+		created_at, content, rating,
+		votes.positive AS vote,
+		author_id, name, show_name, 
+		is_online,
+		name_color, avatar_color, avatar
+	FROM comments
+	LEFT JOIN (SELECT comment_id, positive FROM comment_votes WHERE user_id = $1) AS votes 
+		ON comments.id = votes.comment_id
+`
+
+func commentVote(userID int64, vote sql.NullBool) string {
+	switch {
+	case userID <= 0:
+		return ""
+	case !vote.Valid:
+		return "not"
+	case vote.Bool:
+		return "pos"
+	default:
+		return "neg"
+	}
 }
 
 func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, error) {
-	const q = `
-		SELECT entry_id,
-			created_at, content, rating,
-			votes.positive AS vote,
-			author_id, name, show_name, 
-			is_online,
-			name_color, avatar_color, avatar
-		FROM comments
-		LEFT JOIN (SELECT comment_id, positive FROM comment_votes WHERE user_id = $1) AS votes 
-			ON comments.id = votes.comment_id
-		WHERE comments.id = $2 AND comments.author_id = short_users.id`
+	const q = commentQuery + "WHERE comments.id = $2 AND comments.author_id = short_users.id"
 
 	var vote sql.NullBool
 	comment := models.Comment {
-		ID: commentID,
-		Author: &models.User{}
+		Author: &models.User{},
 	}
 	
-	err := tx.QueryRow(q, userID, commentID).Scan(&comment.EntryID,
+	err := tx.QueryRow(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating,
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline, 
 		&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
 	
-	if userID > 0 {
-		switch {
-		case !vote.Valid:
-			comment.Vote = "not"
-		case vote.Bool:
-			comment.Vote = "pos"
-		default:
-			comment.Vote = "neg"
-		}		
-	}
-
+	comment.Vote = commentVote(userID, vote)
 	return &comment, err
 }
 
@@ -74,7 +80,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.
 				return comments.NewGetCommentsIDNotFound(), false
 			}
 
-			canView := entries.CanViewEntry(tx, userID, params.ID)
+			canView := entries.CanViewEntry(tx, userID, comment.EntryID)
 			if !canView {
 				return comments.NewGetCommentsIDNotFound(), false
 			}
@@ -178,6 +184,55 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middlew
 			}
 
 			return comments.NewDeleteCommentsIDOK(), true
+		})
+	}
+}
+
+func loadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) (*models.CommentList, error) {
+	const q = commentQuery + `
+		WHERE entry_id = $2
+		ORDER BY created_at DESC
+		LIMIT $3 OFFSET $4`
+
+	var list models.CommentList
+	rows, err := tx.Query(q, userID, entryID, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var comment models.comment
+		var vote sql.NullBool
+		rows.Scan(&comment.ID, &comment.EntryID,
+			&comment.CreatedAt, &comment.Content, &comment.Rating,
+			&vote,
+			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
+			&comment.Author.IsOnline, 
+			&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
+		
+		comment.Vote = commentVote(userID, vote)
+		list.Comments = append(list.Comments, &comment)
+	}
+
+	return &list, rows.Err()
+}
+
+func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams) middleware.Responder {
+	return func(params comments.GetEntriesIDCommentsParams) middleware.Responder {
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID, _ := users.FindAuthUser(tx, params.XUserKey)
+			canView := entries.CanViewEntry(tx, userID, params.ID)
+			if !canView {
+				return comments.NewGetEntriesIDCommentsNotFound(), false
+			}
+
+			list, err := loadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
+			if err != nil {
+				log.print(err)
+				return comments.NewGetEntriesIDCommentsNotFound(), false
+			}
+
+			return comments.NewGetEntriesIDCommentsOK().WithPayload(list), true
 		})
 	}
 }
