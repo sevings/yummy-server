@@ -21,7 +21,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(db))
 }
 
-func loadComment(tx *sql.Tx, userID, commentID int64) (*models.Comment, error) {
+func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, error) {
 	const q = `
 		SELECT entry_id,
 			created_at, content, rating,
@@ -84,7 +84,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.
 	}
 }
 
-func editComment(tx *sql.Tx, commentID int64, content string) error {
+func editComment(tx yummy.AutoTx, commentID int64, content string) error {
 	const q = `
 		UPDATE comments
 		SET content = $2
@@ -127,7 +127,7 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.
 	}
 }
 
-func commentAuthor(tx *sql.Tx, commentID int64) (int64, bool) {
+func commentAuthor(tx yummy.AutoTx, commentID int64) (int64, bool) {
 	const q = `
 		SELECT author_id
 		FROM comments
@@ -146,7 +146,7 @@ func commentAuthor(tx *sql.Tx, commentID int64) (int64, bool) {
 	return 0, false
 }
 
-func deleteComment(tx *sql.Tx, commentID int64) error {
+func deleteComment(tx yummy.AutoTx, commentID int64) error {
 	const q = `
 		DELETE FROM comments
 		WHERE id = $1`
