@@ -11,8 +11,8 @@ import (
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
+	yummy "github.com/sevings/yummy-server/src"
 	"github.com/sevings/yummy-server/src/users"
-	yummy "github.com/sevings/yummy-server/src/"
 )
 
 // ConfigureAPI creates operations handlers

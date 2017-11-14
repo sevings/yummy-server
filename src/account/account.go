@@ -26,7 +26,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 }
 
 // IsEmailFree returns true if there is no account with such an email
-func isEmailFree(tx *sql.Tx, email string) bool {
+func isEmailFree(tx yummy.AutoTx, email string) bool {
 	const q = `
         select id 
         from users 
@@ -49,13 +49,13 @@ func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middle
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
 			free := isEmailFree(tx, params.Email)
 			data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
-			return account.NewGetAccountEmailEmailOK().WithPayload(data), true		
+			return account.NewGetAccountEmailEmailOK().WithPayload(data), true
 		})
 	}
 }
 
 // IsNameFree returns true if there is no account with such a name
-func isNameFree(tx *sql.Tx, name string) bool {
+func isNameFree(tx yummy.AutoTx, name string) bool {
 	const q = `
         select id 
         from users 
@@ -83,7 +83,7 @@ func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middlewar
 	}
 }
 
-func removeInvite(tx *sql.Tx, ref string, invite string) (int64, bool) {
+func removeInvite(tx yummy.AutoTx, ref string, invite string) (int64, bool) {
 	words := strings.Fields(invite)
 	if len(words) != 3 {
 		return 0, false
@@ -161,7 +161,7 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
-func createUser(tx *sql.Tx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
+func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
 	hash := passwordHash(params.Password)
 	nameColor := "#c9c9c9"
 	avatarColor := "#373737"
