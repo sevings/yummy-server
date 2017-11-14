@@ -46,15 +46,11 @@ func isEmailFree(tx *sql.Tx, email string) bool {
 
 func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer tx.Commit()
-
-		free := isEmailFree(tx, params.Email)
-		data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
-		return account.NewGetAccountEmailEmailOK().WithPayload(data)
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			free := isEmailFree(tx, params.Email)
+			data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
+			return account.NewGetAccountEmailEmailOK().WithPayload(data), true		
+		})
 	}
 }
 
@@ -79,15 +75,11 @@ func isNameFree(tx *sql.Tx, name string) bool {
 
 func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middleware.Responder {
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer tx.Commit()
-
-		free := isNameFree(tx, params.Name)
-		data := account.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
-		return account.NewGetAccountNameNameOK().WithPayload(data)
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			free := isNameFree(tx, params.Name)
+			data := account.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
+			return account.NewGetAccountNameNameOK().WithPayload(data), true
+		})
 	}
 }
 
@@ -228,7 +220,7 @@ invited_by_name_color, invited_by_avatar_color,
 invited_by_avatar
 FROM long_users `
 
-func loadAuthProfile(tx *sql.Tx, query string, args ...interface{}) (*models.AuthProfile, error) {
+func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*models.AuthProfile, error) {
 	row := tx.QueryRow(query, args...)
 
 	var profile models.AuthProfile
@@ -295,44 +287,34 @@ const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
 func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			if ok := isEmailFree(tx, params.Email); !ok {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("email_is_not_free")), false
+			}
 
-		if ok := isEmailFree(tx, params.Email); !ok {
-			tx.Rollback()
-			return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("email_is_not_free"))
-		}
+			if ok := isNameFree(tx, params.Name); !ok {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("name_is_not_free")), false
+			}
 
-		if ok := isNameFree(tx, params.Name); !ok {
-			tx.Rollback()
-			return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("name_is_not_free"))
-		}
+			ref, ok := removeInvite(tx, params.Referrer, params.Invite)
+			if !ok {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("invalid_invite")), false
+			}
 
-		ref, ok := removeInvite(tx, params.Referrer, params.Invite)
-		if !ok {
-			tx.Rollback()
-			return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("invalid_invite"))
-		}
+			id, err := createUser(tx, params, ref)
+			if err != nil {
+				log.Print(err)
+				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error")), false
+			}
 
-		id, err := createUser(tx, params, ref)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error"))
-		}
+			user, err := loadAuthProfile(tx, authProfileQueryByID, id)
+			if err != nil {
+				log.Print(err)
+				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error")), false
+			}
 
-		user, err := loadAuthProfile(tx, authProfileQueryByID, id)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error"))
-		}
-
-		tx.Commit()
-
-		return account.NewPostAccountRegisterOK().WithPayload(user)
+			return account.NewPostAccountRegisterOK().WithPayload(user), true
+		})
 	}
 }
 
@@ -340,26 +322,20 @@ const authProfileQueryByPassword = authProfileQuery + "WHERE long_users.name = $
 
 func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			hash := passwordHash(params.Password)
+			user, err := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
+			if err != nil {
+				log.Print(err)
+				return account.NewPostAccountLoginBadRequest().WithPayload(yummy.NewError("invalid_name_or_password")), false
+			}
 
-		hash := passwordHash(params.Password)
-		user, err := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return account.NewPostAccountLoginBadRequest().WithPayload(yummy.NewError("invalid_name_or_password"))
-		}
-
-		tx.Commit()
-
-		return account.NewPostAccountLoginOK().WithPayload(user)
+			return account.NewPostAccountLoginOK().WithPayload(user), true
+		})
 	}
 }
 
-func setPassword(tx *sql.Tx, params account.PostAccountPasswordParams) (bool, error) {
+func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams) (bool, error) {
 	const q = `
         update users
         set password_hash = $1
@@ -387,30 +363,23 @@ func setPassword(tx *sql.Tx, params account.PostAccountPasswordParams) (bool, er
 
 func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams) middleware.Responder {
 	return func(params account.PostAccountPasswordParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			ok, err := setPassword(tx, params)
+			if err != nil {
+				log.Print(err)
+				return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("internal_error")), false
+			}
 
-		ok, err := setPassword(tx, params)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("internal_error"))
-		}
+			if !ok {
+				return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("invalid_password_or_api_key")), false
+			}
 
-		if !ok {
-			tx.Rollback()
-			return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("invalid_password_or_api_key"))
-		}
-
-		tx.Commit()
-
-		return account.NewPostAccountPasswordOK()
+			return account.NewPostAccountPasswordOK(), true
+		})
 	}
 }
 
-func loadInvites(tx *sql.Tx, apiKey string) ([]string, error) {
+func loadInvites(tx yummy.AutoTx, apiKey string) ([]string, error) {
 	const q = `
         select word1 || ' ' || word2 || ' ' || word3 
         from unwrapped_invites, users
@@ -433,21 +402,15 @@ func loadInvites(tx *sql.Tx, apiKey string) ([]string, error) {
 
 func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams) middleware.Responder {
 	return func(params account.GetAccountInvitesParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			invites, err := loadInvites(tx, params.XUserKey)
+			if err != nil {
+				log.Print(err)
+				return account.NewGetAccountInvitesForbidden().WithPayload(yummy.NewError("invalid_api_key")), false
+			}
 
-		invites, err := loadInvites(tx, params.XUserKey)
-		if err != nil {
-			log.Print(err)
-			tx.Rollback()
-			return account.NewGetAccountInvitesForbidden().WithPayload(yummy.NewError("invalid_api_key"))
-		}
-
-		tx.Commit()
-
-		res := account.GetAccountInvitesOKBody{Invites: invites}
-		return account.NewGetAccountInvitesOK().WithPayload(res)
+			res := account.GetAccountInvitesOKBody{Invites: invites}
+			return account.NewGetAccountInvitesOK().WithPayload(res), true
+		})
 	}
 }

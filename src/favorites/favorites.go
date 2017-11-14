@@ -17,7 +17,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(newStatusLoader(db))
 }
 
-func favoriteStatus(tx *sql.Tx, userID, entryID int64) *models.FavoriteStatus {
+func favoriteStatus(tx yummy.AutoTx, userID, entryID int64) *models.FavoriteStatus {
 	const q = `
 		SELECT TRUE 
 		FROM favorites
@@ -35,23 +35,19 @@ func favoriteStatus(tx *sql.Tx, userID, entryID int64) *models.FavoriteStatus {
 
 func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams) middleware.Responder {
 	return func(params favorites.GetEntriesIDFavoriteParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer tx.Commit()
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID, found := users.FindAuthUser(tx, &params.XUserKey)
+			if !found {
+				return favorites.NewGetEntriesIDFavoriteForbidden(), false
+			}
 
-		userID, found := users.FindAuthUser(tx, &params.XUserKey)
-		if !found {
-			return favorites.NewGetEntriesIDFavoriteForbidden()
-		}
+			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			if !canView {
+				return favorites.NewGetEntriesIDFavoriteNotFound(), false
+			}
 
-		canView := yummy.CanViewEntry(tx, userID, params.ID)
-		if !canView {
-			return favorites.NewGetEntriesIDFavoriteNotFound()
-		}
-
-		status := favoriteStatus(tx, userID, params.ID)
-		return favorites.NewGetEntriesIDFavoriteOK().WithPayload(status)
+			status := favoriteStatus(tx, userID, params.ID)
+			return favorites.NewGetEntriesIDFavoriteOK().WithPayload(status), true
+		})
 	}
 }

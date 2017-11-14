@@ -12,6 +12,7 @@ import (
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/src/users"
+	yummy "github.com/sevings/yummy-server/src/"
 )
 
 // ConfigureAPI creates operations handlers
@@ -33,7 +34,7 @@ INSERT INTO entries (author_id, title, content, word_count, visible_for, is_vota
 VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
 RETURNING id, created_at`
 
-func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+func createEntry(tx yummy.AutoTx, apiKey string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
 	author, found := users.LoadAuthUser(tx, &apiKey)
 	if !found {
 		return nil, false
@@ -70,20 +71,15 @@ func createEntry(tx *sql.Tx, apiKey string, title, content, privacy string, isVo
 
 func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Responder {
 	return func(params me.PostUsersMeEntriesParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			entry, created := createEntry(tx, params.XUserKey,
+				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 
-		entry, created := createEntry(tx, params.XUserKey,
-			*params.Title, params.Content, *params.Privacy, *params.IsVotable)
+			if !created {
+				return me.NewPostUsersMeEntriesForbidden(), false
+			}
 
-		if !created {
-			tx.Rollback()
-			return me.NewPostUsersMeEntriesForbidden()
-		}
-
-		tx.Commit()
-		return me.NewPostUsersMeEntriesOK().WithPayload(entry)
+			return me.NewPostUsersMeEntriesOK().WithPayload(entry), true
+		})
 	}
 }
