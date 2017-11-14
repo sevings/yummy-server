@@ -36,16 +36,16 @@ const commentQuery = `
 		ON comments.id = votes.comment_id 
 `
 
-func commentVote(userID int64, vote sql.NullBool) string {
+func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	switch {
-	case userID <= 0:
+	case userID <= 0 || userID == authorID:
 		return ""
 	case !vote.Valid:
-		return "not"
+		return models.CommentVoteNot
 	case vote.Bool:
-		return "pos"
+		return models.CommentVotePos
 	default:
-		return "neg"
+		return models.CommentVoteNeg
 	}
 }
 
@@ -70,7 +70,7 @@ func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, err
 	comment.Author.NameColor = models.Color(nameColor)
 	comment.Author.AvatarColor = models.Color(avatarColor)
 
-	comment.Vote = commentVote(userID, vote)
+	comment.Vote = commentVote(userID, comment.Author.ID, vote)
 	return &comment, err
 }
 
@@ -218,7 +218,7 @@ func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([
 			&comment.Author.IsOnline,
 			&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
 
-		comment.Vote = commentVote(userID, vote)
+		comment.Vote = commentVote(userID, comment.Author.ID, vote)
 		list = append(list, &comment)
 	}
 

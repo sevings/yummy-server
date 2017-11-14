@@ -128,11 +128,11 @@ func loadAuthFeed(tx *sql.Tx, query string, userID int64, limit, offset int64) (
 
 		switch {
 		case !vote.Valid:
-			entry.Vote = "not"
+			entry.Vote = models.EntryVoteNot
 		case vote.Bool:
-			entry.Vote = "pos"
+			entry.Vote = models.EntryVotePos
 		default:
-			entry.Vote = "neg"
+			entry.Vote = models.EntryVoteNeg
 		}
 
 		entry.Author = &author
