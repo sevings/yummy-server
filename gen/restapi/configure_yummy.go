@@ -151,7 +151,7 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		handler.ServeHTTP(w, r)
 	})
 
-	lmt := tollbooth.NewLimiter(10, time.Second, nil)
+	lmt := tollbooth.NewLimiter(10, nil)
 	lmt.SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"})
 	lmt.SetMessage("")
 	lmt.SetMessageContentType("application/json")
