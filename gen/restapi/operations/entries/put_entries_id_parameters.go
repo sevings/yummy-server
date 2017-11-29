@@ -44,6 +44,10 @@ type PutEntriesIDParams struct {
 	/*
 	  In: formData
 	*/
+	AnonymousComments *bool
+	/*
+	  In: formData
+	*/
 	Content *string
 	/*
 	  Required: true
@@ -85,6 +89,11 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	fds := runtime.Values(r.Form)
 
 	if err := o.bindXUserKey(r.Header[http.CanonicalHeaderKey("X-User-Key")], true, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdAnonymousComments, fdhkAnonymousComments, _ := fds.GetOK("anonymous_comments")
+	if err := o.bindAnonymousComments(fdAnonymousComments, fdhkAnonymousComments, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -154,6 +163,24 @@ func (o *PutEntriesIDParams) validateXUserKey(formats strfmt.Registry) error {
 	if err := validate.MaxLength("X-User-Key", "header", o.XUserKey, 32); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("anonymous_comments", "formData", "bool", raw)
+	}
+	o.AnonymousComments = &value
 
 	return nil
 }

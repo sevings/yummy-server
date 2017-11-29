@@ -43,7 +43,6 @@ font_family, font_size, text_alignment,
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
-invited_by_name_color, invited_by_avatar_color,
 invited_by_avatar
 FROM long_users `
 
@@ -61,17 +60,13 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 	profile.Design = &models.Design{}
 	profile.Counts = &models.ProfileAllOf1Counts{}
 
-	var nameColor string
-	var avatarColor string
 	var backColor string
 	var textColor string
-	var invNameColor string
-	var invAvColor string
 
 	var age sql.NullInt64
 
 	err = row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&nameColor, &avatarColor, &profile.Avatar,
+		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -86,7 +81,6 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&invNameColor, &invAvColor,
 		&profile.InvitedBy.Avatar)
 
 	if err != nil {
@@ -97,12 +91,8 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 		return users.NewGetUsersIDNotFound()
 	}
 
-	profile.NameColor = models.Color(nameColor)
-	profile.AvatarColor = models.Color(avatarColor)
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
-	profile.InvitedBy.NameColor = models.Color(invNameColor)
-	profile.InvitedBy.AvatarColor = models.Color(invAvColor)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
@@ -216,7 +206,7 @@ func isOpenForMe(tx *sql.Tx, privacyQuery, relationQuery string,
 const usersQueryStart = `
 SELECT short_users.id, name, show_name,
 is_online, 
-name_color, avatar_color, avatar
+avatar
 FROM short_users, relation, relations
 WHERE `
 
@@ -237,7 +227,7 @@ func loadRelatedUsers(tx *sql.Tx, usersQuery string,
 		var user models.User
 		rows.Scan(&user.ID, &user.Name, &user.ShowName,
 			&user.IsOnline,
-			&user.NameColor, &user.AvatarColor, &user.Avatar)
+			&user.Avatar)
 		list.Users = append(list.Users, &user)
 	}
 
@@ -278,18 +268,16 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 const loadUserQuery = `
 SELECT id, name, show_name,
 is_online, 
-name_color, avatar_color, avatar
+avatar
 FROM long_users
 WHERE `
 
 func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
-	var nameColor string
-	var avatarColor string
 
 	err := tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
-		&nameColor, &avatarColor, &user.Avatar)
+		&user.Avatar)
 
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -298,9 +286,6 @@ func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, boo
 
 		return &user, false
 	}
-
-	user.NameColor = models.Color(nameColor)
-	user.AvatarColor = models.Color(avatarColor)
 
 	return &user, true
 }

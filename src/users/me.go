@@ -13,7 +13,7 @@ import (
 
 const myProfileQuery = `
 SELECT id, name, show_name,
-name_color, avatar_color, avatar,
+avatar,
 gender, is_daylog,
 privacy,
 title, karma, 
@@ -42,18 +42,14 @@ func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
 	profile.Design = &models.Design{}
 	profile.Counts = &models.ProfileAllOf1Counts{}
 
-	var nameColor string
-	var avatarColor string
 	var backColor string
 	var textColor string
-	var invNameColor string
-	var invAvColor string
 
 	var age sql.NullInt64
 	var bday sql.NullString
 
 	err := row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&nameColor, &avatarColor, &profile.Avatar,
+		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -69,19 +65,14 @@ func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&invNameColor, &invAvColor,
 		&profile.InvitedBy.Avatar)
 
 	if err != nil {
 		return &profile, err
 	}
 
-	profile.NameColor = models.Color(nameColor)
-	profile.AvatarColor = models.Color(avatarColor)
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
-	profile.InvitedBy.NameColor = models.Color(invNameColor)
-	profile.InvitedBy.AvatarColor = models.Color(invAvColor)
 
 	if bday.Valid {
 		profile.Birthday = bday.String

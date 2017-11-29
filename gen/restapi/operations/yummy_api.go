@@ -168,9 +168,6 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		MeGetUsersMeHandler: me.GetUsersMeHandlerFunc(func(params me.GetUsersMeParams) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetUsersMe has not yet been implemented")
 		}),
-		MeGetUsersMeCancelledHandler: me.GetUsersMeCancelledHandlerFunc(func(params me.GetUsersMeCancelledParams) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeCancelled has not yet been implemented")
-		}),
 		MeGetUsersMeEntriesHandler: me.GetUsersMeEntriesHandlerFunc(func(params me.GetUsersMeEntriesParams) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetUsersMeEntries has not yet been implemented")
 		}),
@@ -200,6 +197,9 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		}),
 		AccountPostAccountPasswordHandler: account.PostAccountPasswordHandlerFunc(func(params account.PostAccountPasswordParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountPassword has not yet been implemented")
+		}),
+		AccountPostAccountRecoverHandler: account.PostAccountRecoverHandlerFunc(func(params account.PostAccountRecoverParams) middleware.Responder {
+			return middleware.NotImplemented("operation AccountPostAccountRecover has not yet been implemented")
 		}),
 		AccountPostAccountRegisterHandler: account.PostAccountRegisterHandlerFunc(func(params account.PostAccountRegisterParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountRegister has not yet been implemented")
@@ -359,8 +359,6 @@ type YummyAPI struct {
 	UsersGetUsersIDInvitedHandler users.GetUsersIDInvitedHandler
 	// MeGetUsersMeHandler sets the operation handler for the get users me operation
 	MeGetUsersMeHandler me.GetUsersMeHandler
-	// MeGetUsersMeCancelledHandler sets the operation handler for the get users me cancelled operation
-	MeGetUsersMeCancelledHandler me.GetUsersMeCancelledHandler
 	// MeGetUsersMeEntriesHandler sets the operation handler for the get users me entries operation
 	MeGetUsersMeEntriesHandler me.GetUsersMeEntriesHandler
 	// MeGetUsersMeFavoritesHandler sets the operation handler for the get users me favorites operation
@@ -381,6 +379,8 @@ type YummyAPI struct {
 	AccountPostAccountLoginHandler account.PostAccountLoginHandler
 	// AccountPostAccountPasswordHandler sets the operation handler for the post account password operation
 	AccountPostAccountPasswordHandler account.PostAccountPasswordHandler
+	// AccountPostAccountRecoverHandler sets the operation handler for the post account recover operation
+	AccountPostAccountRecoverHandler account.PostAccountRecoverHandler
 	// AccountPostAccountRegisterHandler sets the operation handler for the post account register operation
 	AccountPostAccountRegisterHandler account.PostAccountRegisterHandler
 	// AccountPostAccountVerificationHandler sets the operation handler for the post account verification operation
@@ -642,10 +642,6 @@ func (o *YummyAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetUsersMeHandler")
 	}
 
-	if o.MeGetUsersMeCancelledHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeCancelledHandler")
-	}
-
 	if o.MeGetUsersMeEntriesHandler == nil {
 		unregistered = append(unregistered, "me.GetUsersMeEntriesHandler")
 	}
@@ -684,6 +680,10 @@ func (o *YummyAPI) Validate() error {
 
 	if o.AccountPostAccountPasswordHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountPasswordHandler")
+	}
+
+	if o.AccountPostAccountRecoverHandler == nil {
+		unregistered = append(unregistered, "account.PostAccountRecoverHandler")
 	}
 
 	if o.AccountPostAccountRegisterHandler == nil {
@@ -1045,11 +1045,6 @@ func (o *YummyAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users/me/cancelled"] = me.NewGetUsersMeCancelled(o.context, o.MeGetUsersMeCancelledHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
 	o.handlers["GET"]["/users/me/entries"] = me.NewGetUsersMeEntries(o.context, o.MeGetUsersMeEntriesHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1096,6 +1091,11 @@ func (o *YummyAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/password"] = account.NewPostAccountPassword(o.context, o.AccountPostAccountPasswordHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/account/recover"] = account.NewPostAccountRecover(o.context, o.AccountPostAccountRecoverHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

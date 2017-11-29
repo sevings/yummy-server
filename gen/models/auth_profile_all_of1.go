@@ -21,6 +21,9 @@ type AuthProfileAllOf1 struct {
 
 	// birthday
 	Birthday string `json:"birthday,omitempty"`
+
+	// show in tops
+	ShowInTops bool `json:"showInTops,omitempty"`
 }
 
 // Validate validates this auth profile all of1

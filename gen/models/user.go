@@ -20,9 +20,6 @@ type User struct {
 	// avatar
 	Avatar string `json:"avatar,omitempty"`
 
-	// avatar color
-	AvatarColor Color `json:"avatarColor,omitempty"`
-
 	// id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
@@ -35,9 +32,6 @@ type User struct {
 	// Min Length: 1
 	Name string `json:"name,omitempty"`
 
-	// name color
-	NameColor Color `json:"nameColor,omitempty"`
-
 	// show name
 	// Max Length: 20
 	// Min Length: 1
@@ -48,22 +42,12 @@ type User struct {
 func (m *User) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAvatarColor(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateNameColor(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -76,22 +60,6 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *User) validateAvatarColor(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.AvatarColor) { // not required
-		return nil
-	}
-
-	if err := m.AvatarColor.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("avatarColor")
-		}
-		return err
-	}
-
 	return nil
 }
 
@@ -119,22 +87,6 @@ func (m *User) validateName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *User) validateNameColor(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.NameColor) { // not required
-		return nil
-	}
-
-	if err := m.NameColor.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("nameColor")
-		}
 		return err
 	}
 

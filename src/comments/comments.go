@@ -29,7 +29,7 @@ const commentQuery = `
 		votes.positive AS vote,
 		author_id, name, show_name, 
 		is_online,
-		name_color, avatar_color, avatar
+		avatar
 	FROM comments
 	JOIN short_users ON comments.author_id = short_users.id
 	LEFT JOIN (SELECT comment_id, positive FROM comment_votes WHERE user_id = $1) AS votes 
@@ -57,18 +57,12 @@ func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, err
 		Author: &models.User{},
 	}
 
-	var nameColor string
-	var avatarColor string
-
 	err := tx.QueryRow(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating,
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
-		&nameColor, &avatarColor, &comment.Author.Avatar)
-
-	comment.Author.NameColor = models.Color(nameColor)
-	comment.Author.AvatarColor = models.Color(avatarColor)
+		&comment.Author.Avatar)
 
 	comment.Vote = commentVote(userID, comment.Author.ID, vote)
 	return &comment, err
@@ -216,7 +210,7 @@ func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([
 			&vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
-			&comment.Author.NameColor, &comment.Author.AvatarColor, &comment.Author.Avatar)
+			&comment.Author.Avatar)
 
 		comment.Vote = commentVote(userID, comment.Author.ID, vote)
 		list = append(list, &comment)

@@ -20,7 +20,7 @@ entry_privacy,
 is_votable, comments_count,
 author_id, author_name, author_show_name,
 author_is_online,
-author_name_color, author_avatar_color, author_avatar `
+author_avatar `
 
 const feedQueryWhere = `
 feed.entry_privacy = 'all' AND feed.author_privacy = 'all' `
@@ -95,7 +95,7 @@ func loadNotAuthFeed(tx *sql.Tx, query string, limit, offset int64) (*models.Fee
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,
-			&author.NameColor, &author.AvatarColor, &author.Avatar)
+			&author.Avatar)
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)
 	}
@@ -123,7 +123,7 @@ func loadAuthFeed(tx *sql.Tx, query string, userID int64, limit, offset int64) (
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,
-			&author.NameColor, &author.AvatarColor, &author.Avatar,
+			&author.Avatar,
 			&vote, &entry.IsFavorited, &entry.IsWatching)
 
 		switch {

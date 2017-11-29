@@ -81,8 +81,6 @@ CREATE TABLE "yummy"."users" (
 	"font_family" Integer DEFAULT 0 NOT NULL,
 	"font_size" SmallInt DEFAULT 100 NOT NULL,
 	"text_alignment" Integer DEFAULT 0 NOT NULL,
-	"name_color" Character( 7 ) NOT NULL,
-	"avatar_color" Character( 7 )  NOT NULL,
 	"text_color" Character( 7 ) DEFAULT '#000000' NOT NULL,
 	"background_color" Character( 7 ) DEFAULT '#ffffff' NOT NULL,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
@@ -136,7 +134,7 @@ INSERT INTO yummy.users
 CREATE VIEW yummy.short_users AS
 SELECT id, name, show_name,
     now() - last_seen_at < interval '15 minutes' AS is_online,
-    name_color, avatar_color, avatar
+    avatar
 FROM yummy.users;
 
 
@@ -174,8 +172,6 @@ SELECT users.id,
     font_family.type AS font_family,
     users.font_size,
     alignment.type AS text_alignment,
-    users.name_color,
-    users.avatar_color,
     users.text_color,
     users.background_color,
     now() - last_seen_at < interval '15 minutes' AS is_online,
@@ -184,8 +180,6 @@ SELECT users.id,
     short_users.name AS invited_by_name,
     short_users.show_name AS invited_by_show_name,
     short_users.is_online AS invited_by_is_online,
-    short_users.name_color AS invited_by_name_color,
-    short_users.avatar_color AS invited_by_avatar_color,
     short_users.avatar AS invited_by_avatar
 FROM yummy.users, yummy.short_users,
     yummy.gender, yummy.user_privacy, yummy.font_family, yummy.alignment
@@ -802,8 +796,6 @@ SELECT entries.id, entries.created_at, rating,
     long_users.name AS author_name, 
     long_users.show_name AS author_show_name,
     long_users.is_online AS author_is_online,
-    long_users.name_color AS author_name_color, 
-    long_users.avatar_color AS author_avatar_color, 
     long_users.avatar AS author_avatar,
     long_users.privacy AS author_privacy
 FROM yummy.long_users, yummy.entries, yummy.entry_privacy

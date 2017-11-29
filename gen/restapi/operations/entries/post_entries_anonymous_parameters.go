@@ -11,6 +11,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/swag"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -31,6 +32,10 @@ type PostEntriesAnonymousParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*
+	  In: formData
+	*/
+	AnonymousComments *bool
 	/*
 	  In: formData
 	*/
@@ -56,6 +61,11 @@ func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middlew
 	}
 	fds := runtime.Values(r.Form)
 
+	fdAnonymousComments, fdhkAnonymousComments, _ := fds.GetOK("anonymous_comments")
+	if err := o.bindAnonymousComments(fdAnonymousComments, fdhkAnonymousComments, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	fdContent, fdhkContent, _ := fds.GetOK("content")
 	if err := o.bindContent(fdContent, fdhkContent, route.Formats); err != nil {
 		res = append(res, err)
@@ -69,6 +79,24 @@ func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middlew
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("anonymous_comments", "formData", "bool", raw)
+	}
+	o.AnonymousComments = &value
+
 	return nil
 }
 

@@ -199,7 +199,7 @@ func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref i
 
 const authProfileQuery = `
 SELECT id, name, show_name,
-name_color, avatar_color, avatar,
+avatar,
 gender, is_daylog,
 privacy,
 title, karma, 
@@ -216,7 +216,6 @@ api_key, valid_thru,
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
-invited_by_name_color, invited_by_avatar_color,
 invited_by_avatar
 FROM long_users `
 
@@ -229,18 +228,14 @@ func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*model
 	profile.Counts = &models.ProfileAllOf1Counts{}
 	profile.Account = &models.AuthProfileAllOf1Account{}
 
-	var nameColor string
-	var avatarColor string
 	var backColor string
 	var textColor string
-	var invNameColor string
-	var invAvColor string
 
 	var age sql.NullInt64
 	var bday sql.NullString
 
 	err := row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&nameColor, &avatarColor, &profile.Avatar,
+		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -257,19 +252,14 @@ func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*model
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&invNameColor, &invAvColor,
 		&profile.InvitedBy.Avatar)
 
 	if err != nil {
 		return &profile, err
 	}
 
-	profile.NameColor = models.Color(nameColor)
-	profile.AvatarColor = models.Color(avatarColor)
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
-	profile.InvitedBy.NameColor = models.Color(invNameColor)
-	profile.InvitedBy.AvatarColor = models.Color(invAvColor)
 
 	if bday.Valid {
 		profile.Birthday = bday.String

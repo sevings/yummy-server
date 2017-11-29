@@ -82,6 +82,10 @@ type PutUsersMeParams struct {
 	*/
 	Privacy *string
 	/*
+	  In: formData
+	*/
+	ShowInTops *bool
+	/*
 	  Max Length: 20
 	  Min Length: 1
 	  In: formData
@@ -161,6 +165,11 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	fdPrivacy, fdhkPrivacy, _ := fds.GetOK("privacy")
 	if err := o.bindPrivacy(fdPrivacy, fdhkPrivacy, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdShowInTops, fdhkShowInTops, _ := fds.GetOK("showInTops")
+	if err := o.bindShowInTops(fdShowInTops, fdhkShowInTops, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -409,6 +418,24 @@ func (o *PutUsersMeParams) validatePrivacy(formats strfmt.Registry) error {
 	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "registered", "followers"}); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (o *PutUsersMeParams) bindShowInTops(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("showInTops", "formData", "bool", raw)
+	}
+	o.ShowInTops = &value
 
 	return nil
 }

@@ -230,6 +230,36 @@ func init() {
         }
       }
     },
+    "/account/recover": {
+      "post": {
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "email",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Email not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/account/register": {
       "post": {
         "consumes": [
@@ -654,6 +684,11 @@ func init() {
             "type": "string",
             "name": "content",
             "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "name": "anonymous_comments",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -860,6 +895,11 @@ func init() {
           {
             "type": "boolean",
             "name": "isVotable",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "name": "anonymous_comments",
             "in": "formData"
           }
         ],
@@ -1726,6 +1766,11 @@ func init() {
             "type": "string",
             "name": "city",
             "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "name": "showInTops",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -1748,9 +1793,6 @@ func init() {
           "$ref": "#/parameters/userKeyReq"
         }
       ]
-    },
-    "/users/me/cancelled": {
-      "$ref": "#/paths/~1users~1me~1followers"
     },
     "/users/me/entries": {
       "get": {
@@ -2182,6 +2224,9 @@ func init() {
             "birthday": {
               "type": "string",
               "format": "full-date"
+            },
+            "showInTops": {
+              "type": "boolean"
             }
           },
           "example": {
@@ -2577,9 +2622,6 @@ func init() {
         "avatar": {
           "type": "string"
         },
-        "avatarColor": {
-          "$ref": "#/definitions/Color"
-        },
         "id": {
           "type": "integer",
           "format": "int64",
@@ -2593,9 +2635,6 @@ func init() {
           "maxLength": 20,
           "minLength": 1
         },
-        "nameColor": {
-          "$ref": "#/definitions/Color"
-        },
         "showName": {
           "type": "string",
           "maxLength": 20,
@@ -2603,11 +2642,9 @@ func init() {
         }
       },
       "example": {
-        "avatarColor": "#ababab",
         "id": 1,
         "isOnline": false,
         "name": "binque",
-        "nameColor": "#373737",
         "showName": "Бинк"
       }
     },

@@ -33,10 +33,6 @@ definitions:
         maxLength: 20
       isOnline:
         type: boolean
-      nameColor:
-        $ref: '#/definitions/Color'
-      avatarColor:
-        $ref: '#/definitions/Color'
       avatar:
         type: string
     example:
@@ -44,8 +40,6 @@ definitions:
       name: 'binque'
       showName: 'Бинк'
       isOnline: false
-      nameColor: '#373737'
-      avatarColor: '#ababab'
   UserList:
     type: object
     properties:
@@ -168,6 +162,8 @@ definitions:
           birthday:
             type: string
             format: full-date
+          showInTops:
+            type: boolean
           account:
             type: object
             properties:
@@ -591,6 +587,25 @@ paths:
           description: access denied or old password
           schema:
             $ref: '#/definitions/Error'
+  /account/recover:
+    post:
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: email
+          type: string
+          required: true
+      tags:
+        - account
+      responses:
+        200:
+          description: OK
+        400:
+          description: Email not found
+          schema:
+            $ref: '#/definitions/Error'
   /account/invites:
     get:
       parameters:
@@ -881,6 +896,9 @@ paths:
           name: city
           type: string
           maxLength: 50
+        - in: formData
+          name: showInTops
+          type: boolean
       responses:
         200:
           description: your data
@@ -915,8 +933,6 @@ paths:
   /users/me/ignored:
     $ref: '#/paths/~1users~1me~1followers'
   /users/me/requested:
-    $ref: '#/paths/~1users~1me~1followers'
-  /users/me/cancelled:
     $ref: '#/paths/~1users~1me~1followers'
   /users/me/entries:
     parameters:
@@ -1261,6 +1277,9 @@ paths:
         - in: formData
           name: content
           type: string
+        - in: formData
+          name: anonymous_comments
+          type: boolean
       responses:
         200:
           description: Entry data
@@ -1318,6 +1337,9 @@ paths:
             minimum: 1
         - in: formData
           name: isVotable
+          type: boolean
+        - in: formData
+          name: anonymous_comments
           type: boolean
       responses:
         200:
