@@ -31,7 +31,7 @@ func NewPutDesignParams() PutDesignParams {
 type PutDesignParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

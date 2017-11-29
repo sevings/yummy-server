@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetDesignFontsOKCode is the HTTP code returned for type GetDesignFontsOK
@@ -23,7 +25,7 @@ type GetDesignFontsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetDesignFontsOKBody `json:"body,omitempty"`
+	Payload *models.GetDesignFontsOKBody `json:"body,omitempty"`
 }
 
 // NewGetDesignFontsOK creates GetDesignFontsOK with default headers values
@@ -32,13 +34,13 @@ func NewGetDesignFontsOK() *GetDesignFontsOK {
 }
 
 // WithPayload adds the payload to the get design fonts o k response
-func (o *GetDesignFontsOK) WithPayload(payload GetDesignFontsOKBody) *GetDesignFontsOK {
+func (o *GetDesignFontsOK) WithPayload(payload *models.GetDesignFontsOKBody) *GetDesignFontsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get design fonts o k response
-func (o *GetDesignFontsOK) SetPayload(payload GetDesignFontsOKBody) {
+func (o *GetDesignFontsOK) SetPayload(payload *models.GetDesignFontsOKBody) {
 	o.Payload = payload
 }
 
@@ -46,9 +48,10 @@ func (o *GetDesignFontsOK) SetPayload(payload GetDesignFontsOKBody) {
 func (o *GetDesignFontsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

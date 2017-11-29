@@ -29,7 +29,7 @@ func NewPostEntriesAnonymousParams() PostEntriesAnonymousParams {
 type PostEntriesAnonymousParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  In: formData

@@ -30,7 +30,7 @@ func NewPutEntriesIDWatchingParams() PutEntriesIDWatchingParams {
 type PutEntriesIDWatchingParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

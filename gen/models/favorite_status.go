@@ -15,7 +15,6 @@ import (
 
 // FavoriteStatus favorite status
 // swagger:model FavoriteStatus
-
 type FavoriteStatus struct {
 
 	// id
@@ -25,10 +24,6 @@ type FavoriteStatus struct {
 	// is favorited
 	IsFavorited bool `json:"isFavorited,omitempty"`
 }
-
-/* polymorph FavoriteStatus id false */
-
-/* polymorph FavoriteStatus isFavorited false */
 
 // Validate validates this favorite status
 func (m *FavoriteStatus) Validate(formats strfmt.Registry) error {

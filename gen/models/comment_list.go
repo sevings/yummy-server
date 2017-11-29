@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -16,54 +14,19 @@ import (
 
 // CommentList comment list
 // swagger:model CommentList
-
 type CommentList struct {
 
 	// comments
-	Comments []*Comment `json:"comments"`
+	Comments CommentListComments `json:"comments"`
 }
-
-/* polymorph CommentList comments false */
 
 // Validate validates this comment list
 func (m *CommentList) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateComments(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *CommentList) validateComments(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Comments) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Comments); i++ {
-
-		if swag.IsZero(m.Comments[i]) { // not required
-			continue
-		}
-
-		if m.Comments[i] != nil {
-
-			if err := m.Comments[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
-	}
-
 	return nil
 }
 

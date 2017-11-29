@@ -59,7 +59,7 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 	var profile models.Profile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.ProfileAO1Counts{}
+	profile.Counts = &models.ProfileAllOf1Counts{}
 
 	var nameColor string
 	var avatarColor string
@@ -119,7 +119,7 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 		return result
 	}
 
-	profile.Relations = &models.ProfileAO1Relations{}
+	profile.Relations = &models.ProfileAllOf1Relations{}
 	profile.Relations.FromMe = relationship(tx, relationToIDQuery, userID, profile.ID)
 	profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, userID)
 

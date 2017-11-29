@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"strconv"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -17,15 +15,12 @@ import (
 
 // UserList user list
 // swagger:model UserList
-
 type UserList struct {
 
 	// users
 	// Required: true
-	Users []*User `json:"users"`
+	Users UserListUsers `json:"users"`
 }
-
-/* polymorph UserList users false */
 
 // Validate validates this user list
 func (m *UserList) Validate(formats strfmt.Registry) error {
@@ -48,22 +43,11 @@ func (m *UserList) validateUsers(formats strfmt.Registry) error {
 		return err
 	}
 
-	for i := 0; i < len(m.Users); i++ {
-
-		if swag.IsZero(m.Users[i]) { // not required
-			continue
+	if err := m.Users.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("users")
 		}
-
-		if m.Users[i] != nil {
-
-			if err := m.Users[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("users" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
+		return err
 	}
 
 	return nil

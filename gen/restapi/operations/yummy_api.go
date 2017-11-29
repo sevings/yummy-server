@@ -51,6 +51,9 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		CommentsDeleteCommentsIDHandler: comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsDeleteCommentsID has not yet been implemented")
 		}),
+		VotesDeleteCommentsIDVoteHandler: votes.DeleteCommentsIDVoteHandlerFunc(func(params votes.DeleteCommentsIDVoteParams) middleware.Responder {
+			return middleware.NotImplemented("operation VotesDeleteCommentsIDVote has not yet been implemented")
+		}),
 		EntriesDeleteEntriesIDHandler: entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesDeleteEntriesID has not yet been implemented")
 		}),
@@ -83,6 +86,9 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsGetCommentsID has not yet been implemented")
+		}),
+		VotesGetCommentsIDVoteHandler: votes.GetCommentsIDVoteHandlerFunc(func(params votes.GetCommentsIDVoteParams) middleware.Responder {
+			return middleware.NotImplemented("operation VotesGetCommentsIDVote has not yet been implemented")
 		}),
 		DesignGetDesignHandler: design.GetDesignHandlerFunc(func(params design.GetDesignParams) middleware.Responder {
 			return middleware.NotImplemented("operation DesignGetDesign has not yet been implemented")
@@ -135,6 +141,12 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		UsersGetUsersByNameNameFollowersHandler: users.GetUsersByNameNameFollowersHandlerFunc(func(params users.GetUsersByNameNameFollowersParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersByNameNameFollowers has not yet been implemented")
 		}),
+		UsersGetUsersByNameNameFollowingsHandler: users.GetUsersByNameNameFollowingsHandlerFunc(func(params users.GetUsersByNameNameFollowingsParams) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersByNameNameFollowings has not yet been implemented")
+		}),
+		UsersGetUsersByNameNameInvitedHandler: users.GetUsersByNameNameInvitedHandlerFunc(func(params users.GetUsersByNameNameInvitedParams) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersByNameNameInvited has not yet been implemented")
+		}),
 		UsersGetUsersIDHandler: users.GetUsersIDHandlerFunc(func(params users.GetUsersIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersID has not yet been implemented")
 		}),
@@ -150,8 +162,14 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		UsersGetUsersIDFollowingsHandler: users.GetUsersIDFollowingsHandlerFunc(func(params users.GetUsersIDFollowingsParams) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersIDFollowings has not yet been implemented")
 		}),
+		UsersGetUsersIDInvitedHandler: users.GetUsersIDInvitedHandlerFunc(func(params users.GetUsersIDInvitedParams) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersIDInvited has not yet been implemented")
+		}),
 		MeGetUsersMeHandler: me.GetUsersMeHandlerFunc(func(params me.GetUsersMeParams) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetUsersMe has not yet been implemented")
+		}),
+		MeGetUsersMeCancelledHandler: me.GetUsersMeCancelledHandlerFunc(func(params me.GetUsersMeCancelledParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeCancelled has not yet been implemented")
 		}),
 		MeGetUsersMeEntriesHandler: me.GetUsersMeEntriesHandlerFunc(func(params me.GetUsersMeEntriesParams) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetUsersMeEntries has not yet been implemented")
@@ -161,6 +179,21 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		}),
 		MeGetUsersMeFollowersHandler: me.GetUsersMeFollowersHandlerFunc(func(params me.GetUsersMeFollowersParams) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetUsersMeFollowers has not yet been implemented")
+		}),
+		MeGetUsersMeFollowingsHandler: me.GetUsersMeFollowingsHandlerFunc(func(params me.GetUsersMeFollowingsParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeFollowings has not yet been implemented")
+		}),
+		MeGetUsersMeIgnoredHandler: me.GetUsersMeIgnoredHandlerFunc(func(params me.GetUsersMeIgnoredParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeIgnored has not yet been implemented")
+		}),
+		MeGetUsersMeInvitedHandler: me.GetUsersMeInvitedHandlerFunc(func(params me.GetUsersMeInvitedParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeInvited has not yet been implemented")
+		}),
+		MeGetUsersMeRequestedHandler: me.GetUsersMeRequestedHandlerFunc(func(params me.GetUsersMeRequestedParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeRequested has not yet been implemented")
+		}),
+		MeGetUsersMeWatchingHandler: me.GetUsersMeWatchingHandlerFunc(func(params me.GetUsersMeWatchingParams) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetUsersMeWatching has not yet been implemented")
 		}),
 		AccountPostAccountLoginHandler: account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountLogin has not yet been implemented")
@@ -185,6 +218,9 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
+		}),
+		VotesPutCommentsIDVoteHandler: votes.PutCommentsIDVoteHandlerFunc(func(params votes.PutCommentsIDVoteParams) middleware.Responder {
+			return middleware.NotImplemented("operation VotesPutCommentsIDVote has not yet been implemented")
 		}),
 		DesignPutDesignHandler: design.PutDesignHandlerFunc(func(params design.PutDesignParams) middleware.Responder {
 			return middleware.NotImplemented("operation DesignPutDesign has not yet been implemented")
@@ -245,6 +281,8 @@ type YummyAPI struct {
 
 	// CommentsDeleteCommentsIDHandler sets the operation handler for the delete comments ID operation
 	CommentsDeleteCommentsIDHandler comments.DeleteCommentsIDHandler
+	// VotesDeleteCommentsIDVoteHandler sets the operation handler for the delete comments ID vote operation
+	VotesDeleteCommentsIDVoteHandler votes.DeleteCommentsIDVoteHandler
 	// EntriesDeleteEntriesIDHandler sets the operation handler for the delete entries ID operation
 	EntriesDeleteEntriesIDHandler entries.DeleteEntriesIDHandler
 	// FavoritesDeleteEntriesIDFavoriteHandler sets the operation handler for the delete entries ID favorite operation
@@ -267,6 +305,8 @@ type YummyAPI struct {
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
 	CommentsGetCommentsIDHandler comments.GetCommentsIDHandler
+	// VotesGetCommentsIDVoteHandler sets the operation handler for the get comments ID vote operation
+	VotesGetCommentsIDVoteHandler votes.GetCommentsIDVoteHandler
 	// DesignGetDesignHandler sets the operation handler for the get design operation
 	DesignGetDesignHandler design.GetDesignHandler
 	// DesignGetDesignFontsHandler sets the operation handler for the get design fonts operation
@@ -301,6 +341,10 @@ type YummyAPI struct {
 	UsersGetUsersByNameNameFavoritesHandler users.GetUsersByNameNameFavoritesHandler
 	// UsersGetUsersByNameNameFollowersHandler sets the operation handler for the get users by name name followers operation
 	UsersGetUsersByNameNameFollowersHandler users.GetUsersByNameNameFollowersHandler
+	// UsersGetUsersByNameNameFollowingsHandler sets the operation handler for the get users by name name followings operation
+	UsersGetUsersByNameNameFollowingsHandler users.GetUsersByNameNameFollowingsHandler
+	// UsersGetUsersByNameNameInvitedHandler sets the operation handler for the get users by name name invited operation
+	UsersGetUsersByNameNameInvitedHandler users.GetUsersByNameNameInvitedHandler
 	// UsersGetUsersIDHandler sets the operation handler for the get users ID operation
 	UsersGetUsersIDHandler users.GetUsersIDHandler
 	// UsersGetUsersIDEntriesHandler sets the operation handler for the get users ID entries operation
@@ -311,14 +355,28 @@ type YummyAPI struct {
 	UsersGetUsersIDFollowersHandler users.GetUsersIDFollowersHandler
 	// UsersGetUsersIDFollowingsHandler sets the operation handler for the get users ID followings operation
 	UsersGetUsersIDFollowingsHandler users.GetUsersIDFollowingsHandler
+	// UsersGetUsersIDInvitedHandler sets the operation handler for the get users ID invited operation
+	UsersGetUsersIDInvitedHandler users.GetUsersIDInvitedHandler
 	// MeGetUsersMeHandler sets the operation handler for the get users me operation
 	MeGetUsersMeHandler me.GetUsersMeHandler
+	// MeGetUsersMeCancelledHandler sets the operation handler for the get users me cancelled operation
+	MeGetUsersMeCancelledHandler me.GetUsersMeCancelledHandler
 	// MeGetUsersMeEntriesHandler sets the operation handler for the get users me entries operation
 	MeGetUsersMeEntriesHandler me.GetUsersMeEntriesHandler
 	// MeGetUsersMeFavoritesHandler sets the operation handler for the get users me favorites operation
 	MeGetUsersMeFavoritesHandler me.GetUsersMeFavoritesHandler
 	// MeGetUsersMeFollowersHandler sets the operation handler for the get users me followers operation
 	MeGetUsersMeFollowersHandler me.GetUsersMeFollowersHandler
+	// MeGetUsersMeFollowingsHandler sets the operation handler for the get users me followings operation
+	MeGetUsersMeFollowingsHandler me.GetUsersMeFollowingsHandler
+	// MeGetUsersMeIgnoredHandler sets the operation handler for the get users me ignored operation
+	MeGetUsersMeIgnoredHandler me.GetUsersMeIgnoredHandler
+	// MeGetUsersMeInvitedHandler sets the operation handler for the get users me invited operation
+	MeGetUsersMeInvitedHandler me.GetUsersMeInvitedHandler
+	// MeGetUsersMeRequestedHandler sets the operation handler for the get users me requested operation
+	MeGetUsersMeRequestedHandler me.GetUsersMeRequestedHandler
+	// MeGetUsersMeWatchingHandler sets the operation handler for the get users me watching operation
+	MeGetUsersMeWatchingHandler me.GetUsersMeWatchingHandler
 	// AccountPostAccountLoginHandler sets the operation handler for the post account login operation
 	AccountPostAccountLoginHandler account.PostAccountLoginHandler
 	// AccountPostAccountPasswordHandler sets the operation handler for the post account password operation
@@ -335,6 +393,8 @@ type YummyAPI struct {
 	MePostUsersMeEntriesHandler me.PostUsersMeEntriesHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
+	// VotesPutCommentsIDVoteHandler sets the operation handler for the put comments ID vote operation
+	VotesPutCommentsIDVoteHandler votes.PutCommentsIDVoteHandler
 	// DesignPutDesignHandler sets the operation handler for the put design operation
 	DesignPutDesignHandler design.PutDesignHandler
 	// EntriesPutEntriesIDHandler sets the operation handler for the put entries ID operation
@@ -426,6 +486,10 @@ func (o *YummyAPI) Validate() error {
 		unregistered = append(unregistered, "comments.DeleteCommentsIDHandler")
 	}
 
+	if o.VotesDeleteCommentsIDVoteHandler == nil {
+		unregistered = append(unregistered, "votes.DeleteCommentsIDVoteHandler")
+	}
+
 	if o.EntriesDeleteEntriesIDHandler == nil {
 		unregistered = append(unregistered, "entries.DeleteEntriesIDHandler")
 	}
@@ -468,6 +532,10 @@ func (o *YummyAPI) Validate() error {
 
 	if o.CommentsGetCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.GetCommentsIDHandler")
+	}
+
+	if o.VotesGetCommentsIDVoteHandler == nil {
+		unregistered = append(unregistered, "votes.GetCommentsIDVoteHandler")
 	}
 
 	if o.DesignGetDesignHandler == nil {
@@ -538,6 +606,14 @@ func (o *YummyAPI) Validate() error {
 		unregistered = append(unregistered, "users.GetUsersByNameNameFollowersHandler")
 	}
 
+	if o.UsersGetUsersByNameNameFollowingsHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersByNameNameFollowingsHandler")
+	}
+
+	if o.UsersGetUsersByNameNameInvitedHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersByNameNameInvitedHandler")
+	}
+
 	if o.UsersGetUsersIDHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersIDHandler")
 	}
@@ -558,8 +634,16 @@ func (o *YummyAPI) Validate() error {
 		unregistered = append(unregistered, "users.GetUsersIDFollowingsHandler")
 	}
 
+	if o.UsersGetUsersIDInvitedHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersIDInvitedHandler")
+	}
+
 	if o.MeGetUsersMeHandler == nil {
 		unregistered = append(unregistered, "me.GetUsersMeHandler")
+	}
+
+	if o.MeGetUsersMeCancelledHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeCancelledHandler")
 	}
 
 	if o.MeGetUsersMeEntriesHandler == nil {
@@ -572,6 +656,26 @@ func (o *YummyAPI) Validate() error {
 
 	if o.MeGetUsersMeFollowersHandler == nil {
 		unregistered = append(unregistered, "me.GetUsersMeFollowersHandler")
+	}
+
+	if o.MeGetUsersMeFollowingsHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeFollowingsHandler")
+	}
+
+	if o.MeGetUsersMeIgnoredHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeIgnoredHandler")
+	}
+
+	if o.MeGetUsersMeInvitedHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeInvitedHandler")
+	}
+
+	if o.MeGetUsersMeRequestedHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeRequestedHandler")
+	}
+
+	if o.MeGetUsersMeWatchingHandler == nil {
+		unregistered = append(unregistered, "me.GetUsersMeWatchingHandler")
 	}
 
 	if o.AccountPostAccountLoginHandler == nil {
@@ -604,6 +708,10 @@ func (o *YummyAPI) Validate() error {
 
 	if o.CommentsPutCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.PutCommentsIDHandler")
+	}
+
+	if o.VotesPutCommentsIDVoteHandler == nil {
+		unregistered = append(unregistered, "votes.PutCommentsIDVoteHandler")
 	}
 
 	if o.DesignPutDesignHandler == nil {
@@ -742,6 +850,11 @@ func (o *YummyAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
+	o.handlers["DELETE"]["/comments/{id}/vote"] = votes.NewDeleteCommentsIDVote(o.context, o.VotesDeleteCommentsIDVoteHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
 	o.handlers["DELETE"]["/entries/{id}"] = entries.NewDeleteEntriesID(o.context, o.EntriesDeleteEntriesIDHandler)
 
 	if o.handlers["DELETE"] == nil {
@@ -793,6 +906,11 @@ func (o *YummyAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/comments/{id}"] = comments.NewGetCommentsID(o.context, o.CommentsGetCommentsIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/comments/{id}/vote"] = votes.NewGetCommentsIDVote(o.context, o.VotesGetCommentsIDVoteHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -882,6 +1000,16 @@ func (o *YummyAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/users/byName/{name}/followings"] = users.NewGetUsersByNameNameFollowings(o.context, o.UsersGetUsersByNameNameFollowingsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/byName/{name}/invited"] = users.NewGetUsersByNameNameInvited(o.context, o.UsersGetUsersByNameNameInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/users/{id}"] = users.NewGetUsersID(o.context, o.UsersGetUsersIDHandler)
 
 	if o.handlers["GET"] == nil {
@@ -907,7 +1035,17 @@ func (o *YummyAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/users/{id}/invited"] = users.NewGetUsersIDInvited(o.context, o.UsersGetUsersIDInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/users/me"] = me.NewGetUsersMe(o.context, o.MeGetUsersMeHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/cancelled"] = me.NewGetUsersMeCancelled(o.context, o.MeGetUsersMeCancelledHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -923,6 +1061,31 @@ func (o *YummyAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/me/followers"] = me.NewGetUsersMeFollowers(o.context, o.MeGetUsersMeFollowersHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/followings"] = me.NewGetUsersMeFollowings(o.context, o.MeGetUsersMeFollowingsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/ignored"] = me.NewGetUsersMeIgnored(o.context, o.MeGetUsersMeIgnoredHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/invited"] = me.NewGetUsersMeInvited(o.context, o.MeGetUsersMeInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/requested"] = me.NewGetUsersMeRequested(o.context, o.MeGetUsersMeRequestedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/me/watching"] = me.NewGetUsersMeWatching(o.context, o.MeGetUsersMeWatchingHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -963,6 +1126,11 @@ func (o *YummyAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/comments/{id}"] = comments.NewPutCommentsID(o.context, o.CommentsPutCommentsIDHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/comments/{id}/vote"] = votes.NewPutCommentsIDVote(o.context, o.VotesPutCommentsIDVoteHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

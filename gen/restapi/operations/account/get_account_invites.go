@@ -8,11 +8,7 @@ package account
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // GetAccountInvitesHandlerFunc turns a function with the right signature into a get account invites handler
@@ -59,58 +55,4 @@ func (o *GetAccountInvites) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// GetAccountInvitesOKBody get account invites o k body
-// swagger:model GetAccountInvitesOKBody
-
-type GetAccountInvitesOKBody struct {
-
-	// invites
-	// Required: true
-	Invites []string `json:"invites"`
-}
-
-/* polymorph GetAccountInvitesOKBody invites false */
-
-// Validate validates this get account invites o k body
-func (o *GetAccountInvitesOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateInvites(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetAccountInvitesOKBody) validateInvites(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAccountInvitesOK"+"."+"invites", "body", o.Invites); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *GetAccountInvitesOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *GetAccountInvitesOKBody) UnmarshalBinary(b []byte) error {
-	var res GetAccountInvitesOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

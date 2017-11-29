@@ -8,11 +8,7 @@ package account
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // GetAccountEmailEmailHandlerFunc turns a function with the right signature into a get account email email handler
@@ -59,78 +55,4 @@ func (o *GetAccountEmailEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// GetAccountEmailEmailOKBody get account email email o k body
-// swagger:model GetAccountEmailEmailOKBody
-
-type GetAccountEmailEmailOKBody struct {
-
-	// email
-	// Required: true
-	Email *string `json:"email"`
-
-	// is free
-	// Required: true
-	IsFree *bool `json:"isFree"`
-}
-
-/* polymorph GetAccountEmailEmailOKBody email false */
-
-/* polymorph GetAccountEmailEmailOKBody isFree false */
-
-// Validate validates this get account email email o k body
-func (o *GetAccountEmailEmailOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateEmail(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := o.validateIsFree(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetAccountEmailEmailOKBody) validateEmail(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAccountEmailEmailOK"+"."+"email", "body", o.Email); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetAccountEmailEmailOKBody) validateIsFree(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAccountEmailEmailOK"+"."+"isFree", "body", o.IsFree); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *GetAccountEmailEmailOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *GetAccountEmailEmailOKBody) UnmarshalBinary(b []byte) error {
-	var res GetAccountEmailEmailOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

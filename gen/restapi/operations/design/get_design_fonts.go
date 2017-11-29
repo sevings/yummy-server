@@ -8,11 +8,7 @@ package design
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // GetDesignFontsHandlerFunc turns a function with the right signature into a get design fonts handler
@@ -59,58 +55,4 @@ func (o *GetDesignFonts) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
-}
-
-// GetDesignFontsOKBody get design fonts o k body
-// swagger:model GetDesignFontsOKBody
-
-type GetDesignFontsOKBody struct {
-
-	// fonts
-	// Required: true
-	Fonts []string `json:"fonts"`
-}
-
-/* polymorph GetDesignFontsOKBody fonts false */
-
-// Validate validates this get design fonts o k body
-func (o *GetDesignFontsOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateFonts(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetDesignFontsOKBody) validateFonts(formats strfmt.Registry) error {
-
-	if err := validate.Required("getDesignFontsOK"+"."+"fonts", "body", o.Fonts); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (o *GetDesignFontsOKBody) MarshalBinary() ([]byte, error) {
-	if o == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(o)
-}
-
-// UnmarshalBinary interface implementation
-func (o *GetDesignFontsOKBody) UnmarshalBinary(b []byte) error {
-	var res GetDesignFontsOKBody
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*o = res
-	return nil
 }

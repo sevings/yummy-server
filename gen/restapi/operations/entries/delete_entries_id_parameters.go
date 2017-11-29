@@ -30,7 +30,7 @@ func NewDeleteEntriesIDParams() DeleteEntriesIDParams {
 type DeleteEntriesIDParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

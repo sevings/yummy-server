@@ -14,7 +14,6 @@ import (
 
 // Color color in rgb
 // swagger:model Color
-
 type Color string
 
 // Validate validates this color

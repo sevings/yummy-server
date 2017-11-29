@@ -7,7 +7,6 @@ package models
 
 import (
 	"encoding/json"
-	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -18,7 +17,6 @@ import (
 
 // Entry entry
 // swagger:model Entry
-
 type Entry struct {
 
 	// author
@@ -28,7 +26,7 @@ type Entry struct {
 	CommentCount int64 `json:"commentCount,omitempty"`
 
 	// comments
-	Comments []*Comment `json:"comments"`
+	Comments EntryComments `json:"comments"`
 
 	// content
 	Content string `json:"content,omitempty"`
@@ -59,7 +57,7 @@ type Entry struct {
 	Title string `json:"title,omitempty"`
 
 	// visible for
-	VisibleFor []*User `json:"visibleFor"`
+	VisibleFor EntryVisibleFor `json:"visibleFor"`
 
 	// vote
 	Vote string `json:"vote,omitempty"`
@@ -67,36 +65,6 @@ type Entry struct {
 	// word count
 	WordCount int64 `json:"wordCount,omitempty"`
 }
-
-/* polymorph Entry author false */
-
-/* polymorph Entry commentCount false */
-
-/* polymorph Entry comments false */
-
-/* polymorph Entry content false */
-
-/* polymorph Entry createdAt false */
-
-/* polymorph Entry id false */
-
-/* polymorph Entry isFavorited false */
-
-/* polymorph Entry isVotable false */
-
-/* polymorph Entry isWatching false */
-
-/* polymorph Entry privacy false */
-
-/* polymorph Entry rating false */
-
-/* polymorph Entry title false */
-
-/* polymorph Entry visibleFor false */
-
-/* polymorph Entry vote false */
-
-/* polymorph Entry wordCount false */
 
 // Validate validates this entry
 func (m *Entry) Validate(formats strfmt.Registry) error {
@@ -107,22 +75,12 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateComments(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePrivacy(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateVisibleFor(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -152,33 +110,6 @@ func (m *Entry) validateAuthor(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Entry) validateComments(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Comments) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.Comments); i++ {
-
-		if swag.IsZero(m.Comments[i]) { // not required
-			continue
-		}
-
-		if m.Comments[i] != nil {
-
-			if err := m.Comments[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("comments" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil
@@ -237,33 +168,6 @@ func (m *Entry) validatePrivacy(formats strfmt.Registry) error {
 	// value enum
 	if err := m.validatePrivacyEnum("privacy", "body", m.Privacy); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.VisibleFor) { // not required
-		return nil
-	}
-
-	for i := 0; i < len(m.VisibleFor); i++ {
-
-		if swag.IsZero(m.VisibleFor[i]) { // not required
-			continue
-		}
-
-		if m.VisibleFor[i] != nil {
-
-			if err := m.VisibleFor[i].Validate(formats); err != nil {
-				if ve, ok := err.(*errors.Validation); ok {
-					return ve.ValidateName("visibleFor" + "." + strconv.Itoa(i))
-				}
-				return err
-			}
-		}
-
 	}
 
 	return nil

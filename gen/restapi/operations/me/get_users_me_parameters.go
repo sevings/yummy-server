@@ -29,7 +29,7 @@ func NewGetUsersMeParams() GetUsersMeParams {
 type GetUsersMeParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

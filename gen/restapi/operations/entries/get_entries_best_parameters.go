@@ -38,7 +38,7 @@ func NewGetEntriesBestParams() GetEntriesBestParams {
 type GetEntriesBestParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Max Length: 32

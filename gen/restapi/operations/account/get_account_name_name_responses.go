@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetAccountNameNameOKCode is the HTTP code returned for type GetAccountNameNameOK
@@ -23,7 +25,7 @@ type GetAccountNameNameOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetAccountNameNameOKBody `json:"body,omitempty"`
+	Payload *models.GetAccountNameNameOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountNameNameOK creates GetAccountNameNameOK with default headers values
@@ -32,13 +34,13 @@ func NewGetAccountNameNameOK() *GetAccountNameNameOK {
 }
 
 // WithPayload adds the payload to the get account name name o k response
-func (o *GetAccountNameNameOK) WithPayload(payload GetAccountNameNameOKBody) *GetAccountNameNameOK {
+func (o *GetAccountNameNameOK) WithPayload(payload *models.GetAccountNameNameOKBody) *GetAccountNameNameOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account name name o k response
-func (o *GetAccountNameNameOK) SetPayload(payload GetAccountNameNameOKBody) {
+func (o *GetAccountNameNameOK) SetPayload(payload *models.GetAccountNameNameOKBody) {
 	o.Payload = payload
 }
 
@@ -46,9 +48,10 @@ func (o *GetAccountNameNameOK) SetPayload(payload GetAccountNameNameOKBody) {
 func (o *GetAccountNameNameOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

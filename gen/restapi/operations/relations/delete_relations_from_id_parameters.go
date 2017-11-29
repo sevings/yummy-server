@@ -30,7 +30,7 @@ func NewDeleteRelationsFromIDParams() DeleteRelationsFromIDParams {
 type DeleteRelationsFromIDParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

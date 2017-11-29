@@ -48,8 +48,8 @@ func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middle
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
 			free := isEmailFree(tx, params.Email)
-			data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
-			return account.NewGetAccountEmailEmailOK().WithPayload(data), true
+			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
+			return account.NewGetAccountEmailEmailOK().WithPayload(&data), true
 		})
 	}
 }
@@ -77,8 +77,8 @@ func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middlewar
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
 			free := isNameFree(tx, params.Name)
-			data := account.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
-			return account.NewGetAccountNameNameOK().WithPayload(data), true
+			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
+			return account.NewGetAccountNameNameOK().WithPayload(&data), true
 		})
 	}
 }
@@ -226,8 +226,8 @@ func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*model
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.ProfileAO1Counts{}
-	profile.Account = &models.AuthProfileAO1Account{}
+	profile.Counts = &models.ProfileAllOf1Counts{}
+	profile.Account = &models.AuthProfileAllOf1Account{}
 
 	var nameColor string
 	var avatarColor string
@@ -409,8 +409,8 @@ func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams) middlewa
 				return account.NewGetAccountInvitesForbidden().WithPayload(yummy.NewError("invalid_api_key")), false
 			}
 
-			res := account.GetAccountInvitesOKBody{Invites: invites}
-			return account.NewGetAccountInvitesOK().WithPayload(res), true
+			res := models.GetAccountInvitesOKBody{Invites: invites}
+			return account.NewGetAccountInvitesOK().WithPayload(&res), true
 		})
 	}
 }

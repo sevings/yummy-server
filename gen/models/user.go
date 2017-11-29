@@ -15,7 +15,6 @@ import (
 
 // User user
 // swagger:model User
-
 type User struct {
 
 	// avatar
@@ -44,20 +43,6 @@ type User struct {
 	// Min Length: 1
 	ShowName string `json:"showName,omitempty"`
 }
-
-/* polymorph User avatar false */
-
-/* polymorph User avatarColor false */
-
-/* polymorph User id false */
-
-/* polymorph User isOnline false */
-
-/* polymorph User name false */
-
-/* polymorph User nameColor false */
-
-/* polymorph User showName false */
 
 // Validate validates this user
 func (m *User) Validate(formats strfmt.Registry) error {

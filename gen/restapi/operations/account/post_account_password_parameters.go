@@ -30,7 +30,7 @@ func NewPostAccountPasswordParams() PostAccountPasswordParams {
 type PostAccountPasswordParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

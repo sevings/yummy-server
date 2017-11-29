@@ -17,7 +17,6 @@ import (
 
 // Comment comment
 // swagger:model Comment
-
 type Comment struct {
 
 	// author
@@ -44,20 +43,6 @@ type Comment struct {
 	// vote
 	Vote string `json:"vote,omitempty"`
 }
-
-/* polymorph Comment author false */
-
-/* polymorph Comment content false */
-
-/* polymorph Comment createdAt false */
-
-/* polymorph Comment entryId false */
-
-/* polymorph Comment id false */
-
-/* polymorph Comment rating false */
-
-/* polymorph Comment vote false */
 
 // Validate validates this comment
 func (m *Comment) Validate(formats strfmt.Registry) error {

@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetAccountEmailEmailOKCode is the HTTP code returned for type GetAccountEmailEmailOK
@@ -23,7 +25,7 @@ type GetAccountEmailEmailOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetAccountEmailEmailOKBody `json:"body,omitempty"`
+	Payload *models.GetAccountEmailEmailOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountEmailEmailOK creates GetAccountEmailEmailOK with default headers values
@@ -32,13 +34,13 @@ func NewGetAccountEmailEmailOK() *GetAccountEmailEmailOK {
 }
 
 // WithPayload adds the payload to the get account email email o k response
-func (o *GetAccountEmailEmailOK) WithPayload(payload GetAccountEmailEmailOKBody) *GetAccountEmailEmailOK {
+func (o *GetAccountEmailEmailOK) WithPayload(payload *models.GetAccountEmailEmailOKBody) *GetAccountEmailEmailOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account email email o k response
-func (o *GetAccountEmailEmailOK) SetPayload(payload GetAccountEmailEmailOKBody) {
+func (o *GetAccountEmailEmailOK) SetPayload(payload *models.GetAccountEmailEmailOKBody) {
 	o.Payload = payload
 }
 
@@ -46,9 +48,10 @@ func (o *GetAccountEmailEmailOK) SetPayload(payload GetAccountEmailEmailOKBody) 
 func (o *GetAccountEmailEmailOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }

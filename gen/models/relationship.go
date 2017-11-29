@@ -17,7 +17,6 @@ import (
 
 // Relationship relationship
 // swagger:model Relationship
-
 type Relationship struct {
 
 	// from
@@ -31,12 +30,6 @@ type Relationship struct {
 	// Minimum: 1
 	To int64 `json:"to,omitempty"`
 }
-
-/* polymorph Relationship from false */
-
-/* polymorph Relationship relation false */
-
-/* polymorph Relationship to false */
 
 // Validate validates this relationship
 func (m *Relationship) Validate(formats strfmt.Registry) error {

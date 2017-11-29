@@ -40,7 +40,7 @@ func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.ProfileAO1Counts{}
+	profile.Counts = &models.ProfileAllOf1Counts{}
 
 	var nameColor string
 	var avatarColor string

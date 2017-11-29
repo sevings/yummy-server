@@ -17,7 +17,6 @@ import (
 
 // VoteStatus vote status
 // swagger:model VoteStatus
-
 type VoteStatus struct {
 
 	// id
@@ -30,12 +29,6 @@ type VoteStatus struct {
 	// vote
 	Vote string `json:"vote,omitempty"`
 }
-
-/* polymorph VoteStatus id false */
-
-/* polymorph VoteStatus rating false */
-
-/* polymorph VoteStatus vote false */
 
 // Validate validates this vote status
 func (m *VoteStatus) Validate(formats strfmt.Registry) error {

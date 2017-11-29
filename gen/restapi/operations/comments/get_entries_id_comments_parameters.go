@@ -38,7 +38,7 @@ func NewGetEntriesIDCommentsParams() GetEntriesIDCommentsParams {
 type GetEntriesIDCommentsParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Max Length: 32

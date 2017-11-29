@@ -17,7 +17,6 @@ import (
 
 // Design design
 // swagger:model Design
-
 type Design struct {
 
 	// background color
@@ -38,18 +37,6 @@ type Design struct {
 	// text color
 	TextColor Color `json:"textColor,omitempty"`
 }
-
-/* polymorph Design backgroundColor false */
-
-/* polymorph Design css false */
-
-/* polymorph Design fontFamily false */
-
-/* polymorph Design fontSize false */
-
-/* polymorph Design textAlignment false */
-
-/* polymorph Design textColor false */
 
 // Validate validates this design
 func (m *Design) Validate(formats strfmt.Registry) error {

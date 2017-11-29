@@ -6,6 +6,7 @@ package me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"mime/multipart"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -31,7 +32,7 @@ func NewPutUsersMeParams() PutUsersMeParams {
 type PutUsersMeParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true
@@ -117,6 +118,8 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 		res = append(res, errors.New(400, "reading file %q failed: %v", "avatar", err))
 	} else if err == http.ErrMissingFile {
 		// no-op for missing but optional file parameter
+	} else if err := o.bindAvatar(avatar, avatarHeader); err != nil {
+		res = append(res, err)
 	} else {
 		o.Avatar = &runtime.File{Data: avatar, Header: avatarHeader}
 	}
@@ -207,6 +210,11 @@ func (o *PutUsersMeParams) validateXUserKey(formats strfmt.Registry) error {
 	if err := validate.MaxLength("X-User-Key", "header", o.XUserKey, 32); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (o *PutUsersMeParams) bindAvatar(file multipart.File, header *multipart.FileHeader) error {
 
 	return nil
 }

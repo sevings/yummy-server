@@ -15,7 +15,6 @@ import (
 
 // WatchingStatus watching status
 // swagger:model WatchingStatus
-
 type WatchingStatus struct {
 
 	// id
@@ -25,10 +24,6 @@ type WatchingStatus struct {
 	// is watching
 	IsWatching bool `json:"isWatching,omitempty"`
 }
-
-/* polymorph WatchingStatus id false */
-
-/* polymorph WatchingStatus isWatching false */
 
 // Validate validates this watching status
 func (m *WatchingStatus) Validate(formats strfmt.Registry) error {

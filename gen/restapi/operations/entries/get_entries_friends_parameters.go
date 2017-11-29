@@ -38,7 +38,7 @@ func NewGetEntriesFriendsParams() GetEntriesFriendsParams {
 type GetEntriesFriendsParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true

@@ -14,15 +14,10 @@ import (
 
 // AuthProfile auth profile
 // swagger:model AuthProfile
-
 type AuthProfile struct {
 	Profile
 
-	// account
-	Account *AuthProfileAO1Account `json:"account,omitempty"`
-
-	// birthday
-	Birthday string `json:"birthday,omitempty"`
+	AuthProfileAllOf1
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
@@ -34,18 +29,11 @@ func (m *AuthProfile) UnmarshalJSON(raw []byte) error {
 	}
 	m.Profile = aO0
 
-	var data struct {
-		Account *AuthProfileAO1Account `json:"account,omitempty"`
-
-		Birthday string `json:"birthday,omitempty"`
-	}
-	if err := swag.ReadJSON(raw, &data); err != nil {
+	var aO1 AuthProfileAllOf1
+	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
 	}
-
-	m.Account = data.Account
-
-	m.Birthday = data.Birthday
+	m.AuthProfileAllOf1 = aO1
 
 	return nil
 }
@@ -60,21 +48,11 @@ func (m AuthProfile) MarshalJSON() ([]byte, error) {
 	}
 	_parts = append(_parts, aO0)
 
-	var data struct {
-		Account *AuthProfileAO1Account `json:"account,omitempty"`
-
-		Birthday string `json:"birthday,omitempty"`
-	}
-
-	data.Account = m.Account
-
-	data.Birthday = m.Birthday
-
-	jsonData, err := swag.WriteJSON(data)
+	aO1, err := swag.WriteJSON(m.AuthProfileAllOf1)
 	if err != nil {
 		return nil, err
 	}
-	_parts = append(_parts, jsonData)
+	_parts = append(_parts, aO1)
 
 	return swag.ConcatJSON(_parts...), nil
 }
@@ -87,32 +65,13 @@ func (m *AuthProfile) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateAccount(formats); err != nil {
+	if err := m.AuthProfileAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *AuthProfile) validateAccount(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Account) { // not required
-		return nil
-	}
-
-	if m.Account != nil {
-
-		if err := m.Account.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("account")
-			}
-			return err
-		}
-	}
-
 	return nil
 }
 
@@ -127,60 +86,6 @@ func (m *AuthProfile) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AuthProfile) UnmarshalBinary(b []byte) error {
 	var res AuthProfile
-	if err := swag.ReadJSON(b, &res); err != nil {
-		return err
-	}
-	*m = res
-	return nil
-}
-
-// AuthProfileAO1Account auth profile a o1 account
-// swagger:model AuthProfileAO1Account
-
-type AuthProfileAO1Account struct {
-
-	// api key
-	APIKey string `json:"apiKey,omitempty"`
-
-	// email
-	Email string `json:"email,omitempty"`
-
-	// valid thru
-	ValidThru strfmt.DateTime `json:"validThru,omitempty"`
-
-	// verified
-	Verified bool `json:"verified,omitempty"`
-}
-
-/* polymorph AuthProfileAO1Account apiKey false */
-
-/* polymorph AuthProfileAO1Account email false */
-
-/* polymorph AuthProfileAO1Account validThru false */
-
-/* polymorph AuthProfileAO1Account verified false */
-
-// Validate validates this auth profile a o1 account
-func (m *AuthProfileAO1Account) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-// MarshalBinary interface implementation
-func (m *AuthProfileAO1Account) MarshalBinary() ([]byte, error) {
-	if m == nil {
-		return nil, nil
-	}
-	return swag.WriteJSON(m)
-}
-
-// UnmarshalBinary interface implementation
-func (m *AuthProfileAO1Account) UnmarshalBinary(b []byte) error {
-	var res AuthProfileAO1Account
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

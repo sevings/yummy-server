@@ -25,7 +25,7 @@ type GetAccountInvitesOK struct {
 	/*
 	  In: Body
 	*/
-	Payload GetAccountInvitesOKBody `json:"body,omitempty"`
+	Payload *models.GetAccountInvitesOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountInvitesOK creates GetAccountInvitesOK with default headers values
@@ -34,13 +34,13 @@ func NewGetAccountInvitesOK() *GetAccountInvitesOK {
 }
 
 // WithPayload adds the payload to the get account invites o k response
-func (o *GetAccountInvitesOK) WithPayload(payload GetAccountInvitesOKBody) *GetAccountInvitesOK {
+func (o *GetAccountInvitesOK) WithPayload(payload *models.GetAccountInvitesOKBody) *GetAccountInvitesOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account invites o k response
-func (o *GetAccountInvitesOK) SetPayload(payload GetAccountInvitesOKBody) {
+func (o *GetAccountInvitesOK) SetPayload(payload *models.GetAccountInvitesOKBody) {
 	o.Payload = payload
 }
 
@@ -48,11 +48,12 @@ func (o *GetAccountInvitesOK) SetPayload(payload GetAccountInvitesOKBody) {
 func (o *GetAccountInvitesOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
-
 }
 
 // GetAccountInvitesForbiddenCode is the HTTP code returned for type GetAccountInvitesForbidden

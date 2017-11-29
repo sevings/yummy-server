@@ -38,7 +38,7 @@ func NewGetEntriesAnonymousParams() GetEntriesAnonymousParams {
 type GetEntriesAnonymousParams struct {
 
 	// HTTP Request Object
-	HTTPRequest *http.Request
+	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Max Length: 32
