@@ -75,9 +75,9 @@ func init() {
         "tags": [
           "account"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -198,10 +198,12 @@ func init() {
           "account"
         ],
         "summary": "set new password",
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "minLength": 6,
             "type": "string",
@@ -358,9 +360,9 @@ func init() {
           "account"
         ],
         "summary": "request verification email",
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -382,6 +384,11 @@ func init() {
           "account"
         ],
         "summary": "verify account email",
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "parameters": [
           {
             "type": "string",
@@ -416,9 +423,9 @@ func init() {
         "tags": [
           "comments"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -450,10 +457,12 @@ func init() {
         "tags": [
           "comments"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "minLength": 1,
             "type": "string",
@@ -487,9 +496,9 @@ func init() {
         "tags": [
           "comments"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -524,6 +533,11 @@ func init() {
         "tags": [
           "design"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Design of your tlog",
@@ -542,6 +556,11 @@ func init() {
       "put": {
         "tags": [
           "design"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -597,21 +616,16 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/userKeyReq"
-        }
-      ]
+      }
     },
     "/design/fonts": {
       "get": {
         "tags": [
           "design"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -637,10 +651,12 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -673,6 +689,11 @@ func init() {
         ],
         "tags": [
           "entries"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -712,10 +733,12 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -752,10 +775,12 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -787,10 +812,12 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -822,9 +849,9 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -856,10 +883,12 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "type": "string",
             "name": "title",
@@ -928,9 +957,9 @@ func init() {
         "tags": [
           "entries"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -962,10 +991,12 @@ func init() {
         "tags": [
           "comments"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -1002,10 +1033,12 @@ func init() {
         "tags": [
           "comments"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKeyReq"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "minLength": 1,
             "type": "string",
@@ -1046,6 +1079,11 @@ func init() {
         "tags": [
           "favorites"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "favorite status",
@@ -1070,6 +1108,11 @@ func init() {
       "put": {
         "tags": [
           "favorites"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "responses": {
           "200": {
@@ -1096,6 +1139,11 @@ func init() {
         "tags": [
           "favorites"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "favorite status",
@@ -1119,9 +1167,6 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/userKeyReq"
-        },
-        {
           "$ref": "#/parameters/pathId"
         }
       ]
@@ -1130,6 +1175,11 @@ func init() {
       "get": {
         "tags": [
           "votes"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "responses": {
           "200": {
@@ -1155,6 +1205,11 @@ func init() {
       "put": {
         "tags": [
           "votes"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1189,6 +1244,11 @@ func init() {
         "tags": [
           "votes"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "vote status",
@@ -1212,9 +1272,6 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/userKeyReq"
-        },
-        {
           "$ref": "#/parameters/pathId"
         }
       ]
@@ -1223,6 +1280,11 @@ func init() {
       "get": {
         "tags": [
           "watchings"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "responses": {
           "200": {
@@ -1249,6 +1311,11 @@ func init() {
         "tags": [
           "watchings"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "watching status",
@@ -1274,6 +1341,11 @@ func init() {
         "tags": [
           "watchings"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "watching status",
@@ -1297,9 +1369,6 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/userKeyReq"
-        },
-        {
           "$ref": "#/parameters/pathId"
         }
       ]
@@ -1308,6 +1377,11 @@ func init() {
       "get": {
         "tags": [
           "relations"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "responses": {
           "200": {
@@ -1335,6 +1409,11 @@ func init() {
           "relations"
         ],
         "summary": "permit the user to follow you",
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "the rser relationship with you",
@@ -1361,6 +1440,11 @@ func init() {
           "relations"
         ],
         "summary": "cancel following request or unsubscribe the user",
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "the user relationship with you",
@@ -1384,9 +1468,6 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/userKeyReq"
-        },
-        {
           "minimum": 1,
           "type": "integer",
           "format": "int64",
@@ -1400,6 +1481,11 @@ func init() {
       "get": {
         "tags": [
           "relations"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "responses": {
           "200": {
@@ -1425,6 +1511,11 @@ func init() {
       "put": {
         "tags": [
           "relations"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1463,6 +1554,11 @@ func init() {
         "tags": [
           "relations"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "your relationship with the user",
@@ -1486,9 +1582,6 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/userKeyReq"
-        },
-        {
           "$ref": "#/parameters/pathId"
         }
       ]
@@ -1498,9 +1591,9 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -1529,10 +1622,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -1578,10 +1673,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -1621,10 +1718,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -1670,6 +1769,11 @@ func init() {
         "tags": [
           "me"
         ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "your data",
@@ -1692,6 +1796,11 @@ func init() {
         ],
         "tags": [
           "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1787,17 +1896,17 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/userKeyReq"
-        }
-      ]
+      }
     },
     "/users/me/entries": {
       "get": {
         "tags": [
           "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1832,6 +1941,11 @@ func init() {
         ],
         "tags": [
           "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1891,17 +2005,17 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/userKeyReq"
-        }
-      ]
+      }
     },
     "/users/me/favorites": {
       "get": {
         "tags": [
           "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1925,17 +2039,17 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/userKeyReq"
-        }
-      ]
+      }
     },
     "/users/me/followers": {
       "get": {
         "tags": [
           "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
         ],
         "parameters": [
           {
@@ -1959,12 +2073,7 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/userKeyReq"
-        }
-      ]
+      }
     },
     "/users/me/followings": {
       "$ref": "#/paths/~1users~1me~1followers"
@@ -1986,9 +2095,9 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
+            "ApiKeyHeader": []
           }
         ],
         "responses": {
@@ -2017,10 +2126,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -2066,10 +2177,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -2109,10 +2222,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -2152,10 +2267,12 @@ func init() {
         "tags": [
           "users"
         ],
-        "parameters": [
+        "security": [
           {
-            "$ref": "#/parameters/userKey"
-          },
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
           {
             "$ref": "#/parameters/limit"
           },
@@ -2648,6 +2765,10 @@ func init() {
         "showName": "Бинк"
       }
     },
+    "UserID": {
+      "type": "integer",
+      "format": "int64"
+    },
     "UserList": {
       "type": "object",
       "required": [
@@ -2754,21 +2875,13 @@ func init() {
       "type": "string",
       "name": "tag",
       "in": "query"
-    },
-    "userKey": {
-      "maxLength": 32,
-      "minLength": 32,
-      "type": "string",
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyHeader": {
+      "type": "apiKey",
       "name": "X-User-Key",
       "in": "header"
-    },
-    "userKeyReq": {
-      "maxLength": 32,
-      "minLength": 32,
-      "type": "string",
-      "name": "X-User-Key",
-      "in": "header",
-      "required": true
     }
   }
 }`))

@@ -41,12 +41,6 @@ type GetEntriesLiveParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
-	  Max Length: 32
-	  Min Length: 32
-	  In: header
-	*/
-	XUserKey *string
-	/*
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
@@ -81,10 +75,6 @@ func (o *GetEntriesLiveParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	qs := runtime.Values(r.URL.Query())
 
-	if err := o.bindXUserKey(r.Header[http.CanonicalHeaderKey("X-User-Key")], true, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
@@ -113,37 +103,6 @@ func (o *GetEntriesLiveParams) BindRequest(r *http.Request, route *middleware.Ma
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *GetEntriesLiveParams) bindXUserKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.XUserKey = &raw
-
-	if err := o.validateXUserKey(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetEntriesLiveParams) validateXUserKey(formats strfmt.Registry) error {
-
-	if err := validate.MinLength("X-User-Key", "header", (*o.XUserKey), 32); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("X-User-Key", "header", (*o.XUserKey), 32); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -9,19 +9,21 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetUsersMeInvitedHandlerFunc turns a function with the right signature into a get users me invited handler
-type GetUsersMeInvitedHandlerFunc func(GetUsersMeInvitedParams) middleware.Responder
+type GetUsersMeInvitedHandlerFunc func(GetUsersMeInvitedParams, *models.UserID) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUsersMeInvitedHandlerFunc) Handle(params GetUsersMeInvitedParams) middleware.Responder {
-	return fn(params)
+func (fn GetUsersMeInvitedHandlerFunc) Handle(params GetUsersMeInvitedParams, principal *models.UserID) middleware.Responder {
+	return fn(params, principal)
 }
 
 // GetUsersMeInvitedHandler interface for that can handle valid get users me invited params
 type GetUsersMeInvitedHandler interface {
-	Handle(GetUsersMeInvitedParams) middleware.Responder
+	Handle(GetUsersMeInvitedParams, *models.UserID) middleware.Responder
 }
 
 // NewGetUsersMeInvited creates a new http.Handler for the get users me invited operation
@@ -46,12 +48,25 @@ func (o *GetUsersMeInvited) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 	var Params = NewGetUsersMeInvitedParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal *models.UserID
+	if uprinc != nil {
+		principal = uprinc.(*models.UserID) // this is really a models.UserID, I promise
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

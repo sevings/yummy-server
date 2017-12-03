@@ -325,7 +325,7 @@ func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Resp
 	}
 }
 
-func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams) (bool, error) {
+func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) (bool, error) {
 	const q = `
         update users
         set password_hash = $1
@@ -334,7 +334,7 @@ func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams) (boo
 	oldHash := passwordHash(params.OldPassword)
 	newHash := passwordHash(params.NewPassword)
 
-	res, err := tx.Exec(q, newHash, oldHash, params.XUserKey)
+	res, err := tx.Exec(q, newHash, oldHash, int64(*userID))
 	if err != nil {
 		return false, err
 	}
@@ -351,10 +351,10 @@ func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams) (boo
 	return true, nil
 }
 
-func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams) middleware.Responder {
-	return func(params account.PostAccountPasswordParams) middleware.Responder {
+func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
+	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			ok, err := setPassword(tx, params)
+			ok, err := setPassword(tx, params, userID)
 			if err != nil {
 				log.Print(err)
 				return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("internal_error")), false
@@ -369,13 +369,13 @@ func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams) midd
 	}
 }
 
-func loadInvites(tx yummy.AutoTx, apiKey string) ([]string, error) {
+func loadInvites(tx yummy.AutoTx, userID *models.UserID) ([]string, error) {
 	const q = `
         select word1 || ' ' || word2 || ' ' || word3 
-        from unwrapped_invites, users
-        where users.api_key = $1 and users.id = unwrapped_invites.user_id`
+        from unwrapped_invites
+        where id = $1`
 
-	rows, err := tx.Query(q, apiKey)
+	rows, err := tx.Query(q, int64(*userID))
 	if err != nil {
 		return nil, err
 	}
@@ -390,10 +390,10 @@ func loadInvites(tx yummy.AutoTx, apiKey string) ([]string, error) {
 	return invites, rows.Err()
 }
 
-func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams) middleware.Responder {
-	return func(params account.GetAccountInvitesParams) middleware.Responder {
+func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountInvitesParams, userID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			invites, err := loadInvites(tx, params.XUserKey)
+			invites, err := loadInvites(tx, userID)
 			if err != nil {
 				log.Print(err)
 				return account.NewGetAccountInvitesForbidden().WithPayload(yummy.NewError("invalid_api_key")), false

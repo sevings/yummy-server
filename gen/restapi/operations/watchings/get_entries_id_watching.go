@@ -9,19 +9,21 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetEntriesIDWatchingHandlerFunc turns a function with the right signature into a get entries ID watching handler
-type GetEntriesIDWatchingHandlerFunc func(GetEntriesIDWatchingParams) middleware.Responder
+type GetEntriesIDWatchingHandlerFunc func(GetEntriesIDWatchingParams, *models.UserID) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetEntriesIDWatchingHandlerFunc) Handle(params GetEntriesIDWatchingParams) middleware.Responder {
-	return fn(params)
+func (fn GetEntriesIDWatchingHandlerFunc) Handle(params GetEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
+	return fn(params, principal)
 }
 
 // GetEntriesIDWatchingHandler interface for that can handle valid get entries ID watching params
 type GetEntriesIDWatchingHandler interface {
-	Handle(GetEntriesIDWatchingParams) middleware.Responder
+	Handle(GetEntriesIDWatchingParams, *models.UserID) middleware.Responder
 }
 
 // NewGetEntriesIDWatching creates a new http.Handler for the get entries ID watching operation
@@ -46,12 +48,25 @@ func (o *GetEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 	var Params = NewGetEntriesIDWatchingParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal *models.UserID
+	if uprinc != nil {
+		principal = uprinc.(*models.UserID) // this is really a models.UserID, I promise
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

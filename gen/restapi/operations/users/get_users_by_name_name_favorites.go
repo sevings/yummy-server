@@ -9,19 +9,21 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetUsersByNameNameFavoritesHandlerFunc turns a function with the right signature into a get users by name name favorites handler
-type GetUsersByNameNameFavoritesHandlerFunc func(GetUsersByNameNameFavoritesParams) middleware.Responder
+type GetUsersByNameNameFavoritesHandlerFunc func(GetUsersByNameNameFavoritesParams, *models.UserID) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetUsersByNameNameFavoritesHandlerFunc) Handle(params GetUsersByNameNameFavoritesParams) middleware.Responder {
-	return fn(params)
+func (fn GetUsersByNameNameFavoritesHandlerFunc) Handle(params GetUsersByNameNameFavoritesParams, principal *models.UserID) middleware.Responder {
+	return fn(params, principal)
 }
 
 // GetUsersByNameNameFavoritesHandler interface for that can handle valid get users by name name favorites params
 type GetUsersByNameNameFavoritesHandler interface {
-	Handle(GetUsersByNameNameFavoritesParams) middleware.Responder
+	Handle(GetUsersByNameNameFavoritesParams, *models.UserID) middleware.Responder
 }
 
 // NewGetUsersByNameNameFavorites creates a new http.Handler for the get users by name name favorites operation
@@ -46,12 +48,25 @@ func (o *GetUsersByNameNameFavorites) ServeHTTP(rw http.ResponseWriter, r *http.
 	}
 	var Params = NewGetUsersByNameNameFavoritesParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal *models.UserID
+	if uprinc != nil {
+		principal = uprinc.(*models.UserID) // this is really a models.UserID, I promise
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 

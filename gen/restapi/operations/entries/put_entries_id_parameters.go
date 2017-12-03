@@ -35,13 +35,6 @@ type PutEntriesIDParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
-	  Required: true
-	  Max Length: 32
-	  Min Length: 32
-	  In: header
-	*/
-	XUserKey string
-	/*
 	  In: formData
 	*/
 	AnonymousComments *bool
@@ -88,10 +81,6 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	}
 	fds := runtime.Values(r.Form)
 
-	if err := o.bindXUserKey(r.Header[http.CanonicalHeaderKey("X-User-Key")], true, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	fdAnonymousComments, fdhkAnonymousComments, _ := fds.GetOK("anonymous_comments")
 	if err := o.bindAnonymousComments(fdAnonymousComments, fdhkAnonymousComments, route.Formats); err != nil {
 		res = append(res, err)
@@ -130,40 +119,6 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *PutEntriesIDParams) bindXUserKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("X-User-Key", "header")
-	}
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if err := validate.RequiredString("X-User-Key", "header", raw); err != nil {
-		return err
-	}
-
-	o.XUserKey = raw
-
-	if err := o.validateXUserKey(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *PutEntriesIDParams) validateXUserKey(formats strfmt.Registry) error {
-
-	if err := validate.MinLength("X-User-Key", "header", o.XUserKey, 32); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("X-User-Key", "header", o.XUserKey, 32); err != nil {
-		return err
-	}
-
 	return nil
 }
 

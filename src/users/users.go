@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
@@ -14,6 +15,8 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
+	api.APIKeyHeaderAuth = newKeyAuth(db)
+
 	api.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(db))
 	api.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(db))
 
@@ -46,7 +49,7 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
-func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) middleware.Responder {
+func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{}) middleware.Responder {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
@@ -100,44 +103,37 @@ func loadProfile(db *sql.DB, query string, apiKey *string, arg interface{}) midd
 	}
 
 	result := users.NewGetUsersIDOK().WithPayload(&profile)
-	if apiKey == nil {
-		return result
-	}
-
-	userID, found := FindAuthUser(tx, apiKey)
-	if !found || userID == profile.ID {
+	if int64(*userID) == profile.ID {
 		return result
 	}
 
 	profile.Relations = &models.ProfileAllOf1Relations{}
-	profile.Relations.FromMe = relationship(tx, relationToIDQuery, userID, profile.ID)
-	profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, userID)
+	profile.Relations.FromMe = relationship(tx, relationToIDQuery, int64(*userID), profile.ID)
+	profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, int64(*userID))
 
 	return result
 }
 
-const authUserQuery = `
-SELECT id
-FROM users
-WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
+func newKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
+	const q = `
+		SELECT id
+		FROM users
+		WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
 
-// FindAuthUser returns ID of the authorized user or false if the key is invalid or expired.
-func FindAuthUser(tx yummy.AutoTx, apiKey *string) (int64, bool) {
-	if apiKey == nil {
-		return 0, false
-	}
+	return func(apiKey string) (*models.UserID, error) {
+		var id int64
+		err := db.QueryRow(q, apiKey).Scan(&id)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Print(err)
+			}
 
-	var id int64
-	err := tx.QueryRow(authUserQuery, *apiKey).Scan(&id)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
+			return nil, errors.New(403, "Access denied")
 		}
 
-		return id, false
+		userID := models.UserID(id)
+		return &userID, nil
 	}
-
-	return id, true
 }
 
 const relationToIDQuery = `
@@ -175,7 +171,7 @@ FROM users, user_privacy
 WHERE users.privacy = user_privacy.id AND `
 
 func isOpenForMe(tx *sql.Tx, privacyQuery, relationQuery string,
-	apiKey *string, arg interface{}) (bool, error) {
+	userID *models.UserID, arg interface{}) (bool, error) {
 	var privacy string
 	err := tx.QueryRow(privacyQuery, arg).Scan(&privacy)
 	if err != nil {
@@ -186,21 +182,12 @@ func isOpenForMe(tx *sql.Tx, privacyQuery, relationQuery string,
 		return true, nil
 	}
 
-	userID, found := FindAuthUser(tx, apiKey)
-	if !found {
-		return false, nil
-	}
-
 	if privacy == "registered" {
 		return true, nil
 	}
 
-	relation := relationship(tx, relationQuery, userID, arg)
-	if relation == models.RelationshipRelationFollowed {
-		return true, nil
-	}
-
-	return false, nil
+	relation := relationship(tx, relationQuery, int64(*userID), arg)
+	return relation == models.RelationshipRelationFollowed, nil
 }
 
 const usersQueryStart = `
@@ -235,7 +222,7 @@ func loadRelatedUsers(tx *sql.Tx, usersQuery string,
 }
 
 func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
-	apiKey *string,
+	userID *models.UserID,
 	arg interface{}, relation string, limit, offset int64) middleware.Responder {
 
 	tx, err := db.Begin()
@@ -244,7 +231,7 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 	}
 	defer tx.Commit()
 
-	open, err := isOpenForMe(tx, privacyQuery, relationQuery, apiKey, arg)
+	open, err := isOpenForMe(tx, privacyQuery, relationQuery, userID, arg)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			log.Print(err)
@@ -288,16 +275,6 @@ func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, boo
 	}
 
 	return &user, true
-}
-
-// LoadAuthUser returns short profile of the authorized user or false if the key is invalid or expired.
-func LoadAuthUser(tx yummy.AutoTx, apiKey *string) (*models.User, bool) {
-	if apiKey == nil {
-		return nil, false
-	}
-
-	const q = loadUserQuery + "api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
-	return loadUser(tx, q, *apiKey)
 }
 
 // LoadUserByID returns short user profile by its ID.

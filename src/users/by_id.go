@@ -3,15 +3,17 @@ package users
 import (
 	"database/sql"
 
+	"github.com/sevings/yummy-server/gen/models"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/restapi/operations/users"
 )
 
 const profileQueryByID = profileQuery + "WHERE long_users.id = $1"
 
-func newUserLoader(db *sql.DB) func(users.GetUsersIDParams) middleware.Responder {
-	return func(params users.GetUsersIDParams) middleware.Responder {
-		return loadProfile(db, profileQueryByID, params.XUserKey, params.ID)
+func newUserLoader(db *sql.DB) func(users.GetUsersIDParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersIDParams, userID *models.UserID) middleware.Responder {
+		return loadProfile(db, profileQueryByID, userID, params.ID)
 	}
 }
 
@@ -20,24 +22,24 @@ const usersQueryToID = usersQueryStart + "relations.to_id = $1 AND relations.fro
 const usersQueryFromID = usersQueryStart + "relations.from_id = $1 AND relations.to_id = short_users.id" + usersQueryEnd
 
 func loadUsersRelatedToID(db *sql.DB, usersQuery string,
-	apiKey *string,
+	userID *models.UserID,
 	arg interface{}, relation string, limit, offset int64) middleware.Responder {
 	return loadUsers(db, usersQuery, privacyQueryID, relationToIDQuery,
-		apiKey, arg, relation, limit, offset)
+		userID, arg, relation, limit, offset)
 }
 
-func newFollowersLoader(db *sql.DB) func(users.GetUsersIDFollowersParams) middleware.Responder {
-	return func(params users.GetUsersIDFollowersParams) middleware.Responder {
+func newFollowersLoader(db *sql.DB) func(users.GetUsersIDFollowersParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersIDFollowersParams, userID *models.UserID) middleware.Responder {
 		return loadUsersRelatedToID(db, usersQueryToID,
-			params.XUserKey,
+			userID,
 			params.ID, "followed", *params.Limit, *params.Skip)
 	}
 }
 
-func newFollowingsLoader(db *sql.DB) func(users.GetUsersIDFollowingsParams) middleware.Responder {
-	return func(params users.GetUsersIDFollowingsParams) middleware.Responder {
+func newFollowingsLoader(db *sql.DB) func(users.GetUsersIDFollowingsParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersIDFollowingsParams, userID *models.UserID) middleware.Responder {
 		return loadUsersRelatedToID(db, usersQueryFromID,
-			params.XUserKey,
+			userID,
 			params.ID, "followed", *params.Limit, *params.Skip)
 	}
 }

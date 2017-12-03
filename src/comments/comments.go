@@ -71,7 +71,6 @@ func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, err
 func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.Responder {
 	return func(params comments.GetCommentsIDParams) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			userID, _ := users.FindAuthUser(tx, params.XUserKey)
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
 				if err != sql.ErrNoRows {

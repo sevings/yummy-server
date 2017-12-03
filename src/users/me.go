@@ -4,38 +4,36 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/sevings/yummy-server/src"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 )
 
-const myProfileQuery = `
-SELECT id, name, show_name,
-avatar,
-gender, is_daylog,
-privacy,
-title, karma, 
-created_at, last_seen_at, is_online,
-age,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count,
-country, city,
-css, background_color, text_color, 
-font_family, font_size, text_alignment, 
-birthday,
-invited_by_id, 
-invited_by_name, invited_by_show_name,
-invited_by_is_online, 
-invited_by_name_color, invited_by_avatar_color,
-invited_by_avatar
-FROM long_users 
-WHERE api_key = $1`
+func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, error) {
+	const q = `
+	SELECT id, name, show_name,
+	avatar,
+	gender, is_daylog,
+	privacy,
+	title, karma, 
+	created_at, last_seen_at, is_online,
+	age,
+	entries_count, followings_count, followers_count, 
+	ignored_count, invited_count, comments_count, 
+	favorites_count, tags_count,
+	country, city,
+	css, background_color, text_color, 
+	font_family, font_size, text_alignment, 
+	birthday,
+	invited_by_id, 
+	invited_by_name, invited_by_show_name,
+	invited_by_is_online, 
+	invited_by_name_color, invited_by_avatar_color,
+	invited_by_avatar
+	FROM long_users 
+	WHERE id = $1`
 
-func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
-	row := db.QueryRow(myProfileQuery, apiKey)
+	row := db.QueryRow(q, *userID)
 
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
@@ -86,32 +84,27 @@ func loadMyProfile(db *sql.DB, apiKey string) (*models.AuthProfile, error) {
 	return &profile, nil
 }
 
-func newMeLoader(db *sql.DB) func(me.GetUsersMeParams) middleware.Responder {
-	return func(params me.GetUsersMeParams) middleware.Responder {
-		user, err := loadMyProfile(db, params.XUserKey)
+func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middleware.Responder {
+	return func(params me.GetUsersMeParams, userID *models.UserID) middleware.Responder {
+		user, err := loadMyProfile(db, userID)
 		if err != nil {
 			if err != sql.ErrNoRows {
 				log.Print(err)
 			}
 
-			return me.NewGetUsersMeForbidden().WithPayload(yummy.NewError("invalid_api_key"))
+			return me.NewGetUsersMeForbidden()
 		}
 
 		return me.NewGetUsersMeOK().WithPayload(user)
 	}
 }
 
-func loadRelatedToMeUsers(db *sql.DB, query, apiKey, relation string, limit, offset int64) middleware.Responder {
+func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query, relation string, limit, offset int64) middleware.Responder {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer tx.Commit()
-
-	userID, found := FindAuthUser(tx, &apiKey)
-	if !found {
-		return me.NewGetUsersMeFollowersForbidden().WithPayload(yummy.NewError("invalid_api_key"))
-	}
 
 	list, err := loadRelatedUsers(tx, query, userID, relation, limit, offset)
 	if err != nil {
@@ -122,9 +115,9 @@ func loadRelatedToMeUsers(db *sql.DB, query, apiKey, relation string, limit, off
 	return me.NewGetUsersMeFollowersOK().WithPayload(list)
 }
 
-func newMyFollowersLoader(db *sql.DB) func(me.GetUsersMeFollowersParams) middleware.Responder {
-	return func(params me.GetUsersMeFollowersParams) middleware.Responder {
-		return loadRelatedToMeUsers(db, usersQueryToID,
-			params.XUserKey, "followed", *params.Limit, *params.Skip)
+func newMyFollowersLoader(db *sql.DB) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {
+	return func(params me.GetUsersMeFollowersParams, userID *models.UserID) middleware.Responder {
+		return loadRelatedToMeUsers(db, userID, usersQueryToID,
+			"followed", *params.Limit, *params.Skip)
 	}
 }

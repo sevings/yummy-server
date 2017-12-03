@@ -3,7 +3,15 @@ consumes:
 info:
   title: Yummy
   version: 0.1.0
+securityDefinitions:
+  ApiKeyHeader:
+    type: apiKey
+    in: header
+    name: X-User-Key
 definitions:
+  UserID:
+    type: integer
+    format: int64
   Error:
     type: object
     properties:
@@ -322,19 +330,6 @@ definitions:
         items:
           $ref: '#/definitions/Comment'
 parameters:
-  userKey:
-    in: header
-    name: X-User-Key
-    type: string
-    minLength: 32
-    maxLength: 32
-  userKeyReq:
-    in: header
-    name: X-User-Key
-    type: string
-    minLength: 32
-    maxLength: 32
-    required: true
   pathId:
     in: path
     name: id
@@ -526,8 +521,8 @@ paths:
   /account/verification:
     post:
       summary: request verification email
-      parameters:
-        - $ref: '#/parameters/userKeyReq'
+      security:
+        - ApiKeyHeader: []
       tags:
         - account
       responses:
@@ -551,6 +546,8 @@ paths:
           minLength: 20
           maxLength: 20
           required: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - account
       responses:
@@ -567,7 +564,6 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - $ref: '#/parameters/userKeyReq'
         - in: formData
           type: string
           name: old_password
@@ -578,6 +574,8 @@ paths:
           name: new_password
           minLength: 6
           required: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - account
       responses:
@@ -608,8 +606,8 @@ paths:
             $ref: '#/definitions/Error'
   /account/invites:
     get:
-      parameters:
-        - $ref: '#/parameters/userKeyReq'
+      security:
+        - ApiKeyHeader: []
       tags:
         - account
       responses:
@@ -630,10 +628,10 @@ paths:
     parameters:
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
-      parameters:
-        - $ref: '#/parameters/userKey'
       responses:
         200:
           description: User data
@@ -647,10 +645,10 @@ paths:
     parameters:
       - $ref: '#/parameters/pathName'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
-      parameters:
-        - $ref: '#/parameters/userKey'
       responses:
         200:
           description: User data
@@ -665,9 +663,10 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -688,9 +687,10 @@ paths:
       - $ref: '#/parameters/pathName'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -711,9 +711,10 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -740,11 +741,12 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -765,11 +767,12 @@ paths:
       - $ref: '#/parameters/pathName'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -790,9 +793,10 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -813,9 +817,10 @@ paths:
       - $ref: '#/parameters/pathName'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - users
       responses:
@@ -832,9 +837,9 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /users/me:
-    parameters:
-      - $ref: '#/parameters/userKeyReq'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       responses:
@@ -847,6 +852,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       consumes:
@@ -909,12 +916,12 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /users/me/followers:
-    parameters:
-      - $ref: '#/parameters/userKeyReq'
     get:
       parameters:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       responses:
@@ -935,13 +942,13 @@ paths:
   /users/me/requested:
     $ref: '#/paths/~1users~1me~1followers'
   /users/me/entries:
-    parameters:
-      - $ref: '#/parameters/userKeyReq'
     get:
       parameters:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       responses:
@@ -954,6 +961,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     post:
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       consumes:
@@ -996,12 +1005,12 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /users/me/favorites:
-    parameters:
-      - $ref: '#/parameters/userKeyReq'
     get:
       parameters:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - me
       responses:
@@ -1016,9 +1025,9 @@ paths:
   /users/me/watching:
     $ref: '#/paths/~1users~1me~1favorites'
   /design:
-    parameters:
-      - $ref: '#/parameters/userKeyReq'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - design
       responses:
@@ -1053,6 +1062,8 @@ paths:
           name: textAlignment
           type: string
           enum: [left, right, center, justify]
+      security:
+        - ApiKeyHeader: []
       tags:
         - design
       responses:
@@ -1066,8 +1077,8 @@ paths:
             $ref: '#/definitions/Error'
   /design/fonts:
     get:
-      parameters:
-        - $ref: '#/parameters/userKey'
+      security:
+        - ApiKeyHeader: []
       tags:
         - design
       responses:
@@ -1082,9 +1093,10 @@ paths:
                   type: string
   /relations/to/{id}:
     parameters:
-      - $ref: '#/parameters/userKeyReq'
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1107,6 +1119,8 @@ paths:
           type: string
           enum: [followed, ignored]
           required: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1123,6 +1137,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1140,7 +1156,6 @@ paths:
             $ref: '#/definitions/Error'
   /relations/from/{id}:
     parameters:
-      - $ref: '#/parameters/userKeyReq'
       - in: path
         name: id
         type: integer
@@ -1148,6 +1163,8 @@ paths:
         minimum: 1
         required: true
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1165,6 +1182,8 @@ paths:
             $ref: '#/definitions/Error'
     put:
       summary: permit the user to follow you
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1182,6 +1201,8 @@ paths:
             $ref: '#/definitions/Error'
     delete:
       summary: cancel following request or unsubscribe the user
+      security:
+        - ApiKeyHeader: []
       tags:
         - relations
       responses:
@@ -1200,12 +1221,13 @@ paths:
   /entries/live:
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       responses:
@@ -1216,12 +1238,13 @@ paths:
   /entries/friends:
     get:
       parameters:
-        - $ref: '#/parameters/userKeyReq'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       responses:
@@ -1232,7 +1255,6 @@ paths:
   /entries/best:
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
@@ -1241,6 +1263,8 @@ paths:
         - in: query
           name: min_rating
           type: integer
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       responses:
@@ -1251,12 +1275,13 @@ paths:
   /entries/anonymous:
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       responses:
@@ -1265,6 +1290,8 @@ paths:
           schema:
             $ref: '#/definitions/Feed'
     post:
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       consumes:
@@ -1293,10 +1320,10 @@ paths:
     parameters:
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
-      parameters:
-        - $ref: '#/parameters/userKey'
       responses:
         200:
           description: Entry data
@@ -1311,13 +1338,14 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
       consumes:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - $ref: '#/parameters/userKeyReq'
         - in: formData
           name: title
           type: string
@@ -1355,10 +1383,10 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
+      security:
+        - ApiKeyHeader: []
       tags:
         - entries
-      parameters:
-        - $ref: '#/parameters/userKeyReq'
       responses:
         200:
           description: OK
@@ -1372,9 +1400,10 @@ paths:
             $ref: '#/definitions/Error'
   /entries/{id}/vote:
     parameters:
-      - $ref: '#/parameters/userKeyReq'
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - votes
       responses:
@@ -1396,6 +1425,8 @@ paths:
           name: positive
           type: boolean
           default: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - votes
       responses:
@@ -1412,6 +1443,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
+      security:
+        - ApiKeyHeader: []
       tags:
         - votes
       responses:
@@ -1429,9 +1462,10 @@ paths:
             $ref: '#/definitions/Error'
   /entries/{id}/favorite:
     parameters:
-      - $ref: '#/parameters/userKeyReq'
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - favorites
       responses:
@@ -1448,6 +1482,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
+      security:
+        - ApiKeyHeader: []
       tags:
         - favorites
       responses:
@@ -1464,6 +1500,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
+      security:
+        - ApiKeyHeader: []
       tags:
         - favorites
       responses:
@@ -1481,9 +1519,10 @@ paths:
             $ref: '#/definitions/Error'
   /entries/{id}/watching:
     parameters:
-      - $ref: '#/parameters/userKeyReq'
       - $ref: '#/parameters/pathId'
     get:
+      security:
+        - ApiKeyHeader: []
       tags:
         - watchings
       responses:
@@ -1500,6 +1539,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     put:
+      security:
+        - ApiKeyHeader: []
       tags:
         - watchings
       responses:
@@ -1516,6 +1557,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
+      security:
+        - ApiKeyHeader: []
       tags:
         - watchings
       responses:
@@ -1536,9 +1579,10 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       parameters:
-        - $ref: '#/parameters/userKey'
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
       tags:
         - comments
       responses:
@@ -1559,12 +1603,13 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - $ref: '#/parameters/userKeyReq'
         - in: formData
           name: content
           type: string
           minLength: 1
           required: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - comments
       responses:
@@ -1584,8 +1629,8 @@ paths:
     parameters:
       - $ref: '#/parameters/pathId'
     get:
-      parameters:
-        - $ref: '#/parameters/userKey'
+      security:
+        - ApiKeyHeader: []
       tags:
         - comments
       responses:
@@ -1606,12 +1651,13 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - $ref: '#/parameters/userKeyReq'
         - in: formData
           name: content
           type: string
           minLength: 1
           required: true
+      security:
+        - ApiKeyHeader: []
       tags:
         - comments
       responses:
@@ -1628,8 +1674,8 @@ paths:
           schema:
             $ref: '#/definitions/Error'
     delete:
-      parameters:
-        - $ref: '#/parameters/userKeyReq'
+      security:
+        - ApiKeyHeader: []
       tags:
         - comments
       responses:

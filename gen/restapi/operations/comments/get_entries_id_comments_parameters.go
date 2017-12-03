@@ -41,12 +41,6 @@ type GetEntriesIDCommentsParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
-	  Max Length: 32
-	  Min Length: 32
-	  In: header
-	*/
-	XUserKey *string
-	/*
 	  Required: true
 	  Minimum: 1
 	  In: path
@@ -74,10 +68,6 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 
 	qs := runtime.Values(r.URL.Query())
 
-	if err := o.bindXUserKey(r.Header[http.CanonicalHeaderKey("X-User-Key")], true, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
@@ -96,37 +86,6 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *GetEntriesIDCommentsParams) bindXUserKey(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.XUserKey = &raw
-
-	if err := o.validateXUserKey(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetEntriesIDCommentsParams) validateXUserKey(formats strfmt.Registry) error {
-
-	if err := validate.MinLength("X-User-Key", "header", (*o.XUserKey), 32); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("X-User-Key", "header", (*o.XUserKey), 32); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -9,19 +9,21 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+
+	"github.com/sevings/yummy-server/gen/models"
 )
 
 // GetAccountVerificationEmailHandlerFunc turns a function with the right signature into a get account verification email handler
-type GetAccountVerificationEmailHandlerFunc func(GetAccountVerificationEmailParams) middleware.Responder
+type GetAccountVerificationEmailHandlerFunc func(GetAccountVerificationEmailParams, *models.UserID) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn GetAccountVerificationEmailHandlerFunc) Handle(params GetAccountVerificationEmailParams) middleware.Responder {
-	return fn(params)
+func (fn GetAccountVerificationEmailHandlerFunc) Handle(params GetAccountVerificationEmailParams, principal *models.UserID) middleware.Responder {
+	return fn(params, principal)
 }
 
 // GetAccountVerificationEmailHandler interface for that can handle valid get account verification email params
 type GetAccountVerificationEmailHandler interface {
-	Handle(GetAccountVerificationEmailParams) middleware.Responder
+	Handle(GetAccountVerificationEmailParams, *models.UserID) middleware.Responder
 }
 
 // NewGetAccountVerificationEmail creates a new http.Handler for the get account verification email operation
@@ -46,12 +48,25 @@ func (o *GetAccountVerificationEmail) ServeHTTP(rw http.ResponseWriter, r *http.
 	}
 	var Params = NewGetAccountVerificationEmailParams()
 
+	uprinc, aCtx, err := o.Context.Authorize(r, route)
+	if err != nil {
+		o.Context.Respond(rw, r, route.Produces, route, err)
+		return
+	}
+	if aCtx != nil {
+		r = aCtx
+	}
+	var principal *models.UserID
+	if uprinc != nil {
+		principal = uprinc.(*models.UserID) // this is really a models.UserID, I promise
+	}
+
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
-	res := o.Handler.Handle(Params) // actually handle the request
+	res := o.Handler.Handle(Params, principal) // actually handle the request
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
