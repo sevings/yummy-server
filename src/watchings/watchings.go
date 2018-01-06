@@ -9,7 +9,6 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/watchings"
 	yummy "github.com/sevings/yummy-server/src"
-	"github.com/sevings/yummy-server/src/users"
 )
 
 // ConfigureAPI creates operations handlers
@@ -17,7 +16,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newStatusLoader(db))
 }
 
-func watchingStatus(tx *sql.Tx, userID, entryID int64) *models.WatchingStatus {
+func watchingStatus(tx yummy.AutoTx, userID, entryID int64) *models.WatchingStatus {
 	const q = `
 		SELECT TRUE 
 		FROM watching
@@ -33,25 +32,17 @@ func watchingStatus(tx *sql.Tx, userID, entryID int64) *models.WatchingStatus {
 	return &status
 }
 
-func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams) middleware.Responder {
-	return func(params watchings.GetEntriesIDWatchingParams) middleware.Responder {
-		tx, err := db.Begin()
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer tx.Commit()
+func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *models.UserID) middleware.Responder {
+	return func(params watchings.GetEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID := int64(*uID)
+			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			if !canView {
+				return watchings.NewGetEntriesIDWatchingNotFound(), false
+			}
 
-		userID, found := users.FindAuthUser(tx, &params.XUserKey)
-		if !found {
-			return watchings.NewGetEntriesIDWatchingForbidden()
-		}
-
-		canView := yummy.CanViewEntry(tx, userID, params.ID)
-		if !canView {
-			return watchings.NewGetEntriesIDWatchingNotFound()
-		}
-
-		status := watchingStatus(tx, userID, params.ID)
-		return watchings.NewGetEntriesIDWatchingOK().WithPayload(status)
+			status := watchingStatus(tx, userID, params.ID)
+			return watchings.NewGetEntriesIDWatchingOK().WithPayload(status), true
+		})
 	}
 }

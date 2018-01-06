@@ -34,11 +34,8 @@ INSERT INTO entries (author_id, title, content, word_count, visible_for, is_vota
 VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
 RETURNING id, created_at`
 
-func createEntry(tx yummy.AutoTx, apiKey string, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
-	author, found := users.LoadAuthUser(tx, &apiKey)
-	if !found {
-		return nil, false
-	}
+func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+	author, _ := users.LoadUserByID(tx, userID)
 
 	var wordCount int64
 	contentWords := wordRe.FindAllStringIndex(content, -1)
@@ -69,10 +66,10 @@ func createEntry(tx yummy.AutoTx, apiKey string, title, content, privacy string,
 	return &entry, true
 }
 
-func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams) middleware.Responder {
-	return func(params me.PostUsersMeEntriesParams) middleware.Responder {
+func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams, *models.UserID) middleware.Responder {
+	return func(params me.PostUsersMeEntriesParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			entry, created := createEntry(tx, params.XUserKey,
+			entry, created := createEntry(tx, int64(*uID),
 				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 
 			if !created {

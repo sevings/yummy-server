@@ -54,7 +54,6 @@ func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middle
 	}
 }
 
-// IsNameFree returns true if there is no account with such a name
 func isNameFree(tx yummy.AutoTx, name string) bool {
 	const q = `
         select id 
@@ -124,8 +123,6 @@ func removeInvite(tx yummy.AutoTx, ref string, invite string) (int64, bool) {
 		log.Print(err)
 		return 0, false
 	}
-
-	// 81 гкб отделение эндокринологии после часа на конс к зав андреева наталья владимировна
 
 	return userID, rows == 1
 }
@@ -316,7 +313,9 @@ func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Resp
 			hash := passwordHash(params.Password)
 			user, err := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
 			if err != nil {
-				log.Print(err)
+				if err != sql.ErrNoRows {
+					log.Print(err)
+				}
 				return account.NewPostAccountLoginBadRequest().WithPayload(yummy.NewError("invalid_name_or_password")), false
 			}
 

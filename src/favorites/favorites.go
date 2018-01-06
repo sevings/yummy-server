@@ -9,7 +9,6 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/gen/restapi/operations/favorites"
 	yummy "github.com/sevings/yummy-server/src"
-	"github.com/sevings/yummy-server/src/users"
 )
 
 // ConfigureAPI creates operations handlers
@@ -33,14 +32,10 @@ func favoriteStatus(tx yummy.AutoTx, userID, entryID int64) *models.FavoriteStat
 	return &status
 }
 
-func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams) middleware.Responder {
-	return func(params favorites.GetEntriesIDFavoriteParams) middleware.Responder {
+func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
+	return func(params favorites.GetEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			userID, found := users.FindAuthUser(tx, &params.XUserKey)
-			if !found {
-				return favorites.NewGetEntriesIDFavoriteForbidden(), false
-			}
-
+			userID := int64(*uID)
 			canView := yummy.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return favorites.NewGetEntriesIDFavoriteNotFound(), false

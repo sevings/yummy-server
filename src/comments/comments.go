@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/restapi/operations/comments"
+	"github.com/sevings/yummy-server/src/users"
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
 	"github.com/sevings/yummy-server/src"
-	"github.com/sevings/yummy-server/src/users"
 )
 
 // ConfigureAPI creates operations handlers
@@ -68,9 +68,10 @@ func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, err
 	return &comment, err
 }
 
-func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams) middleware.Responder {
-	return func(params comments.GetCommentsIDParams) middleware.Responder {
+func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
+	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			userID := int64(*uID)
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
 				if err != sql.ErrNoRows {
@@ -100,14 +101,10 @@ func editComment(tx yummy.AutoTx, commentID int64, content string) error {
 	return err
 }
 
-func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams) middleware.Responder {
-	return func(params comments.PutCommentsIDParams) middleware.Responder {
+func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
+	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			userID, found := users.FindAuthUser(tx, &params.XUserKey)
-			if !found {
-				return comments.NewGetCommentsIDForbidden(), false
-			}
-
+			userID := int64(*uID)
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
 				if err != sql.ErrNoRows {
@@ -161,14 +158,10 @@ func deleteComment(tx yummy.AutoTx, commentID int64) error {
 	return err
 }
 
-func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams) middleware.Responder {
-	return func(params comments.DeleteCommentsIDParams) middleware.Responder {
+func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
+	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			userID, found := users.FindAuthUser(tx, &params.XUserKey)
-			if !found {
-				return comments.NewDeleteCommentsIDForbidden(), false
-			}
-
+			userID := int64(*uID)
 			authorID, found := commentAuthor(tx, params.ID)
 			if !found {
 				return comments.NewDeleteCommentsIDNotFound(), false
@@ -222,10 +215,10 @@ func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([
 	return list, rows.Err()
 }
 
-func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams) middleware.Responder {
-	return func(params comments.GetEntriesIDCommentsParams) middleware.Responder {
+func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
+	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			userID, _ := users.FindAuthUser(tx, params.XUserKey)
+			userID := int64(*uID)
 			canView := yummy.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewGetEntriesIDCommentsNotFound(), false
@@ -264,19 +257,16 @@ func postComment(tx yummy.AutoTx, author *models.User, entryID int64, content st
 	return &comment, true
 }
 
-func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams) middleware.Responder {
-	return func(params comments.PostEntriesIDCommentsParams) middleware.Responder {
+func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
+	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
-			user, found := users.LoadAuthUser(tx, &params.XUserKey)
-			if !found {
-				return comments.NewPostEntriesIDCommentsForbidden(), false
-			}
-
-			canView := yummy.CanViewEntry(tx, user.ID, params.ID)
+			userID := int64(*uID)
+			canView := yummy.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewPostEntriesIDCommentsNotFound(), false
 			}
 
+			user, _ := users.LoadUserByID(tx, userID)
 			comment, ok := postComment(tx, user, params.ID, params.Content)
 			if !ok {
 				return comments.NewPostEntriesIDCommentsNotFound(), false
