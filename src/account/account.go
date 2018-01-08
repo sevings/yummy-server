@@ -30,7 +30,7 @@ func isEmailFree(tx yummy.AutoTx, email string) bool {
 	const q = `
         select id 
         from users 
-		where email = $1`
+		where lower(email) = $1`
 
 	var id int64
 	err := tx.QueryRow(q, strings.ToLower(email)).Scan(&id)
@@ -58,7 +58,7 @@ func isNameFree(tx yummy.AutoTx, name string) bool {
 	const q = `
         select id 
         from users 
-		where name = $1`
+		where lower(name) = $1`
 
 	var id int64
 	err := tx.QueryRow(q, strings.ToLower(name)).Scan(&id)
@@ -174,6 +174,21 @@ func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref i
 			$7, $8, $9, $10)
 		RETURNING id`
 
+	if params.Gender == nil {
+		gender := "not set"
+		params.Gender = &gender
+	}
+
+	if params.Country == nil {
+		str := ""
+		params.Country = &str
+	}
+
+	if params.City == nil {
+		str := ""
+		params.City = &str
+	}
+
 	var user int64
 	err := tx.QueryRow(q,
 		params.Name, params.Email, hash, ref, apiKey,
@@ -264,7 +279,7 @@ func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*model
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
-		profile.AgeUpperBound = profile.AgeLowerBound + 5
+		profile.AgeUpperBound = profile.AgeLowerBound + 4
 	}
 
 	return &profile, nil
@@ -328,7 +343,7 @@ func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams, user
 	const q = `
         update users
         set password_hash = $1
-        where password_hash = $2 and api_key = $3`
+        where password_hash = $2 and id = $3`
 
 	oldHash := passwordHash(params.OldPassword)
 	newHash := passwordHash(params.NewPassword)
@@ -372,7 +387,7 @@ func loadInvites(tx yummy.AutoTx, userID *models.UserID) ([]string, error) {
 	const q = `
         select word1 || ' ' || word2 || ' ' || word3 
         from unwrapped_invites
-        where id = $1`
+        where user_id = $1`
 
 	rows, err := tx.Query(q, int64(*userID))
 	if err != nil {

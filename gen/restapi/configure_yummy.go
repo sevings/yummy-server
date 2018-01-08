@@ -4,7 +4,6 @@ package restapi
 
 import (
 	"crypto/tls"
-	"log"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -25,10 +24,7 @@ import (
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
-
-	goconf "github.com/zpatrick/go-config"
-
-	"database/sql"
+	"github.com/sevings/yummy-server/src"
 
 	_ "github.com/lib/pq"
 )
@@ -41,60 +37,11 @@ func configureFlags(api *operations.YummyAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func loadConfig() *goconf.Config {
-	toml := goconf.NewTOMLFile("config.toml")
-	loader := goconf.NewOnceLoader(toml)
-	config := goconf.NewConfig([]goconf.Provider{loader})
-	if err := config.Load(); err != nil {
-		log.Fatal(err)
-	}
-	return config
-}
-
-func openDatabase(config *goconf.Config) *sql.DB {
-	driver, err := config.StringOr("database.driver", "postgres")
-	if err != nil {
-		log.Print(err)
-	}
-
-	user, err := config.String("database.user")
-	if err != nil {
-		log.Print(err)
-	}
-
-	pass, err := config.String("database.password")
-	if err != nil {
-		log.Print(err)
-	}
-
-	name, err := config.String("database.name")
-	if err != nil {
-		log.Print(err)
-	}
-
-	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	schema, err := config.String("database.schema")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec("SET search_path = " + schema + ", public")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return db
-}
-
 func configureAPI(api *operations.YummyAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	config := loadConfig()
-	db := openDatabase(config)
+	config := yummy.LoadConfig("config")
+	db := yummy.OpenDatabase(config)
 
 	accountImpl.ConfigureAPI(db, api)
 	usersImpl.ConfigureAPI(db, api)

@@ -4,9 +4,109 @@ import (
 	"database/sql"
 	"log"
 
+	goconf "github.com/zpatrick/go-config"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/models"
+
+	// to use postgres
+	_ "github.com/lib/pq"
 )
+
+// LoadConfig creates app config from file
+func LoadConfig(fileName string) *goconf.Config {
+	toml := goconf.NewTOMLFile(fileName + ".toml")
+	loader := goconf.NewOnceLoader(toml)
+	config := goconf.NewConfig([]goconf.Provider{loader})
+	if err := config.Load(); err != nil {
+		log.Fatal(err)
+	}
+	return config
+}
+
+// OpenDatabase returns db opened from config.
+func OpenDatabase(config *goconf.Config) *sql.DB {
+	driver, err := config.StringOr("database.driver", "postgres")
+	if err != nil {
+		log.Print(err)
+	}
+
+	user, err := config.String("database.user")
+	if err != nil {
+		log.Print(err)
+	}
+
+	pass, err := config.String("database.password")
+	if err != nil {
+		log.Print(err)
+	}
+
+	name, err := config.String("database.name")
+	if err != nil {
+		log.Print(err)
+	}
+
+	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	schema, err := config.String("database.schema")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = db.Exec("SET search_path = " + schema + ", public")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
+}
+
+func dropTable(tx *sql.Tx, table string) {
+	_, err := tx.Exec("delete from " + table)
+	if err != nil {
+		tx.Rollback()
+		log.Fatal("cannot clear table " + table + ": " + err.Error())
+	}
+}
+
+// ClearDatabase drops user data tables and then creates default user
+func ClearDatabase(db *sql.DB) {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal("cannot begin tx")
+	}
+
+	_, err = tx.Exec("delete from users where id != 1")
+	if err != nil {
+		tx.Rollback()
+		log.Fatal("cannot clear table users: " + err.Error())
+	}
+
+	dropTable(tx, "comment_votes")
+	dropTable(tx, "comments")
+	dropTable(tx, "entries")
+	dropTable(tx, "entries_privacy")
+	dropTable(tx, "entry_tags")
+	dropTable(tx, "entry_votes")
+	dropTable(tx, "favorites")
+	dropTable(tx, "invites")
+	dropTable(tx, "relations")
+	dropTable(tx, "tags")
+	dropTable(tx, "watching")
+
+	for i := 0; i < 3; i++ {
+		_, err = tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);")
+		if err != nil {
+			tx.Rollback()
+			log.Fatal("cannot create invite")
+		}
+	}
+
+	tx.Commit()
+}
 
 // NewError returns error object with some message
 func NewError(msg string) *models.Error {
