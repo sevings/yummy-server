@@ -28,7 +28,6 @@ func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, erro
 	invited_by_id, 
 	invited_by_name, invited_by_show_name,
 	invited_by_is_online, 
-	invited_by_name_color, invited_by_avatar_color,
 	invited_by_avatar
 	FROM long_users 
 	WHERE id = $1`

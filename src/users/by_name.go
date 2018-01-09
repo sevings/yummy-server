@@ -8,11 +8,10 @@ import (
 	"github.com/sevings/yummy-server/gen/restapi/operations/users"
 )
 
-const profileQueryByName = profileQuery + "WHERE long_users.name = $1"
-
 func newUserLoaderByName(db *sql.DB) func(users.GetUsersByNameNameParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameParams, userID *models.UserID) middleware.Responder {
-		return loadProfile(db, profileQueryByName, userID, params.Name)
+		const q = profileQuery + "WHERE long_users.name = $1"
+		return loadProfile(db, q, userID, params.Name)
 	}
 }
 

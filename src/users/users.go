@@ -31,7 +31,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 
 const profileQuery = `
 SELECT id, name, show_name,
-name_color, avatar_color, avatar,
+avatar,
 gender, is_daylog,
 privacy,
 title, karma, 
