@@ -29,11 +29,6 @@ func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
 }
 
-const postEntryQuery = `
-INSERT INTO entries (author_id, title, content, word_count, visible_for, is_votable)
-VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
-RETURNING id, created_at`
-
 func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
 	author, _ := users.LoadUserByID(tx, userID)
 
@@ -56,7 +51,12 @@ func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, 
 		Author:    author,
 	}
 
-	err := tx.QueryRow(postEntryQuery, author.ID, title, content, wordCount,
+	const q = `
+	INSERT INTO entries (author_id, title, content, word_count, visible_for, is_votable)
+	VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
+	RETURNING id, created_at`
+
+	err := tx.QueryRow(q, author.ID, title, content, wordCount,
 		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
 	if err != nil {
 		log.Print(err)

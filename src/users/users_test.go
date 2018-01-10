@@ -2,7 +2,6 @@ package users
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"testing"
 
@@ -12,9 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sevings/yummy-server/gen/models"
-	"github.com/sevings/yummy-server/gen/restapi/operations"
-	"github.com/sevings/yummy-server/gen/restapi/operations/account"
-	accountImpl "github.com/sevings/yummy-server/src/account"
 
 	yummy "github.com/sevings/yummy-server/src"
 )
@@ -28,39 +24,9 @@ func TestMain(m *testing.M) {
 	db = yummy.OpenDatabase(config)
 	yummy.ClearDatabase(db)
 
-	api := operations.YummyAPI{}
-	accountImpl.ConfigureAPI(db, &api)
-
-	register(&api, "test1")
-	register(&api, "test2")
-	register(&api, "test3")
+	userIDs, profiles = yummy.RegisterTestUsers(db)
 
 	os.Exit(m.Run())
-}
-
-func register(api *operations.YummyAPI, name string) {
-	params := account.PostAccountRegisterParams{
-		Name:     name,
-		Email:    name,
-		Password: "test123",
-		Invite:   "acknown acknown acknown",
-		Referrer: "HaveANiceDay",
-	}
-
-	resp := api.AccountPostAccountRegisterHandler.Handle(params)
-	body, ok := resp.(*account.PostAccountRegisterOK)
-	if !ok {
-		badBody, ok := resp.(*account.PostAccountRegisterBadRequest)
-		if ok {
-			log.Fatal(badBody.Payload.Message)
-		}
-
-		log.Fatal("reg error")
-	}
-
-	userID := models.UserID(body.Payload.ID)
-	userIDs = append(userIDs, &userID)
-	profiles = append(profiles, body.Payload)
 }
 
 func TestKeyAuth(t *testing.T) {

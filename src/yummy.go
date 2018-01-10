@@ -64,50 +64,6 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 	return db
 }
 
-func dropTable(tx *sql.Tx, table string) {
-	_, err := tx.Exec("delete from " + table)
-	if err != nil {
-		tx.Rollback()
-		log.Fatal("cannot clear table " + table + ": " + err.Error())
-	}
-}
-
-// ClearDatabase drops user data tables and then creates default user
-func ClearDatabase(db *sql.DB) {
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal("cannot begin tx")
-	}
-
-	_, err = tx.Exec("delete from users where id != 1")
-	if err != nil {
-		tx.Rollback()
-		log.Fatal("cannot clear table users: " + err.Error())
-	}
-
-	dropTable(tx, "comment_votes")
-	dropTable(tx, "comments")
-	dropTable(tx, "entries")
-	dropTable(tx, "entries_privacy")
-	dropTable(tx, "entry_tags")
-	dropTable(tx, "entry_votes")
-	dropTable(tx, "favorites")
-	dropTable(tx, "invites")
-	dropTable(tx, "relations")
-	dropTable(tx, "tags")
-	dropTable(tx, "watching")
-
-	for i := 0; i < 3; i++ {
-		_, err = tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);")
-		if err != nil {
-			tx.Rollback()
-			log.Fatal("cannot create invite")
-		}
-	}
-
-	tx.Commit()
-}
-
 // NewError returns error object with some message
 func NewError(msg string) *models.Error {
 	return &models.Error{Message: msg}
