@@ -69,10 +69,10 @@ func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
 	}
 }
 
-func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args... interface{}) (*models.Feed, error) {
+func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interface{}) (*models.Feed, error) {
 	var feed models.Feed
 	userID := int64(*uID)
-	rows, err := tx.Query(query, userID, ...args)
+	rows, err := tx.Query(query, userID, args)
 	if err != nil {
 		return &feed, err
 	}
@@ -168,7 +168,7 @@ func loadTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset, tlog in
 	if int64(*userID) == tlog {
 		return loadMyTlogFeed(tx, userID, limit, offset)
 	}
-	
+
 	return loadFeed(tx, tlogFeedQuery, userID, limit, offset, tlog)
 }
 
@@ -196,7 +196,7 @@ func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.U
 			feed, err := loadMyTlogFeed(tx, userID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)
-				return entries.NewGetEntriesUsersMeNotFound(), false
+				return entries.NewGetEntriesUsersMeForbidden(), false
 			}
 
 			return entries.NewGetEntriesUsersMeOK().WithPayload(feed), true

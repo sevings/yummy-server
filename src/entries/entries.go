@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
-	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations"
@@ -17,7 +16,7 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
-	api.MePostUsersMeEntriesHandler = me.PostUsersMeEntriesHandlerFunc(newMyTlogPoster(db))
+	api.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(db))
 	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
 	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(db))
 	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(db))
@@ -68,17 +67,17 @@ func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, 
 	return &entry, true
 }
 
-func newMyTlogPoster(db *sql.DB) func(me.PostUsersMeEntriesParams, *models.UserID) middleware.Responder {
-	return func(params me.PostUsersMeEntriesParams, uID *models.UserID) middleware.Responder {
+func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
+	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
 		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
 			entry, created := createEntry(tx, int64(*uID),
 				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 
 			if !created {
-				return me.NewPostUsersMeEntriesForbidden(), false
+				return entries.NewPostEntriesUsersMeForbidden(), false
 			}
 
-			return me.NewPostUsersMeEntriesOK().WithPayload(entry), true
+			return entries.NewPostEntriesUsersMeOK().WithPayload(entry), true
 		})
 	}
 }
