@@ -26,25 +26,10 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func checkPostEntry(params me.PostUsersMeEntriesParams,
-	user *models.AuthProfile, id *models.UserID,
-	wc int64, privacy string, votable bool, title string) {
+func checkEntry(entry *models.Entry,
+	user *models.AuthProfile,
+	wc int64, privacy string, votable bool, title, content string) {
 
-	post := newMyTlogPoster(db)
-	resp := post(params, id)
-	body, ok := resp.(*me.PostUsersMeEntriesOK)
-	if !ok {
-		badBody, ok := resp.(*me.PostUsersMeEntriesForbidden)
-		if ok {
-			t.Fatal(badBody.Payload.Message)
-		}
-
-		t.Fatal("error post entry")
-	}
-
-	req := require.New(t)
-
-	entry := body.Payload
 	req.NotEmpty(entry.CreatedAt)
 	req.Zero(entry.Rating)
 	req.Equal(params.Content, entry.Content)
@@ -65,6 +50,28 @@ func checkPostEntry(params me.PostUsersMeEntriesParams,
 	req.Equal(user.ShowName, author.ShowName)
 	req.Equal(user.IsOnline, author.IsOnline)
 	req.Equal(user.Avatar, author.Avatar)
+}
+
+func checkPostEntry(params me.PostUsersMeEntriesParams,
+	user *models.AuthProfile, id *models.UserID,
+	wc int64, privacy string, votable bool, title string) {
+
+	post := newMyTlogPoster(db)
+	resp := post(params, id)
+	body, ok := resp.(*me.PostUsersMeEntriesOK)
+	if !ok {
+		badBody, ok := resp.(*me.PostUsersMeEntriesForbidden)
+		if ok {
+			t.Fatal(badBody.Payload.Message)
+		}
+
+		t.Fatal("error post entry")
+	}
+
+	req := require.New(t)
+
+	entry := body.Payload
+	checkEntry(entry, user, wc, privacy, votable, title, params.Content)
 }
 
 func TestPostMyTlog(t *testing.T) {
@@ -114,4 +121,7 @@ func TestLoadLive(t *testing.T) {
 	}
 
 	feed := body.Payload.Entries
+	require.Equal(t, 2, len(feed))
+	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 }
