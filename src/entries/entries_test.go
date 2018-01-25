@@ -125,3 +125,74 @@ func TestLoadLive(t *testing.T) {
 	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 }
+
+func loadTlog(tlog, user *models.UserID) models.FeedEntries {
+	params := entries.GetEntriesUsersIDParams{
+		ID: int64(*tlog),
+	}
+	load := newTlogLoader(db)
+	resp := load(params, user)
+	body, ok := resp.(*entries.GetEntriesUsersIDOK)
+	if !ok {
+		t.Fatal("error load tlog")
+	}
+
+	return body.Payload.Entries
+}
+
+func TestLoadTlog(t *testing.T) {
+	yummy.ClearDatabase(db)
+	userIDs, profiles = yummy.RegisterTestUsers(db)
+
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+	postEntry(userIDs[0], models.EntryPrivacySome)
+	postEntry(userIDs[0], models.EntryPrivacyMe)
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+
+	feed := loadTlog(userIDs[0], userIDs[1])
+	require.Equal(t, 2, len(feed))
+	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	feed = loadTlog(userIDs[0], userIDs[0])
+	require.Equal(t, 4, len(feed))
+	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	feed = loadTlog(userIDs[1], userIDs[0])
+	require.Empty(t, feed)
+}
+
+func loadMyTlog(user *models.UserID) models.FeedEntries {
+	params := entries.GetEntriesUsersMeParams{}
+	load := newMyTlogLoader(db)
+	resp := load(params, user)
+	body, ok := resp.(*entries.GetEntriesUsersMeOK)
+	if !ok {
+		t.Fatal("error load tlog")
+	}
+
+	return body.Payload.Entries
+}
+
+func TestLoadMyTlog(t *testing.T) {
+	yummy.ClearDatabase(db)
+	userIDs, profiles = yummy.RegisterTestUsers(db)
+
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+	postEntry(userIDs[0], models.EntryPrivacySome)
+	postEntry(userIDs[0], models.EntryPrivacyMe)
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+
+	feed := loadMyTlog(userIDs[0])
+	require.Equal(t, 4, len(feed))
+	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	feed = loadMyTlog(userIDs[1])
+	require.Empty(t, feed)
+}

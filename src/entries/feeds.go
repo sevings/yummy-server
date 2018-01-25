@@ -28,7 +28,7 @@ EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watc
 FROM feed
 LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS votes ON feed.id = votes.entry_id
 WHERE feed.entry_privacy = 'all' 
-	AND (feed.author_privacy = 'all' OR feed.author_privacy = 'registered') `
+	AND feed.author_privacy = 'all' `
 
 const feedQueryEnd = " ORDER BY created_at DESC LIMIT $2 OFFSET $3"
 
@@ -42,6 +42,15 @@ FROM feed
 WHERE feed.entry_privacy = 'anonymous'` + feedQueryEnd
 
 const bestFeedQuery = tlogFeedQueryStart + " AND feed.rating > 5 " + feedQueryEnd
+
+const tlogFeedQuery = tlogFeedQueryStart + " AND feed.author_id = $4 " + feedQueryEnd
+
+const myTlogFeedQuery = feedQueryStart + `,
+NULL, 
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
+true
+FROM feed
+WHERE feed.author_id = $1 ` + feedQueryEnd
 
 func reverse(feed *models.Feed) {
 	for i, j := 0, len(feed.Entries)-1; i < j; i, j = i+1, j-1 {
@@ -60,10 +69,10 @@ func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
 	}
 }
 
-func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, limit, offset int64) (*models.Feed, error) {
+func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args... interface{}) (*models.Feed, error) {
 	var feed models.Feed
 	userID := int64(*uID)
-	rows, err := tx.Query(query, userID, limit, offset)
+	rows, err := tx.Query(query, userID, ...args)
 	if err != nil {
 		return &feed, err
 	}
@@ -151,6 +160,46 @@ func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID
 			}
 
 			return entries.NewGetEntriesBestOK().WithPayload(feed), true
+		})
+	}
+}
+
+func loadTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset, tlog int64) (*models.Feed, error) {
+	if int64(*userID) == tlog {
+		return loadMyTlogFeed(tx, userID, limit, offset)
+	}
+	
+	return loadFeed(tx, tlogFeedQuery, userID, limit, offset, tlog)
+}
+
+func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			feed, err := loadTlogFeed(tx, userID, *params.Limit, *params.Skip, params.ID)
+			if err != nil {
+				log.Print(err)
+				return entries.NewGetEntriesUsersIDNotFound(), false
+			}
+
+			return entries.NewGetEntriesUsersIDOK().WithPayload(feed), true
+		})
+	}
+}
+
+func loadMyTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
+	return loadFeed(tx, myTlogFeedQuery, userID, limit, offset)
+}
+
+func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesUsersMeParams, userID *models.UserID) middleware.Responder {
+		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+			feed, err := loadMyTlogFeed(tx, userID, *params.Limit, *params.Skip)
+			if err != nil {
+				log.Print(err)
+				return entries.NewGetEntriesUsersMeNotFound(), false
+			}
+
+			return entries.NewGetEntriesUsersMeOK().WithPayload(feed), true
 		})
 	}
 }
