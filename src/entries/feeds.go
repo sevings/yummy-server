@@ -52,11 +52,11 @@ true
 FROM feed
 WHERE feed.author_id = $1 ` + feedQueryEnd
 
-func reverse(feed *models.Feed) {
-	for i, j := 0, len(feed.Entries)-1; i < j; i, j = i+1, j-1 {
-		feed.Entries[i], feed.Entries[j] = feed.Entries[j], feed.Entries[i]
-	}
-}
+// func reverse(feed *models.Feed) {
+// 	for i, j := 0, len(feed.Entries)-1; i < j; i, j = i+1, j-1 {
+// 		feed.Entries[i], feed.Entries[j] = feed.Entries[j], feed.Entries[i]
+// 	}
+// }
 
 func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
@@ -72,7 +72,7 @@ func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
 func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interface{}) (*models.Feed, error) {
 	var feed models.Feed
 	userID := int64(*uID)
-	rows, err := tx.Query(query, userID, args)
+	rows, err := tx.Query(query, append([]interface{}{userID}, args...)...)
 	if err != nil {
 		return &feed, err
 	}
@@ -103,7 +103,7 @@ func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interfa
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
-	reverse(&feed)
+	// reverse(&feed)
 	loadComments(tx, userID, &feed)
 
 	return &feed, rows.Err()
