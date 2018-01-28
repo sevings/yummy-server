@@ -7,7 +7,6 @@ import (
 
 	"github.com/sevings/yummy-server/gen/models"
 	"github.com/sevings/yummy-server/gen/restapi/operations/entries"
-	"github.com/sevings/yummy-server/gen/restapi/operations/me"
 	yummy "github.com/sevings/yummy-server/src"
 	"github.com/stretchr/testify/require"
 )
@@ -26,13 +25,14 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func checkEntry(entry *models.Entry,
+func checkEntry(t *testing.T, entry *models.Entry,
 	user *models.AuthProfile,
 	wc int64, privacy string, votable bool, title, content string) {
 
+	req := require.New(t)
 	req.NotEmpty(entry.CreatedAt)
 	req.Zero(entry.Rating)
-	req.Equal(params.Content, entry.Content)
+	req.Equal(content, entry.Content)
 	req.Equal(wc, entry.WordCount)
 	req.Equal(privacy, entry.Privacy)
 	req.Empty(entry.VisibleFor)
@@ -52,15 +52,16 @@ func checkEntry(entry *models.Entry,
 	req.Equal(user.Avatar, author.Avatar)
 }
 
-func checkPostEntry(params me.PostUsersMeEntriesParams,
+func checkPostEntry(t *testing.T,
+	params entries.PostEntriesUsersMeParams,
 	user *models.AuthProfile, id *models.UserID,
 	wc int64, privacy string, votable bool, title string) {
 
 	post := newMyTlogPoster(db)
 	resp := post(params, id)
-	body, ok := resp.(*me.PostUsersMeEntriesOK)
+	body, ok := resp.(*entries.PostEntriesUsersMeOK)
 	if !ok {
-		badBody, ok := resp.(*me.PostUsersMeEntriesForbidden)
+		badBody, ok := resp.(*entries.PostEntriesUsersMeForbidden)
 		if ok {
 			t.Fatal(badBody.Payload.Message)
 		}
@@ -71,15 +72,15 @@ func checkPostEntry(params me.PostUsersMeEntriesParams,
 	req := require.New(t)
 
 	entry := body.Payload
-	checkEntry(entry, user, wc, privacy, votable, title, params.Content)
+	checkEntry(t, entry, user, wc, privacy, votable, title, params.Content)
 }
 
 func TestPostMyTlog(t *testing.T) {
-	params := me.PostUsersMeEntriesParams{
+	params := entries.PostEntriesUsersMeParams{
 		Content: "test content",
 	}
 
-	checkPostEntry(params, id, 2, models.EntryPrivacyAll, true, "")
+	checkPostEntry(t, params, profiles[0], userIDs[0], 2, models.EntryPrivacyAll, true, "")
 
 	votable := false
 	params.IsVotable = &votable
@@ -90,12 +91,12 @@ func TestPostMyTlog(t *testing.T) {
 	title := "title title ti"
 	params.Title = &title
 
-	checkPostEntry(params, profiles[0], userIDs[0], 5, privacy, votable, title)
+	checkPostEntry(t, params, profiles[0], userIDs[0], 5, privacy, votable, title)
 }
 
 func postEntry(id *models.UserID, privacy string) {
 	post := newMyTlogPoster(db)
-	entryParams := me.PostUsersMeEntriesParams{
+	params := entries.PostEntriesUsersMeParams{
 		Content: "test test test",
 		Privacy: &privacy,
 	}
@@ -122,11 +123,11 @@ func TestLoadLive(t *testing.T) {
 
 	feed := body.Payload.Entries
 	require.Equal(t, 2, len(feed))
-	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 }
 
-func loadTlog(tlog, user *models.UserID) models.FeedEntries {
+func loadTlog(t *testing.T, tlog, user *models.UserID) models.FeedEntries {
 	params := entries.GetEntriesUsersIDParams{
 		ID: int64(*tlog),
 	}
@@ -149,23 +150,23 @@ func TestLoadTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyMe)
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
-	feed := loadTlog(userIDs[0], userIDs[1])
+	feed := loadTlog(t, userIDs[0], userIDs[1])
 	require.Equal(t, 2, len(feed))
-	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 
-	feed = loadTlog(userIDs[0], userIDs[0])
+	feed = loadTlog(t, userIDs[0], userIDs[0])
 	require.Equal(t, 4, len(feed))
-	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 
-	feed = loadTlog(userIDs[1], userIDs[0])
+	feed = loadTlog(t, userIDs[1], userIDs[0])
 	require.Empty(t, feed)
 }
 
-func loadMyTlog(user *models.UserID) models.FeedEntries {
+func loadMyTlog(t *testing.T, user *models.UserID) models.FeedEntries {
 	params := entries.GetEntriesUsersMeParams{}
 	load := newMyTlogLoader(db)
 	resp := load(params, user)
@@ -186,13 +187,13 @@ func TestLoadMyTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyMe)
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
-	feed := loadMyTlog(userIDs[0])
+	feed := loadMyTlog(t, userIDs[0])
 	require.Equal(t, 4, len(feed))
-	checkEntry(feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[3], profiles[0], 3, models.EntryPrivacyAll, true, "", "test test test")
 
-	feed = loadMyTlog(userIDs[1])
+	feed = loadMyTlog(t, userIDs[1])
 	require.Empty(t, feed)
 }
