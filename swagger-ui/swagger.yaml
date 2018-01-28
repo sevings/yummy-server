@@ -241,7 +241,7 @@ definitions:
       wordCount: 5
       privacy: 'all'
       isVotable: true
-      commentsCount: 0
+      commentCount: 0
   Feed:
     type: object
     properties:
