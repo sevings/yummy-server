@@ -167,8 +167,7 @@ func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref i
 	const q = `
 		INSERT INTO users 
 		(name, show_name, email, password_hash, invited_by, api_key,
-        gender, country, city,
-        name_color, avatar_color)
+        gender, country, city)
 		values($1, $1, $2, $3, $4, $5, 
 			(select id from gender where type = $6), 
 			$7, $8, $9, $10)
