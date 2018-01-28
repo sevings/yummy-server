@@ -160,17 +160,16 @@ func passwordHash(password string) []byte {
 
 func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
 	hash := passwordHash(params.Password)
-	nameColor := "#c9c9c9"
-	avatarColor := "#373737"
 	apiKey := generateAPIKey()
 
 	const q = `
 		INSERT INTO users 
 		(name, show_name, email, password_hash, invited_by, api_key,
-        gender, country, city)
+		gender, 
+		country, city)
 		values($1, $1, $2, $3, $4, $5, 
 			(select id from gender where type = $6), 
-			$7, $8, $9, $10)
+			$7, $8)
 		RETURNING id`
 
 	if params.Gender == nil {
@@ -191,8 +190,8 @@ func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref i
 	var user int64
 	err := tx.QueryRow(q,
 		params.Name, params.Email, hash, ref, apiKey,
-		*params.Gender, *params.Country, *params.City,
-		nameColor, avatarColor).Scan(&user)
+		*params.Gender,
+		*params.Country, *params.City).Scan(&user)
 
 	if err != nil {
 		return 0, err
