@@ -30,6 +30,7 @@ func entryVoteStatus(tx yummy.AutoTx, userID, entryID int64) (*models.VoteStatus
 		return nil, err
 	}
 
+	//! \todo VoteStatusVoteMy
 	switch {
 	case !positive.Valid:
 		status.Vote = models.VoteStatusVoteNot

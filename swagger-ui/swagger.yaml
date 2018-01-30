@@ -223,7 +223,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg]
+        enum: [not, pos, neg, my]
       isFavorited:
         type: boolean
       isWatching:
@@ -260,7 +260,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg]
+        enum: [not, pos, neg, my]
   FavoriteStatus:
     type: object
     properties:
@@ -316,7 +316,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg]
+        enum: [not, pos, neg, my]
     example:
       id: 999
       entryId: 152
@@ -769,14 +769,6 @@ paths:
           name: gender
           type: string
           enum: [male, female, not set]
-        - in: formData
-          name: nameColor
-          type: string
-          pattern: '#[0-9a-d]{6}'
-        - in: formData
-          name: avatarColor
-          type: string
-          pattern: '#[0-9a-d]{6}'
         - in: formData
           name: avatar
           type: file

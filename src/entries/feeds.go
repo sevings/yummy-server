@@ -91,6 +91,8 @@ func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interfa
 			&vote, &entry.IsFavorited, &entry.IsWatching)
 
 		switch {
+		case author.ID == userID:
+			entry.Vote = models.EntryVoteMy
 		case !vote.Valid:
 			entry.Vote = models.EntryVoteNot
 		case vote.Bool:
