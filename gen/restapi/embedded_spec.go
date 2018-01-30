@@ -2070,18 +2070,6 @@ func init() {
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-d]{6}",
-            "type": "string",
-            "name": "nameColor",
-            "in": "formData"
-          },
-          {
-            "pattern": "#[0-9a-d]{6}",
-            "type": "string",
-            "name": "avatarColor",
-            "in": "formData"
-          },
-          {
             "type": "file",
             "name": "avatar",
             "in": "formData"
@@ -2402,7 +2390,8 @@ func init() {
           "enum": [
             "not",
             "pos",
-            "neg"
+            "neg",
+            "my"
           ]
         }
       },
@@ -2515,7 +2504,8 @@ func init() {
           "enum": [
             "not",
             "pos",
-            "neg"
+            "neg",
+            "my"
           ]
         },
         "wordCount": {
@@ -2523,7 +2513,7 @@ func init() {
         }
       },
       "example": {
-        "commentsCount": 0,
+        "commentCount": 0,
         "content": "\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e",
         "createdAt": "1985-04-12T23:20:50.52Z",
         "id": 152,
@@ -2806,7 +2796,8 @@ func init() {
           "enum": [
             "not",
             "pos",
-            "neg"
+            "neg",
+            "my"
           ]
         }
       }

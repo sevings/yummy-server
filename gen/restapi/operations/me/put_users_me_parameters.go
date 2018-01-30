@@ -39,11 +39,6 @@ type PutUsersMeParams struct {
 	*/
 	Avatar *runtime.File
 	/*
-	  Pattern: #[0-9a-d]{6}
-	  In: formData
-	*/
-	AvatarColor *string
-	/*
 	  In: formData
 	*/
 	Birthday *string
@@ -65,11 +60,6 @@ type PutUsersMeParams struct {
 	  In: formData
 	*/
 	IsDaylog *bool
-	/*
-	  Pattern: #[0-9a-d]{6}
-	  In: formData
-	*/
-	NameColor *string
 	/*
 	  In: formData
 	*/
@@ -117,11 +107,6 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 		o.Avatar = &runtime.File{Data: avatar, Header: avatarHeader}
 	}
 
-	fdAvatarColor, fdhkAvatarColor, _ := fds.GetOK("avatarColor")
-	if err := o.bindAvatarColor(fdAvatarColor, fdhkAvatarColor, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	fdBirthday, fdhkBirthday, _ := fds.GetOK("birthday")
 	if err := o.bindBirthday(fdBirthday, fdhkBirthday, route.Formats); err != nil {
 		res = append(res, err)
@@ -144,11 +129,6 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	fdIsDaylog, fdhkIsDaylog, _ := fds.GetOK("isDaylog")
 	if err := o.bindIsDaylog(fdIsDaylog, fdhkIsDaylog, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	fdNameColor, fdhkNameColor, _ := fds.GetOK("nameColor")
-	if err := o.bindNameColor(fdNameColor, fdhkNameColor, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -179,33 +159,6 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 }
 
 func (o *PutUsersMeParams) bindAvatar(file multipart.File, header *multipart.FileHeader) error {
-
-	return nil
-}
-
-func (o *PutUsersMeParams) bindAvatarColor(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.AvatarColor = &raw
-
-	if err := o.validateAvatarColor(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *PutUsersMeParams) validateAvatarColor(formats strfmt.Registry) error {
-
-	if err := validate.Pattern("avatarColor", "formData", (*o.AvatarColor), `#[0-9a-d]{6}`); err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -319,33 +272,6 @@ func (o *PutUsersMeParams) bindIsDaylog(rawData []string, hasKey bool, formats s
 		return errors.InvalidType("isDaylog", "formData", "bool", raw)
 	}
 	o.IsDaylog = &value
-
-	return nil
-}
-
-func (o *PutUsersMeParams) bindNameColor(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.NameColor = &raw
-
-	if err := o.validateNameColor(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *PutUsersMeParams) validateNameColor(formats strfmt.Registry) error {
-
-	if err := validate.Pattern("nameColor", "formData", (*o.NameColor), `#[0-9a-d]{6}`); err != nil {
-		return err
-	}
 
 	return nil
 }

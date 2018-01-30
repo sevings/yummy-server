@@ -177,7 +177,7 @@ var entryTypeVotePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["not","pos","neg"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["not","pos","neg","my"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -192,6 +192,8 @@ const (
 	EntryVotePos string = "pos"
 	// EntryVoteNeg captures enum value "neg"
 	EntryVoteNeg string = "neg"
+	// EntryVoteMy captures enum value "my"
+	EntryVoteMy string = "my"
 )
 
 // prop value enum

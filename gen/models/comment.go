@@ -141,7 +141,7 @@ var commentTypeVotePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["not","pos","neg"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["not","pos","neg","my"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -156,6 +156,8 @@ const (
 	CommentVotePos string = "pos"
 	// CommentVoteNeg captures enum value "neg"
 	CommentVoteNeg string = "neg"
+	// CommentVoteMy captures enum value "my"
+	CommentVoteMy string = "my"
 )
 
 // prop value enum
