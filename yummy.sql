@@ -959,7 +959,7 @@ CREATE INDEX "index_voted_entries" ON "mindwell"."entry_votes" USING btree( "ent
 CREATE INDEX "index_voted_users" ON "mindwell"."entry_votes" USING btree( "user_id" );
 -- -------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
         SET rating = rating + 1
@@ -969,11 +969,11 @@ CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
         SET rating = rating - 1
-        WHERE id = OLD.entry_id;
+        WHERE id = NEW.entry_id;
         
         RETURN NULL;
     END;
@@ -999,17 +999,37 @@ CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes2() RETURNS TRIGGER AS $$
     END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes_del() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE mindwell.entries
+        SET rating = rating + 1
+        WHERE id = OLD.entry_id;
+        
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes_del() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE mindwell.entries
+        SET rating = rating - 1
+        WHERE id = OLD.entry_id;
+        
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
 CREATE TRIGGER cnt_entry_votes_ins_inc
     AFTER INSERT ON mindwell.entry_votes
     FOR EACH ROW 
     WHEN (NEW."positive" = true)
-    EXECUTE PROCEDURE mindwell.inc_entry_votes();
+    EXECUTE PROCEDURE mindwell.inc_entry_votes_ins();
 
 CREATE TRIGGER cnt_entry_votes_ins_dec
     AFTER INSERT ON mindwell.entry_votes
     FOR EACH ROW 
     WHEN (NEW."positive" = false)
-    EXECUTE PROCEDURE mindwell.dec_entry_votes();
+    EXECUTE PROCEDURE mindwell.dec_entry_votes_ins();
 
 CREATE TRIGGER cnt_entry_votes_upd_inc
     AFTER UPDATE ON mindwell.entry_votes
@@ -1027,13 +1047,13 @@ CREATE TRIGGER cnt_entry_votes_del_dec
     AFTER DELETE ON mindwell.entry_votes
     FOR EACH ROW 
     WHEN (OLD."positive" = true)
-    EXECUTE PROCEDURE mindwell.dec_entry_votes();
+    EXECUTE PROCEDURE mindwell.dec_entry_votes_del();
 
 CREATE TRIGGER cnt_entry_votes_del_inc
     AFTER DELETE ON mindwell.entry_votes
     FOR EACH ROW 
     WHEN (OLD."positive" = false)
-    EXECUTE PROCEDURE mindwell.inc_entry_votes();
+    EXECUTE PROCEDURE mindwell.inc_entry_votes_del();
 
 
 
