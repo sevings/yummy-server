@@ -860,7 +860,7 @@ CREATE OR REPLACE FUNCTION mindwell.count_tags() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cnt_tags_ins
-    AFTER INSERT ON mindwell.entry_tag
+    AFTER INSERT ON mindwell.entry_tags
     REFERENCING NEW TABLE as changes
     FOR EACH STATEMENT EXECUTE PROCEDURE mindwell.count_tags();
 
