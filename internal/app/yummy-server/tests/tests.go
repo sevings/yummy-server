@@ -1,4 +1,4 @@
-package yummy
+package tests
 
 import (
 	"database/sql"
@@ -7,6 +7,8 @@ import (
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/account"
+
+	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
 )
 
 func dropTable(tx *sql.Tx, table string) {
@@ -81,7 +83,7 @@ func register(api *operations.YummyAPI, name string) (*models.UserID, *models.Au
 func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 
 	api := operations.YummyAPI{}
-	account.ConfigureAPI(db, &api)
+	accountImpl.ConfigureAPI(db, &api)
 
 	var userIDs []*models.UserID
 	var profiles []*models.AuthProfile

@@ -1,4 +1,4 @@
-package yummy
+package utils
 
 import (
 	"database/sql"

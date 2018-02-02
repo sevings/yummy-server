@@ -11,8 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sevings/yummy-server/models"
-
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
 )
 
 var db *sql.DB
@@ -20,11 +18,11 @@ var userIDs []*models.UserID
 var profiles []*models.AuthProfile
 
 func TestMain(m *testing.M) {
-	config := yummy.LoadConfig("../../config")
-	db = yummy.OpenDatabase(config)
-	yummy.ClearDatabase(db)
+	config := utils.LoadConfig("../../config")
+	db = utils.OpenDatabase(config)
+	utils.ClearDatabase(db)
 
-	userIDs, profiles = yummy.RegisterTestUsers(db)
+	userIDs, profiles = utils.RegisterTestUsers(db)
 
 	os.Exit(m.Run())
 }

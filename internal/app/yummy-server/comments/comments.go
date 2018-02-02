@@ -8,7 +8,7 @@ import (
 	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/restapi/operations/comments"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 )
@@ -49,7 +49,7 @@ func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	}
 }
 
-func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, error) {
+func loadComment(tx utils.AutoTx, userID, commentID int64) (*models.Comment, error) {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullBool
@@ -70,7 +70,7 @@ func loadComment(tx yummy.AutoTx, userID, commentID int64) (*models.Comment, err
 
 func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
@@ -81,7 +81,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.Use
 				return comments.NewGetCommentsIDNotFound(), false
 			}
 
-			canView := yummy.CanViewEntry(tx, userID, comment.EntryID)
+			canView := utils.CanViewEntry(tx, userID, comment.EntryID)
 			if !canView {
 				return comments.NewGetCommentsIDNotFound(), false
 			}
@@ -91,7 +91,7 @@ func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.Use
 	}
 }
 
-func editComment(tx yummy.AutoTx, commentID int64, content string) error {
+func editComment(tx utils.AutoTx, commentID int64, content string) error {
 	const q = `
 		UPDATE comments
 		SET content = $2
@@ -103,7 +103,7 @@ func editComment(tx yummy.AutoTx, commentID int64, content string) error {
 
 func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
 			comment, err := loadComment(tx, userID, params.ID)
 			if err != nil {
@@ -130,7 +130,7 @@ func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams, *models.Use
 	}
 }
 
-func commentAuthor(tx yummy.AutoTx, commentID int64) (int64, bool) {
+func commentAuthor(tx utils.AutoTx, commentID int64) (int64, bool) {
 	const q = `
 		SELECT author_id
 		FROM comments
@@ -149,7 +149,7 @@ func commentAuthor(tx yummy.AutoTx, commentID int64) (int64, bool) {
 	return 0, false
 }
 
-func deleteComment(tx yummy.AutoTx, commentID int64) error {
+func deleteComment(tx utils.AutoTx, commentID int64) error {
 	const q = `
 		DELETE FROM comments
 		WHERE id = $1`
@@ -160,7 +160,7 @@ func deleteComment(tx yummy.AutoTx, commentID int64) error {
 
 func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
 			authorID, found := commentAuthor(tx, params.ID)
 			if !found {
@@ -182,7 +182,7 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([]*models.Comment, error) {
+func LoadEntryComments(tx utils.AutoTx, userID, entryID, limit, offset int64) ([]*models.Comment, error) {
 	const q = commentQuery + `
 		WHERE entry_id = $2
 		ORDER BY created_at DESC
@@ -217,9 +217,9 @@ func LoadEntryComments(tx yummy.AutoTx, userID, entryID, limit, offset int64) ([
 
 func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
-			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewGetEntriesIDCommentsNotFound(), false
 			}
@@ -236,7 +236,7 @@ func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams
 	}
 }
 
-func postComment(tx yummy.AutoTx, author *models.User, entryID int64, content string) (*models.Comment, bool) {
+func postComment(tx utils.AutoTx, author *models.User, entryID int64, content string) (*models.Comment, bool) {
 	const q = `
 		INSERT INTO comments (author_id, entry_id, content)
 		VALUES ($1, $2, $3)
@@ -259,9 +259,9 @@ func postComment(tx yummy.AutoTx, author *models.User, entryID int64, content st
 
 func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
-			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewPostEntriesIDCommentsNotFound(), false
 			}

@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy-server/internal/app/yummy-server"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/comments"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 )
@@ -57,7 +57,7 @@ WHERE feed.author_id = $1 ` + feedQueryEnd
 // 	}
 // }
 
-func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
+func loadComments(tx utils.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
 		cmt, err := comments.LoadEntryComments(tx, userID, entry.ID, 5, 0)
 		if err != nil {
@@ -68,7 +68,7 @@ func loadComments(tx yummy.AutoTx, userID int64, feed *models.Feed) {
 	}
 }
 
-func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interface{}) (*models.Feed, error) {
+func loadFeed(tx utils.AutoTx, query string, uID *models.UserID, args ...interface{}) (*models.Feed, error) {
 	var feed models.Feed
 	userID := int64(*uID)
 	rows, err := tx.Query(query, append([]interface{}{userID}, args...)...)
@@ -110,13 +110,13 @@ func loadFeed(tx yummy.AutoTx, query string, uID *models.UserID, args ...interfa
 	return &feed, rows.Err()
 }
 
-func loadLiveFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
+func loadLiveFeed(tx utils.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
 	return loadFeed(tx, liveFeedQuery, userID, limit, offset)
 }
 
 func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesLiveParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			feed, err := loadLiveFeed(tx, userID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)
@@ -128,14 +128,14 @@ func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID
 	}
 }
 
-func loadAnonymousFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
+func loadAnonymousFeed(tx utils.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
 	//! \todo do not load authors
 	return loadFeed(tx, anonymousFeedQuery, userID, limit, offset)
 }
 
 func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesAnonymousParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			feed, err := loadAnonymousFeed(tx, userID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)
@@ -147,13 +147,13 @@ func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *mod
 	}
 }
 
-func loadBestFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
+func loadBestFeed(tx utils.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
 	return loadFeed(tx, bestFeedQuery, userID, limit, offset)
 }
 
 func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			feed, err := loadBestFeed(tx, userID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)
@@ -165,7 +165,7 @@ func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID
 	}
 }
 
-func loadTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset, tlog int64) (*models.Feed, error) {
+func loadTlogFeed(tx utils.AutoTx, userID *models.UserID, limit, offset, tlog int64) (*models.Feed, error) {
 	if int64(*userID) == tlog {
 		return loadMyTlogFeed(tx, userID, limit, offset)
 	}
@@ -175,7 +175,7 @@ func loadTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset, tlog in
 
 func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			feed, err := loadTlogFeed(tx, userID, *params.Limit, *params.Skip, params.ID)
 			if err != nil {
 				log.Print(err)
@@ -187,13 +187,13 @@ func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.Use
 	}
 }
 
-func loadMyTlogFeed(tx yummy.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
+func loadMyTlogFeed(tx utils.AutoTx, userID *models.UserID, limit, offset int64) (*models.Feed, error) {
 	return loadFeed(tx, myTlogFeedQuery, userID, limit, offset)
 }
 
 func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersMeParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			feed, err := loadMyTlogFeed(tx, userID, *params.Limit, *params.Skip)
 			if err != nil {
 				log.Print(err)

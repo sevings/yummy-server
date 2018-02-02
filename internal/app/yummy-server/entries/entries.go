@@ -11,8 +11,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 )
@@ -37,7 +37,7 @@ func init() {
 	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Nofollow(true))
 }
 
-func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
 	author, _ := users.LoadUserByID(tx, userID)
 
 	var wordCount int64
@@ -79,7 +79,7 @@ func createEntry(tx yummy.AutoTx, userID int64, title, content, privacy string, 
 
 func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			entry, created := createEntry(tx, int64(*uID),
 				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 

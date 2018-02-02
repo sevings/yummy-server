@@ -20,7 +20,7 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 
@@ -38,8 +38,8 @@ func configureFlags(api *operations.YummyAPI) {
 func configureAPI(api *operations.YummyAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	config := yummy.LoadConfig("server")
-	db := yummy.OpenDatabase(config)
+	config := utils.LoadConfig("server")
+	db := utils.OpenDatabase(config)
 
 	accountImpl.ConfigureAPI(db, api)
 	usersImpl.ConfigureAPI(db, api)

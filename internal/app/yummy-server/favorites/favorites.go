@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/favorites"
@@ -16,7 +16,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(newStatusLoader(db))
 }
 
-func favoriteStatus(tx yummy.AutoTx, userID, entryID int64) *models.FavoriteStatus {
+func favoriteStatus(tx utils.AutoTx, userID, entryID int64) *models.FavoriteStatus {
 	const q = `
 		SELECT TRUE 
 		FROM favorites
@@ -34,9 +34,9 @@ func favoriteStatus(tx yummy.AutoTx, userID, entryID int64) *models.FavoriteStat
 
 func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
 	return func(params favorites.GetEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
-			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return favorites.NewGetEntriesIDFavoriteNotFound(), false
 			}

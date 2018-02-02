@@ -4,16 +4,14 @@ import (
 	"database/sql"
 	"os"
 	"testing"
-
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
 )
 
 var db *sql.DB
 
 func TestMain(m *testing.M) {
-	config := yummy.LoadConfig("../../config")
-	db = yummy.OpenDatabase(config)
-	yummy.ClearDatabase(db)
+	config := utils.LoadConfig("../../config")
+	db = utils.OpenDatabase(config)
+	utils.ClearDatabase(db)
 
 	os.Exit(m.Run())
 }

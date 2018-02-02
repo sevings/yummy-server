@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/me"
@@ -259,7 +259,7 @@ avatar
 FROM long_users
 WHERE `
 
-func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, bool) {
+func loadUser(tx utils.AutoTx, query string, arg interface{}) (*models.User, bool) {
 	var user models.User
 
 	err := tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
@@ -278,7 +278,7 @@ func loadUser(tx yummy.AutoTx, query string, arg interface{}) (*models.User, boo
 }
 
 // LoadUserByID returns short user profile by its ID.
-func LoadUserByID(tx yummy.AutoTx, id int64) (*models.User, bool) {
+func LoadUserByID(tx utils.AutoTx, id int64) (*models.User, bool) {
 	const q = loadUserQuery + "id = $1"
 	return loadUser(tx, q, id)
 }

@@ -5,7 +5,8 @@ import (
 	"os"
 	"testing"
 
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 	"github.com/stretchr/testify/require"
@@ -16,11 +17,11 @@ var userIDs []*models.UserID
 var profiles []*models.AuthProfile
 
 func TestMain(m *testing.M) {
-	config := yummy.LoadConfig("../../config")
-	db = yummy.OpenDatabase(config)
-	yummy.ClearDatabase(db)
+	config := utils.LoadConfig("../../config")
+	db = utils.OpenDatabase(config)
+	tests.ClearDatabase(db)
 
-	userIDs, profiles = yummy.RegisterTestUsers(db)
+	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	os.Exit(m.Run())
 }
@@ -104,8 +105,8 @@ func postEntry(id *models.UserID, privacy string) {
 }
 
 func TestLoadLive(t *testing.T) {
-	yummy.ClearDatabase(db)
-	userIDs, profiles = yummy.RegisterTestUsers(db)
+	tests.ClearDatabase(db)
+	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
@@ -142,8 +143,8 @@ func loadTlog(t *testing.T, tlog, user *models.UserID) models.FeedEntries {
 }
 
 func TestLoadTlog(t *testing.T) {
-	yummy.ClearDatabase(db)
-	userIDs, profiles = yummy.RegisterTestUsers(db)
+	tests.ClearDatabase(db)
+	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
@@ -179,8 +180,8 @@ func loadMyTlog(t *testing.T, user *models.UserID) models.FeedEntries {
 }
 
 func TestLoadMyTlog(t *testing.T) {
-	yummy.ClearDatabase(db)
-	userIDs, profiles = yummy.RegisterTestUsers(db)
+	tests.ClearDatabase(db)
+	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)

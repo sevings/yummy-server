@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/watchings"
@@ -16,7 +16,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newStatusLoader(db))
 }
 
-func watchingStatus(tx yummy.AutoTx, userID, entryID int64) *models.WatchingStatus {
+func watchingStatus(tx utils.AutoTx, userID, entryID int64) *models.WatchingStatus {
 	const q = `
 		SELECT TRUE 
 		FROM watching
@@ -34,9 +34,9 @@ func watchingStatus(tx yummy.AutoTx, userID, entryID int64) *models.WatchingStat
 
 func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *models.UserID) middleware.Responder {
 	return func(params watchings.GetEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
-			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return watchings.NewGetEntriesIDWatchingNotFound(), false
 			}

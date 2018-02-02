@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/account"
@@ -26,7 +26,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 }
 
 // IsEmailFree returns true if there is no account with such an email
-func isEmailFree(tx yummy.AutoTx, email string) bool {
+func isEmailFree(tx utils.AutoTx, email string) bool {
 	const q = `
         select id 
         from users 
@@ -46,7 +46,7 @@ func isEmailFree(tx yummy.AutoTx, email string) bool {
 
 func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			free := isEmailFree(tx, params.Email)
 			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data), true
@@ -54,7 +54,7 @@ func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middle
 	}
 }
 
-func isNameFree(tx yummy.AutoTx, name string) bool {
+func isNameFree(tx utils.AutoTx, name string) bool {
 	const q = `
         select id 
         from users 
@@ -74,7 +74,7 @@ func isNameFree(tx yummy.AutoTx, name string) bool {
 
 func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middleware.Responder {
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			free := isNameFree(tx, params.Name)
 			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
 			return account.NewGetAccountNameNameOK().WithPayload(&data), true
@@ -82,7 +82,7 @@ func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middlewar
 	}
 }
 
-func removeInvite(tx yummy.AutoTx, ref string, invite string) (int64, bool) {
+func removeInvite(tx utils.AutoTx, ref string, invite string) (int64, bool) {
 	words := strings.Fields(invite)
 	if len(words) != 3 {
 		return 0, false
@@ -158,7 +158,7 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
-func createUser(tx yummy.AutoTx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
+func createUser(tx utils.AutoTx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
 	hash := passwordHash(params.Password)
 	apiKey := generateAPIKey()
 
@@ -229,7 +229,7 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
-func loadAuthProfile(tx yummy.AutoTx, query string, args ...interface{}) (*models.AuthProfile, error) {
+func loadAuthProfile(tx utils.AutoTx, query string, args ...interface{}) (*models.AuthProfile, error) {
 	row := tx.QueryRow(query, args...)
 
 	var profile models.AuthProfile
@@ -287,30 +287,30 @@ const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
 func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			if ok := isEmailFree(tx, params.Email); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("email_is_not_free")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("email_is_not_free")), false
 			}
 
 			if ok := isNameFree(tx, params.Name); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("name_is_not_free")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("name_is_not_free")), false
 			}
 
 			ref, ok := removeInvite(tx, params.Referrer, params.Invite)
 			if !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("invalid_invite")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("invalid_invite")), false
 			}
 
 			id, err := createUser(tx, params, ref)
 			if err != nil {
 				log.Print(err)
-				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error")), false
 			}
 
 			user, err := loadAuthProfile(tx, authProfileQueryByID, id)
 			if err != nil {
 				log.Print(err)
-				return account.NewPostAccountRegisterBadRequest().WithPayload(yummy.NewError("internal_error")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error")), false
 			}
 
 			return account.NewPostAccountRegisterOK().WithPayload(user), true
@@ -322,14 +322,14 @@ const authProfileQueryByPassword = authProfileQuery + "WHERE long_users.name = $
 
 func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			hash := passwordHash(params.Password)
 			user, err := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
 			if err != nil {
 				if err != sql.ErrNoRows {
 					log.Print(err)
 				}
-				return account.NewPostAccountLoginBadRequest().WithPayload(yummy.NewError("invalid_name_or_password")), false
+				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password")), false
 			}
 
 			return account.NewPostAccountLoginOK().WithPayload(user), true
@@ -337,7 +337,7 @@ func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Resp
 	}
 }
 
-func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) (bool, error) {
+func setPassword(tx utils.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) (bool, error) {
 	const q = `
         update users
         set password_hash = $1
@@ -365,15 +365,15 @@ func setPassword(tx yummy.AutoTx, params account.PostAccountPasswordParams, user
 
 func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			ok, err := setPassword(tx, params, userID)
 			if err != nil {
 				log.Print(err)
-				return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("internal_error")), false
+				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error")), false
 			}
 
 			if !ok {
-				return account.NewPostAccountPasswordForbidden().WithPayload(yummy.NewError("invalid_password_or_api_key")), false
+				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("invalid_password_or_api_key")), false
 			}
 
 			return account.NewPostAccountPasswordOK(), true
@@ -381,7 +381,7 @@ func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams, *mod
 	}
 }
 
-func loadInvites(tx yummy.AutoTx, userID *models.UserID) ([]string, error) {
+func loadInvites(tx utils.AutoTx, userID *models.UserID) ([]string, error) {
 	const q = `
         select word1 || ' ' || word2 || ' ' || word3 
         from unwrapped_invites
@@ -404,11 +404,11 @@ func loadInvites(tx yummy.AutoTx, userID *models.UserID) ([]string, error) {
 
 func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountInvitesParams, userID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			invites, err := loadInvites(tx, userID)
 			if err != nil {
 				log.Print(err)
-				return account.NewGetAccountInvitesForbidden().WithPayload(yummy.NewError("invalid_api_key")), false
+				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key")), false
 			}
 
 			res := models.GetAccountInvitesOKBody{Invites: invites}

@@ -5,12 +5,12 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	yummy "github.com/sevings/yummy-server/internal/app/yummy-server"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/votes"
 )
 
-func entryVoteStatus(tx yummy.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
+func entryVoteStatus(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
 	const q = `
 		WITH votes AS (
 			SELECT entry_id, positive
@@ -45,9 +45,9 @@ func entryVoteStatus(tx yummy.AutoTx, userID, entryID int64) (*models.VoteStatus
 
 func newEntryVoteLoader(db *sql.DB) func(votes.GetEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.GetEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
-			canView := yummy.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return votes.NewGetEntriesIDVoteNotFound(), false
 			}
@@ -63,7 +63,7 @@ func newEntryVoteLoader(db *sql.DB) func(votes.GetEntriesIDVoteParams, *models.U
 	}
 }
 
-func canVoteForEntry(tx yummy.AutoTx, userID, entryID int64) (bool, error) {
+func canVoteForEntry(tx utils.AutoTx, userID, entryID int64) (bool, error) {
 	const q = `
 	WITH allowed AS (
 		SELECT id, TRUE AS vote
@@ -100,7 +100,7 @@ func canVoteForEntry(tx yummy.AutoTx, userID, entryID int64) (bool, error) {
 	return false, nil
 }
 
-func loadEntryRating(tx yummy.AutoTx, entryID int64) (int64, error) {
+func loadEntryRating(tx utils.AutoTx, entryID int64) (int64, error) {
 	const q = `
 		SELECT rating
 		FROM entries
@@ -111,7 +111,7 @@ func loadEntryRating(tx yummy.AutoTx, entryID int64) (int64, error) {
 	return rating, err
 }
 
-func voteForEntry(tx yummy.AutoTx, userID, entryID int64, positive bool) (*models.VoteStatus, error) {
+func voteForEntry(tx utils.AutoTx, userID, entryID int64, positive bool) (*models.VoteStatus, error) {
 	const voteQ = `
 		INSERT INTO entry_votes (user_id, entry_id, positive)
 		VALUES ($1, $2, $3)
@@ -145,7 +145,7 @@ func voteForEntry(tx yummy.AutoTx, userID, entryID int64, positive bool) (*model
 
 func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.PutEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
 			canVote, err := canVoteForEntry(tx, userID, params.ID)
 			if err != nil {
@@ -171,7 +171,7 @@ func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams, *models.UserID
 	}
 }
 
-func unvoteEntry(tx yummy.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
+func unvoteEntry(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
 	const q = `
 		DELETE FROM entry_votes
 		WHERE user_id = $1 AND entry_id = $2
@@ -199,7 +199,7 @@ func unvoteEntry(tx yummy.AutoTx, userID, entryID int64) (*models.VoteStatus, er
 
 func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.DeleteEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return yummy.Transact(db, func(tx yummy.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
 			userID := int64(*uID)
 			canVote, err := canVoteForEntry(tx, userID, params.ID)
 			if err != nil {
