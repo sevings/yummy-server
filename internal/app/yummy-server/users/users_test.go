@@ -18,7 +18,7 @@ var userIDs []*models.UserID
 var profiles []*models.AuthProfile
 
 func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../config")
+	config := utils.LoadConfig("../../../../configs/server")
 	db = utils.OpenDatabase(config)
 	utils.ClearDatabase(db)
 

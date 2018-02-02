@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/account"
@@ -15,9 +14,9 @@ import (
 var db *sql.DB
 
 func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../config")
+	config := utils.LoadConfig("../../../../configs/server")
 	db = utils.OpenDatabase(config)
-	tests.ClearDatabase(db)
+	utils.ClearDatabase(db)
 
 	os.Exit(m.Run())
 }

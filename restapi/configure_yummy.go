@@ -38,7 +38,7 @@ func configureFlags(api *operations.YummyAPI) {
 func configureAPI(api *operations.YummyAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	config := utils.LoadConfig("server")
+	config := utils.LoadConfig("configs/server")
 	db := utils.OpenDatabase(config)
 
 	accountImpl.ConfigureAPI(db, api)

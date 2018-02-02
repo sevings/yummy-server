@@ -17,9 +17,9 @@ var userIDs []*models.UserID
 var profiles []*models.AuthProfile
 
 func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../config")
+	config := utils.LoadConfig("../../../../configs/server")
 	db = utils.OpenDatabase(config)
-	tests.ClearDatabase(db)
+	utils.ClearDatabase(db)
 
 	userIDs, profiles = tests.RegisterTestUsers(db)
 
@@ -70,8 +70,6 @@ func checkPostEntry(t *testing.T,
 		t.Fatal("error post entry")
 	}
 
-	req := require.New(t)
-
 	entry := body.Payload
 	checkEntry(t, entry, user, wc, privacy, votable, title, params.Content)
 }
@@ -105,7 +103,7 @@ func postEntry(id *models.UserID, privacy string) {
 }
 
 func TestLoadLive(t *testing.T) {
-	tests.ClearDatabase(db)
+	utils.ClearDatabase(db)
 	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
@@ -143,7 +141,7 @@ func loadTlog(t *testing.T, tlog, user *models.UserID) models.FeedEntries {
 }
 
 func TestLoadTlog(t *testing.T) {
-	tests.ClearDatabase(db)
+	utils.ClearDatabase(db)
 	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
@@ -180,7 +178,7 @@ func loadMyTlog(t *testing.T, user *models.UserID) models.FeedEntries {
 }
 
 func TestLoadMyTlog(t *testing.T) {
-	tests.ClearDatabase(db)
+	utils.ClearDatabase(db)
 	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
