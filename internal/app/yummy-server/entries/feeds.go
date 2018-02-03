@@ -51,12 +51,6 @@ true
 FROM feed
 WHERE feed.author_id = $1 ` + feedQueryEnd
 
-// func reverse(feed *models.Feed) {
-// 	for i, j := 0, len(feed.Entries)-1; i < j; i, j = i+1, j-1 {
-// 		feed.Entries[i], feed.Entries[j] = feed.Entries[j], feed.Entries[i]
-// 	}
-// }
-
 func loadComments(tx utils.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
 		cmt, err := comments.LoadEntryComments(tx, userID, entry.ID, 5, 0)
@@ -104,7 +98,6 @@ func loadFeed(tx utils.AutoTx, query string, uID *models.UserID, args ...interfa
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
-	// reverse(&feed)
 	loadComments(tx, userID, &feed)
 
 	return &feed, rows.Err()
