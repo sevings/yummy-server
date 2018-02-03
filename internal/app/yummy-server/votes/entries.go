@@ -17,21 +17,26 @@ func entryVoteStatus(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus
 			FROM entry_votes
 			WHERE user_id = $1
 		)
-		SELECT rating, positive
+		SELECT entries.author_id, entry_privacy.type, is_votable, rating, positive
 		FROM entries
 		LEFT JOIN votes on votes.entry_id = entries.id
+		JOIN entry_privacy on entry_privacy.id = entries.visible_for
 		WHERE entries.id = $2`
 
 	var status = models.VoteStatus{ID: entryID}
 
+	var authorID int64
+	var privacy string
+	var votable bool
 	var positive sql.NullBool
-	err := tx.QueryRow(q, userID, entryID).Scan(&status.Rating, &positive)
+	err := tx.QueryRow(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &positive)
 	if err != nil {
 		return nil, err
 	}
 
-	//! \todo VoteStatusVoteMy
 	switch {
+	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
+		status.Vote = models.VoteStatusVoteBan
 	case !positive.Valid:
 		status.Vote = models.VoteStatusVoteNot
 	case positive.Bool:
@@ -68,10 +73,9 @@ func canVoteForEntry(tx utils.AutoTx, userID, entryID int64) (bool, error) {
 	WITH allowed AS (
 		SELECT id, TRUE AS vote
 		FROM feed
-		WHERE id = $2 AND author_id <> $1
+		WHERE id = $2 AND author_id <> $1 AND is_votable
 			AND ((entry_privacy = 'all' 
 				AND (author_privacy = 'all'
-					OR (author_privacy = 'registered' AND $1 > 0)
 					OR EXISTS(SELECT 1 FROM relation, relations, entries
 							  WHERE from_id = $1 AND to_id = entries.author_id
 								  AND entries.id = $2

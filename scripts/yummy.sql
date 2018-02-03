@@ -18,8 +18,7 @@ CREATE TABLE "mindwell"."user_privacy" (
     "type" Text NOT NULL );
 
 INSERT INTO "mindwell"."user_privacy" VALUES(0, 'all');
-INSERT INTO "mindwell"."user_privacy" VALUES(1, 'registered');
-INSERT INTO "mindwell"."user_privacy" VALUES(2, 'followers');
+INSERT INTO "mindwell"."user_privacy" VALUES(1, 'followers');
 -- -------------------------------------------------------------
 
 
