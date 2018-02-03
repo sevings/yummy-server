@@ -61,7 +61,7 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 		WordCount:  wordCount,
 		Privacy:    privacy,
 		Author:     author,
-		Vote:       models.EntryVoteMy,
+		Vote:       models.EntryVoteBan,
 		IsWatching: true,
 	}
 

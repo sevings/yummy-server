@@ -67,7 +67,7 @@ var voteStatusTypeVotePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["not","pos","neg","my"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["not","pos","neg","ban"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -82,8 +82,8 @@ const (
 	VoteStatusVotePos string = "pos"
 	// VoteStatusVoteNeg captures enum value "neg"
 	VoteStatusVoteNeg string = "neg"
-	// VoteStatusVoteMy captures enum value "my"
-	VoteStatusVoteMy string = "my"
+	// VoteStatusVoteBan captures enum value "ban"
+	VoteStatusVoteBan string = "ban"
 )
 
 // prop value enum

@@ -38,8 +38,8 @@ const commentQuery = `
 
 func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	switch {
-	case userID <= 0 || userID == authorID:
-		return ""
+	case userID == authorID:
+		return models.CommentVoteBan
 	case !vote.Valid:
 		return models.CommentVoteNot
 	case vote.Bool:

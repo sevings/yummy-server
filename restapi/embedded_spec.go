@@ -2391,7 +2391,7 @@ func init() {
             "not",
             "pos",
             "neg",
-            "my"
+            "ban"
           ]
         }
       },
@@ -2505,7 +2505,7 @@ func init() {
             "not",
             "pos",
             "neg",
-            "my"
+            "ban"
           ]
         },
         "wordCount": {
@@ -2797,7 +2797,7 @@ func init() {
             "not",
             "pos",
             "neg",
-            "my"
+            "ban"
           ]
         }
       }

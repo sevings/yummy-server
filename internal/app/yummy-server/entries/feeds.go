@@ -85,7 +85,7 @@ func loadFeed(tx utils.AutoTx, query string, uID *models.UserID, args ...interfa
 
 		switch {
 		case author.ID == userID:
-			entry.Vote = models.EntryVoteMy
+			entry.Vote = models.EntryVoteBan
 		case !vote.Valid:
 			entry.Vote = models.EntryVoteNot
 		case vote.Bool:

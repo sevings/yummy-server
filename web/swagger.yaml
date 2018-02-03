@@ -223,7 +223,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg, my]
+        enum: [not, pos, neg, ban]
       isFavorited:
         type: boolean
       isWatching:
@@ -260,7 +260,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg, my]
+        enum: [not, pos, neg, ban]
   FavoriteStatus:
     type: object
     properties:
@@ -316,7 +316,7 @@ definitions:
         type: integer
       vote:
         type: string
-        enum: [not, pos, neg, my]
+        enum: [not, pos, neg, ban]
     example:
       id: 999
       entryId: 152
