@@ -46,3 +46,30 @@ func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *mod
 		})
 	}
 }
+
+func AddWatching(tx utils.AutoTx, userID, entryID int64) error {
+	const q = `
+		INSERT INTO watching(user_id, entry_id)
+		VALUES($1, $2)`
+
+	_, err := tx.Exec(q, userID, entryID)
+	if err != nil {
+		log.Print(err)
+	}
+
+	return err
+}
+
+func RemoveWatching(tx utils.AutoTx, userID, entryID int64) error {
+	const q = `
+		DELETE FROM watching
+		WHERE user_id = $1 AND entry_id = $2`
+
+	_, err := tx.Exec(q, userID, entryID)
+	if err != nil && err != sql.ErrNoRows {
+		log.Print(err)
+		return err
+	}
+
+	return nil
+}

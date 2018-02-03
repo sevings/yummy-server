@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/restapi/operations/me"
 	"github.com/sevings/yummy-server/restapi/operations/users"
 
@@ -22,7 +24,7 @@ func TestMain(m *testing.M) {
 	db = utils.OpenDatabase(config)
 	utils.ClearDatabase(db)
 
-	userIDs, profiles = utils.RegisterTestUsers(db)
+	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	os.Exit(m.Run())
 }

@@ -3,6 +3,7 @@ package tests
 import (
 	"database/sql"
 	"log"
+	"strconv"
 
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
@@ -45,7 +46,7 @@ func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	var profiles []*models.AuthProfile
 
 	for i := 0; i < 3; i++ {
-		id, profile := register(&api, "test"+string(i))
+		id, profile := register(&api, "test"+strconv.Itoa(i))
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
 	}

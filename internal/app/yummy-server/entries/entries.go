@@ -13,6 +13,7 @@ import (
 
 	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 )
@@ -55,11 +56,13 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 	content = htmlPolicy.Sanitize(content)
 
 	entry := models.Entry{
-		Title:     title,
-		Content:   content,
-		WordCount: wordCount,
-		Privacy:   privacy,
-		Author:    author,
+		Title:      title,
+		Content:    content,
+		WordCount:  wordCount,
+		Privacy:    privacy,
+		Author:     author,
+		Vote:       models.EntryVoteMy,
+		IsWatching: true,
 	}
 
 	const q = `
@@ -71,6 +74,11 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
 	if err != nil {
 		log.Print(err)
+		return nil, false
+	}
+
+	err = watchings.AddWatching(tx, userID, entry.ID)
+	if err != nil {
 		return nil, false
 	}
 
