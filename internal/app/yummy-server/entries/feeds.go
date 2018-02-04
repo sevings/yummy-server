@@ -13,7 +13,7 @@ import (
 
 const feedQueryStart = `
 SELECT id, created_at, rating, 
-title, content, word_count,
+title, content, edit_content, word_count,
 entry_privacy,
 is_votable, comments_count,
 author_id, author_name, author_show_name,
@@ -75,13 +75,17 @@ func loadFeed(tx utils.AutoTx, query string, uID *models.UserID, args ...interfa
 		var author models.User
 		var vote sql.NullBool
 		rows.Scan(&entry.ID, &entry.CreatedAt, &entry.Rating,
-			&entry.Title, &entry.Content, &entry.WordCount,
+			&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
 			&entry.Privacy,
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,
 			&author.Avatar,
 			&vote, &entry.IsFavorited, &entry.IsWatching)
+
+		if author.ID != userID {
+			entry.EditContent = ""
+		}
 
 		switch {
 		case author.ID == userID:

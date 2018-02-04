@@ -2464,6 +2464,9 @@ func init() {
           "type": "string",
           "format": "date-time"
         },
+        "editContent": {
+          "type": "string"
+        },
         "id": {
           "type": "integer",
           "format": "int64",

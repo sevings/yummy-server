@@ -11,7 +11,6 @@ import (
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 
 	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
-	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
 )
 
 func register(api *operations.YummyAPI, name string) (*models.UserID, *models.AuthProfile) {
@@ -76,14 +75,4 @@ func postEntry(api *operations.YummyAPI, id *models.UserID, privacy string, vota
 	}
 
 	return body.Payload
-}
-
-// NewPostEntry returns func creating entries
-func NewPostEntry(db *sql.DB) func(id *models.UserID, privacy string, votable bool) *models.Entry {
-	api := operations.YummyAPI{}
-	entriesImpl.ConfigureAPI(db, &api)
-
-	return func(id *models.UserID, privacy string, votable bool) *models.Entry {
-		return postEntry(&api, id, privacy, votable)
-	}
 }

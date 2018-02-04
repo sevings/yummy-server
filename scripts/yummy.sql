@@ -712,6 +712,7 @@ CREATE TABLE "mindwell"."entries" (
 	"rating" Integer DEFAULT 0 NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
 	"content" Text NOT NULL,
+    "edit_content" Text NOT NULL,
 	"word_count" Integer NOT NULL,
 	"visible_for" Integer NOT NULL,
 	"is_votable" Boolean NOT NULL,
@@ -788,7 +789,7 @@ CREATE TRIGGER cnt_tlog_entries_del
 
 CREATE VIEW mindwell.feed AS
 SELECT entries.id, entries.created_at, rating, 
-    entries.title, content, word_count,
+    entries.title, content, edit_content, word_count,
     entry_privacy.type AS entry_privacy,
     is_votable, entries.comments_count,
     long_users.id AS author_id,
@@ -799,8 +800,7 @@ SELECT entries.id, entries.created_at, rating,
     long_users.privacy AS author_privacy
 FROM mindwell.long_users, mindwell.entries, mindwell.entry_privacy
 WHERE long_users.id = entries.author_id 
-    AND entry_privacy.id = entries.visible_for
-ORDER BY entries.created_at DESC;
+    AND entry_privacy.id = entries.visible_for;
 
 
 

@@ -34,6 +34,9 @@ type Entry struct {
 	// created at
 	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
 
+	// edit content
+	EditContent string `json:"editContent,omitempty"`
+
 	// id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`

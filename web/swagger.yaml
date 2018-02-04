@@ -208,6 +208,8 @@ definitions:
         type: string
       content:
         type: string
+      editContent:
+        type: string
       wordCount:
         type: integer
       privacy:

@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func checkEntry(t *testing.T, entry *models.Entry,
-	user *models.AuthProfile, vote string, watching bool,
+	user *models.AuthProfile, canEdit bool, vote string, watching bool,
 	wc int64, privacy string, votable bool, title, content string) {
 
 	req := require.New(t)
@@ -44,6 +44,12 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(watching, entry.IsWatching)
 	req.Empty(entry.Comments)
 	req.Equal(title, entry.Title)
+
+	if canEdit {
+		req.Equal(content, entry.EditContent)
+	} else {
+		req.Empty(entry.EditContent)
+	}
 
 	author := entry.Author
 	req.Equal(user.ID, author.ID)
@@ -70,7 +76,7 @@ func checkPostEntry(t *testing.T,
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, models.EntryVoteBan, true, wc, *params.Privacy, *params.IsVotable, *params.Title, params.Content)
+	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, *params.Privacy, *params.IsVotable, *params.Title, params.Content)
 }
 
 func TestPostMyTlog(t *testing.T) {
@@ -132,14 +138,14 @@ func TestLoadLive(t *testing.T) {
 	postEntry(userIDs[2], models.EntryPrivacyAll)
 
 	feed := checkLoadLive(t, userIDs[0], 10, 0, 2)
-	checkEntry(t, feed[0], profiles[2], models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[2], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	feed = checkLoadLive(t, userIDs[0], 1, 0, 1)
-	checkEntry(t, feed[0], profiles[2], models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[2], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	feed = checkLoadLive(t, userIDs[0], 1, 1, 1)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	checkLoadLive(t, userIDs[0], 1, 2, 0)
 	checkLoadLive(t, userIDs[0], 10, 200, 0)
@@ -175,24 +181,24 @@ func TestLoadTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
 	feed := checkLoadTlog(t, userIDs[0], userIDs[1], 10, 0, 2)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 10, 0, 4)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed[2], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed[3], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	checkLoadTlog(t, userIDs[1], userIDs[0], 10, 0, 0)
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, 0, 3)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed[2], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, 3, 1)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 }
 
 func checkLoadMyTlog(t *testing.T, user *models.UserID, limit, skip int64, size int) models.FeedEntries {
@@ -223,15 +229,15 @@ func TestLoadMyTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
 	feed := checkLoadMyTlog(t, userIDs[0], 10, 0, 4)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed[2], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed[3], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	checkLoadMyTlog(t, userIDs[1], 10, 0, 0)
 
 	feed = checkLoadMyTlog(t, userIDs[0], 4, 1, 3)
-	checkEntry(t, feed[0], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed[1], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed[2], profiles[0], models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 }

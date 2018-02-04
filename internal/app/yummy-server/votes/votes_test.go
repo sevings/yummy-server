@@ -8,9 +8,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/votes"
 )
 
@@ -26,6 +28,16 @@ func TestMain(m *testing.M) {
 	userIDs, profiles = tests.RegisterTestUsers(db)
 
 	os.Exit(m.Run())
+}
+
+// NewPostEntry returns func creating entries
+func NewPostEntry(db *sql.DB) func(id *models.UserID, privacy string, votable bool) *models.Entry {
+	api := operations.YummyAPI{}
+	entriesImpl.ConfigureAPI(db, &api)
+
+	return func(id *models.UserID, privacy string, votable bool) *models.Entry {
+		return postEntry(&api, id, privacy, votable)
+	}
 }
 
 func checkEntryVote(t *testing.T, user *models.UserID, entryID, rating int64, vote string) {
@@ -109,7 +121,7 @@ func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, 
 }
 
 func TestEntryVotes(t *testing.T) {
-	post := tests.NewPostEntry(db)
+	post := NewPostEntry(db)
 
 	e := post(userIDs[0], models.EntryPrivacyAll, true)
 	checkEntryVote(t, userIDs[0], e.ID, 0, models.EntryVoteBan)

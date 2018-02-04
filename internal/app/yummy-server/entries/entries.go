@@ -49,24 +49,23 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
-	content = md.RenderToString([]byte(content))
-
 	entry := models.Entry{
-		Title:      title,
-		Content:    content,
-		WordCount:  wordCount,
-		Privacy:    privacy,
-		Author:     author,
-		Vote:       models.EntryVoteBan,
-		IsWatching: true,
+		Title:       title,
+		Content:     md.RenderToString([]byte(content)),
+		EditContent: content,
+		WordCount:   wordCount,
+		Privacy:     privacy,
+		Author:      author,
+		Vote:        models.EntryVoteBan,
+		IsWatching:  true,
 	}
 
 	const q = `
-	INSERT INTO entries (author_id, title, content, word_count, visible_for, is_votable)
-	VALUES ($1, $2, $3, $4, (SELECT id FROM entry_privacy WHERE type = $5), $6)
+	INSERT INTO entries (author_id, title, content, edit_content, word_count, visible_for, is_votable)
+	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), $7)
 	RETURNING id, created_at`
 
-	err := tx.QueryRow(q, author.ID, title, content, wordCount,
+	err := tx.QueryRow(q, author.ID, title, entry.Content, entry.EditContent, wordCount,
 		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
 	if err != nil {
 		log.Print(err)
