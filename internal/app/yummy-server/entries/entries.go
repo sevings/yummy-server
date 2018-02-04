@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/golang-commonmark/markdown"
-	"github.com/microcosm-cc/bluemonday"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
@@ -29,13 +28,11 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 }
 
 var wordRe *regexp.Regexp
-var htmlPolicy *bluemonday.Policy
 var md *markdown.Markdown
 
 func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
-	htmlPolicy = bluemonday.UGCPolicy()
-	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Nofollow(true))
+	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true))
 }
 
 func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
@@ -53,7 +50,6 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 	}
 
 	content = md.RenderToString([]byte(content))
-	content = htmlPolicy.Sanitize(content)
 
 	entry := models.Entry{
 		Title:      title,
