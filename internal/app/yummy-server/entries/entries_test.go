@@ -61,7 +61,7 @@ func checkEntry(t *testing.T, entry *models.Entry,
 
 func checkPostEntry(t *testing.T,
 	params entries.PostEntriesUsersMeParams,
-	user *models.AuthProfile, id *models.UserID, wc int64) {
+	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
 
 	post := newMyTlogPoster(db)
 	resp := post(params, id)
@@ -73,6 +73,28 @@ func checkPostEntry(t *testing.T,
 		}
 
 		t.Fatal("error post entry")
+	}
+
+	entry := body.Payload
+	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, *params.Privacy, *params.IsVotable, *params.Title, params.Content)
+
+	return entry.ID
+}
+
+func checkEditEntry(t *testing.T,
+	params entries.PutEntriesIDParams,
+	user *models.AuthProfile, id *models.UserID, wc int64) {
+
+	edit := newEntryEditor(db)
+	resp := edit(params, id)
+	body, ok := resp.(*entries.PutEntriesIDOK)
+	if !ok {
+		badBody, ok := resp.(*entries.PutEntriesIDForbidden)
+		if ok {
+			t.Fatal(badBody.Payload.Message)
+		}
+
+		t.Fatal("error edit entry")
 	}
 
 	entry := body.Payload
@@ -93,7 +115,19 @@ func TestPostMyTlog(t *testing.T) {
 	title := "title title ti"
 	params.Title = &title
 
-	checkPostEntry(t, params, profiles[0], userIDs[0], 5)
+	id := checkPostEntry(t, params, profiles[0], userIDs[0], 5)
+
+	privacy = models.EntryPrivacyMe
+	title = "title"
+	editParams := entries.PutEntriesIDParams{
+		ID:        id,
+		Content:   "content",
+		Title:     &title,
+		IsVotable: &votable,
+		Privacy:   &privacy,
+	}
+
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
 }
 
 func postEntry(id *models.UserID, privacy string) {

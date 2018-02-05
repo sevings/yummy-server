@@ -1240,9 +1240,11 @@ func init() {
             "in": "formData"
           },
           {
+            "maxLength": 30000,
             "type": "string",
             "name": "content",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "enum": [

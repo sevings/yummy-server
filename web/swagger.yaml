@@ -1346,6 +1346,8 @@ paths:
         - in: formData
           name: content
           type: string
+          required: true
+          maxLength: 30000
         - in: formData
           name: privacy
           type: string

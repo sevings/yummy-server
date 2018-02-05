@@ -39,9 +39,11 @@ type PutEntriesIDParams struct {
 	*/
 	AnonymousComments *bool
 	/*
+	  Required: true
+	  Max Length: 30000
 	  In: formData
 	*/
-	Content *string
+	Content string
 	/*
 	  Required: true
 	  Minimum: 1
@@ -141,15 +143,31 @@ func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool
 }
 
 func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("content", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("content", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Content = &raw
+	o.Content = raw
+
+	if err := o.validateContent(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutEntriesIDParams) validateContent(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
+		return err
+	}
 
 	return nil
 }

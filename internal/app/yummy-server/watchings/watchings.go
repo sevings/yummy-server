@@ -50,7 +50,9 @@ func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *mod
 func AddWatching(tx utils.AutoTx, userID, entryID int64) error {
 	const q = `
 		INSERT INTO watching(user_id, entry_id)
-		VALUES($1, $2)`
+		VALUES($1, $2)
+		ON CONFLICT ON CONSTRAINT unique_user_watching
+		DO NOTHING`
 
 	_, err := tx.Exec(q, userID, entryID)
 	if err != nil {

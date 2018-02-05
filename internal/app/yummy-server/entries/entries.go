@@ -20,6 +20,8 @@ import (
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(db))
+	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(db))
+
 	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
 	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(db))
 	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(db))
@@ -35,16 +37,18 @@ func init() {
 	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true))
 }
 
-func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
-	author, _ := users.LoadUserByID(tx, userID)
-
-	var wordCount int64
+func wordCount(content, title string) int64 {
+	var wc int64
 	contentWords := wordRe.FindAllStringIndex(content, -1)
-	wordCount += int64(len(contentWords))
+	wc += int64(len(contentWords))
 
 	titleWords := wordRe.FindAllStringIndex(title, -1)
-	wordCount += int64(len(titleWords))
+	wc += int64(len(titleWords))
 
+	return wc
+}
+
+func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -53,9 +57,8 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 		Title:       title,
 		Content:     md.RenderToString([]byte(content)),
 		EditContent: content,
-		WordCount:   wordCount,
+		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
-		Author:      author,
 		Vote:        models.EntryVoteBan,
 		IsWatching:  true,
 	}
@@ -65,7 +68,7 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), $7)
 	RETURNING id, created_at`
 
-	err := tx.QueryRow(q, author.ID, title, entry.Content, entry.EditContent, wordCount,
+	err := tx.QueryRow(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
 		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
 	if err != nil {
 		log.Print(err)
@@ -76,6 +79,9 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 	if err != nil {
 		return nil, false
 	}
+
+	author, _ := users.LoadUserByID(tx, userID)
+	entry.Author = author
 
 	return &entry, true
 }
@@ -91,6 +97,66 @@ func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.
 			}
 
 			return entries.NewPostEntriesUsersMeOK().WithPayload(entry), true
+		})
+	}
+}
+
+func editEntry(tx utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+	if privacy == "followers" {
+		privacy = models.EntryPrivacySome //! \todo add users to list
+	}
+
+	entry := models.Entry{
+		ID:          entryID,
+		Title:       title,
+		Content:     md.RenderToString([]byte(content)),
+		EditContent: content,
+		WordCount:   wordCount(content, title),
+		Privacy:     privacy,
+		Vote:        models.EntryVoteBan,
+		IsWatching:  true,
+	}
+
+	const q = `
+	UPDATE entries
+	SET title = $1, content = $2, edit_content = $3, word_count = $4, 
+	visible_for = (SELECT id FROM entry_privacy WHERE type = $5), 
+	is_votable = $6
+	WHERE id = $7 AND author_id = $8
+	RETURNING created_at`
+
+	err := tx.QueryRow(q, title, entry.Content, entry.EditContent, entry.WordCount,
+		privacy, isVotable, entryID, userID).Scan(&entry.CreatedAt)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Print(err)
+		}
+
+		return nil, false
+	}
+
+	err = watchings.AddWatching(tx, userID, entry.ID)
+	if err != nil {
+		return nil, false
+	}
+
+	author, _ := users.LoadUserByID(tx, userID)
+	entry.Author = author
+
+	return &entry, true
+}
+
+func newEntryEditor(db *sql.DB) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
+	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+			entry, edited := editEntry(tx, params.ID, int64(*uID),
+				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
+
+			if !edited {
+				return entries.NewPutEntriesIDForbidden(), false
+			}
+
+			return entries.NewPutEntriesIDOK().WithPayload(entry), true
 		})
 	}
 }
