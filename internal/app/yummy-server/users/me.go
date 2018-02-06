@@ -2,14 +2,15 @@ package users
 
 import (
 	"database/sql"
-	"log"
+
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/me"
 )
 
-func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, error) {
+func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile {
 	const q = `
 	SELECT id, name, show_name,
 	avatar,
@@ -32,8 +33,6 @@ func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, erro
 	FROM long_users 
 	WHERE id = $1`
 
-	row := db.QueryRow(q, *userID)
-
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
@@ -45,7 +44,8 @@ func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, erro
 	var age sql.NullInt64
 	var bday sql.NullString
 
-	err := row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
+	tx.Query(q, *userID)
+	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
 		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
@@ -64,10 +64,6 @@ func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, erro
 		&profile.InvitedBy.IsOnline,
 		&profile.InvitedBy.Avatar)
 
-	if err != nil {
-		return &profile, err
-	}
-
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
@@ -80,38 +76,32 @@ func loadMyProfile(db *sql.DB, userID *models.UserID) (*models.AuthProfile, erro
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	return &profile, nil
+	return &profile
 }
 
 func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeParams, userID *models.UserID) middleware.Responder {
-		user, err := loadMyProfile(db, userID)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.Print(err)
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			user := loadMyProfile(tx, userID)
+
+			if tx.Error() != nil {
+				return me.NewGetUsersMeForbidden()
 			}
 
-			return me.NewGetUsersMeForbidden()
-		}
-
-		return me.NewGetUsersMeOK().WithPayload(user)
+			return me.NewGetUsersMeOK().WithPayload(user)
+		})
 	}
 }
 
 func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query, relation string, limit, offset int64) middleware.Responder {
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tx.Commit()
+	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		list := loadRelatedUsers(tx, query, userID, relation, limit, offset)
+		if tx.Error() != nil {
+			return me.NewGetUsersMeFollowersForbidden()
+		}
 
-	list, err := loadRelatedUsers(tx, query, userID, relation, limit, offset)
-	if err != nil {
-		log.Print(err)
-		return me.NewGetUsersMeFollowersForbidden()
-	}
-
-	return me.NewGetUsersMeFollowersOK().WithPayload(list)
+		return me.NewGetUsersMeFollowersOK().WithPayload(list)
+	})
 }
 
 func newMyFollowersLoader(db *sql.DB) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {

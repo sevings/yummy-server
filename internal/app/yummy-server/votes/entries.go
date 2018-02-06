@@ -2,7 +2,6 @@ package votes
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
@@ -10,7 +9,7 @@ import (
 	"github.com/sevings/yummy-server/restapi/operations/votes"
 )
 
-func entryVoteStatus(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
+func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
 	const q = `
 		WITH votes AS (
 			SELECT entry_id, positive
@@ -29,10 +28,7 @@ func entryVoteStatus(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus
 	var privacy string
 	var votable bool
 	var positive sql.NullBool
-	err := tx.QueryRow(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &positive)
-	if err != nil {
-		return nil, err
-	}
+	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &positive)
 
 	switch {
 	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
@@ -45,30 +41,29 @@ func entryVoteStatus(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus
 		status.Vote = models.VoteStatusVoteNeg
 	}
 
-	return &status, nil
+	return &status
 }
 
 func newEntryVoteLoader(db *sql.DB) func(votes.GetEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.GetEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return votes.NewGetEntriesIDVoteNotFound(), false
+				return votes.NewGetEntriesIDVoteNotFound()
 			}
 
-			status, err := entryVoteStatus(tx, userID, params.ID)
-			if err != nil {
-				log.Print(err)
-				return votes.NewGetEntriesIDVoteNotFound(), false
+			status := entryVoteStatus(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return votes.NewGetEntriesIDVoteNotFound()
 			}
 
-			return votes.NewGetEntriesIDVoteOK().WithPayload(status), true
+			return votes.NewGetEntriesIDVoteOK().WithPayload(status)
 		})
 	}
 }
 
-func canVoteForEntry(tx utils.AutoTx, userID, entryID int64) (bool, error) {
+func canVoteForEntry(tx *utils.AutoTx, userID, entryID int64) bool {
 	const q = `
 	WITH allowed AS (
 		SELECT id, TRUE AS vote
@@ -92,45 +87,32 @@ func canVoteForEntry(tx utils.AutoTx, userID, entryID int64) (bool, error) {
 
 	var id int64
 	var allowed sql.NullBool
-	err := tx.QueryRow(q, userID, entryID).Scan(&id, &allowed)
-	if err != nil {
-		return false, err
-	}
+	tx.Query(q, userID, entryID).Scan(&id, &allowed)
 
-	if allowed.Valid {
-		return true, nil
-	}
-
-	return false, nil
+	return allowed.Valid
 }
 
-func loadEntryRating(tx utils.AutoTx, entryID int64) (int64, error) {
+func loadEntryRating(tx *utils.AutoTx, entryID int64) int64 {
 	const q = `
 		SELECT rating
 		FROM entries
 		WHERE id = $1`
 
 	var rating int64
-	err := tx.QueryRow(q, entryID).Scan(&rating)
-	return rating, err
+	tx.Query(q, entryID).Scan(&rating)
+	return rating
 }
 
-func voteForEntry(tx utils.AutoTx, userID, entryID int64, positive bool) (*models.VoteStatus, error) {
+func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.VoteStatus {
 	const voteQ = `
 		INSERT INTO entry_votes (user_id, entry_id, positive)
 		VALUES ($1, $2, $3)
 		ON CONFLICT ON CONSTRAINT unique_entry_vote
 		DO UPDATE SET positive = EXCLUDED.positive`
 
-	_, err := tx.Exec(voteQ, userID, entryID, positive)
-	if err != nil {
-		return nil, err
-	}
+	tx.Exec(voteQ, userID, entryID, positive)
 
-	rating, err := loadEntryRating(tx, entryID)
-	if err != nil {
-		return nil, err
-	}
+	rating := loadEntryRating(tx, entryID)
 
 	var status = models.VoteStatus{
 		ID:     entryID,
@@ -144,53 +126,42 @@ func voteForEntry(tx utils.AutoTx, userID, entryID int64, positive bool) (*model
 		status.Vote = models.VoteStatusVoteNeg
 	}
 
-	return &status, nil
+	return &status
 }
 
 func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.PutEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			canVote, err := canVoteForEntry(tx, userID, params.ID)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-
-				return votes.NewPutEntriesIDVoteNotFound(), false
+			canVote := canVoteForEntry(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return votes.NewPutEntriesIDVoteNotFound()
 			}
 
 			if !canVote {
-				return votes.NewPutEntriesIDVoteForbidden(), false
+				return votes.NewPutEntriesIDVoteForbidden()
 			}
 
-			status, err := voteForEntry(tx, userID, params.ID, *params.Positive)
-			if err != nil {
-				log.Print(err)
-				return votes.NewPutEntriesIDVoteNotFound(), false
+			status := voteForEntry(tx, userID, params.ID, *params.Positive)
+			if tx.Error() != nil {
+				return votes.NewPutEntriesIDVoteNotFound()
 			}
 
-			return votes.NewPutEntriesIDVoteOK().WithPayload(status), true
+			return votes.NewPutEntriesIDVoteOK().WithPayload(status)
 		})
 	}
 }
 
-func unvoteEntry(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus, error) {
+func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
 	const q = `
 		DELETE FROM entry_votes
 		WHERE user_id = $1 AND entry_id = $2
 		RETURNING positive`
 
 	var pos bool
-	err := tx.QueryRow(q, userID, entryID).Scan(&pos)
-	if err != nil {
-		return nil, err
-	}
+	tx.Query(q, userID, entryID).Scan(&pos)
 
-	rating, err := loadEntryRating(tx, entryID)
-	if err != nil {
-		return nil, err
-	}
+	rating := loadEntryRating(tx, entryID)
 
 	var status = models.VoteStatus{
 		ID:     entryID,
@@ -198,36 +169,28 @@ func unvoteEntry(tx utils.AutoTx, userID, entryID int64) (*models.VoteStatus, er
 		Vote:   models.EntryVoteNot,
 	}
 
-	return &status, nil
+	return &status
 }
 
 func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.DeleteEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			canVote, err := canVoteForEntry(tx, userID, params.ID)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-
-				return votes.NewDeleteEntriesIDVoteNotFound(), false
+			canVote := canVoteForEntry(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return votes.NewDeleteEntriesIDVoteNotFound()
 			}
 
 			if !canVote {
-				return votes.NewDeleteEntriesIDVoteForbidden(), false
+				return votes.NewDeleteEntriesIDVoteForbidden()
 			}
 
-			status, err := unvoteEntry(tx, userID, params.ID)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-
-				return votes.NewDeleteEntriesIDVoteNotFound(), false
+			status := unvoteEntry(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return votes.NewDeleteEntriesIDVoteNotFound()
 			}
 
-			return votes.NewDeleteEntriesIDVoteOK().WithPayload(status), true
+			return votes.NewDeleteEntriesIDVoteOK().WithPayload(status)
 		})
 	}
 }

@@ -2,7 +2,6 @@ package entries
 
 import (
 	"database/sql"
-	"log"
 	"regexp"
 
 	"github.com/golang-commonmark/markdown"
@@ -48,7 +47,7 @@ func wordCount(content, title string) int64 {
 	return wc
 }
 
-func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -68,40 +67,32 @@ func createEntry(tx utils.AutoTx, userID int64, title, content, privacy string, 
 	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), $7)
 	RETURNING id, created_at`
 
-	err := tx.QueryRow(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
+	tx.Query(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
 		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
-	if err != nil {
-		log.Print(err)
-		return nil, false
-	}
 
-	err = watchings.AddWatching(tx, userID, entry.ID)
-	if err != nil {
-		return nil, false
-	}
-
-	author, _ := users.LoadUserByID(tx, userID)
+	watchings.AddWatching(tx, userID, entry.ID)
+	author := users.LoadUserByID(tx, userID)
 	entry.Author = author
 
-	return &entry, true
+	return &entry
 }
 
 func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
-			entry, created := createEntry(tx, int64(*uID),
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			entry := createEntry(tx, int64(*uID),
 				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 
-			if !created {
-				return entries.NewPostEntriesUsersMeForbidden(), false
+			if tx.Error() != nil {
+				return entries.NewPostEntriesUsersMeForbidden()
 			}
 
-			return entries.NewPostEntriesUsersMeOK().WithPayload(entry), true
+			return entries.NewPostEntriesUsersMeOK().WithPayload(entry)
 		})
 	}
 }
 
-func editEntry(tx utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) (*models.Entry, bool) {
+func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -125,38 +116,28 @@ func editEntry(tx utils.AutoTx, entryID, userID int64, title, content, privacy s
 	WHERE id = $7 AND author_id = $8
 	RETURNING created_at`
 
-	err := tx.QueryRow(q, title, entry.Content, entry.EditContent, entry.WordCount,
+	tx.Query(q, title, entry.Content, entry.EditContent, entry.WordCount,
 		privacy, isVotable, entryID, userID).Scan(&entry.CreatedAt)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
-		}
 
-		return nil, false
-	}
+	watchings.AddWatching(tx, userID, entry.ID)
 
-	err = watchings.AddWatching(tx, userID, entry.ID)
-	if err != nil {
-		return nil, false
-	}
-
-	author, _ := users.LoadUserByID(tx, userID)
+	author := users.LoadUserByID(tx, userID)
 	entry.Author = author
 
-	return &entry, true
+	return &entry
 }
 
 func newEntryEditor(db *sql.DB) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
-			entry, edited := editEntry(tx, params.ID, int64(*uID),
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			entry := editEntry(tx, params.ID, int64(*uID),
 				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
 
-			if !edited {
-				return entries.NewPutEntriesIDForbidden(), false
+			if tx.Error() != nil {
+				return entries.NewPutEntriesIDForbidden()
 			}
 
-			return entries.NewPutEntriesIDOK().WithPayload(entry), true
+			return entries.NewPutEntriesIDOK().WithPayload(entry)
 		})
 	}
 }

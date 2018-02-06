@@ -32,14 +32,14 @@ func isEmailFree(tx *utils.AutoTx, email string) bool {
 		where lower(email) = $1`
 
 	var id int64
-	tx.QueryRow(q, strings.ToLower(email)).Scan(&id)
+	tx.Query(q, strings.ToLower(email)).Scan(&id)
 
 	return tx.Error() == sql.ErrNoRows
 }
 
 func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			free := isEmailFree(tx, params.Email)
 			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
@@ -54,14 +54,14 @@ func isNameFree(tx *utils.AutoTx, name string) bool {
 		where lower(name) = $1`
 
 	var id int64
-	tx.QueryRow(q, strings.ToLower(name)).Scan(&id)
+	tx.Query(q, strings.ToLower(name)).Scan(&id)
 
 	return tx.Error() == sql.ErrNoRows
 }
 
 func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middleware.Responder {
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			free := isNameFree(tx, params.Name)
 			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
 			return account.NewGetAccountNameNameOK().WithPayload(&data)
@@ -160,7 +160,7 @@ func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref 
 	}
 
 	var user int64
-	tx.QueryRow(q,
+	tx.Query(q,
 		params.Name, params.Email, hash, ref, apiKey,
 		*params.Gender,
 		*params.Country, *params.City).Scan(&user)
@@ -207,7 +207,7 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 	var age sql.NullInt64
 	var bday sql.NullString
 
-	tx.QueryRow(query, args...)
+	tx.Query(query, args...)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
 		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
@@ -303,7 +303,7 @@ func setPassword(tx *utils.AutoTx, params account.PostAccountPasswordParams, use
 
 	tx.Exec(q, newHash, oldHash, int64(*userID))
 
-	rows := res.RowsAffected()
+	rows := tx.RowsAffected()
 
 	return rows == 1
 }
@@ -350,7 +350,7 @@ func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams, *models.
 	return func(params account.GetAccountInvitesParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			invites := loadInvites(tx, userID)
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key"))
 			}
 

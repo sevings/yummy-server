@@ -229,7 +229,7 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 
 	tx.Query(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
 
-	return &comment, true
+	return &comment
 }
 
 func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {

@@ -50,68 +50,59 @@ invited_by_avatar
 FROM long_users `
 
 func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{}) middleware.Responder {
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tx.Commit()
+	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		var profile models.Profile
+		profile.InvitedBy = &models.User{}
+		profile.Design = &models.Design{}
+		profile.Counts = &models.ProfileAllOf1Counts{}
 
-	row := tx.QueryRow(query, arg)
+		var backColor string
+		var textColor string
 
-	var profile models.Profile
-	profile.InvitedBy = &models.User{}
-	profile.Design = &models.Design{}
-	profile.Counts = &models.ProfileAllOf1Counts{}
+		var age sql.NullInt64
 
-	var backColor string
-	var textColor string
+		tx.Query(query, arg)
+		tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
+			&profile.Avatar,
+			&profile.Gender, &profile.IsDaylog,
+			&profile.Privacy,
+			&profile.Title, &profile.Karma,
+			&profile.CreatedAt, &profile.LastSeenAt, &profile.IsOnline,
+			&age,
+			&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
+			&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
+			&profile.Counts.Favorites, &profile.Counts.Tags,
+			&profile.Country, &profile.City,
+			&profile.Design.CSS, &backColor, &textColor,
+			&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
+			&profile.InvitedBy.ID,
+			&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
+			&profile.InvitedBy.IsOnline,
+			&profile.InvitedBy.Avatar)
 
-	var age sql.NullInt64
-
-	err = row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
-		&profile.Gender, &profile.IsDaylog,
-		&profile.Privacy,
-		&profile.Title, &profile.Karma,
-		&profile.CreatedAt, &profile.LastSeenAt, &profile.IsOnline,
-		&age,
-		&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
-		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
-		&profile.Counts.Favorites, &profile.Counts.Tags,
-		&profile.Country, &profile.City,
-		&profile.Design.CSS, &backColor, &textColor,
-		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
-		&profile.InvitedBy.ID,
-		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
-		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
-
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
+		if tx.Error() != nil {
+			return users.NewGetUsersIDNotFound()
 		}
 
-		return users.NewGetUsersIDNotFound()
-	}
+		profile.Design.BackgroundColor = models.Color(backColor)
+		profile.Design.TextColor = models.Color(textColor)
 
-	profile.Design.BackgroundColor = models.Color(backColor)
-	profile.Design.TextColor = models.Color(textColor)
+		if age.Valid {
+			profile.AgeLowerBound = age.Int64 - age.Int64%5
+			profile.AgeUpperBound = profile.AgeLowerBound + 5
+		}
 
-	if age.Valid {
-		profile.AgeLowerBound = age.Int64 - age.Int64%5
-		profile.AgeUpperBound = profile.AgeLowerBound + 5
-	}
+		result := users.NewGetUsersIDOK().WithPayload(&profile)
+		if int64(*userID) == profile.ID {
+			return result
+		}
 
-	result := users.NewGetUsersIDOK().WithPayload(&profile)
-	if int64(*userID) == profile.ID {
+		profile.Relations = &models.ProfileAllOf1Relations{}
+		profile.Relations.FromMe = relationship(tx, relationToIDQuery, int64(*userID), profile.ID)
+		profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, int64(*userID))
+
 		return result
-	}
-
-	profile.Relations = &models.ProfileAllOf1Relations{}
-	profile.Relations.FromMe = relationship(tx, relationToIDQuery, int64(*userID), profile.ID)
-	profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, int64(*userID))
-
-	return result
+	})
 }
 
 func newKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
@@ -151,15 +142,11 @@ WHERE users.name = $2
 	AND relations.to_id = users.id
 	AND relations.type = relation.id`
 
-func relationship(tx *sql.Tx, query string, from int64, to interface{}) string {
+func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) string {
 	var relation string
-	err := tx.QueryRow(query, from, to).Scan(&relation)
-	switch {
-	case err == sql.ErrNoRows:
+	tx.Query(query, from, to).Scan(&relation)
+	if tx.Error() == sql.ErrNoRows {
 		return "none"
-	case err != nil:
-		log.Print(err)
-		return ""
 	}
 
 	return relation
@@ -170,24 +157,24 @@ SELECT user_privacy.type
 FROM users, user_privacy
 WHERE users.privacy = user_privacy.id AND `
 
-func isOpenForMe(tx *sql.Tx, privacyQuery, relationQuery string,
-	userID *models.UserID, arg interface{}) (bool, error) {
+func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
+	userID *models.UserID, arg interface{}) bool {
 	var privacy string
-	err := tx.QueryRow(privacyQuery, arg).Scan(&privacy)
-	if err != nil {
-		return false, err
+	tx.Query(privacyQuery, arg).Scan(&privacy)
+	if tx.Error() != nil {
+		return false
 	}
 
 	if privacy == "all" {
-		return true, nil
+		return true
 	}
 
 	if privacy == "registered" {
-		return true, nil
+		return true
 	}
 
 	relation := relationship(tx, relationQuery, int64(*userID), arg)
-	return relation == models.RelationshipRelationFollowed, nil
+	return relation == models.RelationshipRelationFollowed
 }
 
 const usersQueryStart = `
@@ -202,54 +189,46 @@ const usersQueryEnd = `
 ORDER BY relations.changed_at DESC
 LIMIT $3 OFFSET $4`
 
-func loadRelatedUsers(tx *sql.Tx, usersQuery string,
-	arg interface{}, relation string, limit, offset int64) (*models.UserList, error) {
+func loadRelatedUsers(tx *utils.AutoTx, usersQuery string,
+	arg interface{}, relation string, limit, offset int64) *models.UserList {
 	var list models.UserList
-	rows, err := tx.Query(usersQuery, arg, relation, limit, offset)
-	if err != nil {
-		return &list, err
-	}
+	tx.Query(usersQuery, arg, relation, limit, offset)
 
-	for rows.Next() {
+	for {
 		var user models.User
-		rows.Scan(&user.ID, &user.Name, &user.ShowName,
+		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
 			&user.IsOnline,
 			&user.Avatar)
+		if !ok {
+			break
+		}
+
 		list.Users = append(list.Users, &user)
 	}
 
-	return &list, rows.Err()
+	return &list
 }
 
 func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 	userID *models.UserID,
 	arg interface{}, relation string, limit, offset int64) middleware.Responder {
-
-	tx, err := db.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer tx.Commit()
-
-	open, err := isOpenForMe(tx, privacyQuery, relationQuery, userID, arg)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
+	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, arg)
+		if tx.Error() != nil {
+			return users.NewGetUsersIDFollowersNotFound()
 		}
 
-		return users.NewGetUsersIDFollowersNotFound()
-	}
+		if !open {
+			return users.NewGetUsersIDFollowersForbidden()
+		}
 
-	if !open {
-		return users.NewGetUsersIDFollowersForbidden()
-	}
+		list := loadRelatedUsers(tx, usersQuery, arg, relation, limit, offset)
+		if tx.Error() != nil {
+			return users.NewGetUsersIDFollowersNotFound()
+		}
 
-	list, err := loadRelatedUsers(tx, usersQuery, arg, relation, limit, offset)
-	if err != nil {
-		return users.NewGetUsersIDFollowersNotFound()
-	}
-
-	return users.NewGetUsersIDFollowersOK().WithPayload(list)
+		return users.NewGetUsersIDFollowersOK().WithPayload(list)
+	})
 }
 
 const loadUserQuery = `
@@ -262,7 +241,7 @@ WHERE `
 func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
 
-	tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
+	tx.Query(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
 		&user.Avatar)
 

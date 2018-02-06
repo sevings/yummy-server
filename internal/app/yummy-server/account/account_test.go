@@ -56,7 +56,7 @@ func checkInvites(t *testing.T, userID int64, size int) {
 	resp := load(account.GetAccountInvitesParams{}, &id)
 	body, ok := resp.(*account.GetAccountInvitesOK)
 
-	require.True(t, ok, userID)
+	require.True(t, ok, "user %d", userID)
 	require.Equal(t, size, len(body.Payload.Invites), "user %d", userID)
 }
 
@@ -103,8 +103,6 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 }
 
 func TestRegister(t *testing.T) {
-	register := newRegistrator(db)
-
 	checkInvites(t, 1, 3)
 	checkName(t, "tEst", true)
 	checkEmail(t, "eMAil", true)
@@ -117,6 +115,7 @@ func TestRegister(t *testing.T) {
 		Referrer: "HaveANiceDay",
 	}
 
+	register := newRegistrator(db)
 	resp := register(params)
 	body, ok := resp.(*account.PostAccountRegisterOK)
 	if !ok {

@@ -2,7 +2,6 @@ package watchings
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
@@ -16,7 +15,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newStatusLoader(db))
 }
 
-func watchingStatus(tx utils.AutoTx, userID, entryID int64) *models.WatchingStatus {
+func watchingStatus(tx *utils.AutoTx, userID, entryID int64) *models.WatchingStatus {
 	const q = `
 		SELECT TRUE 
 		FROM watching
@@ -24,54 +23,40 @@ func watchingStatus(tx utils.AutoTx, userID, entryID int64) *models.WatchingStat
 
 	status := models.WatchingStatus{ID: entryID}
 
-	err := tx.QueryRow(q, userID, entryID).Scan(&status.IsWatching)
-	if err != nil && err != sql.ErrNoRows {
-		log.Print(err)
-	}
+	tx.Query(q, userID, entryID).Scan(&status.IsWatching)
 
 	return &status
 }
 
 func newStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *models.UserID) middleware.Responder {
 	return func(params watchings.GetEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return watchings.NewGetEntriesIDWatchingNotFound(), false
+				return watchings.NewGetEntriesIDWatchingNotFound()
 			}
 
 			status := watchingStatus(tx, userID, params.ID)
-			return watchings.NewGetEntriesIDWatchingOK().WithPayload(status), true
+			return watchings.NewGetEntriesIDWatchingOK().WithPayload(status)
 		})
 	}
 }
 
-func AddWatching(tx utils.AutoTx, userID, entryID int64) error {
+func AddWatching(tx *utils.AutoTx, userID, entryID int64) {
 	const q = `
 		INSERT INTO watching(user_id, entry_id)
 		VALUES($1, $2)
 		ON CONFLICT ON CONSTRAINT unique_user_watching
 		DO NOTHING`
 
-	_, err := tx.Exec(q, userID, entryID)
-	if err != nil {
-		log.Print(err)
-	}
-
-	return err
+	tx.Exec(q, userID, entryID)
 }
 
-func RemoveWatching(tx utils.AutoTx, userID, entryID int64) error {
+func RemoveWatching(tx *utils.AutoTx, userID, entryID int64) {
 	const q = `
 		DELETE FROM watching
 		WHERE user_id = $1 AND entry_id = $2`
 
-	_, err := tx.Exec(q, userID, entryID)
-	if err != nil && err != sql.ErrNoRows {
-		log.Print(err)
-		return err
-	}
-
-	return nil
+	tx.Exec(q, userID, entryID)
 }

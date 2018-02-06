@@ -2,7 +2,6 @@ package favorites
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
@@ -16,7 +15,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(newStatusLoader(db))
 }
 
-func favoriteStatus(tx utils.AutoTx, userID, entryID int64) *models.FavoriteStatus {
+func favoriteStatus(tx *utils.AutoTx, userID, entryID int64) *models.FavoriteStatus {
 	const q = `
 		SELECT TRUE 
 		FROM favorites
@@ -24,25 +23,22 @@ func favoriteStatus(tx utils.AutoTx, userID, entryID int64) *models.FavoriteStat
 
 	status := models.FavoriteStatus{ID: entryID}
 
-	err := tx.QueryRow(q, userID, entryID).Scan(&status.IsFavorited)
-	if err != nil && err != sql.ErrNoRows {
-		log.Print(err)
-	}
+	tx.Query(q, userID, entryID).Scan(&status.IsFavorited)
 
 	return &status
 }
 
 func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
 	return func(params favorites.GetEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return favorites.NewGetEntriesIDFavoriteNotFound(), false
+				return favorites.NewGetEntriesIDFavoriteNotFound()
 			}
 
 			status := favoriteStatus(tx, userID, params.ID)
-			return favorites.NewGetEntriesIDFavoriteOK().WithPayload(status), true
+			return favorites.NewGetEntriesIDFavoriteOK().WithPayload(status)
 		})
 	}
 }

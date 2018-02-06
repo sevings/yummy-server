@@ -99,15 +99,27 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 }
 
 type AutoTx struct {
-	tx *sql.Tx
+	tx   *sql.Tx
 	rows *sql.Rows
-	res sql.Result
-	err error
+	res  sql.Result
+	err  error
 }
 
 func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
-	if tx.err == nil {
-		tx.rows, tx.err = tx.tx.Query(query, args...)
+	if tx.err != nil && tx.err != sql.ErrNoRows {
+		return tx
+	}
+
+	tx.rows, tx.err = tx.tx.Query(query, args...)
+	if tx.err != nil {
+		return tx
+	}
+
+	if !tx.rows.Next() {
+		tx.err = tx.rows.Err()
+		if tx.err == nil {
+			tx.err = sql.ErrNoRows
+		}
 	}
 
 	return tx
@@ -118,25 +130,24 @@ func (tx *AutoTx) Scan(dest ...interface{}) bool {
 		return false
 	}
 
+	tx.err = tx.rows.Scan(dest...)
+
 	if !tx.rows.Next() {
 		tx.err = tx.rows.Err()
-		if tx.err == nil {
-			tx.err = sql.ErrNoRows
-		}
 		return false
 	}
-	
-	tx.err = tx.rows.Scan(dest...)
+
 	return true
 }
 
 func (tx *AutoTx) Close() {
-	if tx.rows {
+	if tx.rows != nil {
 		tx.rows.Close()
+		tx.rows = nil
 	}
 }
 
-func (tx *AutoTx) Error() {
+func (tx *AutoTx) Error() error {
 	return tx.err
 }
 
@@ -147,36 +158,35 @@ func (tx *AutoTx) Exec(query string, args ...interface{}) {
 }
 
 func (tx *AutoTx) RowsAffected() int64 {
-	if tx.err != nil {
-		return 0
+	var cnt int64
+	if tx.err == nil && tx.res != nil {
+		cnt, tx.err = tx.res.RowsAffected()
 	}
 
-	if tx.res {
-		cnt, tx.err := tx.res.RowsAffected()
-		return cnt
-	}
-
-	return 0
+	return cnt
 }
 
 // Transact wraps func in an SQL transaction.
-// Return true to commit or false to rollback. Responder will be just passed through.
+// Responder will be just passed through.
 func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.Responder {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	atx := &AutoTx{tx: sqlTx}
+	atx := &AutoTx{tx: tx}
 	resp := txFunc(atx)
-	if p := recover(); p != nil {
-		tx.Rollback()
+	p := recover()
+	atx.Close()
+
+	if p != nil {
+		err = tx.Rollback()
 		log.Print("Recovered in Transact:", p)
 	} else if atx.Error() == nil {
 		err = tx.Commit()
 	} else {
-		if err = atx.Error(); err != sql.ErrNoRows {
-			log.Print(err)
+		if atx.Error() != sql.ErrNoRows {
+			log.Print(atx.Error())
 		}
 
 		err = tx.Rollback()
@@ -185,8 +195,6 @@ func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.
 	if err != nil {
 		log.Print(err)
 	}
-
-	tx.Close()
 
 	return resp
 }
