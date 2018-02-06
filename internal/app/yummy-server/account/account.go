@@ -3,7 +3,6 @@ package account
 import (
 	"crypto/sha256"
 	"database/sql"
-	"log"
 	"math/rand"
 	"strings"
 
@@ -26,63 +25,51 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 }
 
 // IsEmailFree returns true if there is no account with such an email
-func isEmailFree(tx utils.AutoTx, email string) bool {
+func isEmailFree(tx *utils.AutoTx, email string) bool {
 	const q = `
         select id 
         from users 
 		where lower(email) = $1`
 
 	var id int64
-	err := tx.QueryRow(q, strings.ToLower(email)).Scan(&id)
-	switch {
-	case err == sql.ErrNoRows:
-		return true
-	case err != nil:
-		log.Print(err)
-	}
+	tx.QueryRow(q, strings.ToLower(email)).Scan(&id)
 
-	return false
+	return tx.Error() == sql.ErrNoRows
 }
 
 func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) middleware.Responder {
 			free := isEmailFree(tx, params.Email)
 			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
-			return account.NewGetAccountEmailEmailOK().WithPayload(&data), true
+			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
 		})
 	}
 }
 
-func isNameFree(tx utils.AutoTx, name string) bool {
+func isNameFree(tx *utils.AutoTx, name string) bool {
 	const q = `
         select id 
         from users 
 		where lower(name) = $1`
 
 	var id int64
-	err := tx.QueryRow(q, strings.ToLower(name)).Scan(&id)
-	switch {
-	case err == sql.ErrNoRows:
-		return true
-	case err != nil:
-		log.Print(err)
-	}
+	tx.QueryRow(q, strings.ToLower(name)).Scan(&id)
 
-	return false
+	return tx.Error() == sql.ErrNoRows
 }
 
 func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middleware.Responder {
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx utils.AutoTx) middleware.Responder {
 			free := isNameFree(tx, params.Name)
 			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
-			return account.NewGetAccountNameNameOK().WithPayload(&data), true
+			return account.NewGetAccountNameNameOK().WithPayload(&data)
 		})
 	}
 }
 
-func removeInvite(tx utils.AutoTx, ref string, invite string) (int64, bool) {
+func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
 	words := strings.Fields(invite)
 	if len(words) != 3 {
 		return 0, false
@@ -96,33 +83,18 @@ func removeInvite(tx utils.AutoTx, ref string, invite string) (int64, bool) {
 
 	var inviteID int64
 	var userID int64
-	err := tx.QueryRow(q,
+	tx.Query(q,
 		strings.ToLower(words[0]),
 		strings.ToLower(words[1]),
 		strings.ToLower(words[2]),
 		strings.ToLower(ref)).Scan(&inviteID, &userID)
-	switch {
-	case err == sql.ErrNoRows:
-		return 0, false
-	case err != nil:
-		log.Print(err)
-		return 0, false
-	}
 
-	res, err := tx.Exec(`
+	tx.Exec(`
 		delete from invites 
 		where id = $1`,
 		inviteID)
-	if err != nil {
-		log.Print(err)
-		return 0, false
-	}
 
-	rows, err := res.RowsAffected()
-	if err != nil {
-		log.Print(err)
-		return 0, false
-	}
+	rows := tx.RowsAffected()
 
 	return userID, rows == 1
 }
@@ -158,7 +130,7 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
-func createUser(tx utils.AutoTx, params account.PostAccountRegisterParams, ref int64) (int64, error) {
+func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
 	hash := passwordHash(params.Password)
 	apiKey := generateAPIKey()
 
@@ -188,23 +160,16 @@ func createUser(tx utils.AutoTx, params account.PostAccountRegisterParams, ref i
 	}
 
 	var user int64
-	err := tx.QueryRow(q,
+	tx.QueryRow(q,
 		params.Name, params.Email, hash, ref, apiKey,
 		*params.Gender,
 		*params.Country, *params.City).Scan(&user)
 
-	if err != nil {
-		return 0, err
-	}
-
 	if params.Birthday != nil {
-		_, err = tx.Exec("UPDATE users SET birthday = $1 WHERE id = $2", *params.Birthday, user)
-		if err != nil {
-			return 0, err
-		}
+		tx.Exec("UPDATE users SET birthday = $1 WHERE id = $2", *params.Birthday, user)
 	}
 
-	return user, nil
+	return user
 }
 
 const authProfileQuery = `
@@ -229,9 +194,7 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
-func loadAuthProfile(tx utils.AutoTx, query string, args ...interface{}) (*models.AuthProfile, error) {
-	row := tx.QueryRow(query, args...)
-
+func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *models.AuthProfile {
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
@@ -244,7 +207,8 @@ func loadAuthProfile(tx utils.AutoTx, query string, args ...interface{}) (*model
 	var age sql.NullInt64
 	var bday sql.NullString
 
-	err := row.Scan(&profile.ID, &profile.Name, &profile.ShowName,
+	tx.QueryRow(query, args...)
+	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
 		&profile.Avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
@@ -264,10 +228,6 @@ func loadAuthProfile(tx utils.AutoTx, query string, args ...interface{}) (*model
 		&profile.InvitedBy.IsOnline,
 		&profile.InvitedBy.Avatar)
 
-	if err != nil {
-		return &profile, err
-	}
-
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
@@ -280,40 +240,38 @@ func loadAuthProfile(tx utils.AutoTx, query string, args ...interface{}) (*model
 		profile.AgeUpperBound = profile.AgeLowerBound + 4
 	}
 
-	return &profile, nil
+	return &profile
 }
 
 const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
 func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			if ok := isEmailFree(tx, params.Email); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("email_is_not_free")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("email_is_not_free"))
 			}
 
 			if ok := isNameFree(tx, params.Name); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("name_is_not_free")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("name_is_not_free"))
 			}
 
 			ref, ok := removeInvite(tx, params.Referrer, params.Invite)
 			if !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("invalid_invite")), false
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("invalid_invite"))
 			}
 
-			id, err := createUser(tx, params, ref)
-			if err != nil {
-				log.Print(err)
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error")), false
+			id := createUser(tx, params, ref)
+			if tx.Error() != nil {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
-			user, err := loadAuthProfile(tx, authProfileQueryByID, id)
-			if err != nil {
-				log.Print(err)
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error")), false
+			user := loadAuthProfile(tx, authProfileQueryByID, id)
+			if tx.Error() != nil {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
-			return account.NewPostAccountRegisterOK().WithPayload(user), true
+			return account.NewPostAccountRegisterOK().WithPayload(user)
 		})
 	}
 }
@@ -322,22 +280,19 @@ const authProfileQueryByPassword = authProfileQuery + "WHERE long_users.name = $
 
 func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			hash := passwordHash(params.Password)
-			user, err := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password")), false
+			user := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
+			if tx.Error() != nil {
+				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password"))
 			}
 
-			return account.NewPostAccountLoginOK().WithPayload(user), true
+			return account.NewPostAccountLoginOK().WithPayload(user)
 		})
 	}
 }
 
-func setPassword(tx utils.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) (bool, error) {
+func setPassword(tx *utils.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) bool {
 	const q = `
         update users
         set password_hash = $1
@@ -346,73 +301,61 @@ func setPassword(tx utils.AutoTx, params account.PostAccountPasswordParams, user
 	oldHash := passwordHash(params.OldPassword)
 	newHash := passwordHash(params.NewPassword)
 
-	res, err := tx.Exec(q, newHash, oldHash, int64(*userID))
-	if err != nil {
-		return false, err
-	}
+	tx.Exec(q, newHash, oldHash, int64(*userID))
 
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return false, err
-	}
+	rows := res.RowsAffected()
 
-	if rows != 1 {
-		return false, nil
-	}
-
-	return true, nil
+	return rows == 1
 }
 
 func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
-			ok, err := setPassword(tx, params, userID)
-			if err != nil {
-				log.Print(err)
-				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error")), false
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			ok := setPassword(tx, params, userID)
+			if tx.Error() != nil {
+				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error"))
 			}
 
 			if !ok {
-				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("invalid_password_or_api_key")), false
+				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("invalid_password_or_api_key"))
 			}
 
-			return account.NewPostAccountPasswordOK(), true
+			return account.NewPostAccountPasswordOK()
 		})
 	}
 }
 
-func loadInvites(tx utils.AutoTx, userID *models.UserID) ([]string, error) {
+func loadInvites(tx *utils.AutoTx, userID *models.UserID) []string {
 	const q = `
         select word1 || ' ' || word2 || ' ' || word3 
         from unwrapped_invites
         where user_id = $1`
 
-	rows, err := tx.Query(q, int64(*userID))
-	if err != nil {
-		return nil, err
-	}
+	tx.Query(q, int64(*userID))
 
 	var invites []string
-	for rows.Next() {
+	for {
 		var invite string
-		rows.Scan(&invite)
+		if !tx.Scan(&invite) {
+			break
+		}
+
 		invites = append(invites, invite)
 	}
 
-	return invites, rows.Err()
+	return invites
 }
 
 func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountInvitesParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
-			invites, err := loadInvites(tx, userID)
-			if err != nil {
-				log.Print(err)
-				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key")), false
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			invites := loadInvites(tx, userID)
+			if tx.Error() != nil {
+				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key"))
 			}
 
 			res := models.GetAccountInvitesOKBody{Invites: invites}
-			return account.NewGetAccountInvitesOK().WithPayload(&res), true
+			return account.NewGetAccountInvitesOK().WithPayload(&res)
 		})
 	}
 }

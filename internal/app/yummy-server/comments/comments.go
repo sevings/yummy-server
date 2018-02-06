@@ -2,7 +2,6 @@ package comments
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
@@ -49,7 +48,7 @@ func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	}
 }
 
-func loadComment(tx utils.AutoTx, userID, commentID int64) (*models.Comment, error) {
+func loadComment(tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullBool
@@ -57,7 +56,7 @@ func loadComment(tx utils.AutoTx, userID, commentID int64) (*models.Comment, err
 		Author: &models.User{},
 	}
 
-	err := tx.QueryRow(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
+	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating,
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
@@ -65,144 +64,125 @@ func loadComment(tx utils.AutoTx, userID, commentID int64) (*models.Comment, err
 		&comment.Author.Avatar)
 
 	comment.Vote = commentVote(userID, comment.Author.ID, vote)
-	return &comment, err
+	return &comment
 }
 
 func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			comment, err := loadComment(tx, userID, params.ID)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-
-				return comments.NewGetCommentsIDNotFound(), false
+			comment := loadComment(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return comments.NewGetCommentsIDNotFound()
 			}
 
 			canView := utils.CanViewEntry(tx, userID, comment.EntryID)
 			if !canView {
-				return comments.NewGetCommentsIDNotFound(), false
+				return comments.NewGetCommentsIDNotFound()
 			}
 
-			return comments.NewGetCommentsIDOK().WithPayload(comment), true
+			return comments.NewGetCommentsIDOK().WithPayload(comment)
 		})
 	}
 }
 
-func editComment(tx utils.AutoTx, commentID int64, content string) error {
+func editComment(tx *utils.AutoTx, commentID int64, content string) {
 	const q = `
 		UPDATE comments
 		SET content = $2
 		WHERE id = $1`
 
-	_, err := tx.Exec(q, commentID, content)
-	return err
+	tx.Exec(q, commentID, content)
 }
 
 func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			comment, err := loadComment(tx, userID, params.ID)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					log.Print(err)
-				}
-
-				return comments.NewGetCommentsIDNotFound(), false
+			comment := loadComment(tx, userID, params.ID)
+			if tx.Error() != nil {
+				return comments.NewGetCommentsIDNotFound()
 			}
 
 			if comment.Author.ID != userID {
-				return comments.NewGetCommentsIDForbidden(), false
+				return comments.NewGetCommentsIDForbidden()
 			}
 
-			err = editComment(tx, params.ID, params.Content)
-			if err != nil {
-				log.Print(err)
-				return comments.NewGetCommentsIDNotFound(), false
+			editComment(tx, params.ID, params.Content)
+			if tx.Error() != nil {
+				return comments.NewGetCommentsIDNotFound()
 			}
 
 			comment.Content = params.Content
-			return comments.NewPutCommentsIDOK().WithPayload(comment), true
+			return comments.NewPutCommentsIDOK().WithPayload(comment)
 		})
 	}
 }
 
-func commentAuthor(tx utils.AutoTx, commentID int64) (int64, bool) {
+func commentAuthor(tx *utils.AutoTx, commentID int64) int64 {
 	const q = `
 		SELECT author_id
 		FROM comments
 		WHERE id = $1`
 
 	var authorID int64
-	err := tx.QueryRow(q, commentID).Scan(&authorID)
-	if err == nil {
-		return authorID, true
-	}
+	tx.Query(q, commentID).Scan(&authorID)
 
-	if err != sql.ErrNoRows {
-		log.Print(err)
-	}
-
-	return 0, false
+	return authorID
 }
 
-func deleteComment(tx utils.AutoTx, commentID int64) error {
+func deleteComment(tx *utils.AutoTx, commentID int64) {
 	const q = `
 		DELETE FROM comments
 		WHERE id = $1`
 
-	_, err := tx.Exec(q, commentID)
-	return err
+	tx.Exec(q, commentID)
 }
 
 func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			authorID, found := commentAuthor(tx, params.ID)
-			if !found {
-				return comments.NewDeleteCommentsIDNotFound(), false
+			authorID := commentAuthor(tx, params.ID)
+			if tx.Error() != nil {
+				return comments.NewDeleteCommentsIDNotFound()
 			}
 			if authorID != userID {
-				return comments.NewDeleteCommentsIDForbidden(), false
+				return comments.NewDeleteCommentsIDForbidden()
 			}
 
-			err := deleteComment(tx, params.ID)
-			if err != nil {
-				log.Print(err)
-				return comments.NewDeleteCommentsIDNotFound(), false
+			deleteComment(tx, params.ID)
+			if tx.Error() != nil {
+				return comments.NewDeleteCommentsIDNotFound()
 			}
 
-			return comments.NewDeleteCommentsIDOK(), true
+			return comments.NewDeleteCommentsIDOK()
 		})
 	}
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(tx utils.AutoTx, userID, entryID, limit, offset int64) ([]*models.Comment, error) {
+func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, offset int64) []*models.Comment {
 	const q = commentQuery + `
 		WHERE entry_id = $2
 		ORDER BY created_at DESC
 		LIMIT $3 OFFSET $4`
 
 	var list []*models.Comment
-	rows, err := tx.Query(q, userID, entryID, limit, offset)
-	if err != nil {
-		return nil, err
-	}
+	tx.Query(q, userID, entryID, limit, offset)
 
-	for rows.Next() {
+	for {
 		comment := models.Comment{Author: &models.User{}}
 		var vote sql.NullBool
-		rows.Scan(&comment.ID, &comment.EntryID,
+		ok := tx.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.Rating,
 			&vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
 			&comment.Author.Avatar)
+		if !ok {
+			break
+		}
 
 		comment.Vote = commentVote(userID, comment.Author.ID, vote)
 		list = append(list, &comment)
@@ -212,31 +192,30 @@ func LoadEntryComments(tx utils.AutoTx, userID, entryID, limit, offset int64) ([
 		list[i], list[j] = list[j], list[i]
 	}
 
-	return list, rows.Err()
+	return list
 }
 
 func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return comments.NewGetEntriesIDCommentsNotFound(), false
+				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 
-			list, err := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
-			if err != nil {
-				log.Print(err)
-				return comments.NewGetEntriesIDCommentsNotFound(), false
+			list := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
+			if tx.Error() != nil {
+				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 
 			res := models.CommentList{Comments: list}
-			return comments.NewGetEntriesIDCommentsOK().WithPayload(&res), true
+			return comments.NewGetEntriesIDCommentsOK().WithPayload(&res)
 		})
 	}
 }
 
-func postComment(tx utils.AutoTx, author *models.User, entryID int64, content string) (*models.Comment, bool) {
+func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
 	const q = `
 		INSERT INTO comments (author_id, entry_id, content)
 		VALUES ($1, $2, $3)
@@ -248,31 +227,27 @@ func postComment(tx utils.AutoTx, author *models.User, entryID int64, content st
 		EntryID: entryID,
 	}
 
-	err := tx.QueryRow(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
-	if err != nil {
-		log.Print(err)
-		return nil, false
-	}
+	tx.Query(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
 
 	return &comment, true
 }
 
 func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx utils.AutoTx) (middleware.Responder, bool) {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return comments.NewPostEntriesIDCommentsNotFound(), false
+				return comments.NewPostEntriesIDCommentsNotFound()
 			}
 
-			user, _ := users.LoadUserByID(tx, userID)
-			comment, ok := postComment(tx, user, params.ID, params.Content)
-			if !ok {
-				return comments.NewPostEntriesIDCommentsNotFound(), false
+			user := users.LoadUserByID(tx, userID)
+			comment := postComment(tx, user, params.ID, params.Content)
+			if tx.Error() != nil {
+				return comments.NewPostEntriesIDCommentsNotFound()
 			}
 
-			return comments.NewPostEntriesIDCommentsOK().WithPayload(comment), true
+			return comments.NewPostEntriesIDCommentsOK().WithPayload(comment)
 		})
 	}
 }

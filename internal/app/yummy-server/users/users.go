@@ -259,26 +259,18 @@ avatar
 FROM long_users
 WHERE `
 
-func loadUser(tx utils.AutoTx, query string, arg interface{}) (*models.User, bool) {
+func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
 
-	err := tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
+	tx.QueryRow(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
 		&user.Avatar)
 
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
-		}
-
-		return &user, false
-	}
-
-	return &user, true
+	return &user
 }
 
 // LoadUserByID returns short user profile by its ID.
-func LoadUserByID(tx utils.AutoTx, id int64) (*models.User, bool) {
+func LoadUserByID(tx *utils.AutoTx, id int64) *models.User {
 	const q = loadUserQuery + "id = $1"
 	return loadUser(tx, q, id)
 }

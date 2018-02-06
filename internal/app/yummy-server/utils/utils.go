@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"database/sql"
 	"log"
 
 	goconf "github.com/zpatrick/go-config"
@@ -29,7 +28,7 @@ func NewError(msg string) *models.Error {
 }
 
 // CanViewEntry returns true if the user is allowed to read the entry.
-func CanViewEntry(tx AutoTx, userID, entryID int64) bool {
+func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 	const q = `
 		SELECT TRUE 
 		FROM feed
@@ -48,10 +47,7 @@ func CanViewEntry(tx AutoTx, userID, entryID int64) bool {
 			OR entry_privacy = 'anonymous'))`
 
 	var allowed bool
-	err := tx.QueryRow(q, userID, entryID).Scan(&allowed)
-	if err != nil && err != sql.ErrNoRows {
-		log.Print(err)
-	}
+	tx.Query(q, userID, entryID).Scan(&allowed)
 
 	return allowed
 }

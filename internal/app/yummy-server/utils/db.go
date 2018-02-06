@@ -98,34 +98,95 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 	return db
 }
 
-type AutoTx interface {
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	Prepare(query string) (*sql.Stmt, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryRow(query string, args ...interface{}) *sql.Row
+type AutoTx struct {
+	tx *sql.Tx
+	rows *sql.Rows
+	res sql.Result
+	err error
+}
+
+func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
+	if tx.err == nil {
+		tx.rows, tx.err = tx.tx.Query(query, args...)
+	}
+
+	return tx
+}
+
+func (tx *AutoTx) Scan(dest ...interface{}) bool {
+	if tx.err != nil {
+		return false
+	}
+
+	if !tx.rows.Next() {
+		tx.err = tx.rows.Err()
+		if tx.err == nil {
+			tx.err = sql.ErrNoRows
+		}
+		return false
+	}
+	
+	tx.err = tx.rows.Scan(dest...)
+	return true
+}
+
+func (tx *AutoTx) Close() {
+	if tx.rows {
+		tx.rows.Close()
+	}
+}
+
+func (tx *AutoTx) Error() {
+	return tx.err
+}
+
+func (tx *AutoTx) Exec(query string, args ...interface{}) {
+	if tx.err == nil {
+		tx.res, tx.err = tx.tx.Exec(query, args...)
+	}
+}
+
+func (tx *AutoTx) RowsAffected() int64 {
+	if tx.err != nil {
+		return 0
+	}
+
+	if tx.res {
+		cnt, tx.err := tx.res.RowsAffected()
+		return cnt
+	}
+
+	return 0
 }
 
 // Transact wraps func in an SQL transaction.
 // Return true to commit or false to rollback. Responder will be just passed through.
-func Transact(db *sql.DB, txFunc func(AutoTx) (middleware.Responder, bool)) middleware.Responder {
+func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.Responder {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	resp, ok := txFunc(tx)
+	atx := &AutoTx{tx: sqlTx}
+	resp := txFunc(atx)
 	if p := recover(); p != nil {
 		tx.Rollback()
-		panic(p) // re-throw panic after Rollback
-	} else if ok {
+		log.Print("Recovered in Transact:", p)
+	} else if atx.Error() == nil {
 		err = tx.Commit()
 	} else {
+		if err = atx.Error(); err != sql.ErrNoRows {
+			log.Print(err)
+		}
+
 		err = tx.Rollback()
 	}
 
 	if err != nil {
 		log.Print(err)
 	}
+
+	tx.Close()
 
 	return resp
 }
