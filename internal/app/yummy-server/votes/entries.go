@@ -158,7 +158,9 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, b
 		WHERE user_id = $1 AND entry_id = $2`
 
 	tx.Exec(q, userID, entryID)
-	ok := tx.RowsAffected() == 1
+	if tx.RowsAffected() != 1 {
+		return nil, false
+	}
 
 	rating := loadEntryRating(tx, entryID)
 
@@ -168,7 +170,7 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, b
 		Vote:   models.EntryVoteNot,
 	}
 
-	return &status, ok
+	return &status, true
 }
 
 func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
