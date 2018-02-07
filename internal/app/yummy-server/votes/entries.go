@@ -152,14 +152,13 @@ func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams, *models.UserID
 	}
 }
 
-func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
+func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, bool) {
 	const q = `
 		DELETE FROM entry_votes
-		WHERE user_id = $1 AND entry_id = $2
-		RETURNING positive`
+		WHERE user_id = $1 AND entry_id = $2`
 
-	var pos bool
-	tx.Query(q, userID, entryID).Scan(&pos)
+	tx.Exec(q, userID, entryID)
+	ok := tx.RowsAffected() == 1
 
 	rating := loadEntryRating(tx, entryID)
 
@@ -169,7 +168,7 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
 		Vote:   models.EntryVoteNot,
 	}
 
-	return &status
+	return &status, ok
 }
 
 func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
@@ -185,8 +184,8 @@ func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.U
 				return votes.NewDeleteEntriesIDVoteForbidden()
 			}
 
-			status := unvoteEntry(tx, userID, params.ID)
-			if tx.Error() != nil {
+			status, ok := unvoteEntry(tx, userID, params.ID)
+			if !ok || tx.Error() != nil {
 				return votes.NewDeleteEntriesIDVoteNotFound()
 			}
 

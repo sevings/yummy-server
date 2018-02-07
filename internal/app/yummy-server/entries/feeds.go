@@ -111,7 +111,7 @@ func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadLiveFeed(tx, userID, *params.Limit, *params.Skip)
 
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesLiveOK()
 			}
 
@@ -130,7 +130,7 @@ func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *mod
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadAnonymousFeed(tx, userID, *params.Limit, *params.Skip)
 
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesAnonymousOK()
 			}
 
@@ -148,7 +148,7 @@ func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadBestFeed(tx, userID, *params.Limit, *params.Skip)
 
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesBestOK()
 			}
 
@@ -170,7 +170,7 @@ func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.Use
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadTlogFeed(tx, userID, *params.Limit, *params.Skip, params.ID)
 
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesUsersIDNotFound()
 			}
 
@@ -188,7 +188,7 @@ func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.U
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadMyTlogFeed(tx, userID, *params.Limit, *params.Skip)
 
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesUsersMeForbidden()
 			}
 

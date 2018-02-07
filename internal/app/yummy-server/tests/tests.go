@@ -54,7 +54,7 @@ func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	return userIDs, profiles
 }
 
-func postEntry(api *operations.YummyAPI, id *models.UserID, privacy string, votable bool) *models.Entry {
+func PostEntry(api *operations.YummyAPI, id *models.UserID, privacy string, votable bool) *models.Entry {
 	title := ""
 	params := entries.PostEntriesUsersMeParams{
 		Content:   "test test test",

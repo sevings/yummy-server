@@ -110,17 +110,11 @@ func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
 		return tx
 	}
 
-	tx.rows, tx.err = tx.tx.Query(query, args...)
-	if tx.err != nil {
-		return tx
+	if tx.rows != nil {
+		tx.rows.Close()
 	}
 
-	if !tx.rows.Next() {
-		tx.err = tx.rows.Err()
-		if tx.err == nil {
-			tx.err = sql.ErrNoRows
-		}
-	}
+	tx.rows, tx.err = tx.tx.Query(query, args...)
 
 	return tx
 }
@@ -130,12 +124,17 @@ func (tx *AutoTx) Scan(dest ...interface{}) bool {
 		return false
 	}
 
-	tx.err = tx.rows.Scan(dest...)
-
 	if !tx.rows.Next() {
 		tx.err = tx.rows.Err()
+		tx.rows = nil
+		if tx.err == nil {
+			tx.err = sql.ErrNoRows
+		}
+
 		return false
 	}
+
+	tx.err = tx.rows.Scan(dest...)
 
 	return true
 }
@@ -152,14 +151,21 @@ func (tx *AutoTx) Error() error {
 }
 
 func (tx *AutoTx) Exec(query string, args ...interface{}) {
-	if tx.err == nil {
-		tx.res, tx.err = tx.tx.Exec(query, args...)
+	if tx.err != nil && tx.err != sql.ErrNoRows {
+		return
 	}
+
+	if tx.rows != nil {
+		tx.rows.Close()
+		tx.rows = nil
+	}
+
+	tx.res, tx.err = tx.tx.Exec(query, args...)
 }
 
 func (tx *AutoTx) RowsAffected() int64 {
 	var cnt int64
-	if tx.err == nil && tx.res != nil {
+	if tx.err == nil {
 		cnt, tx.err = tx.res.RowsAffected()
 	}
 

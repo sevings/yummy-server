@@ -36,7 +36,7 @@ func NewPostEntry(db *sql.DB) func(id *models.UserID, privacy string, votable bo
 	entriesImpl.ConfigureAPI(db, &api)
 
 	return func(id *models.UserID, privacy string, votable bool) *models.Entry {
-		return postEntry(&api, id, privacy, votable)
+		return tests.PostEntry(&api, id, privacy, votable)
 	}
 }
 
