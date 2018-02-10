@@ -11,44 +11,57 @@ import (
 )
 
 const feedQueryStart = `
-SELECT id, created_at, rating, 
-title, content, edit_content, word_count,
-entry_privacy,
-is_votable, comments_count,
-author_id, author_name, author_show_name,
-author_is_online,
-author_avatar `
+SELECT entries.id, entries.created_at, rating, 
+entries.title, content, edit_content, word_count,
+entry_privacy.type,
+is_votable, entries.comments_count,
+users.id, users.name, users.show_name,
+now() - users.last_seen_at < interval '15 minutes' AS author_is_online,
+users.avatar, `
 
-const tlogFeedQueryStart = feedQueryStart + `,
-votes.positive AS vote,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watching 
-FROM feed
-LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS votes ON feed.id = votes.entry_id
-WHERE feed.entry_privacy = 'all' 
-	AND feed.author_privacy = 'all' `
+const tlogFeedQueryStart = feedQueryStart + `
+votes.positive,
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
+EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) 
+FROM entries
+INNER JOIN users ON entries.author_id = users.id
+INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+INNER JOIN user_privacy ON users.privacy = user_privacy.id
+LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id
+WHERE entry_privacy.type = 'all' 
+	AND user_privacy.type = 'all' `
 
 const feedQueryEnd = " ORDER BY created_at DESC LIMIT $2 OFFSET $3"
 
 const liveFeedQuery = tlogFeedQueryStart + feedQueryEnd
 
-const anonymousFeedQuery = feedQueryStart + `,
-false,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = feed.id) AS watching 
-FROM feed
-WHERE feed.entry_privacy = 'anonymous'` + feedQueryEnd
+const anonymousFeedQuery = `
+SELECT entries.id, entries.created_at, 0, 
+entries.title, content, edit_content, word_count,
+entry_privacy.type,
+false, entries.comments_count,
+0, 'anonymous', 'Аноним',
+true,
+'', NULL,
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
+EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) 
+FROM entries
+INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+WHERE entry_privacy.type = 'anonymous' 
+ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 
-const bestFeedQuery = tlogFeedQueryStart + " AND feed.rating > 5 " + feedQueryEnd
+const bestFeedQuery = tlogFeedQueryStart + " AND entries.rating > 5 " + feedQueryEnd
 
-const tlogFeedQuery = tlogFeedQueryStart + " AND feed.author_id = $4 " + feedQueryEnd
+const tlogFeedQuery = tlogFeedQueryStart + " AND entries.author_id = $4 " + feedQueryEnd
 
-const myTlogFeedQuery = feedQueryStart + `,
+const myTlogFeedQuery = feedQueryStart + `
 NULL, 
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = feed.id) AS favorited,
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id) AS favorited,
 true
-FROM feed
-WHERE feed.author_id = $1 ` + feedQueryEnd
+FROM entries
+INNER JOIN users ON entries.author_id = users.id
+INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+WHERE entries.author_id = $1 ` + feedQueryEnd
 
 func loadComments(tx *utils.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
