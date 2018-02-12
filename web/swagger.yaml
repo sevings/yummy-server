@@ -294,7 +294,7 @@ definitions:
         minimum: 1
       relation:
         type: string
-        enum: [followed, requested, cancelled, ignored, none]
+        enum: [followed, requested, ignored, none]
   Comment:
     type: object
     properties:
@@ -915,10 +915,6 @@ paths:
           description: your relationship with the user
           schema:
             $ref: '#/definitions/Relationship'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:
@@ -939,10 +935,6 @@ paths:
           description: your relationship with the user
           schema:
             $ref: '#/definitions/Relationship'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:
@@ -957,10 +949,6 @@ paths:
           description: your relationship with the user
           schema:
             $ref: '#/definitions/Relationship'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:
@@ -983,10 +971,6 @@ paths:
           description: the user relationship with you
           schema:
             $ref: '#/definitions/Relationship'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:
@@ -999,7 +983,7 @@ paths:
         - relations
       responses:
         200:
-          description: the rser relationship with you
+          description: the user relationship with you
           schema:
             $ref: '#/definitions/Relationship'
         403:
@@ -1021,10 +1005,6 @@ paths:
           description: the user relationship with you
           schema:
             $ref: '#/definitions/Relationship'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:
@@ -1469,10 +1449,6 @@ paths:
           description: favorite status
           schema:
             $ref: '#/definitions/FavoriteStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1487,10 +1463,6 @@ paths:
           description: favorite status
           schema:
             $ref: '#/definitions/FavoriteStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1505,10 +1477,6 @@ paths:
           description: favorite status
           schema:
             $ref: '#/definitions/FavoriteStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1526,10 +1494,6 @@ paths:
           description: watching status
           schema:
             $ref: '#/definitions/WatchingStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1544,10 +1508,6 @@ paths:
           description: watching status
           schema:
             $ref: '#/definitions/WatchingStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1562,10 +1522,6 @@ paths:
           description: watching status
           schema:
             $ref: '#/definitions/WatchingStatus'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:
@@ -1586,10 +1542,6 @@ paths:
           description: comments list
           schema:
             $ref: '#/definitions/CommentList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         404:
           description: Entry not found
           schema:

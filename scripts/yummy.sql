@@ -874,6 +874,7 @@ CREATE TRIGGER cnt_tags_del
 CREATE TABLE "mindwell"."favorites" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
+    "date" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "favorite_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "favorite_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
     CONSTRAINT "unique_user_favorite" UNIQUE("user_id", "entry_id") );
@@ -922,6 +923,7 @@ CREATE TRIGGER cnt_favorites_dec
 CREATE TABLE "mindwell"."watching" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
+    "date" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "watching_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "watching_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
     CONSTRAINT "unique_user_watching" UNIQUE("user_id", "entry_id") );
