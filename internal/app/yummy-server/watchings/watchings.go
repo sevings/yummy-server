@@ -14,7 +14,7 @@ import (
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newStatusLoader(db))
 	api.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(newWatchingAdder(db))
-	api.WatchingsDeletetEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(newWatchingDeleter(db))
+	api.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(newWatchingDeleter(db))
 }
 
 func watchingStatus(tx *utils.AutoTx, userID, entryID int64) *models.WatchingStatus {

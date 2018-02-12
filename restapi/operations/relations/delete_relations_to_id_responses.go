@@ -56,49 +56,6 @@ func (o *DeleteRelationsToIDOK) WriteResponse(rw http.ResponseWriter, producer r
 	}
 }
 
-// DeleteRelationsToIDForbiddenCode is the HTTP code returned for type DeleteRelationsToIDForbidden
-const DeleteRelationsToIDForbiddenCode int = 403
-
-/*DeleteRelationsToIDForbidden access denied
-
-swagger:response deleteRelationsToIdForbidden
-*/
-type DeleteRelationsToIDForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewDeleteRelationsToIDForbidden creates DeleteRelationsToIDForbidden with default headers values
-func NewDeleteRelationsToIDForbidden() *DeleteRelationsToIDForbidden {
-	return &DeleteRelationsToIDForbidden{}
-}
-
-// WithPayload adds the payload to the delete relations to Id forbidden response
-func (o *DeleteRelationsToIDForbidden) WithPayload(payload *models.Error) *DeleteRelationsToIDForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the delete relations to Id forbidden response
-func (o *DeleteRelationsToIDForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *DeleteRelationsToIDForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // DeleteRelationsToIDNotFoundCode is the HTTP code returned for type DeleteRelationsToIDNotFound
 const DeleteRelationsToIDNotFoundCode int = 404
 

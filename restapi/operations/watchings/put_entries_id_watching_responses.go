@@ -56,49 +56,6 @@ func (o *PutEntriesIDWatchingOK) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
-// PutEntriesIDWatchingForbiddenCode is the HTTP code returned for type PutEntriesIDWatchingForbidden
-const PutEntriesIDWatchingForbiddenCode int = 403
-
-/*PutEntriesIDWatchingForbidden access denied
-
-swagger:response putEntriesIdWatchingForbidden
-*/
-type PutEntriesIDWatchingForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewPutEntriesIDWatchingForbidden creates PutEntriesIDWatchingForbidden with default headers values
-func NewPutEntriesIDWatchingForbidden() *PutEntriesIDWatchingForbidden {
-	return &PutEntriesIDWatchingForbidden{}
-}
-
-// WithPayload adds the payload to the put entries Id watching forbidden response
-func (o *PutEntriesIDWatchingForbidden) WithPayload(payload *models.Error) *PutEntriesIDWatchingForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put entries Id watching forbidden response
-func (o *PutEntriesIDWatchingForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *PutEntriesIDWatchingForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // PutEntriesIDWatchingNotFoundCode is the HTTP code returned for type PutEntriesIDWatchingNotFound
 const PutEntriesIDWatchingNotFoundCode int = 404
 

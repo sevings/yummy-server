@@ -1358,12 +1358,6 @@ func init() {
               "$ref": "#/definitions/CommentList"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "Entry not found",
             "schema": {
@@ -1438,12 +1432,6 @@ func init() {
               "$ref": "#/definitions/FavoriteStatus"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "Entry not found",
             "schema": {
@@ -1468,12 +1456,6 @@ func init() {
               "$ref": "#/definitions/FavoriteStatus"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "Entry not found",
             "schema": {
@@ -1496,12 +1478,6 @@ func init() {
             "description": "favorite status",
             "schema": {
               "$ref": "#/definitions/FavoriteStatus"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           },
           "404": {
@@ -1640,12 +1616,6 @@ func init() {
               "$ref": "#/definitions/WatchingStatus"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "Entry not found",
             "schema": {
@@ -1670,12 +1640,6 @@ func init() {
               "$ref": "#/definitions/WatchingStatus"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "Entry not found",
             "schema": {
@@ -1698,12 +1662,6 @@ func init() {
             "description": "watching status",
             "schema": {
               "$ref": "#/definitions/WatchingStatus"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           },
           "404": {
@@ -1737,12 +1695,6 @@ func init() {
               "$ref": "#/definitions/Relationship"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "User not found",
             "schema": {
@@ -1763,7 +1715,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "the rser relationship with you",
+            "description": "the user relationship with you",
             "schema": {
               "$ref": "#/definitions/Relationship"
             }
@@ -1797,12 +1749,6 @@ func init() {
             "description": "the user relationship with you",
             "schema": {
               "$ref": "#/definitions/Relationship"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           },
           "404": {
@@ -1841,12 +1787,6 @@ func init() {
               "$ref": "#/definitions/Relationship"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "User not found",
             "schema": {
@@ -1883,12 +1823,6 @@ func init() {
               "$ref": "#/definitions/Relationship"
             }
           },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          },
           "404": {
             "description": "User not found",
             "schema": {
@@ -1911,12 +1845,6 @@ func init() {
             "description": "your relationship with the user",
             "schema": {
               "$ref": "#/definitions/Relationship"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           },
           "404": {
@@ -2723,7 +2651,6 @@ func init() {
           "enum": [
             "followed",
             "requested",
-            "cancelled",
             "ignored",
             "none"
           ]

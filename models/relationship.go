@@ -73,7 +73,7 @@ var relationshipTypeRelationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","cancelled","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -86,8 +86,6 @@ const (
 	RelationshipRelationFollowed string = "followed"
 	// RelationshipRelationRequested captures enum value "requested"
 	RelationshipRelationRequested string = "requested"
-	// RelationshipRelationCancelled captures enum value "cancelled"
-	RelationshipRelationCancelled string = "cancelled"
 	// RelationshipRelationIgnored captures enum value "ignored"
 	RelationshipRelationIgnored string = "ignored"
 	// RelationshipRelationNone captures enum value "none"

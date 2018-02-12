@@ -56,49 +56,6 @@ func (o *GetRelationsFromIDOK) WriteResponse(rw http.ResponseWriter, producer ru
 	}
 }
 
-// GetRelationsFromIDForbiddenCode is the HTTP code returned for type GetRelationsFromIDForbidden
-const GetRelationsFromIDForbiddenCode int = 403
-
-/*GetRelationsFromIDForbidden access denied
-
-swagger:response getRelationsFromIdForbidden
-*/
-type GetRelationsFromIDForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewGetRelationsFromIDForbidden creates GetRelationsFromIDForbidden with default headers values
-func NewGetRelationsFromIDForbidden() *GetRelationsFromIDForbidden {
-	return &GetRelationsFromIDForbidden{}
-}
-
-// WithPayload adds the payload to the get relations from Id forbidden response
-func (o *GetRelationsFromIDForbidden) WithPayload(payload *models.Error) *GetRelationsFromIDForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get relations from Id forbidden response
-func (o *GetRelationsFromIDForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetRelationsFromIDForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // GetRelationsFromIDNotFoundCode is the HTTP code returned for type GetRelationsFromIDNotFound
 const GetRelationsFromIDNotFoundCode int = 404
 

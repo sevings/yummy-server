@@ -16,7 +16,7 @@ import (
 // PutRelationsFromIDOKCode is the HTTP code returned for type PutRelationsFromIDOK
 const PutRelationsFromIDOKCode int = 200
 
-/*PutRelationsFromIDOK the rser relationship with you
+/*PutRelationsFromIDOK the user relationship with you
 
 swagger:response putRelationsFromIdOK
 */

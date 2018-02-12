@@ -56,49 +56,6 @@ func (o *GetEntriesIDCommentsOK) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
-// GetEntriesIDCommentsForbiddenCode is the HTTP code returned for type GetEntriesIDCommentsForbidden
-const GetEntriesIDCommentsForbiddenCode int = 403
-
-/*GetEntriesIDCommentsForbidden access denied
-
-swagger:response getEntriesIdCommentsForbidden
-*/
-type GetEntriesIDCommentsForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewGetEntriesIDCommentsForbidden creates GetEntriesIDCommentsForbidden with default headers values
-func NewGetEntriesIDCommentsForbidden() *GetEntriesIDCommentsForbidden {
-	return &GetEntriesIDCommentsForbidden{}
-}
-
-// WithPayload adds the payload to the get entries Id comments forbidden response
-func (o *GetEntriesIDCommentsForbidden) WithPayload(payload *models.Error) *GetEntriesIDCommentsForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get entries Id comments forbidden response
-func (o *GetEntriesIDCommentsForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetEntriesIDCommentsForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // GetEntriesIDCommentsNotFoundCode is the HTTP code returned for type GetEntriesIDCommentsNotFound
 const GetEntriesIDCommentsNotFoundCode int = 404
 

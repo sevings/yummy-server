@@ -56,49 +56,6 @@ func (o *GetEntriesIDFavoriteOK) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
-// GetEntriesIDFavoriteForbiddenCode is the HTTP code returned for type GetEntriesIDFavoriteForbidden
-const GetEntriesIDFavoriteForbiddenCode int = 403
-
-/*GetEntriesIDFavoriteForbidden access denied
-
-swagger:response getEntriesIdFavoriteForbidden
-*/
-type GetEntriesIDFavoriteForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewGetEntriesIDFavoriteForbidden creates GetEntriesIDFavoriteForbidden with default headers values
-func NewGetEntriesIDFavoriteForbidden() *GetEntriesIDFavoriteForbidden {
-	return &GetEntriesIDFavoriteForbidden{}
-}
-
-// WithPayload adds the payload to the get entries Id favorite forbidden response
-func (o *GetEntriesIDFavoriteForbidden) WithPayload(payload *models.Error) *GetEntriesIDFavoriteForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get entries Id favorite forbidden response
-func (o *GetEntriesIDFavoriteForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetEntriesIDFavoriteForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // GetEntriesIDFavoriteNotFoundCode is the HTTP code returned for type GetEntriesIDFavoriteNotFound
 const GetEntriesIDFavoriteNotFoundCode int = 404
 
