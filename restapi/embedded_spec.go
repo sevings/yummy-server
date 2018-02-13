@@ -1751,6 +1751,12 @@ func init() {
               "$ref": "#/definitions/Relationship"
             }
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "User not found",
             "schema": {

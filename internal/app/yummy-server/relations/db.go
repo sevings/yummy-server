@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/restapi/operations/relations"
 	"github.com/sevings/yummy-server/models"
 )
 
@@ -28,9 +27,9 @@ func relationship(tx *utils.AutoTx, from, to int64) *models.Relationship {
 	return &relation
 }
 
-func setRelationship(tx *utils.AutoTx, from, to int64, relation string) *models.Relationship, bool {
+func setRelationship(tx *utils.AutoTx, from, to int64, relation string) (*models.Relationship, bool) {
 	const q = `
-		INSERT INTO relations (from, to, type)
+		INSERT INTO relations (from_id, to_id, type)
 		VALUES ($1, $2, (SELECT id FROM relation WHERE type = $3))
 		ON CONFLICT ON CONSTRAINT unique_relation
 		DO UPDATE SET type = EXCLUDED.type, changed_at = CURRENT_TIMESTAMP`
@@ -44,17 +43,16 @@ func setRelationship(tx *utils.AutoTx, from, to int64, relation string) *models.
 	}, tx.RowsAffected() == 1
 }
 
-
 func removeRelationship(tx *utils.AutoTx, from, to int64) *models.Relationship {
 	const q = `
 		DELETE FROM relations
-		WHERE from = $1 AND to = $2`
+		WHERE from_id = $1 AND to_id = $2`
 
 	tx.Exec(q, from, to)
 
 	return &models.Relationship{
-		From: from,
-		To:   to,
+		From:     from,
+		To:       to,
 		Relation: models.RelationshipRelationNone,
 	}
 }

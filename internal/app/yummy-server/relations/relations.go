@@ -3,19 +3,21 @@ package relations
 import (
 	"database/sql"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/restapi/operations/relations"
 	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/yummy-server/restapi/operations"
+	"github.com/sevings/yummy-server/restapi/operations/relations"
 )
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(newToRelationLoader(db))
 	api.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(newFromRelationLoader(db))
-	
+
 	api.RelationsPutRelationsToIDHandler = relations.PutRelationsToIDHandlerFunc(newToRelationSetter(db))
 	api.RelationsPutRelationsFromIDHandler = relations.PutRelationsFromIDHandlerFunc(newFromRelationSetter(db))
-	
+
 	api.RelationsDeleteRelationsToIDHandler = relations.DeleteRelationsToIDHandlerFunc(newToRelationDeleter(db))
 	api.RelationsDeleteRelationsFromIDHandler = relations.DeleteRelationsFromIDHandlerFunc(newFromRelationDeleter(db))
 }
@@ -24,9 +26,9 @@ func newToRelationLoader(db *sql.DB) func(relations.GetRelationsToIDParams, *mod
 	return func(params relations.GetRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			relation := relationship(tx, userID, params.ID)
+			relation := relationship(tx, params.ID, userID)
 			return relations.NewGetRelationsToIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
 
@@ -34,9 +36,9 @@ func newFromRelationLoader(db *sql.DB) func(relations.GetRelationsFromIDParams, 
 	return func(params relations.GetRelationsFromIDParams, uID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			relation := relationship(tx, params.ID, userID)
+			relation := relationship(tx, userID, params.ID)
 			return relations.NewGetRelationsFromIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
 
@@ -47,17 +49,17 @@ func newToRelationSetter(db *sql.DB) func(relations.PutRelationsToIDParams, *mod
 			var relation *models.Relationship
 			var ok bool
 			if params.R == models.RelationshipRelationIgnored || !isPrivateTlog(tx, params.ID) {
-				relation, ok := setRelationship(tx, userID, params.ID, params.R)
+				relation, ok = setRelationship(tx, userID, params.ID, params.R)
 			} else {
-				relation, ok := setRelationship(tx, userID, params.ID, models.RelationshipRelationRequested)
+				relation, ok = setRelationship(tx, userID, params.ID, models.RelationshipRelationRequested)
 			}
 
 			if !ok {
 				return relations.NewPutRelationsToIDNotFound()
 			}
-			
+
 			return relations.NewPutRelationsToIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
 
@@ -76,7 +78,7 @@ func newFromRelationSetter(db *sql.DB) func(relations.PutRelationsFromIDParams, 
 			relation, _ = setRelationship(tx, userID, params.ID, models.RelationshipRelationFollowed)
 
 			return relations.NewPutRelationsFromIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
 
@@ -86,7 +88,7 @@ func newToRelationDeleter(db *sql.DB) func(relations.DeleteRelationsToIDParams, 
 			userID := int64(*uID)
 			relation := removeRelationship(tx, userID, params.ID)
 			return relations.NewDeleteRelationsToIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
 
@@ -102,8 +104,8 @@ func newFromRelationDeleter(db *sql.DB) func(relations.DeleteRelationsFromIDPara
 				return relations.NewDeleteRelationsFromIDForbidden()
 			}
 
-			relation, _ = removeRelationship(tx, userID, params.ID)
+			relation = removeRelationship(tx, userID, params.ID)
 			return relations.NewDeleteRelationsFromIDOK().WithPayload(relation)
-		}
+		})
 	}
 }
