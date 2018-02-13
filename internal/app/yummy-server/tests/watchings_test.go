@@ -2,7 +2,6 @@ package tests
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"testing"
 
@@ -45,15 +44,6 @@ func checkEntryWatching(t *testing.T, user *models.UserID, entryID int64, watchi
 		return
 	}
 
-	if !ok {
-		badBody, ok := resp.(*watchings.GetEntriesIDWatchingNotFound)
-		if ok {
-			log.Fatal(badBody.Payload.Message)
-		}
-
-		log.Fatal("error load vote status")
-	}
-
 	status := body.Payload
 	req.Equal(entryID, status.ID)
 	req.Equal(watching, status.IsWatching)
@@ -75,15 +65,6 @@ func checkWatchEntry(t *testing.T, user *models.UserID, entryID int64, success b
 		return
 	}
 
-	if !ok {
-		badBody, ok := resp.(*watchings.PutEntriesIDWatchingNotFound)
-		if ok {
-			log.Fatal(badBody.Payload.Message)
-		}
-
-		log.Fatal("error vote for entry")
-	}
-
 	status := body.Payload
 	req.Equal(entryID, status.ID)
 	req.True(status.IsWatching)
@@ -103,15 +84,6 @@ func checkUnwatchEntry(t *testing.T, user *models.UserID, entryID int64, success
 	req.Equal(success, ok)
 	if !success {
 		return
-	}
-
-	if !ok {
-		badBody, ok := resp.(*watchings.DeleteEntriesIDWatchingNotFound)
-		if ok {
-			log.Fatal(badBody.Payload.Message)
-		}
-
-		log.Fatal("error vote for entry")
 	}
 
 	status := body.Payload
@@ -144,7 +116,7 @@ func TestWatching(t *testing.T) {
 
 	e = post(userIDs[0], models.EntryPrivacyMe, true)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
-	checkEntryWatching(t, userIDs[1], e.ID, true, false)
+	checkEntryWatching(t, userIDs[1], e.ID, false, false)
 	checkWatchEntry(t, userIDs[1], e.ID, false)
 	checkEntryWatching(t, userIDs[1], e.ID, false, false)
 	checkUnwatchEntry(t, userIDs[1], e.ID, false)

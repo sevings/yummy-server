@@ -102,7 +102,7 @@ func newFavoriteDeleter(db *sql.DB) func(favorites.DeleteEntriesIDFavoriteParams
 			}
 
 			status := removeFromFavorites(tx, userID, params.ID)
-			return favorites.NewGetEntriesIDFavoriteOK().WithPayload(status)
+			return favorites.NewDeleteEntriesIDFavoriteOK().WithPayload(status)
 		})
 	}
 }
