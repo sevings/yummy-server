@@ -296,7 +296,7 @@ func (o *PutUsersMeParams) bindPrivacy(rawData []string, hasKey bool, formats st
 
 func (o *PutUsersMeParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "registered", "followers"}); err != nil {
+	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "followers"}); err != nil {
 		return err
 	}
 

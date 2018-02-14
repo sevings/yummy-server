@@ -2018,7 +2018,6 @@ func init() {
           {
             "enum": [
               "all",
-              "registered",
               "followers"
             ],
             "type": "string",
@@ -2582,7 +2581,6 @@ func init() {
               "type": "string",
               "enum": [
                 "all",
-                "registered",
                 "followers"
               ]
             },
@@ -2594,7 +2592,6 @@ func init() {
                   "enum": [
                     "followed",
                     "requested",
-                    "cancelled",
                     "ignored",
                     "none"
                   ]
@@ -2604,7 +2601,6 @@ func init() {
                   "enum": [
                     "followed",
                     "requested",
-                    "cancelled",
                     "ignored",
                     "none"
                   ]

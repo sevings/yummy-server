@@ -253,7 +253,7 @@ var profileAllOf1TypePrivacyPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["all","registered","followers"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["all","followers"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -264,8 +264,6 @@ func init() {
 const (
 	// ProfileAllOf1PrivacyAll captures enum value "all"
 	ProfileAllOf1PrivacyAll string = "all"
-	// ProfileAllOf1PrivacyRegistered captures enum value "registered"
-	ProfileAllOf1PrivacyRegistered string = "registered"
 	// ProfileAllOf1PrivacyFollowers captures enum value "followers"
 	ProfileAllOf1PrivacyFollowers string = "followers"
 )

@@ -50,7 +50,7 @@ var profileAllOf1RelationsTypeFromMePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","cancelled","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -63,8 +63,6 @@ const (
 	ProfileAllOf1RelationsFromMeFollowed string = "followed"
 	// ProfileAllOf1RelationsFromMeRequested captures enum value "requested"
 	ProfileAllOf1RelationsFromMeRequested string = "requested"
-	// ProfileAllOf1RelationsFromMeCancelled captures enum value "cancelled"
-	ProfileAllOf1RelationsFromMeCancelled string = "cancelled"
 	// ProfileAllOf1RelationsFromMeIgnored captures enum value "ignored"
 	ProfileAllOf1RelationsFromMeIgnored string = "ignored"
 	// ProfileAllOf1RelationsFromMeNone captures enum value "none"
@@ -97,7 +95,7 @@ var profileAllOf1RelationsTypeToMePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","cancelled","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -110,8 +108,6 @@ const (
 	ProfileAllOf1RelationsToMeFollowed string = "followed"
 	// ProfileAllOf1RelationsToMeRequested captures enum value "requested"
 	ProfileAllOf1RelationsToMeRequested string = "requested"
-	// ProfileAllOf1RelationsToMeCancelled captures enum value "cancelled"
-	ProfileAllOf1RelationsToMeCancelled string = "cancelled"
 	// ProfileAllOf1RelationsToMeIgnored captures enum value "ignored"
 	ProfileAllOf1RelationsToMeIgnored string = "ignored"
 	// ProfileAllOf1RelationsToMeNone captures enum value "none"
