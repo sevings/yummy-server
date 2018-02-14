@@ -93,6 +93,10 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 			http.StripPrefix("/help/api/", http.FileServer(http.Dir("web"))).ServeHTTP(w, r)
 			return
 		}
+		if strings.Index(r.URL.Path, "/avatars/") == 0 {
+			http.StripPrefix("/avatars/", http.FileServer(http.Dir("../avatars"))).ServeHTTP(w, r)
+			return
+		}
 		handler.ServeHTTP(w, r)
 	})
 

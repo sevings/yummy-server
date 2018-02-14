@@ -3,8 +3,12 @@ package account
 import (
 	"crypto/sha256"
 	"database/sql"
+	"log"
 	"math/rand"
+	"os"
 	"strings"
+
+	"github.com/o1egl/govatar"
 
 	"github.com/go-openapi/runtime/middleware"
 
@@ -106,8 +110,8 @@ const (
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
 
-func generateAPIKey() string {
-	b := make([]byte, 32)
+func generateString(length int) string {
+	b := make([]byte, length)
 	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
 	for i, cache, remain := len(b)-1, rand.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {
@@ -130,22 +134,48 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
+func generateAvatar(name, gender string) string {
+	var g govatar.Gender
+	if gender == models.ProfileAllOf1GenderMale {
+		g = govatar.MALE
+	} else if gender == models.ProfileAllOf1GenderFemale {
+		g = govatar.FEMALE
+	} else if ch := name[len(name)-1]; ch == 'a' || ch == 'y' || ch == 'u' || ch == 'e' || ch == 'o' || ch == 'i' {
+		g = govatar.FEMALE
+	} else {
+		g = govatar.MALE
+	}
+
+	path := "/avatars/" + name[:1] + "/" + generateString(5) + ".png"
+	err := os.MkdirAll("../avatars/"+name[:1], 0777)
+	if err != nil {
+		log.Print(err)
+	}
+
+	err = govatar.GenerateFileFromUsername(g, name, ".."+path)
+	if err != nil {
+		log.Print(err)
+	}
+
+	return path
+}
+
 func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
 	hash := passwordHash(params.Password)
-	apiKey := generateAPIKey()
+	apiKey := generateString(32)
 
 	const q = `
 		INSERT INTO users 
 		(name, show_name, email, password_hash, invited_by, api_key,
 		gender, 
-		country, city)
+		country, city, avatar)
 		values($1, $1, $2, $3, $4, $5, 
 			(select id from gender where type = $6), 
-			$7, $8)
+			$7, $8, $9)
 		RETURNING id`
 
 	if params.Gender == nil {
-		gender := "not set"
+		gender := models.ProfileAllOf1GenderNotSet
 		params.Gender = &gender
 	}
 
@@ -159,11 +189,13 @@ func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref 
 		params.City = &str
 	}
 
+	avatar := generateAvatar(params.Name, *params.Gender)
+
 	var user int64
 	tx.Query(q,
 		params.Name, params.Email, hash, ref, apiKey,
 		*params.Gender,
-		*params.Country, *params.City).Scan(&user)
+		*params.Country, *params.City, avatar).Scan(&user)
 
 	if params.Birthday != nil {
 		tx.Exec("UPDATE users SET birthday = $1 WHERE id = $2", *params.Birthday, user)
