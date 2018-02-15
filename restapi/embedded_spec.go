@@ -2723,7 +2723,8 @@ func init() {
           "minimum": 1
         },
         "rating": {
-          "type": "integer"
+          "type": "number",
+          "format": "float"
         },
         "vote": {
           "type": "string",
@@ -2733,6 +2734,9 @@ func init() {
             "neg",
             "ban"
           ]
+        },
+        "votes": {
+          "type": "integer"
         }
       }
     },

@@ -24,10 +24,13 @@ type VoteStatus struct {
 	ID int64 `json:"id,omitempty"`
 
 	// rating
-	Rating int64 `json:"rating,omitempty"`
+	Rating float32 `json:"rating,omitempty"`
 
 	// vote
 	Vote string `json:"vote,omitempty"`
+
+	// votes
+	Votes int64 `json:"votes,omitempty"`
 }
 
 // Validate validates this vote status

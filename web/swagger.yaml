@@ -258,8 +258,11 @@ definitions:
         type: integer
         format: int64
         minimum: 1
-      rating:
+      votes:
         type: integer
+      rating:
+        type: number
+        format: float
       vote:
         type: string
         enum: [not, pos, neg, ban]

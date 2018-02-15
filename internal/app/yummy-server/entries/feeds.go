@@ -20,14 +20,14 @@ now() - users.last_seen_at < interval '15 minutes' AS author_is_online,
 users.avatar, `
 
 const tlogFeedQueryStart = feedQueryStart + `
-votes.positive,
+votes.vote,
 EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
 EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) 
 FROM entries
 INNER JOIN users ON entries.author_id = users.id
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 INNER JOIN user_privacy ON users.privacy = user_privacy.id
-LEFT JOIN (SELECT entry_id, positive FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id
+LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id
 WHERE entry_privacy.type = 'all' 
 	AND user_privacy.type = 'all' `
 
@@ -56,7 +56,7 @@ const tlogFeedQuery = tlogFeedQueryStart + " AND entries.author_id = $4 " + feed
 
 const myTlogFeedQuery = feedQueryStart + `
 NULL, 
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id) AS favorited,
+EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
 true
 FROM entries
 INNER JOIN users ON entries.author_id = users.id
@@ -78,7 +78,7 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 	for {
 		var entry models.Entry
 		var author models.User
-		var vote sql.NullBool
+		var vote sql.NullFloat64
 		ok := tx.Scan(&entry.ID, &entry.CreatedAt, &entry.Rating,
 			&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
 			&entry.Privacy,
@@ -100,7 +100,7 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 			entry.Vote = models.EntryVoteBan
 		case !vote.Valid:
 			entry.Vote = models.EntryVoteNot
-		case vote.Bool:
+		case vote.Float64 > 0:
 			entry.Vote = models.EntryVotePos
 		default:
 			entry.Vote = models.EntryVoteNeg

@@ -12,11 +12,11 @@ import (
 func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
 	const q = `
 		WITH votes AS (
-			SELECT entry_id, positive
+			SELECT entry_id, vote
 			FROM entry_votes
 			WHERE user_id = $1
 		)
-		SELECT entries.author_id, entry_privacy.type, is_votable, rating, positive
+		SELECT entries.author_id, entry_privacy.type, is_votable, rating, vote
 		FROM entries
 		LEFT JOIN votes on votes.entry_id = entries.id
 		JOIN entry_privacy on entry_privacy.id = entries.visible_for
@@ -27,15 +27,15 @@ func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus
 	var authorID int64
 	var privacy string
 	var votable bool
-	var positive sql.NullBool
-	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &positive)
+	var vote sql.NullFloat64
+	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &vote)
 
 	switch {
 	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
 		status.Vote = models.VoteStatusVoteBan
-	case !positive.Valid:
+	case !vote.Valid:
 		status.Vote = models.VoteStatusVoteNot
-	case positive.Bool:
+	case vote.Float64 > 0:
 		status.Vote = models.VoteStatusVotePos
 	default:
 		status.Vote = models.VoteStatusVoteNeg
@@ -92,30 +92,43 @@ func canVoteForEntry(tx *utils.AutoTx, userID, entryID int64) bool {
 	return allowed.Valid
 }
 
-func loadEntryRating(tx *utils.AutoTx, entryID int64) int64 {
+func loadEntryRating(tx *utils.AutoTx, entryID int64) (int64, float32) {
 	const q = `
-		SELECT rating
+		SELECT votes, rating
 		FROM entries
 		WHERE id = $1`
 
-	var rating int64
-	tx.Query(q, entryID).Scan(&rating)
-	return rating
+	var votes int64
+	var rating float32
+	tx.Query(q, entryID).Scan(&votes, &rating)
+	return votes, rating
 }
 
 func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.VoteStatus {
 	const voteQ = `
-		INSERT INTO entry_votes (user_id, entry_id, positive)
-		VALUES ($1, $2, $3)
+		INSERT INTO entry_votes (user_id, entry_id, vote)
+		VALUES ($1, $2, (
+			SELECT weight * $3
+			FROM entries, vote_weights
+			WHERE vote_weights.user_id = $1 AND entries.id = $2
+				AND entries.category = vote_weights.category
+		))
 		ON CONFLICT ON CONSTRAINT unique_entry_vote
-		DO UPDATE SET positive = EXCLUDED.positive`
+		DO UPDATE SET vote = EXCLUDED.vote`
 
-	tx.Exec(voteQ, userID, entryID, positive)
+	var vote int64
+	if positive {
+		vote = 1
+	} else {
+		vote = -1
+	}
+	tx.Exec(voteQ, userID, entryID, vote)
 
-	rating := loadEntryRating(tx, entryID)
+	votes, rating := loadEntryRating(tx, entryID)
 
 	var status = models.VoteStatus{
 		ID:     entryID,
+		Votes:  votes,
 		Rating: rating,
 	}
 
@@ -162,11 +175,12 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, b
 		return nil, false
 	}
 
-	rating := loadEntryRating(tx, entryID)
+	votes, rating := loadEntryRating(tx, entryID)
 
 	var status = models.VoteStatus{
 		ID:     entryID,
 		Rating: rating,
+		Votes:  votes,
 		Vote:   models.EntryVoteNot,
 	}
 

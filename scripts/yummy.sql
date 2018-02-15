@@ -124,6 +124,21 @@ CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
+CREATE OR REPLACE FUNCTION mindwell.create_vote_weights() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 0);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 1);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 2);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 3);
+
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER crt_vote_weights
+    AFTER INSERT ON mindwell.users
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.create_vote_weights();
+
 INSERT INTO mindwell.users
     (name, show_name, email, password_hash, api_key, invited_by)
     VALUES('HaveANiceDay', 'Хорошего дня!', '', '', '', 1);
@@ -704,22 +719,40 @@ INSERT INTO "mindwell"."entry_privacy" VALUES(3, 'anonymous');
 
 
 
+-- CREATE TABLE "categories" -----------------------------------
+CREATE TABLE "mindwell"."categories" (
+    "id" Integer UNIQUE NOT NULL,
+    "type" Text NOT NULL );
+
+INSERT INTO "mindwell"."categories" VALUES(0, 'tweet');
+INSERT INTO "mindwell"."categories" VALUES(1, 'longread');
+INSERT INTO "mindwell"."categories" VALUES(2, 'media');
+INSERT INTO "mindwell"."categories" VALUES(3, 'comment');
+-- -------------------------------------------------------------
+
+
+
 -- CREATE TABLE "entries" --------------------------------------
 CREATE TABLE "mindwell"."entries" (
 	"id" Serial NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"author_id" Integer NOT NULL,
-	"rating" Integer DEFAULT 0 NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
 	"content" Text NOT NULL,
     "edit_content" Text NOT NULL,
 	"word_count" Integer NOT NULL,
 	"visible_for" Integer NOT NULL,
 	"is_votable" Boolean NOT NULL,
+	"rating" Real DEFAULT 0 NOT NULL,
+    "votes" Integer DEFAULT 0 NOT NULL,
+    "vote_sum" Real DEFAULT 0 NOT NULL,
+    "weight_sum" Real DEFAULT 0 NOT NULL,
+    "category" Integer NOT NULL,
 	"comments_count" Integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "unique_entry_id" PRIMARY KEY( "id" ),
     CONSTRAINT "entry_user_id" FOREIGN KEY("author_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "enum_entry_privacy" FOREIGN KEY("visible_for") REFERENCES "mindwell"."entry_privacy"("id") );
+    CONSTRAINT "enum_entry_privacy" FOREIGN KEY("visible_for") REFERENCES "mindwell"."entry_privacy"("id"),
+    CONSTRAINT "entry_category" FOREIGN KEY("category") REFERENCES "mindwell"."categories"("id") );
  ;
 -- -------------------------------------------------------------
 
@@ -788,7 +821,7 @@ CREATE TRIGGER cnt_tlog_entries_del
     EXECUTE PROCEDURE mindwell.dec_tlog_entries();
 
 CREATE VIEW mindwell.feed AS
-SELECT entries.id, entries.created_at, rating, 
+SELECT entries.id, entries.created_at, rating, votes,
     entries.title, content, edit_content, word_count,
     entry_privacy.type AS entry_privacy,
     is_votable, entries.comments_count,
@@ -944,8 +977,7 @@ CREATE INDEX "index_watching_users" ON "mindwell"."watching" USING btree( "user_
 CREATE TABLE "mindwell"."entry_votes" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
-	"positive" Boolean NOT NULL,
-	"taken" Boolean DEFAULT TRUE NOT NULL,
+    "vote" Real NOT NULL,
     CONSTRAINT "entry_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "entry_vote_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
     CONSTRAINT "unique_entry_vote" UNIQUE("user_id", "entry_id") );
@@ -960,101 +992,125 @@ CREATE INDEX "index_voted_entries" ON "mindwell"."entry_votes" USING btree( "ent
 CREATE INDEX "index_voted_users" ON "mindwell"."entry_votes" USING btree( "user_id" );
 -- -------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes_ins() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET rating = rating + 1
+        SET votes = votes + sign(NEW.vote), 
+            vote_sum = vote_sum + NEW.vote,
+            weight_sum = weight_sum + abs(NEW.vote),
+            rating = vote_sum / weight_sum
         WHERE id = NEW.entry_id;
         
+        WITH entry AS (
+            SELECT author_id, category
+            FROM mindwell.entries
+            WHERE id = NEW.entry_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_count = vote_count + 1,
+            vote_sum = vote_sum + NEW.vote + 1, -- always positive - (0, 2)
+            weight_sum = weight_sum + abs(NEW.vote),
+            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
+        WHERE user_id = entry.author_id AND category = entry.category;
+
+        UPDATE mindwell.users
+        SET karma = karma + NEW.vote * 5
+        WHERE id = NEW.user_id;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes_ins() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET rating = rating - 1
+        SET vote_sum = vote_sum - OLD.vote + NEW.vote,
+            weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
+            rating = vote_sum / weight_sum
         WHERE id = NEW.entry_id;
         
+        WITH entry AS (
+            SELECT author_id, category
+            FROM mindwell.entries
+            WHERE id = NEW.entry_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_sum = vote_sum - OLD.vote + NEW.vote,
+            weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
+            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
+        WHERE user_id = entry.author_id AND category = entry.category;
+
+        UPDATE mindwell.users
+        SET karma = karma - OLD.vote * 5 + NEW.vote * 5
+        WHERE id = NEW.user_id;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes2() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET rating = rating + 2
-        WHERE id = NEW.entry_id;
-        
-        RETURN NULL;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes2() RETURNS TRIGGER AS $$
-    BEGIN
-        UPDATE mindwell.entries
-        SET rating = rating - 2
+        SET votes = votes - sign(OLD.vote), 
+            vote_sum = vote_sum - OLD.vote,
+            weight_sum = weight_sum - abs(OLD.vote),
+            rating = vote_sum / weight_sum
         WHERE id = OLD.entry_id;
         
+        WITH entry AS (
+            SELECT author_id, category
+            FROM mindwell.entries
+            WHERE id = OLD.entry_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_count = vote_count - 1,
+            vote_sum = vote_sum - OLD.vote - 1, -- always positive - (0, 2)
+            weight_sum = weight_sum - abs(OLD.vote),
+            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
+        WHERE user_id = entry.author_id AND category = entry.category;
+
+        UPDATE mindwell.users
+        SET karma = karma - OLD.vote * 5
+        WHERE id = OLD.user_id;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.inc_entry_votes_del() RETURNS TRIGGER AS $$
-    BEGIN
-        UPDATE mindwell.entries
-        SET rating = rating + 1
-        WHERE id = OLD.entry_id;
-        
-        RETURN NULL;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION mindwell.dec_entry_votes_del() RETURNS TRIGGER AS $$
-    BEGIN
-        UPDATE mindwell.entries
-        SET rating = rating - 1
-        WHERE id = OLD.entry_id;
-        
-        RETURN NULL;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER cnt_entry_votes_ins_inc
+CREATE TRIGGER cnt_entry_votes_ins
     AFTER INSERT ON mindwell.entry_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = true)
-    EXECUTE PROCEDURE mindwell.inc_entry_votes_ins();
+    EXECUTE PROCEDURE mindwell.entry_votes_ins();
 
-CREATE TRIGGER cnt_entry_votes_ins_dec
-    AFTER INSERT ON mindwell.entry_votes
-    FOR EACH ROW 
-    WHEN (NEW."positive" = false)
-    EXECUTE PROCEDURE mindwell.dec_entry_votes_ins();
-
-CREATE TRIGGER cnt_entry_votes_upd_inc
+CREATE TRIGGER cnt_entry_votes_upd
     AFTER UPDATE ON mindwell.entry_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = true AND NEW."positive" <> OLD."positive")
-    EXECUTE PROCEDURE mindwell.inc_entry_votes2();
+    EXECUTE PROCEDURE mindwell.entry_votes_upd();
 
-CREATE TRIGGER cnt_entry_votes_upd_dec
-    AFTER UPDATE ON mindwell.entry_votes
-    FOR EACH ROW 
-    WHEN (NEW."positive" = false AND NEW."positive" <> OLD."positive")
-    EXECUTE PROCEDURE mindwell.dec_entry_votes2();
-
-CREATE TRIGGER cnt_entry_votes_del_dec
+CREATE TRIGGER cnt_entry_votes_del
     AFTER DELETE ON mindwell.entry_votes
     FOR EACH ROW 
-    WHEN (OLD."positive" = true)
-    EXECUTE PROCEDURE mindwell.dec_entry_votes_del();
+    EXECUTE PROCEDURE mindwell.entry_votes_del();
 
-CREATE TRIGGER cnt_entry_votes_del_inc
-    AFTER DELETE ON mindwell.entry_votes
-    FOR EACH ROW 
-    WHEN (OLD."positive" = false)
-    EXECUTE PROCEDURE mindwell.inc_entry_votes_del();
+
+
+-- CREATE TABLE "vote_weights" ---------------------------------
+CREATE TABLE "mindwell"."vote_weights" (
+	"user_id" Integer NOT NULL,
+	"category" Integer NOT NULL,
+    "weight" Real DEFAULT 0.1 NOT NULL,
+    "vote_count" Integer DEFAULT 0 NOT NULL,
+    "vote_sum" Real DEFAULT 0 NOT NULL,
+    "weight_sum" Real DEFAULT 0 NOT NULL,
+    CONSTRAINT "vote_weights_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
+    CONSTRAINT "vote_weights_category" FOREIGN KEY("category") REFERENCES "mindwell"."categories"("id"),
+    CONSTRAINT "unique_vote_weight" UNIQUE("user_id", "category") );
+ ;
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_vote_weights" ---------------------------
+CREATE INDEX "index_vote_weights" ON "mindwell"."vote_weights" USING btree( "user_id" );
+-- -------------------------------------------------------------
 
 
 

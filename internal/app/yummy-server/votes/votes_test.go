@@ -40,7 +40,7 @@ func NewPostEntry(db *sql.DB) func(id *models.UserID, privacy string, votable bo
 	}
 }
 
-func checkEntryVote(t *testing.T, user *models.UserID, entryID, rating int64, vote string) {
+func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes int64, vote string) {
 	load := newEntryVoteLoader(db)
 	params := votes.GetEntriesIDVoteParams{
 		ID: entryID,
@@ -59,7 +59,7 @@ func checkEntryVote(t *testing.T, user *models.UserID, entryID, rating int64, vo
 	status := body.Payload
 	req := require.New(t)
 	req.Equal(entryID, status.ID)
-	req.Equal(rating, status.Rating)
+	req.Equal(eVotes, status.Votes)
 	req.Equal(vote, status.Vote)
 }
 

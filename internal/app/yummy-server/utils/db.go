@@ -24,6 +24,7 @@ func ClearDatabase(db *sql.DB) {
 		log.Fatal("cannot begin tx")
 	}
 
+	dropTable(tx, "vote_weights")
 	dropTable(tx, "entries_privacy")
 	// dropTable(tx, "entry_tags")
 	dropTable(tx, "entry_votes")

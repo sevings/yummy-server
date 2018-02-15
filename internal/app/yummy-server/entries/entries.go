@@ -47,6 +47,15 @@ func wordCount(content, title string) int64 {
 	return wc
 }
 
+func entryCategory(entry *models.Entry) string {
+	if entry.WordCount > 100 {
+		return "longread"
+	}
+
+	// media
+	return "tweet"
+}
+
 func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
@@ -62,13 +71,16 @@ func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string,
 		IsWatching:  true,
 	}
 
+	category := entryCategory(&entry)
+
 	const q = `
-	INSERT INTO entries (author_id, title, content, edit_content, word_count, visible_for, is_votable)
-	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), $7)
+	INSERT INTO entries (author_id, title, content, edit_content, word_count, visible_for, is_votable, category)
+	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), 
+		$7, (SELECT id from categories WHERE type = $8))
 	RETURNING id, created_at`
 
 	tx.Query(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
-		privacy, isVotable).Scan(&entry.ID, &entry.CreatedAt)
+		privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
 	author := users.LoadUserByID(tx, userID)
@@ -108,16 +120,19 @@ func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy 
 		IsWatching:  true,
 	}
 
+	category := entryCategory(&entry)
+
 	const q = `
 	UPDATE entries
 	SET title = $1, content = $2, edit_content = $3, word_count = $4, 
 	visible_for = (SELECT id FROM entry_privacy WHERE type = $5), 
-	is_votable = $6
-	WHERE id = $7 AND author_id = $8
+	is_votable = $6,
+	category = (SELECT id from categories WHERE type = $7)
+	WHERE id = $8 AND author_id = $9
 	RETURNING created_at`
 
 	tx.Query(q, title, entry.Content, entry.EditContent, entry.WordCount,
-		privacy, isVotable, entryID, userID).Scan(&entry.CreatedAt)
+		privacy, isVotable, category, entryID, userID).Scan(&entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
 

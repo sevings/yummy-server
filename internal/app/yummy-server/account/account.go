@@ -146,12 +146,12 @@ func generateAvatar(name, gender string) string {
 		g = govatar.MALE
 	}
 
-	path := "/avatars/" + name[:1] + "/" + generateString(5) + ".png"
 	err := os.MkdirAll("../avatars/"+name[:1], 0777)
 	if err != nil {
 		log.Print(err)
 	}
 
+	path := "/avatars/" + name[:1] + "/" + generateString(5) + ".png"
 	err = govatar.GenerateFileFromUsername(g, name, ".."+path)
 	if err != nil {
 		log.Print(err)
