@@ -63,7 +63,7 @@ func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes int64, vo
 	req.Equal(vote, status.Vote)
 }
 
-func checkVoteForEntry(t *testing.T, user *models.UserID, success bool, entryID, rating int64, positive bool, vote string) {
+func checkVoteForEntry(t *testing.T, user *models.UserID, success bool, entryID, eVotes int64, positive bool, vote string) {
 	put := newEntryVoter(db)
 	params := votes.PutEntriesIDVoteParams{
 		ID:       entryID,
@@ -88,11 +88,11 @@ func checkVoteForEntry(t *testing.T, user *models.UserID, success bool, entryID,
 
 	status := body.Payload
 	req.Equal(entryID, status.ID)
-	req.Equal(rating, status.Rating)
+	req.Equal(eVotes, status.Votes)
 	req.Equal(vote, status.Vote)
 }
 
-func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, rating int64) {
+func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, eVotes int64) {
 	del := newEntryUnvoter(db)
 	params := votes.DeleteEntriesIDVoteParams{
 		ID: entryID,
@@ -116,7 +116,7 @@ func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, 
 
 	status := body.Payload
 	req.Equal(entryID, status.ID)
-	req.Equal(rating, status.Rating)
+	req.Equal(eVotes, status.Votes)
 	req.Equal(models.EntryVoteNot, status.Vote)
 }
 

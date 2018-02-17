@@ -16,7 +16,8 @@ func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus
 			FROM entry_votes
 			WHERE user_id = $1
 		)
-		SELECT entries.author_id, entry_privacy.type, is_votable, rating, vote
+		SELECT entries.author_id, entry_privacy.type, is_votable, 
+			rating, votes, vote
 		FROM entries
 		LEFT JOIN votes on votes.entry_id = entries.id
 		JOIN entry_privacy on entry_privacy.id = entries.visible_for
@@ -28,7 +29,8 @@ func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus
 	var privacy string
 	var votable bool
 	var vote sql.NullFloat64
-	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable, &status.Rating, &vote)
+	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable,
+		&status.Rating, &status.Votes, &vote)
 
 	switch {
 	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:

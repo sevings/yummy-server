@@ -998,7 +998,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
         SET votes = votes + sign(NEW.vote), 
             vote_sum = vote_sum + NEW.vote,
             weight_sum = weight_sum + abs(NEW.vote),
-            rating = vote_sum / weight_sum
+            rating = (vote_sum + NEW.vote) / (weight_sum + abs(NEW.vote))
         WHERE id = NEW.entry_id;
         
         WITH entry AS (
@@ -1010,8 +1010,11 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
         SET vote_count = vote_count + 1,
             vote_sum = vote_sum + NEW.vote + 1, -- always positive - (0, 2)
             weight_sum = weight_sum + abs(NEW.vote),
-            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
-        WHERE user_id = entry.author_id AND category = entry.category;
+            weight = atan2(vote_count + 1, 5) * (vote_sum + NEW.vote + 1) 
+                / (weight_sum + abs(NEW.vote)) / pi() -- / 2 / (pi() / 2) => / pi()
+        FROM entry
+        WHERE user_id = entry.author_id 
+            AND vote_weights.category = entry.category;
 
         UPDATE mindwell.users
         SET karma = karma + NEW.vote * 5
@@ -1024,9 +1027,10 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET vote_sum = vote_sum - OLD.vote + NEW.vote,
+        SET votes = votes - sign(OLD.vote) + sign(NEW.vote), 
+            vote_sum = vote_sum - OLD.vote + NEW.vote,
             weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
-            rating = vote_sum / weight_sum
+            rating = (vote_sum - OLD.vote + NEW.vote) / (weight_sum - abs(OLD.vote) + abs(NEW.vote))
         WHERE id = NEW.entry_id;
         
         WITH entry AS (
@@ -1037,8 +1041,11 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
         UPDATE mindwell.vote_weights
         SET vote_sum = vote_sum - OLD.vote + NEW.vote,
             weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
-            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
-        WHERE user_id = entry.author_id AND category = entry.category;
+            weight = atan2(vote_count, 5) * (vote_sum - OLD.vote + NEW.vote) 
+                / (weight_sum - abs(OLD.vote) + abs(NEW.vote)) / pi() -- / 2 / (pi() / 2) => / pi()
+        FROM entry
+        WHERE user_id = entry.author_id
+            AND vote_weights.category = entry.category;
 
         UPDATE mindwell.users
         SET karma = karma - OLD.vote * 5 + NEW.vote * 5
@@ -1054,7 +1061,9 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
         SET votes = votes - sign(OLD.vote), 
             vote_sum = vote_sum - OLD.vote,
             weight_sum = weight_sum - abs(OLD.vote),
-            rating = vote_sum / weight_sum
+            rating = CASE WHEN weight_sum = abs(OLD.vote) THEN 0
+                ELSE (vote_sum - OLD.vote) / (weight_sum - abs(OLD.vote))
+                END
         WHERE id = OLD.entry_id;
         
         WITH entry AS (
@@ -1066,8 +1075,13 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
         SET vote_count = vote_count - 1,
             vote_sum = vote_sum - OLD.vote - 1, -- always positive - (0, 2)
             weight_sum = weight_sum - abs(OLD.vote),
-            weight = atan2(vote_count, 5) * vote_sum / weight_sum / pi() -- / 2 / (pi() / 2) => / pi()
-        WHERE user_id = entry.author_id AND category = entry.category;
+            weight = CASE WHEN weight_sum = abs(OLD.vote) THEN 0.1
+                ELSE atan2(vote_count - 1, 5) * (vote_sum - OLD.vote - 1) 
+                / (weight_sum - abs(OLD.vote)) / pi() -- / 2 / (pi() / 2) => / pi()
+                END
+        FROM entry
+        WHERE user_id = entry.author_id
+            AND vote_weights.category = entry.category;
 
         UPDATE mindwell.users
         SET karma = karma - OLD.vote * 5
