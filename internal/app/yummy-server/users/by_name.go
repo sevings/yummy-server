@@ -20,16 +20,29 @@ const usersQueryToName = usersQueryStart + "name = $1 AND relations.to_id = shor
 const usersQueryFromName = usersQueryStart + "name = $1 AND relations.from_id = short_users.id" + usersQueryEnd
 
 func loadUsersRelatedToName(db *sql.DB, usersQuery string,
-	userID *models.UserID,
-	arg interface{}, relation string, limit, offset int64) middleware.Responder {
+	userID *models.UserID, args ...interface{}) middleware.Responder {
 	return loadUsers(db, usersQuery, privacyQueryName, relationToNameQuery,
-		userID, arg, relation, limit, offset)
+		userID, args...)
 }
 
 func newFollowersLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowersParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameFollowersParams, userID *models.UserID) middleware.Responder {
 		return loadUsersRelatedToName(db, usersQueryToName,
 			userID,
-			params.Name, "followed", *params.Limit, *params.Skip)
+			params.Name, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
+	}
+}
+
+func newFollowingsLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowingsParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersByNameNameFollowingsParams, userID *models.UserID) middleware.Responder {
+		return loadUsersRelatedToName(db, usersQueryFromName, userID,
+			params.Name, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
+	}
+}
+
+func newInvitedLoaderByName(db *sql.DB) func(users.GetUsersByNameNameInvitedParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersByNameNameInvitedParams, userID *models.UserID) middleware.Responder {
+		return loadUsersRelatedToName(db, invitedUsersQuery,
+			userID, params.Name, *params.Limit, *params.Skip)
 	}
 }

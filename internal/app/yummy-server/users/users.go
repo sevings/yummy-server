@@ -17,16 +17,24 @@ import (
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.APIKeyHeaderAuth = newKeyAuth(db)
 
+	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
 	api.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(db))
 	api.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(db))
 
+	api.MeGetUsersMeFollowersHandler = me.GetUsersMeFollowersHandlerFunc(newMyFollowersLoader(db))
 	api.UsersGetUsersIDFollowersHandler = users.GetUsersIDFollowersHandlerFunc(newFollowersLoader(db))
 	api.UsersGetUsersByNameNameFollowersHandler = users.GetUsersByNameNameFollowersHandlerFunc(newFollowersLoaderByName(db))
 
+	api.MeGetUsersMeFollowingsHandler = me.GetUsersMeFollowingsHandlerFunc(newMyFollowingsLoader(db))
 	api.UsersGetUsersIDFollowingsHandler = users.GetUsersIDFollowingsHandlerFunc(newFollowingsLoader(db))
+	api.UsersGetUsersByNameNameFollowingsHandler = users.GetUsersByNameNameFollowingsHandlerFunc(newFollowingsLoaderByName(db))
 
-	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
-	api.MeGetUsersMeFollowersHandler = me.GetUsersMeFollowersHandlerFunc(newMyFollowersLoader(db))
+	api.MeGetUsersMeInvitedHandler = me.GetUsersMeInvitedHandlerFunc(newMyInvitedLoader(db))
+	api.UsersGetUsersIDInvitedHandler = users.GetUsersIDInvitedHandlerFunc(newInvitedLoader(db))
+	api.UsersGetUsersByNameNameInvitedHandler = users.GetUsersByNameNameInvitedHandlerFunc(newInvitedLoaderByName(db))
+
+	api.MeGetUsersMeIgnoredHandler = me.GetUsersMeIgnoredHandlerFunc(newMyIgnoredLoader(db))
+	api.MeGetUsersMeRequestedHandler = me.GetUsersMeRequestedHandlerFunc(newMyRequestedLoader(db))
 }
 
 const profileQuery = `
@@ -146,7 +154,7 @@ func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) st
 	var relation string
 	tx.Query(query, from, to).Scan(&relation)
 	if tx.Error() == sql.ErrNoRows {
-		return "none"
+		return models.RelationshipRelationNone
 	}
 
 	return relation
@@ -189,10 +197,32 @@ const usersQueryEnd = `
 ORDER BY relations.changed_at DESC
 LIMIT $3 OFFSET $4`
 
-func loadRelatedUsers(tx *utils.AutoTx, usersQuery string,
-	arg interface{}, relation string, limit, offset int64) *models.UserList {
+const invitedUsersQuery = `
+SELECT id, name, show_name,
+is_online, 
+avatar
+FROM long_users
+WHERE invited_by = $1
+ORDER BY id ASC
+LIMIT $2 OFFSET $3`
+
+const invitedUsersByNameQuery = `
+WITH by AS (
+	SELECT id
+	FROM users
+	WHERE name = $1
+)
+SELECT long_users.id, name, show_name,
+is_online, 
+avatar
+FROM long_users
+WHERE invited_by = by.id
+ORDER BY long_users.id ASC
+LIMIT $2 OFFSET $3`
+
+func loadRelatedUsers(tx *utils.AutoTx, usersQuery string, args ...interface{}) *models.UserList {
 	var list models.UserList
-	tx.Query(usersQuery, arg, relation, limit, offset)
+	tx.Query(usersQuery, args...)
 
 	for {
 		var user models.User
@@ -210,10 +240,9 @@ func loadRelatedUsers(tx *utils.AutoTx, usersQuery string,
 }
 
 func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
-	userID *models.UserID,
-	arg interface{}, relation string, limit, offset int64) middleware.Responder {
+	userID *models.UserID, args ...interface{}) middleware.Responder {
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, arg)
+		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
 		if tx.Error() != nil {
 			return users.NewGetUsersIDFollowersNotFound()
 		}
@@ -222,7 +251,7 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 			return users.NewGetUsersIDFollowersForbidden()
 		}
 
-		list := loadRelatedUsers(tx, usersQuery, arg, relation, limit, offset)
+		list := loadRelatedUsers(tx, usersQuery, args...)
 		if tx.Error() != nil {
 			return users.NewGetUsersIDFollowersNotFound()
 		}
