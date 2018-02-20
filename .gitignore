@@ -1,1 +1,2 @@
-configs/server.toml
+/configs/server.toml
+/internal/yummy-server/app/avatars/
