@@ -97,7 +97,7 @@ func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query string, args 
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 		id := int64(*userID)
 		list := loadRelatedUsers(tx, query, append([]interface{}{id}, args...)...)
-		if tx.Error() != nil {
+		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return me.NewGetUsersMeFollowersForbidden()
 		}
 
