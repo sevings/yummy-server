@@ -107,10 +107,10 @@ func loadEntryRating(tx *utils.AutoTx, entryID int64) (int64, float32) {
 }
 
 func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.VoteStatus {
-	const voteQ = `
+	const q = `
 		INSERT INTO entry_votes (user_id, entry_id, vote)
 		VALUES ($1, $2, (
-			SELECT weight * $3
+			SELECT GREATEST(0.001, weight) * $3
 			FROM entries, vote_weights
 			WHERE vote_weights.user_id = $1 AND entries.id = $2
 				AND entries.category = vote_weights.category
@@ -124,7 +124,7 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 	} else {
 		vote = -1
 	}
-	tx.Exec(voteQ, userID, entryID, vote)
+	tx.Exec(q, userID, entryID, vote)
 
 	votes, rating := loadEntryRating(tx, entryID)
 

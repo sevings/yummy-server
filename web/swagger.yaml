@@ -202,8 +202,11 @@ definitions:
       createdAt:
         type: string
         format: date-time
-      rating:
+      votes:
         type: integer
+      rating:
+        type: number
+        format: float
       title:
         type: string
       content:

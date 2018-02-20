@@ -54,7 +54,7 @@ type Entry struct {
 	Privacy string `json:"privacy,omitempty"`
 
 	// rating
-	Rating int64 `json:"rating,omitempty"`
+	Rating float32 `json:"rating,omitempty"`
 
 	// title
 	Title string `json:"title,omitempty"`
@@ -64,6 +64,9 @@ type Entry struct {
 
 	// vote
 	Vote string `json:"vote,omitempty"`
+
+	// votes
+	Votes int64 `json:"votes,omitempty"`
 
 	// word count
 	WordCount int64 `json:"wordCount,omitempty"`

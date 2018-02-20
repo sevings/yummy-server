@@ -2426,7 +2426,8 @@ func init() {
           ]
         },
         "rating": {
-          "type": "integer"
+          "type": "number",
+          "format": "float"
         },
         "title": {
           "type": "string"
@@ -2445,6 +2446,9 @@ func init() {
             "neg",
             "ban"
           ]
+        },
+        "votes": {
+          "type": "integer"
         },
         "wordCount": {
           "type": "integer"

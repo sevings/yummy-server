@@ -11,7 +11,7 @@ import (
 )
 
 const feedQueryStart = `
-SELECT entries.id, entries.created_at, rating, 
+SELECT entries.id, entries.created_at, rating, entries.votes,
 entries.title, content, edit_content, word_count,
 entry_privacy.type,
 is_votable, entries.comments_count,
@@ -79,7 +79,7 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 		var entry models.Entry
 		var author models.User
 		var vote sql.NullFloat64
-		ok := tx.Scan(&entry.ID, &entry.CreatedAt, &entry.Rating,
+		ok := tx.Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
 			&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
 			&entry.Privacy,
 			&entry.IsVotable, &entry.CommentCount,
