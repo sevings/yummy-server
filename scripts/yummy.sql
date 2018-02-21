@@ -998,7 +998,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
         SET votes = votes + sign(NEW.vote), 
             vote_sum = vote_sum + NEW.vote,
             weight_sum = weight_sum + abs(NEW.vote),
-            rating = (vote_sum + NEW.vote) / (weight_sum + abs(NEW.vote))
+            rating = (vote_sum + NEW.vote) / (weight_sum + abs(NEW.vote)) * 10
         WHERE id = NEW.entry_id;
         
         WITH entry AS (
@@ -1023,7 +1023,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1038,7 +1038,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
         SET votes = votes - sign(OLD.vote) + sign(NEW.vote), 
             vote_sum = vote_sum - OLD.vote + NEW.vote,
             weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
-            rating = (vote_sum - OLD.vote + NEW.vote) / (weight_sum - abs(OLD.vote) + abs(NEW.vote))
+            rating = (vote_sum - OLD.vote + NEW.vote) / (weight_sum - abs(OLD.vote) + abs(NEW.vote)) * 10
         WHERE id = NEW.entry_id;
         
         WITH entry AS (
@@ -1062,7 +1062,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1074,7 +1074,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1090,7 +1090,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
             vote_sum = vote_sum - OLD.vote,
             weight_sum = weight_sum - abs(OLD.vote),
             rating = CASE WHEN weight_sum = abs(OLD.vote) THEN 0
-                ELSE (vote_sum - OLD.vote) / (weight_sum - abs(OLD.vote))
+                ELSE (vote_sum - OLD.vote) / (weight_sum - abs(OLD.vote)) * 10
                 END
         WHERE id = OLD.entry_id;
         
@@ -1118,7 +1118,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
