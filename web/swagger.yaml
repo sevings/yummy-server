@@ -841,6 +841,15 @@ paths:
     $ref: '#/paths/~1users~1me~1followers'
   /users/me/requested:
     $ref: '#/paths/~1users~1me~1followers'
+  /users/me/online:
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: OK
   /design:
     get:
       security:

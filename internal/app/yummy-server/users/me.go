@@ -139,3 +139,14 @@ func newMyRequestedLoader(db *sql.DB) func(me.GetUsersMeRequestedParams, *models
 			models.RelationshipRelationRequested, *params.Limit, *params.Skip)
 	}
 }
+
+func newMyOnlineSetter(db *sql.DB) func(me.PutUsersMeOnlineParams, *models.UserID) middleware.Responder {
+	return func(params me.PutUsersMeOnlineParams, userID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			id := int64(*userID)
+			const q = `UPDATE users SET last_seen_at = DEFAULT WHERE id = $1`
+			tx.Exec(q, id)
+			return me.NewPutUsersMeOnlineOK()
+		})
+	}
+}

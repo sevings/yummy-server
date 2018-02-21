@@ -247,6 +247,9 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 		MePutUsersMeHandler: me.PutUsersMeHandlerFunc(func(params me.PutUsersMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutUsersMe has not yet been implemented")
 		}),
+		MePutUsersMeOnlineHandler: me.PutUsersMeOnlineHandlerFunc(func(params me.PutUsersMeOnlineParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutUsersMeOnline has not yet been implemented")
+		}),
 
 		// Applies when the "X-User-Key" header is set
 		APIKeyHeaderAuth: func(token string) (*models.UserID, error) {
@@ -427,6 +430,8 @@ type YummyAPI struct {
 	RelationsPutRelationsToIDHandler relations.PutRelationsToIDHandler
 	// MePutUsersMeHandler sets the operation handler for the put users me operation
 	MePutUsersMeHandler me.PutUsersMeHandler
+	// MePutUsersMeOnlineHandler sets the operation handler for the put users me online operation
+	MePutUsersMeOnlineHandler me.PutUsersMeOnlineHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -764,6 +769,10 @@ func (o *YummyAPI) Validate() error {
 
 	if o.MePutUsersMeHandler == nil {
 		unregistered = append(unregistered, "me.PutUsersMeHandler")
+	}
+
+	if o.MePutUsersMeOnlineHandler == nil {
+		unregistered = append(unregistered, "me.PutUsersMeOnlineHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -1203,6 +1212,11 @@ func (o *YummyAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/users/me"] = me.NewPutUsersMe(o.context, o.MePutUsersMeHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/users/me/online"] = me.NewPutUsersMeOnline(o.context, o.MePutUsersMeOnlineHandler)
 
 }
 

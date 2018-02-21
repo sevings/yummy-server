@@ -2113,6 +2113,23 @@ func init() {
     "/users/me/invited": {
       "$ref": "#/paths/~1users~1me~1followers"
     },
+    "/users/me/online": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/users/me/requested": {
       "$ref": "#/paths/~1users~1me~1followers"
     },

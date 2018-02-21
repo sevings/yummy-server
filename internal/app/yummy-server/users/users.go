@@ -35,6 +35,8 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 
 	api.MeGetUsersMeIgnoredHandler = me.GetUsersMeIgnoredHandlerFunc(newMyIgnoredLoader(db))
 	api.MeGetUsersMeRequestedHandler = me.GetUsersMeRequestedHandlerFunc(newMyRequestedLoader(db))
+
+	api.MePutUsersMeOnlineHandler = me.PutUsersMeOnlineHandlerFunc(newMyOnlineSetter(db))
 }
 
 const profileQuery = `
