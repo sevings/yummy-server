@@ -33,10 +33,10 @@ func isEmailFree(tx *utils.AutoTx, email string) bool {
 	const q = `
         select id 
         from users 
-		where lower(email) = $1`
+		where lower(email) = lower($1)`
 
 	var id int64
-	tx.Query(q, strings.ToLower(email)).Scan(&id)
+	tx.Query(q, email).Scan(&id)
 
 	return tx.Error() == sql.ErrNoRows
 }
@@ -55,10 +55,10 @@ func isNameFree(tx *utils.AutoTx, name string) bool {
 	const q = `
         select id 
         from users 
-		where lower(name) = $1`
+		where lower(name) = lower($1)`
 
 	var id int64
-	tx.Query(q, strings.ToLower(name)).Scan(&id)
+	tx.Query(q, name).Scan(&id)
 
 	return tx.Error() == sql.ErrNoRows
 }
@@ -308,7 +308,7 @@ func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middlewa
 	}
 }
 
-const authProfileQueryByPassword = authProfileQuery + "WHERE long_users.name = $1 and long_users.password_hash = $2"
+const authProfileQueryByPassword = authProfileQuery + "WHERE lower(long_users.name) = lower($1) and long_users.password_hash = $2"
 
 func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {

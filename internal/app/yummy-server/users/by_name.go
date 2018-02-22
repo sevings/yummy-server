@@ -10,14 +10,14 @@ import (
 
 func newUserLoaderByName(db *sql.DB) func(users.GetUsersByNameNameParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameParams, userID *models.UserID) middleware.Responder {
-		const q = profileQuery + "WHERE long_users.name = $1"
+		const q = profileQuery + "WHERE lower(long_users.name) = lower($1)"
 		return loadProfile(db, q, userID, params.Name)
 	}
 }
 
-const privacyQueryName = privacyQueryStart + "users.name = $1"
-const usersQueryToName = usersQueryStart + "name = $1 AND relations.to_id = short_users.id" + usersQueryEnd
-const usersQueryFromName = usersQueryStart + "name = $1 AND relations.from_id = short_users.id" + usersQueryEnd
+const privacyQueryName = privacyQueryStart + "lower(users.name) = lower($1)"
+const usersQueryToName = usersQueryStart + "lower(name) = lower($1) AND relations.to_id = short_users.id" + usersQueryEnd
+const usersQueryFromName = usersQueryStart + "lower(name) = lower($1) AND relations.from_id = short_users.id" + usersQueryEnd
 
 func loadUsersRelatedToName(db *sql.DB, usersQuery string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {

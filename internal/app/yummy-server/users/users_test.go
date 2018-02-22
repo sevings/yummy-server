@@ -3,6 +3,7 @@ package users
 import (
 	"database/sql"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
@@ -114,7 +115,7 @@ func TestGetUserByID(t *testing.T) {
 func TestGetUserByName(t *testing.T) {
 	get := newUserLoaderByName(db)
 	for i, user := range profiles {
-		resp := get(users.GetUsersByNameNameParams{Name: user.Name}, userIDs[i])
+		resp := get(users.GetUsersByNameNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
 		body, ok := resp.(*users.GetUsersIDOK) // not GetUsersByNameNameOK
 		if !ok {
 			badBody, ok := resp.(*users.GetUsersIDNotFound) // not GetUsersByNameNameNotFound

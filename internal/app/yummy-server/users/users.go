@@ -147,7 +147,7 @@ WHERE relations.from_id = $1
 const relationToNameQuery = `
 SELECT relation.type
 FROM users, relations, relation
-WHERE users.name = $2
+WHERE lower(users.name) = lower($2)
 	relations.from_id = $1
 	AND relations.to_id = users.id
 	AND relations.type = relation.id`
@@ -212,7 +212,7 @@ const invitedUsersByNameQuery = `
 WITH by AS (
 	SELECT id
 	FROM users
-	WHERE name = $1
+	WHERE lower(name) = lower($1)
 )
 SELECT long_users.id, name, show_name,
 is_online, 
