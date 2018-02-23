@@ -544,12 +544,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Design"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       },
@@ -607,12 +601,6 @@ func init() {
             "description": "Design of your tlog",
             "schema": {
               "$ref": "#/definitions/Design"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }

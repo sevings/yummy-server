@@ -861,10 +861,6 @@ paths:
           description: Design of your tlog
           schema:
             $ref: '#/definitions/Design'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
     put:
       parameters:
         - in: formData
@@ -897,10 +893,6 @@ paths:
           description: Design of your tlog
           schema:
             $ref: '#/definitions/Design'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /design/fonts:
     get:
       security:

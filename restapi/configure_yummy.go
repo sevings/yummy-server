@@ -9,6 +9,7 @@ import (
 
 	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
 	commentsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/comments"
+	designImpl "github.com/sevings/yummy-server/internal/app/yummy-server/design"
 	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
 	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
 	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
@@ -48,6 +49,7 @@ func configureAPI(api *operations.YummyAPI) http.Handler {
 	favoritesImpl.ConfigureAPI(db, api)
 	watchingsImpl.ConfigureAPI(db, api)
 	commentsImpl.ConfigureAPI(db, api)
+	designImpl.ConfigureAPI(db, api)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
