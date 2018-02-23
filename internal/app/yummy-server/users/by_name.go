@@ -16,8 +16,10 @@ func newUserLoaderByName(db *sql.DB) func(users.GetUsersByNameNameParams, *model
 }
 
 const privacyQueryName = privacyQueryStart + "lower(users.name) = lower($1)"
-const usersQueryToName = usersQueryStart + "lower(name) = lower($1) AND relations.to_id = short_users.id" + usersQueryEnd
-const usersQueryFromName = usersQueryStart + "lower(name) = lower($1) AND relations.from_id = short_users.id" + usersQueryEnd
+
+const idFromName = "(SELECT id from users WHERE lower(name) = lower($1))"
+const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = short_users.id" + usersQueryEnd
+const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = short_users.id" + usersQueryEnd
 
 func loadUsersRelatedToName(db *sql.DB, usersQuery string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
@@ -42,7 +44,7 @@ func newFollowingsLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowin
 
 func newInvitedLoaderByName(db *sql.DB) func(users.GetUsersByNameNameInvitedParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToName(db, invitedUsersQuery,
+		return loadUsersRelatedToName(db, invitedUsersByNameQuery,
 			userID, params.Name, *params.Limit, *params.Skip)
 	}
 }

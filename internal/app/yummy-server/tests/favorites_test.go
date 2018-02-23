@@ -1,15 +1,32 @@
 package tests
 
 import (
+	"database/sql"
+	"os"
 	"testing"
 
 	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
 	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
+	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/favorites"
 	"github.com/stretchr/testify/require"
 )
+
+var db *sql.DB
+var userIDs []*models.UserID
+var profiles []*models.AuthProfile
+
+func TestMain(m *testing.M) {
+	config := utils.LoadConfig("../../../../configs/server")
+	db = utils.OpenDatabase(config)
+	utils.ClearDatabase(db)
+
+	userIDs, profiles = RegisterTestUsers(db)
+
+	os.Exit(m.Run())
+}
 
 func checkEntryFavorite(t *testing.T, user *models.UserID, entryID int64, fav, success bool) {
 	api := operations.YummyAPI{}

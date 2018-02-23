@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
@@ -49,6 +50,8 @@ func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 		id, profile := register(&api, "test"+strconv.Itoa(i))
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
+
+		time.Sleep(10 * time.Millisecond)
 	}
 
 	return userIDs, profiles

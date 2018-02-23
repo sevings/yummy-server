@@ -1,45 +1,324 @@
 package tests
 
 import (
+	"strings"
 	"testing"
+	"time"
 
 	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/me"
+	"github.com/sevings/yummy-server/restapi/operations/users"
 	"github.com/stretchr/testify/require"
 )
 
-func TestUserLists(t *testing.T) {
-	checkFollow(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
-	checkFollow(t, userIDs[0], userIDs[2], models.RelationshipRelationFollowed)
-	checkFollow(t, userIDs[1], userIDs[2], models.RelationshipRelationFollowed)
-
+func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
 	api := operations.YummyAPI{}
 	usersImpl.ConfigureAPI(db, &api)
 
-	var skip int64
-	var limit int64 = 100
-	myfers := api.MeGetUsersMeFollowersHandler.Handle
+	get := api.MeGetUsersMeFollowersHandler.Handle
 	params := me.GetUsersMeFollowersParams{
 		Skip:  &skip,
 		Limit: &limit,
 	}
-	resp := myfers(params, userIDs[0])
+	resp := get(params, user)
 	body, ok := resp.(*me.GetUsersMeFollowersOK)
 
-	req := require.New(t)
-	req.True(ok)
+	require.True(t, ok)
 
 	list := body.Payload.Users
-	req.Empty(list)
+	require.Equal(t, size, len(list))
 
-	resp = myfers(params, userIDs[1])
-	body, ok = resp.(*me.GetUsersMeFollowersOK)
-	req.True(ok)
+	return list
+}
 
-	list = body.Payload.Users
-	req.Equal(1, len(list))
+func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
 
+	get := api.MeGetUsersMeFollowingsHandler.Handle
+	params := me.GetUsersMeFollowingsParams{
+		Skip:  &skip,
+		Limit: &limit,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*me.GetUsersMeFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.MeGetUsersMeIgnoredHandler.Handle
+	params := me.GetUsersMeIgnoredParams{
+		Skip:  &skip,
+		Limit: &limit,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*me.GetUsersMeFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.MeGetUsersMeInvitedHandler.Handle
+	params := me.GetUsersMeInvitedParams{
+		Skip:  &skip,
+		Limit: &limit,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*me.GetUsersMeFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersIDFollowersHandler.Handle
+	params := users.GetUsersIDFollowersParams{
+		Skip:  &skip,
+		Limit: &limit,
+		ID:    id,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersIDFollowingsHandler.Handle
+	params := users.GetUsersIDFollowingsParams{
+		Skip:  &skip,
+		Limit: &limit,
+		ID:    id,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersIDInvitedHandler.Handle
+	params := users.GetUsersIDInvitedParams{
+		Skip:  &skip,
+		Limit: &limit,
+		ID:    id,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersByNameNameFollowersHandler.Handle
+	params := users.GetUsersByNameNameFollowersParams{
+		Skip:  &skip,
+		Limit: &limit,
+		Name:  name,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersByNameNameFollowingsHandler.Handle
+	params := users.GetUsersByNameNameFollowingsParams{
+		Skip:  &skip,
+		Limit: &limit,
+		Name:  name,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
+	api := operations.YummyAPI{}
+	usersImpl.ConfigureAPI(db, &api)
+
+	get := api.UsersGetUsersByNameNameInvitedHandler.Handle
+	params := users.GetUsersByNameNameInvitedParams{
+		Skip:  &skip,
+		Limit: &limit,
+		Name:  name,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*users.GetUsersIDFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload.Users
+	require.Equal(t, size, len(list))
+
+	return list
+}
+
+func TestOpenUserLists(t *testing.T) {
+	checkFollow(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
+	time.Sleep(10 * time.Millisecond)
+	checkFollow(t, userIDs[0], userIDs[2], models.RelationshipRelationFollowed)
+	time.Sleep(10 * time.Millisecond)
+	checkFollow(t, userIDs[1], userIDs[2], models.RelationshipRelationFollowed)
+
+	req := require.New(t)
+	var list models.UserListUsers
+
+	checkMyFollowers(t, userIDs[0], 0, 100, 0)
+
+	list = checkMyFollowers(t, userIDs[1], 0, 100, 1)
 	req.Equal(profiles[0].ID, list[0].ID)
+
+	checkMyFollowings(t, userIDs[2], 0, 100, 0)
+
+	list = checkMyFollowings(t, userIDs[0], 0, 100, 2)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+
+	list = checkMyFollowings(t, userIDs[0], 0, 1, 1)
+	req.Equal(profiles[2].ID, list[0].ID)
+	list = checkMyFollowings(t, userIDs[0], 1, 10, 1)
+	req.Equal(profiles[1].ID, list[0].ID)
+
+	checkIDFollowers(t, userIDs[0], profiles[0].ID, 0, 100, 0)
+
+	list = checkIDFollowers(t, userIDs[0], profiles[1].ID, 0, 100, 1)
+	req.Equal(profiles[0].ID, list[0].ID)
+
+	checkIDFollowings(t, userIDs[0], profiles[2].ID, 0, 100, 0)
+
+	list = checkIDFollowings(t, userIDs[0], profiles[0].ID, 0, 1, 1)
+	req.Equal(profiles[2].ID, list[0].ID)
+	list = checkIDFollowings(t, userIDs[0], profiles[0].ID, 1, 1, 1)
+	req.Equal(profiles[1].ID, list[0].ID)
+
+	checkNameFollowers(t, userIDs[0], profiles[0].Name, 0, 100, 0)
+
+	list = checkNameFollowers(t, userIDs[0], profiles[1].Name, 0, 100, 1)
+	req.Equal(profiles[0].ID, list[0].ID)
+
+	checkNameFollowings(t, userIDs[0], profiles[2].Name, 0, 100, 0)
+
+	list = checkNameFollowings(t, userIDs[0], strings.ToLower(profiles[0].Name), 0, 1, 1)
+	req.Equal(profiles[2].ID, list[0].ID)
+	list = checkNameFollowings(t, userIDs[0], strings.ToUpper(profiles[0].Name), 1, 1, 1)
+	req.Equal(profiles[1].ID, list[0].ID)
+
+	checkUnfollow(t, userIDs[0], userIDs[1])
+	checkUnfollow(t, userIDs[0], userIDs[2])
+	checkUnfollow(t, userIDs[1], userIDs[2])
+
+	checkFollow(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
+	time.Sleep(10 * time.Millisecond)
+	checkFollow(t, userIDs[0], userIDs[2], models.RelationshipRelationIgnored)
+
+	checkMyIgnored(t, userIDs[2], 0, 100, 0)
+
+	list = checkMyIgnored(t, userIDs[0], 0, 100, 2)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+
+	list = checkMyIgnored(t, userIDs[0], 0, 1, 1)
+	req.Equal(profiles[2].ID, list[0].ID)
+	list = checkMyIgnored(t, userIDs[0], 1, 10, 1)
+	req.Equal(profiles[1].ID, list[0].ID)
+
+	checkUnfollow(t, userIDs[0], userIDs[1])
+	checkUnfollow(t, userIDs[0], userIDs[2])
+
+	checkMyInvited(t, userIDs[2], 0, 100, 0)
+
+	inviter := models.UserID(1)
+	list = checkMyInvited(t, &inviter, 0, 100, 4)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+	req.Equal(profiles[0].ID, list[2].ID)
+	req.Equal(int64(1), list[3].ID)
+
+	list = checkMyInvited(t, &inviter, 0, 2, 2)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+
+	list = checkMyInvited(t, &inviter, 2, 2, 2)
+	req.Equal(profiles[0].ID, list[0].ID)
+	req.Equal(int64(1), list[1].ID)
+
+	list = checkMyInvited(t, &inviter, 4, 2, 0)
+
+	list = checkIDInvited(t, userIDs[0], 1, 0, 100, 4)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+	req.Equal(profiles[0].ID, list[2].ID)
+	req.Equal(int64(1), list[3].ID)
+
+	list = checkNameInvited(t, userIDs[0], "haveANiceday", 0, 100, 4)
+	req.Equal(profiles[2].ID, list[0].ID)
+	req.Equal(profiles[1].ID, list[1].ID)
+	req.Equal(profiles[0].ID, list[2].ID)
+	req.Equal(int64(1), list[3].ID)
 }

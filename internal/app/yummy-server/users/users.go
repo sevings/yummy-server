@@ -205,7 +205,7 @@ is_online,
 avatar
 FROM long_users
 WHERE invited_by = $1
-ORDER BY id ASC
+ORDER BY id DESC
 LIMIT $2 OFFSET $3`
 
 const invitedUsersByNameQuery = `
@@ -217,9 +217,9 @@ WITH by AS (
 SELECT long_users.id, name, show_name,
 is_online, 
 avatar
-FROM long_users
+FROM long_users, by
 WHERE invited_by = by.id
-ORDER BY long_users.id ASC
+ORDER BY long_users.id DESC
 LIMIT $2 OFFSET $3`
 
 func loadRelatedUsers(tx *utils.AutoTx, usersQuery string, args ...interface{}) *models.UserList {
@@ -254,7 +254,7 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 		}
 
 		list := loadRelatedUsers(tx, usersQuery, args...)
-		if tx.Error() != nil {
+		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return users.NewGetUsersIDFollowersNotFound()
 		}
 
