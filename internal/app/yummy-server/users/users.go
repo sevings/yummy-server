@@ -18,6 +18,8 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.APIKeyHeaderAuth = newKeyAuth(db)
 
 	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
+	api.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(db))
+
 	api.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(db))
 	api.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(db))
 
