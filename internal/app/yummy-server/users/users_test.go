@@ -133,3 +133,43 @@ func TestGetUserByName(t *testing.T) {
 	_, ok := resp.(*users.GetUsersIDNotFound)
 	require.True(t, ok)
 }
+
+func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutUsersMeParams) {
+	edit := newMeEditor(db)
+	id := models.UserID(user.ID)
+	resp := edit(params, &id)
+	body, ok := resp.(*me.PutUsersMeOK)
+	require.True(t, ok)
+
+	profile := body.Payload
+	compareUsers(t, user, profile)
+}
+
+func TestEditProfile(t *testing.T) {
+	user := *profiles[0]
+	user.AgeLowerBound = 30
+	user.AgeUpperBound = 35
+	user.Birthday = "1988-01-01T20:01:31.844+03:00"
+	user.City = "city edit"
+	user.Country = "country edit"
+	user.Gender = models.ProfileAllOf1GenderFemale
+	user.IsDaylog = true
+	user.Privacy = models.ProfileAllOf1PrivacyFollowers
+	user.Title = "title edit"
+	user.ShowInTops = false
+	user.ShowName = "showname edit"
+
+	params := me.PutUsersMeParams{
+		Birthday:   &user.Birthday,
+		City:       &user.City,
+		Country:    &user.Country,
+		Gender:     &user.Gender,
+		IsDaylog:   &user.IsDaylog,
+		Privacy:    &user.Privacy,
+		Title:      &user.Title,
+		ShowInTops: &user.ShowInTops,
+		ShowName:   &user.ShowName,
+	}
+
+	checkEditProfile(t, &user, params)
+}

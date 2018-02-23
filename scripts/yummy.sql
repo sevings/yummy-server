@@ -54,6 +54,7 @@ CREATE TABLE "mindwell"."users" (
 	"password_hash" Bytea NOT NULL,
 	"gender" Integer DEFAULT 0 NOT NULL,
 	"is_daylog" Boolean DEFAULT false NOT NULL,
+    "show_in_tops" Boolean DEFAULT true NOT NULL,
 	"privacy" Integer DEFAULT 0 NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
 	"last_seen_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,

@@ -59,50 +59,55 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
+func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg interface{}) *models.Profile {
+	var profile models.Profile
+	profile.InvitedBy = &models.User{}
+	profile.Design = &models.Design{}
+	profile.Counts = &models.ProfileAllOf1Counts{}
+
+	var backColor string
+	var textColor string
+
+	var age sql.NullInt64
+
+	tx.Query(query, arg)
+	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
+		&profile.Avatar,
+		&profile.Gender, &profile.IsDaylog,
+		&profile.Privacy,
+		&profile.Title, &profile.Karma,
+		&profile.CreatedAt, &profile.LastSeenAt, &profile.IsOnline,
+		&age,
+		&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
+		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
+		&profile.Counts.Favorites, &profile.Counts.Tags,
+		&profile.Country, &profile.City,
+		&profile.Design.CSS, &backColor, &textColor,
+		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
+		&profile.InvitedBy.ID,
+		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
+		&profile.InvitedBy.IsOnline,
+		&profile.InvitedBy.Avatar)
+
+	profile.Design.BackgroundColor = models.Color(backColor)
+	profile.Design.TextColor = models.Color(textColor)
+
+	if age.Valid {
+		profile.AgeLowerBound = age.Int64 - age.Int64%5
+		profile.AgeUpperBound = profile.AgeLowerBound + 5
+	}
+
+	return &profile
+}
+
 func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{}) middleware.Responder {
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-		var profile models.Profile
-		profile.InvitedBy = &models.User{}
-		profile.Design = &models.Design{}
-		profile.Counts = &models.ProfileAllOf1Counts{}
-
-		var backColor string
-		var textColor string
-
-		var age sql.NullInt64
-
-		tx.Query(query, arg)
-		tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-			&profile.Avatar,
-			&profile.Gender, &profile.IsDaylog,
-			&profile.Privacy,
-			&profile.Title, &profile.Karma,
-			&profile.CreatedAt, &profile.LastSeenAt, &profile.IsOnline,
-			&age,
-			&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
-			&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
-			&profile.Counts.Favorites, &profile.Counts.Tags,
-			&profile.Country, &profile.City,
-			&profile.Design.CSS, &backColor, &textColor,
-			&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
-			&profile.InvitedBy.ID,
-			&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
-			&profile.InvitedBy.IsOnline,
-			&profile.InvitedBy.Avatar)
-
+		profile := loadUserProfile(tx, query, userID, arg)
 		if tx.Error() != nil {
 			return users.NewGetUsersIDNotFound()
 		}
 
-		profile.Design.BackgroundColor = models.Color(backColor)
-		profile.Design.TextColor = models.Color(textColor)
-
-		if age.Valid {
-			profile.AgeLowerBound = age.Int64 - age.Int64%5
-			profile.AgeUpperBound = profile.AgeLowerBound + 5
-		}
-
-		result := users.NewGetUsersIDOK().WithPayload(&profile)
+		result := users.NewGetUsersIDOK().WithPayload(profile)
 		if int64(*userID) == profile.ID {
 			return result
 		}

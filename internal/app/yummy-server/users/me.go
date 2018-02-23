@@ -93,6 +93,72 @@ func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middlewar
 	}
 }
 
+func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
+	id := int64(*userID)
+
+	if params.Birthday != nil {
+		const q = "update users set birthday = $2 where id = $1"
+		tx.Exec(q, id, *params.Birthday)
+	}
+
+	if params.City != nil {
+		const q = "update users set city = $2 where id = $1"
+		tx.Exec(q, id, *params.City)
+	}
+
+	if params.Country != nil {
+		const q = "update users set country = $2 where id = $1"
+		tx.Exec(q, id, *params.Country)
+	}
+
+	if params.Gender != nil {
+		const q = "update users set gender = (select id from gender where type = $2) where id = $1"
+		tx.Exec(q, id, *params.Gender)
+	}
+
+	if params.IsDaylog != nil {
+		const q = "update users set is_daylog = $2 where id = $1"
+		tx.Exec(q, id, *params.IsDaylog)
+	}
+
+	if params.Privacy != nil {
+		const q = "update users set privacy = (select id from user_privacy where type = $2) where id = $1"
+		tx.Exec(q, id, *params.Privacy)
+	}
+
+	if params.ShowInTops != nil {
+		const q = "update users set show_in_tops = $2 where id = $1"
+		tx.Exec(q, id, *params.ShowInTops)
+	}
+
+	if params.ShowName != nil {
+		const q = "update users set show_name = $2 where id = $1"
+		tx.Exec(q, id, *params.ShowName)
+	}
+
+	if params.Title != nil {
+		const q = "update users set title = $2 where id = $1"
+		tx.Exec(q, id, *params.Title)
+	}
+
+	const q = profileQuery + "WHERE long_users.id = $1"
+	return loadUserProfile(tx, q, userID, id)
+}
+
+func newMeEditor(db *sql.DB) func(me.PutUsersMeParams, *models.UserID) middleware.Responder {
+	return func(params me.PutUsersMeParams, userID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			user := editMyProfile(tx, userID, params)
+
+			if tx.Error() != nil {
+				return me.NewPutUsersMeForbidden()
+			}
+
+			return me.NewPutUsersMeOK().WithPayload(user)
+		})
+	}
+}
+
 func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query string, args ...interface{}) middleware.Responder {
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 		id := int64(*userID)
