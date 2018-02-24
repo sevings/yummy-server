@@ -739,11 +739,77 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /users/byName/{name}/followings:
-    $ref: '#/paths/~1users~1byName~1{name}~1followers'
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /users/{id}/invited:
-    $ref: '#/paths/~1users~1{id}~1followers'
+    parameters:
+      - $ref: '#/parameters/pathId'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /users/byName/{name}/invited:
-    $ref: '#/paths/~1users~1byName~1{name}~1followers'
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /users/me:
     get:
       security:
@@ -834,13 +900,77 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /users/me/followings:
-    $ref: '#/paths/~1users~1me~1followers'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
   /users/me/invited:
-    $ref: '#/paths/~1users~1me~1followers'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
   /users/me/ignored:
-    $ref: '#/paths/~1users~1me~1followers'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
   /users/me/requested:
-    $ref: '#/paths/~1users~1me~1followers'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/UserList'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
   /users/me/online:
     put:
       security:
@@ -1649,7 +1779,26 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /comments/{id}/vote:
-    $ref: '#/paths/~1entries~1{id}~1vote'
+    parameters:
+      - $ref: '#/parameters/pathId'
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - votes
+      responses:
+        200:
+          description: vote status
+          schema:
+            $ref: '#/definitions/VoteStatus'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Entry not found
+          schema:
+            $ref: '#/definitions/Error'
 produces:
   - application/json
 schemes:
