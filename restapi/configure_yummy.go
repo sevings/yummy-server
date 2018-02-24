@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"math/rand"
 	"net/http"
-	"strings"
 	"time"
 
 	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
@@ -92,18 +91,6 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	handleUI := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.Index(r.URL.Path, "/help/api/") == 0 {
-			http.StripPrefix("/help/api/", http.FileServer(http.Dir("web"))).ServeHTTP(w, r)
-			return
-		}
-		if strings.Index(r.URL.Path, "/avatars/") == 0 {
-			http.StripPrefix("/avatars/", http.FileServer(http.Dir("../avatars"))).ServeHTTP(w, r)
-			return
-		}
-		handler.ServeHTTP(w, r)
-	})
-
 	lmt := tollbooth.NewLimiter(10, nil)
 	lmt.SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"})
 	lmt.SetMessage("")
@@ -113,5 +100,5 @@ func setupGlobalMiddleware(handler http.Handler) http.Handler {
 		data, _ := err.MarshalBinary()
 		w.Write(data)
 	})
-	return tollbooth.LimitFuncHandler(lmt, handleUI)
+	return tollbooth.LimitHandler(lmt, handler)
 }
