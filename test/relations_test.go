@@ -1,19 +1,14 @@
-package tests
+package test
 
 import (
 	"testing"
 
-	relationsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/relations"
 	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/relations"
 	"github.com/stretchr/testify/require"
 )
 
 func checkFromRelation(t *testing.T, user, to *models.UserID, relation string) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	load := api.RelationsGetRelationsFromIDHandler.Handle
 	params := relations.GetRelationsFromIDParams{
 		ID: int64(*to),
@@ -30,9 +25,6 @@ func checkFromRelation(t *testing.T, user, to *models.UserID, relation string) {
 }
 
 func checkToRelation(t *testing.T, user, from *models.UserID, relation string) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	load := api.RelationsGetRelationsToIDHandler.Handle
 	params := relations.GetRelationsToIDParams{
 		ID: int64(*from),
@@ -54,9 +46,6 @@ func checkRelation(t *testing.T, from, to *models.UserID, relation string) {
 }
 
 func checkFollow(t *testing.T, user, to *models.UserID, relation string) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	put := api.RelationsPutRelationsToIDHandler.Handle
 	params := relations.PutRelationsToIDParams{
 		ID: int64(*to),
@@ -74,9 +63,6 @@ func checkFollow(t *testing.T, user, to *models.UserID, relation string) {
 }
 
 func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	put := api.RelationsPutRelationsFromIDHandler.Handle
 	params := relations.PutRelationsFromIDParams{
 		ID: int64(*from),
@@ -96,9 +82,6 @@ func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 }
 
 func checkUnfollow(t *testing.T, user, to *models.UserID) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	del := api.RelationsDeleteRelationsToIDHandler.Handle
 	params := relations.DeleteRelationsToIDParams{
 		ID: int64(*to),
@@ -115,9 +98,6 @@ func checkUnfollow(t *testing.T, user, to *models.UserID) {
 }
 
 func checkCancelFollow(t *testing.T, user, from *models.UserID, success bool) {
-	api := operations.YummyAPI{}
-	relationsImpl.ConfigureAPI(db, &api)
-
 	del := api.RelationsDeleteRelationsFromIDHandler.Handle
 	params := relations.DeleteRelationsFromIDParams{
 		ID: int64(*from),

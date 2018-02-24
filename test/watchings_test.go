@@ -1,20 +1,14 @@
-package tests
+package test
 
 import (
 	"testing"
 
-	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
-	watchingsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
 	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/watchings"
 	"github.com/stretchr/testify/require"
 )
 
 func checkEntryWatching(t *testing.T, user *models.UserID, entryID int64, watching, success bool) {
-	api := operations.YummyAPI{}
-	watchingsImpl.ConfigureAPI(db, &api)
-
 	load := api.WatchingsGetEntriesIDWatchingHandler.Handle
 	params := watchings.GetEntriesIDWatchingParams{
 		ID: entryID,
@@ -33,9 +27,6 @@ func checkEntryWatching(t *testing.T, user *models.UserID, entryID int64, watchi
 }
 
 func checkWatchEntry(t *testing.T, user *models.UserID, entryID int64, success bool) {
-	api := operations.YummyAPI{}
-	watchingsImpl.ConfigureAPI(db, &api)
-
 	put := api.WatchingsPutEntriesIDWatchingHandler.Handle
 	params := watchings.PutEntriesIDWatchingParams{
 		ID: entryID,
@@ -54,9 +45,6 @@ func checkWatchEntry(t *testing.T, user *models.UserID, entryID int64, success b
 }
 
 func checkUnwatchEntry(t *testing.T, user *models.UserID, entryID int64, success bool) {
-	api := operations.YummyAPI{}
-	watchingsImpl.ConfigureAPI(db, &api)
-
 	del := api.WatchingsDeleteEntriesIDWatchingHandler.Handle
 	params := watchings.DeleteEntriesIDWatchingParams{
 		ID: entryID,
@@ -75,14 +63,7 @@ func checkUnwatchEntry(t *testing.T, user *models.UserID, entryID int64, success
 }
 
 func TestWatching(t *testing.T) {
-	api := operations.YummyAPI{}
-	entriesImpl.ConfigureAPI(db, &api)
-
-	post := func(id *models.UserID, privacy string, votable bool) *models.Entry {
-		return PostEntry(&api, id, privacy, votable)
-	}
-
-	e := post(userIDs[0], models.EntryPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[1], e.ID, false, true)
@@ -97,7 +78,7 @@ func TestWatching(t *testing.T) {
 	checkUnwatchEntry(t, userIDs[0], e.ID, true)
 	checkEntryWatching(t, userIDs[0], e.ID, false, true)
 
-	e = post(userIDs[0], models.EntryPrivacyMe, true)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[1], e.ID, false, false)
 	checkWatchEntry(t, userIDs[1], e.ID, false)

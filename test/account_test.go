@@ -1,4 +1,4 @@
-package account
+package test
 
 import (
 	"database/sql"
@@ -6,24 +6,52 @@ import (
 	"strings"
 	"testing"
 
+	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
+	commentsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/comments"
+	designImpl "github.com/sevings/yummy-server/internal/app/yummy-server/design"
+	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
+	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
+	relationsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/relations"
+	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
+	votesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/votes"
+	watchingsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
+
 	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/account"
 	"github.com/stretchr/testify/require"
 )
 
+var api *operations.YummyAPI
 var db *sql.DB
+var userIDs []*models.UserID
+var profiles []*models.AuthProfile
 
 func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../../../configs/server")
+	config := utils.LoadConfig("../configs/server")
 	db = utils.OpenDatabase(config)
 	utils.ClearDatabase(db)
+
+	api = &operations.YummyAPI{}
+
+	accountImpl.ConfigureAPI(db, api)
+	usersImpl.ConfigureAPI(db, api)
+	entriesImpl.ConfigureAPI(db, api)
+	votesImpl.ConfigureAPI(db, api)
+	favoritesImpl.ConfigureAPI(db, api)
+	watchingsImpl.ConfigureAPI(db, api)
+	commentsImpl.ConfigureAPI(db, api)
+	designImpl.ConfigureAPI(db, api)
+	relationsImpl.ConfigureAPI(db, api)
+
+	userIDs, profiles = registerTestUsers(db)
 
 	os.Exit(m.Run())
 }
 
 func checkEmail(t *testing.T, email string, free bool) {
-	check := newEmailChecker(db)
+	check := api.AccountGetAccountEmailEmailHandler.Handle
 	resp := check(account.GetAccountEmailEmailParams{Email: email})
 	body, ok := resp.(*account.GetAccountEmailEmailOK)
 
@@ -37,7 +65,7 @@ func TestCheckEmail(t *testing.T) {
 }
 
 func checkName(t *testing.T, name string, free bool) {
-	check := newNameChecker(db)
+	check := api.AccountGetAccountNameNameHandler.Handle
 	resp := check(account.GetAccountNameNameParams{Name: name})
 	body, ok := resp.(*account.GetAccountNameNameOK)
 
@@ -52,7 +80,7 @@ func TestCheckName(t *testing.T) {
 }
 
 func checkInvites(t *testing.T, userID int64, size int) {
-	load := newInvitesLoader(db)
+	load := api.AccountGetAccountInvitesHandler.Handle
 	id := models.UserID(userID)
 	resp := load(account.GetAccountInvitesParams{}, &id)
 	body, ok := resp.(*account.GetAccountInvitesOK)
@@ -67,7 +95,7 @@ func checkLogin(t *testing.T, user *models.AuthProfile, name, password string) {
 		Password: password,
 	}
 
-	login := newLoginer(db)
+	login := api.AccountPostAccountLoginHandler.Handle
 	resp := login(params)
 	body, ok := resp.(*account.PostAccountLoginOK)
 	if !ok {
@@ -89,7 +117,7 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 		NewPassword: upd,
 	}
 
-	update := newPasswordUpdater(db)
+	update := api.AccountPostAccountPasswordHandler.Handle
 	resp := update(params, &id)
 	switch resp.(type) {
 	case *account.PostAccountPasswordOK:
@@ -104,19 +132,26 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 }
 
 func TestRegister(t *testing.T) {
+	{
+		const q = "INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)"
+		for i := 0; i < 3; i++ {
+			db.Exec(q)
+		}
+	}
+
 	checkInvites(t, 1, 3)
-	checkName(t, "tEst", true)
-	checkEmail(t, "eMAil", true)
+	checkName(t, "testtEst", true)
+	checkEmail(t, "testeMAil", true)
 
 	params := account.PostAccountRegisterParams{
-		Name:     "test",
-		Email:    "email",
+		Name:     "testtest",
+		Email:    "testemail",
 		Password: "test123",
 		Invite:   "acknown acknown acknown",
 		Referrer: "HaveANiceDay",
 	}
 
-	register := newRegistrator(db)
+	register := api.AccountPostAccountRegisterHandler.Handle
 	resp := register(params)
 	body, ok := resp.(*account.PostAccountRegisterOK)
 	if !ok {
@@ -131,8 +166,8 @@ func TestRegister(t *testing.T) {
 	user := body.Payload
 
 	checkInvites(t, 1, 2)
-	checkName(t, "tEst", false)
-	checkEmail(t, "eMAil", false)
+	checkName(t, "testtEst", false)
+	checkEmail(t, "testeMAil", false)
 	checkLogin(t, user, params.Name, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Name), params.Password)
 
@@ -190,8 +225,8 @@ func TestRegister(t *testing.T) {
 	bday := "01.06.1992"
 
 	params = account.PostAccountRegisterParams{
-		Name:     "test2",
-		Email:    "email2",
+		Name:     "testtest2",
+		Email:    "testemail2",
 		Password: "test123",
 		Gender:   &gender,
 		City:     &city,
@@ -203,12 +238,13 @@ func TestRegister(t *testing.T) {
 
 	resp = register(params)
 	body, ok = resp.(*account.PostAccountRegisterOK)
+	req.True(ok)
 
 	user = body.Payload
 
 	checkInvites(t, 1, 1)
-	checkName(t, "tEst2", false)
-	checkEmail(t, "eMAil2", false)
+	checkName(t, "testtEst2", false)
+	checkEmail(t, "testeMAil2", false)
 	checkLogin(t, user, params.Name, params.Password)
 
 	changePassword(t, user.ID, "test123", "new123", true)

@@ -1,37 +1,14 @@
-package tests
+package test
 
 import (
-	"database/sql"
-	"os"
 	"testing"
 
-	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
-	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/favorites"
 	"github.com/stretchr/testify/require"
 )
 
-var db *sql.DB
-var userIDs []*models.UserID
-var profiles []*models.AuthProfile
-
-func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../../../configs/server")
-	db = utils.OpenDatabase(config)
-	utils.ClearDatabase(db)
-
-	userIDs, profiles = RegisterTestUsers(db)
-
-	os.Exit(m.Run())
-}
-
 func checkEntryFavorite(t *testing.T, user *models.UserID, entryID int64, fav, success bool) {
-	api := operations.YummyAPI{}
-	favoritesImpl.ConfigureAPI(db, &api)
-
 	load := api.FavoritesGetEntriesIDFavoriteHandler.Handle
 	params := favorites.GetEntriesIDFavoriteParams{
 		ID: entryID,
@@ -50,9 +27,6 @@ func checkEntryFavorite(t *testing.T, user *models.UserID, entryID int64, fav, s
 }
 
 func checkFavoriteEntry(t *testing.T, user *models.UserID, entryID int64, success bool) {
-	api := operations.YummyAPI{}
-	favoritesImpl.ConfigureAPI(db, &api)
-
 	put := api.FavoritesPutEntriesIDFavoriteHandler.Handle
 	params := favorites.PutEntriesIDFavoriteParams{
 		ID: entryID,
@@ -71,9 +45,6 @@ func checkFavoriteEntry(t *testing.T, user *models.UserID, entryID int64, succes
 }
 
 func checkUnfavoriteEntry(t *testing.T, user *models.UserID, entryID int64, success bool) {
-	api := operations.YummyAPI{}
-	favoritesImpl.ConfigureAPI(db, &api)
-
 	del := api.FavoritesDeleteEntriesIDFavoriteHandler.Handle
 	params := favorites.DeleteEntriesIDFavoriteParams{
 		ID: entryID,
@@ -92,14 +63,7 @@ func checkUnfavoriteEntry(t *testing.T, user *models.UserID, entryID int64, succ
 }
 
 func TestFavorite(t *testing.T) {
-	api := operations.YummyAPI{}
-	entriesImpl.ConfigureAPI(db, &api)
-
-	post := func(id *models.UserID, privacy string, votable bool) *models.Entry {
-		return PostEntry(&api, id, privacy, votable)
-	}
-
-	e := post(userIDs[0], models.EntryPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[1], e.ID, false, true)
@@ -114,7 +78,7 @@ func TestFavorite(t *testing.T) {
 	checkUnfavoriteEntry(t, userIDs[0], e.ID, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 
-	e = post(userIDs[0], models.EntryPrivacyMe, true)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[1], e.ID, false, false)
 	checkFavoriteEntry(t, userIDs[1], e.ID, false)

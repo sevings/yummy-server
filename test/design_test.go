@@ -1,20 +1,15 @@
-package tests
+package test
 
 import (
 	"testing"
 
 	"github.com/sevings/yummy-server/models"
 
-	designImpl "github.com/sevings/yummy-server/internal/app/yummy-server/design"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/design"
 	"github.com/stretchr/testify/require"
 )
 
 func TestDesign(t *testing.T) {
-	api := operations.YummyAPI{}
-	designImpl.ConfigureAPI(db, &api)
-
 	req := require.New(t)
 	userDesign := profiles[0].Design
 

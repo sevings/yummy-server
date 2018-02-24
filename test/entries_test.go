@@ -1,30 +1,13 @@
-package entries
+package test
 
 import (
-	"database/sql"
-	"os"
 	"testing"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 	"github.com/stretchr/testify/require"
 )
-
-var db *sql.DB
-var userIDs []*models.UserID
-var profiles []*models.AuthProfile
-
-func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../../../configs/server")
-	db = utils.OpenDatabase(config)
-	utils.ClearDatabase(db)
-
-	userIDs, profiles = tests.RegisterTestUsers(db)
-
-	os.Exit(m.Run())
-}
 
 func checkEntry(t *testing.T, entry *models.Entry,
 	user *models.AuthProfile, canEdit bool, vote string, watching bool,
@@ -63,7 +46,7 @@ func checkPostEntry(t *testing.T,
 	params entries.PostEntriesUsersMeParams,
 	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
 
-	post := newMyTlogPoster(db)
+	post := api.EntriesPostEntriesUsersMeHandler.Handle
 	resp := post(params, id)
 	body, ok := resp.(*entries.PostEntriesUsersMeOK)
 	if !ok {
@@ -85,7 +68,7 @@ func checkEditEntry(t *testing.T,
 	params entries.PutEntriesIDParams,
 	user *models.AuthProfile, id *models.UserID, wc int64) {
 
-	edit := newEntryEditor(db)
+	edit := api.EntriesPutEntriesIDHandler.Handle
 	resp := edit(params, id)
 	body, ok := resp.(*entries.PutEntriesIDOK)
 	if !ok {
@@ -131,7 +114,7 @@ func TestPostMyTlog(t *testing.T) {
 }
 
 func postEntry(id *models.UserID, privacy string) {
-	post := newMyTlogPoster(db)
+	post := api.EntriesPostEntriesUsersMeHandler.Handle
 	votable := true
 	title := ""
 	params := entries.PostEntriesUsersMeParams{
@@ -149,7 +132,7 @@ func checkLoadLive(t *testing.T, id *models.UserID, limit, skip int64, size int)
 		Skip:  &skip,
 	}
 
-	load := newLiveLoader(db)
+	load := api.EntriesGetEntriesLiveHandler.Handle
 	resp := load(params, id)
 	body, ok := resp.(*entries.GetEntriesLiveOK)
 	if !ok {
@@ -164,7 +147,7 @@ func checkLoadLive(t *testing.T, id *models.UserID, limit, skip int64, size int)
 
 func TestLoadLive(t *testing.T) {
 	utils.ClearDatabase(db)
-	userIDs, profiles = tests.RegisterTestUsers(db)
+	userIDs, profiles = registerTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
@@ -192,7 +175,8 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit, skip int64, s
 		Limit: &limit,
 		Skip:  &skip,
 	}
-	load := newTlogLoader(db)
+
+	load := api.EntriesGetEntriesUsersIDHandler.Handle
 	resp := load(params, user)
 	body, ok := resp.(*entries.GetEntriesUsersIDOK)
 	if !ok {
@@ -207,7 +191,7 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit, skip int64, s
 
 func TestLoadTlog(t *testing.T) {
 	utils.ClearDatabase(db)
-	userIDs, profiles = tests.RegisterTestUsers(db)
+	userIDs, profiles = registerTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
@@ -240,7 +224,8 @@ func checkLoadMyTlog(t *testing.T, user *models.UserID, limit, skip int64, size 
 		Limit: &limit,
 		Skip:  &skip,
 	}
-	load := newMyTlogLoader(db)
+
+	load := api.EntriesGetEntriesUsersMeHandler.Handle
 	resp := load(params, user)
 	body, ok := resp.(*entries.GetEntriesUsersMeOK)
 	if !ok {
@@ -255,7 +240,7 @@ func checkLoadMyTlog(t *testing.T, user *models.UserID, limit, skip int64, size 
 
 func TestLoadMyTlog(t *testing.T) {
 	utils.ClearDatabase(db)
-	userIDs, profiles = tests.RegisterTestUsers(db)
+	userIDs, profiles = registerTestUsers(db)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)

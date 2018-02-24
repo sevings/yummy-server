@@ -1,20 +1,20 @@
-package tests
+package test
 
 import (
 	"database/sql"
 	"log"
 	"strconv"
+	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/account"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
-
-	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
 )
 
-func register(api *operations.YummyAPI, name string) (*models.UserID, *models.AuthProfile) {
+func register(name string) (*models.UserID, *models.AuthProfile) {
 	params := account.PostAccountRegisterParams{
 		Name:     name,
 		Email:    name,
@@ -38,16 +38,12 @@ func register(api *operations.YummyAPI, name string) (*models.UserID, *models.Au
 	return &userID, body.Payload
 }
 
-// RegisterTestUsers creates 3 test users: test1, test2, test3
-func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
-	api := operations.YummyAPI{}
-	accountImpl.ConfigureAPI(db, &api)
-
+func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	var userIDs []*models.UserID
 	var profiles []*models.AuthProfile
 
 	for i := 0; i < 3; i++ {
-		id, profile := register(&api, "test"+strconv.Itoa(i))
+		id, profile := register("test" + strconv.Itoa(i))
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
 
@@ -57,7 +53,7 @@ func RegisterTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	return userIDs, profiles
 }
 
-func PostEntry(api *operations.YummyAPI, id *models.UserID, privacy string, votable bool) *models.Entry {
+func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bool) *models.Entry {
 	title := ""
 	params := entries.PostEntriesUsersMeParams{
 		Content:   "test test test",
@@ -68,14 +64,7 @@ func PostEntry(api *operations.YummyAPI, id *models.UserID, privacy string, vota
 
 	resp := api.EntriesPostEntriesUsersMeHandler.Handle(params, id)
 	body, ok := resp.(*entries.PostEntriesUsersMeOK)
-	if !ok {
-		badBody, ok := resp.(*entries.PostEntriesUsersMeForbidden)
-		if ok {
-			log.Fatal(badBody.Payload.Message)
-		}
-
-		log.Fatal("error post entry")
-	}
+	require.True(t, ok)
 
 	return body.Payload
 }

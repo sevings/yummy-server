@@ -1,22 +1,14 @@
-package entries
+package test
 
 import (
 	"testing"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 )
 
 func BenchmarkLoadLive(b *testing.B) {
-	config := utils.LoadConfig("../../../../configs/server")
-	db := utils.OpenDatabase(config)
-	utils.ClearDatabase(db)
-
-	userIDs, _ := tests.RegisterTestUsers(db)
-
-	post := newMyTlogPoster(db)
+	post := api.EntriesPostEntriesUsersMeHandler.Handle
 	title := "title"
 	privacy := models.EntryPrivacyAll
 	votable := true
@@ -37,7 +29,7 @@ func BenchmarkLoadLive(b *testing.B) {
 		Skip:  &skip,
 	}
 
-	load := newLiveLoader(db)
+	load := api.EntriesGetEntriesLiveHandler.Handle
 
 	b.ResetTimer()
 

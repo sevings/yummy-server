@@ -35,7 +35,6 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 		WHERE id = $2 AND (author_id = $1
 			OR ((entry_privacy = 'all' 
 				AND (author_privacy = 'all'
-					OR (author_privacy = 'registered' AND $1 > 0)
 					OR EXISTS(SELECT 1 FROM relation, relations, entries
 							  WHERE from_id = $1 AND to_id = entries.author_id
 								  AND entries.id = $2

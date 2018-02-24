@@ -1,13 +1,9 @@
-package users
+package test
 
 import (
-	"database/sql"
-	"os"
 	"strings"
 	"testing"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/tests"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/restapi/operations/me"
 	"github.com/sevings/yummy-server/restapi/operations/users"
 
@@ -16,22 +12,8 @@ import (
 	"github.com/sevings/yummy-server/models"
 )
 
-var db *sql.DB
-var userIDs []*models.UserID
-var profiles []*models.AuthProfile
-
-func TestMain(m *testing.M) {
-	config := utils.LoadConfig("../../../../configs/server")
-	db = utils.OpenDatabase(config)
-	utils.ClearDatabase(db)
-
-	userIDs, profiles = tests.RegisterTestUsers(db)
-
-	os.Exit(m.Run())
-}
-
 func TestKeyAuth(t *testing.T) {
-	auth := newKeyAuth(db)
+	auth := api.APIKeyHeaderAuth
 	req := require.New(t)
 
 	for _, user := range profiles {
@@ -45,7 +27,7 @@ func TestKeyAuth(t *testing.T) {
 }
 
 func TestGetMe(t *testing.T) {
-	load := newMeLoader(db)
+	load := api.MeGetUsersMeHandler.Handle
 	req := require.New(t)
 
 	for i, user := range profiles {
@@ -91,7 +73,7 @@ func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profil
 }
 
 func TestGetUserByID(t *testing.T) {
-	get := newUserLoader(db)
+	get := api.UsersGetUsersIDHandler.Handle
 	for i, user := range profiles {
 		resp := get(users.GetUsersIDParams{ID: user.ID}, userIDs[i])
 		body, ok := resp.(*users.GetUsersIDOK)
@@ -113,7 +95,7 @@ func TestGetUserByID(t *testing.T) {
 }
 
 func TestGetUserByName(t *testing.T) {
-	get := newUserLoaderByName(db)
+	get := api.UsersGetUsersByNameNameHandler.Handle
 	for i, user := range profiles {
 		resp := get(users.GetUsersByNameNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
 		body, ok := resp.(*users.GetUsersIDOK) // not GetUsersByNameNameOK
@@ -135,7 +117,7 @@ func TestGetUserByName(t *testing.T) {
 }
 
 func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutUsersMeParams) {
-	edit := newMeEditor(db)
+	edit := api.MePutUsersMeHandler.Handle
 	id := models.UserID(user.ID)
 	resp := edit(params, &id)
 	body, ok := resp.(*me.PutUsersMeOK)
@@ -171,5 +153,8 @@ func TestEditProfile(t *testing.T) {
 		ShowName:   &user.ShowName,
 	}
 
+	checkEditProfile(t, &user, params)
+
+	user.Privacy = models.ProfileAllOf1PrivacyAll
 	checkEditProfile(t, &user, params)
 }

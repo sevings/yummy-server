@@ -1,22 +1,17 @@
-package tests
+package test
 
 import (
 	"strings"
 	"testing"
 	"time"
 
-	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
 	"github.com/sevings/yummy-server/restapi/operations/me"
 	"github.com/sevings/yummy-server/restapi/operations/users"
 	"github.com/stretchr/testify/require"
 )
 
 func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.MeGetUsersMeFollowersHandler.Handle
 	params := me.GetUsersMeFollowersParams{
 		Skip:  &skip,
@@ -34,9 +29,6 @@ func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size
 }
 
 func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.MeGetUsersMeFollowingsHandler.Handle
 	params := me.GetUsersMeFollowingsParams{
 		Skip:  &skip,
@@ -54,9 +46,6 @@ func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, siz
 }
 
 func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.MeGetUsersMeIgnoredHandler.Handle
 	params := me.GetUsersMeIgnoredParams{
 		Skip:  &skip,
@@ -74,9 +63,6 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 }
 
 func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.MeGetUsersMeInvitedHandler.Handle
 	params := me.GetUsersMeInvitedParams{
 		Skip:  &skip,
@@ -94,9 +80,6 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 }
 
 func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersIDFollowersHandler.Handle
 	params := users.GetUsersIDFollowersParams{
 		Skip:  &skip,
@@ -115,9 +98,6 @@ func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, 
 }
 
 func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersIDFollowingsHandler.Handle
 	params := users.GetUsersIDFollowingsParams{
 		Skip:  &skip,
@@ -136,9 +116,6 @@ func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64,
 }
 
 func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersIDInvitedHandler.Handle
 	params := users.GetUsersIDInvitedParams{
 		Skip:  &skip,
@@ -157,9 +134,6 @@ func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, si
 }
 
 func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersByNameNameFollowersHandler.Handle
 	params := users.GetUsersByNameNameFollowersParams{
 		Skip:  &skip,
@@ -178,9 +152,6 @@ func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, li
 }
 
 func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersByNameNameFollowingsHandler.Handle
 	params := users.GetUsersByNameNameFollowingsParams{
 		Skip:  &skip,
@@ -199,9 +170,6 @@ func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, l
 }
 
 func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
-	api := operations.YummyAPI{}
-	usersImpl.ConfigureAPI(db, &api)
-
 	get := api.UsersGetUsersByNameNameInvitedHandler.Handle
 	params := users.GetUsersByNameNameInvitedParams{
 		Skip:  &skip,
