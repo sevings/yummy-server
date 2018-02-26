@@ -992,6 +992,9 @@ paths:
           schema:
             $ref: '#/definitions/Design'
     put:
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           name: css

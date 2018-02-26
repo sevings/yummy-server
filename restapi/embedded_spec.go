@@ -582,6 +582,10 @@ func init() {
         }
       },
       "put": {
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
         "tags": [
           "design"
         ],
