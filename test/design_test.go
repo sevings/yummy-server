@@ -37,7 +37,7 @@ func TestDesign(t *testing.T) {
 			CSS:             &userDesign.CSS,
 			FontFamily:      &userDesign.FontFamily,
 			FontSize:        &userDesign.FontSize,
-			TextAlignment:   &userDesign.TextAlignment,
+			TextAlignment:   userDesign.TextAlignment,
 			TextColor:       &textColor,
 		}
 
@@ -56,6 +56,7 @@ func TestDesign(t *testing.T) {
 		params := design.PutDesignParams{
 			BackgroundColor: &backColor,
 			CSS:             &userDesign.CSS,
+			TextAlignment:   userDesign.TextAlignment,
 		}
 
 		edit := api.DesignPutDesignHandler.Handle

@@ -21,7 +21,7 @@ definitions:
       message: Access denied
   Color:
     type: string
-    pattern: '#[0-9a-d]{6}'
+    pattern: '#[0-9a-fA-F]{6}'
     example: '#373737'
     description: color in rgb
   User:
@@ -839,39 +839,48 @@ paths:
           type: string
           minLength: 1
           maxLength: 20
+          required: true
         - in: formData
           name: gender
           type: string
           enum: [male, female, not set]
+          default: 'not set'
         - in: formData
           name: avatar
           type: file
         - in: formData
           name: isDaylog
           type: boolean
+          default: false
         - in: formData
           name: privacy
           type: string
           enum: [all, followers]
+          required: true
         - in: formData
           name: title
           type: string
           maxLength: 260
+          default: ''
         - in: formData
           name: birthday
           type: string
           format: full-date
+          default: ''
         - in: formData
           name: country
           type: string
           maxLength: 50
+          default: ''
         - in: formData
           name: city
           type: string
           maxLength: 50
+          default: ''
         - in: formData
           name: showInTops
           type: boolean
+          default: false
       responses:
         200:
           description: your data
@@ -999,14 +1008,17 @@ paths:
         - in: formData
           name: css
           type: string
+          default: ''
         - in: formData
           name: backgroundColor
           type: string
-          pattern: '#[0-9a-d]{6}'
+          pattern: '#[0-9a-fA-F]{6}'
+          default: '#ffffff'
         - in: formData
           name: textColor
           type: string
-          pattern: '#[0-9a-d]{6}'
+          pattern: '#[0-9a-fA-F]{6}'
+          default: '#000000'
         - in: formData
           name: fontFamily
           type: string
@@ -1017,6 +1029,7 @@ paths:
           name: textAlignment
           type: string
           enum: [left, right, center, justify]
+          required: true
       security:
         - ApiKeyHeader: []
       tags:
@@ -1236,12 +1249,15 @@ paths:
         - in: formData
           name: title
           type: string
+          default: ''
         - in: formData
           name: content
           type: string
+          required: true
         - in: formData
           name: anonymous_comments
           type: boolean
+          default: false
       responses:
         200:
           description: Entry data
@@ -1377,7 +1393,7 @@ paths:
           name: privacy
           type: string
           enum: [all, followers, some, me]
-          default: 'all'
+          required: true
         - in: formData
           name: visibleFor
           type: array
@@ -1388,7 +1404,7 @@ paths:
         - in: formData
           name: isVotable
           type: boolean
-          default: true
+          default: false
       responses:
         200:
           description: Entry data
@@ -1467,6 +1483,7 @@ paths:
         - in: formData
           name: title
           type: string
+          default: ''
         - in: formData
           name: content
           type: string
@@ -1476,6 +1493,7 @@ paths:
           name: privacy
           type: string
           enum: [all, followers, some, me, anonymous]
+          required: true
         - in: formData
           name: visibleFor
           type: array
@@ -1486,9 +1504,11 @@ paths:
         - in: formData
           name: isVotable
           type: boolean
+          default: false
         - in: formData
           name: anonymous_comments
           type: boolean
+          default: false
       responses:
         200:
           description: Entry data

@@ -21,8 +21,30 @@ import (
 // NewPutUsersMeParams creates a new PutUsersMeParams object
 // with the default values initialized.
 func NewPutUsersMeParams() PutUsersMeParams {
-	var ()
-	return PutUsersMeParams{}
+	var (
+		birthdayDefault   = string("")
+		cityDefault       = string("")
+		countryDefault    = string("")
+		genderDefault     = string("not set")
+		isDaylogDefault   = bool(false)
+		showInTopsDefault = bool(false)
+		titleDefault      = string("")
+	)
+	return PutUsersMeParams{
+		Birthday: &birthdayDefault,
+
+		City: &cityDefault,
+
+		Country: &countryDefault,
+
+		Gender: &genderDefault,
+
+		IsDaylog: &isDaylogDefault,
+
+		ShowInTops: &showInTopsDefault,
+
+		Title: &titleDefault,
+	}
 }
 
 // PutUsersMeParams contains all the bound params for the put users me operation
@@ -40,43 +62,52 @@ type PutUsersMeParams struct {
 	Avatar *runtime.File
 	/*
 	  In: formData
+	  Default: ""
 	*/
 	Birthday *string
 	/*
 	  Max Length: 50
 	  In: formData
+	  Default: ""
 	*/
 	City *string
 	/*
 	  Max Length: 50
 	  In: formData
+	  Default: ""
 	*/
 	Country *string
 	/*
 	  In: formData
+	  Default: "not set"
 	*/
 	Gender *string
 	/*
 	  In: formData
+	  Default: false
 	*/
 	IsDaylog *bool
 	/*
+	  Required: true
 	  In: formData
 	*/
-	Privacy *string
+	Privacy string
 	/*
 	  In: formData
+	  Default: false
 	*/
 	ShowInTops *bool
 	/*
+	  Required: true
 	  Max Length: 20
 	  Min Length: 1
 	  In: formData
 	*/
-	ShowName *string
+	ShowName string
 	/*
 	  Max Length: 260
 	  In: formData
+	  Default: ""
 	*/
 	Title *string
 }
@@ -169,6 +200,8 @@ func (o *PutUsersMeParams) bindBirthday(rawData []string, hasKey bool, formats s
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var birthdayDefault string = string("")
+		o.Birthday = &birthdayDefault
 		return nil
 	}
 
@@ -183,6 +216,8 @@ func (o *PutUsersMeParams) bindCity(rawData []string, hasKey bool, formats strfm
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var cityDefault string = string("")
+		o.City = &cityDefault
 		return nil
 	}
 
@@ -210,6 +245,8 @@ func (o *PutUsersMeParams) bindCountry(rawData []string, hasKey bool, formats st
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var countryDefault string = string("")
+		o.Country = &countryDefault
 		return nil
 	}
 
@@ -237,6 +274,8 @@ func (o *PutUsersMeParams) bindGender(rawData []string, hasKey bool, formats str
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var genderDefault string = string("not set")
+		o.Gender = &genderDefault
 		return nil
 	}
 
@@ -264,6 +303,8 @@ func (o *PutUsersMeParams) bindIsDaylog(rawData []string, hasKey bool, formats s
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var isDaylogDefault bool = bool(false)
+		o.IsDaylog = &isDaylogDefault
 		return nil
 	}
 
@@ -277,15 +318,18 @@ func (o *PutUsersMeParams) bindIsDaylog(rawData []string, hasKey bool, formats s
 }
 
 func (o *PutUsersMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("privacy", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Privacy = &raw
+	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
 		return err
@@ -296,7 +340,7 @@ func (o *PutUsersMeParams) bindPrivacy(rawData []string, hasKey bool, formats st
 
 func (o *PutUsersMeParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "followers"}); err != nil {
+	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers"}); err != nil {
 		return err
 	}
 
@@ -309,6 +353,8 @@ func (o *PutUsersMeParams) bindShowInTops(rawData []string, hasKey bool, formats
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var showInTopsDefault bool = bool(false)
+		o.ShowInTops = &showInTopsDefault
 		return nil
 	}
 
@@ -322,15 +368,18 @@ func (o *PutUsersMeParams) bindShowInTops(rawData []string, hasKey bool, formats
 }
 
 func (o *PutUsersMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("showName", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("showName", "formData", raw); err != nil {
+		return err
 	}
 
-	o.ShowName = &raw
+	o.ShowName = raw
 
 	if err := o.validateShowName(formats); err != nil {
 		return err
@@ -341,11 +390,11 @@ func (o *PutUsersMeParams) bindShowName(rawData []string, hasKey bool, formats s
 
 func (o *PutUsersMeParams) validateShowName(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("showName", "formData", (*o.ShowName), 1); err != nil {
+	if err := validate.MinLength("showName", "formData", o.ShowName, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("showName", "formData", (*o.ShowName), 20); err != nil {
+	if err := validate.MaxLength("showName", "formData", o.ShowName, 20); err != nil {
 		return err
 	}
 
@@ -358,6 +407,8 @@ func (o *PutUsersMeParams) bindTitle(rawData []string, hasKey bool, formats strf
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var titleDefault string = string("")
+		o.Title = &titleDefault
 		return nil
 	}
 

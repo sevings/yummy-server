@@ -20,8 +20,18 @@ import (
 // NewPutDesignParams creates a new PutDesignParams object
 // with the default values initialized.
 func NewPutDesignParams() PutDesignParams {
-	var ()
-	return PutDesignParams{}
+	var (
+		backgroundColorDefault = string("#ffffff")
+		cssDefault             = string("")
+		textColorDefault       = string("#000000")
+	)
+	return PutDesignParams{
+		BackgroundColor: &backgroundColorDefault,
+
+		CSS: &cssDefault,
+
+		TextColor: &textColorDefault,
+	}
 }
 
 // PutDesignParams contains all the bound params for the put design operation
@@ -34,12 +44,14 @@ type PutDesignParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
-	  Pattern: #[0-9a-d]{6}
+	  Pattern: #[0-9a-fA-F]{6}
 	  In: formData
+	  Default: "#ffffff"
 	*/
 	BackgroundColor *string
 	/*
 	  In: formData
+	  Default: ""
 	*/
 	CSS *string
 	/*
@@ -51,12 +63,14 @@ type PutDesignParams struct {
 	*/
 	FontSize *int64
 	/*
+	  Required: true
 	  In: formData
 	*/
-	TextAlignment *string
+	TextAlignment string
 	/*
-	  Pattern: #[0-9a-d]{6}
+	  Pattern: #[0-9a-fA-F]{6}
 	  In: formData
+	  Default: "#000000"
 	*/
 	TextColor *string
 }
@@ -118,6 +132,8 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var backgroundColorDefault string = string("#ffffff")
+		o.BackgroundColor = &backgroundColorDefault
 		return nil
 	}
 
@@ -132,7 +148,7 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 
 func (o *PutDesignParams) validateBackgroundColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `#[0-9a-d]{6}`); err != nil {
+	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `#[0-9a-fA-F]{6}`); err != nil {
 		return err
 	}
 
@@ -145,6 +161,8 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var cssDefault string = string("")
+		o.CSS = &cssDefault
 		return nil
 	}
 
@@ -186,15 +204,18 @@ func (o *PutDesignParams) bindFontSize(rawData []string, hasKey bool, formats st
 }
 
 func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("textAlignment", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("textAlignment", "formData", raw); err != nil {
+		return err
 	}
 
-	o.TextAlignment = &raw
+	o.TextAlignment = raw
 
 	if err := o.validateTextAlignment(formats); err != nil {
 		return err
@@ -205,7 +226,7 @@ func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, forma
 
 func (o *PutDesignParams) validateTextAlignment(formats strfmt.Registry) error {
 
-	if err := validate.Enum("textAlignment", "formData", *o.TextAlignment, []interface{}{"left", "right", "center", "justify"}); err != nil {
+	if err := validate.Enum("textAlignment", "formData", o.TextAlignment, []interface{}{"left", "right", "center", "justify"}); err != nil {
 		return err
 	}
 
@@ -218,6 +239,8 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var textColorDefault string = string("#000000")
+		o.TextColor = &textColorDefault
 		return nil
 	}
 
@@ -232,7 +255,7 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 
 func (o *PutDesignParams) validateTextColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `#[0-9a-d]{6}`); err != nil {
+	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `#[0-9a-fA-F]{6}`); err != nil {
 		return err
 	}
 

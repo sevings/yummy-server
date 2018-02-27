@@ -147,14 +147,15 @@ func TestEditProfile(t *testing.T) {
 		Country:    &user.Country,
 		Gender:     &user.Gender,
 		IsDaylog:   &user.IsDaylog,
-		Privacy:    &user.Privacy,
+		Privacy:    user.Privacy,
 		Title:      &user.Title,
 		ShowInTops: &user.ShowInTops,
-		ShowName:   &user.ShowName,
+		ShowName:   user.ShowName,
 	}
 
 	checkEditProfile(t, &user, params)
 
 	user.Privacy = models.ProfileAllOf1PrivacyAll
+	params.Privacy = user.Privacy
 	checkEditProfile(t, &user, params)
 }

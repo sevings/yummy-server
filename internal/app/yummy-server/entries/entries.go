@@ -93,7 +93,7 @@ func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.
 	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			entry := createEntry(tx, int64(*uID),
-				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
 				return entries.NewPostEntriesUsersMeForbidden()
@@ -146,7 +146,7 @@ func newEntryEditor(db *sql.DB) func(entries.PutEntriesIDParams, *models.UserID)
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			entry := editEntry(tx, params.ID, int64(*uID),
-				*params.Title, params.Content, *params.Privacy, *params.IsVotable)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
 				return entries.NewPutEntriesIDForbidden()

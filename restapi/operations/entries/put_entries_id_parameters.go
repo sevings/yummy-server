@@ -21,8 +21,18 @@ import (
 // NewPutEntriesIDParams creates a new PutEntriesIDParams object
 // with the default values initialized.
 func NewPutEntriesIDParams() PutEntriesIDParams {
-	var ()
-	return PutEntriesIDParams{}
+	var (
+		anonymousCommentsDefault = bool(false)
+		isVotableDefault         = bool(false)
+		titleDefault             = string("")
+	)
+	return PutEntriesIDParams{
+		AnonymousComments: &anonymousCommentsDefault,
+
+		IsVotable: &isVotableDefault,
+
+		Title: &titleDefault,
+	}
 }
 
 // PutEntriesIDParams contains all the bound params for the put entries ID operation
@@ -36,6 +46,7 @@ type PutEntriesIDParams struct {
 
 	/*
 	  In: formData
+	  Default: false
 	*/
 	AnonymousComments *bool
 	/*
@@ -52,14 +63,17 @@ type PutEntriesIDParams struct {
 	ID int64
 	/*
 	  In: formData
+	  Default: false
 	*/
 	IsVotable *bool
 	/*
+	  Required: true
 	  In: formData
 	*/
-	Privacy *string
+	Privacy string
 	/*
 	  In: formData
+	  Default: ""
 	*/
 	Title *string
 	/*
@@ -130,6 +144,8 @@ func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var anonymousCommentsDefault bool = bool(false)
+		o.AnonymousComments = &anonymousCommentsDefault
 		return nil
 	}
 
@@ -206,6 +222,8 @@ func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, format
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var isVotableDefault bool = bool(false)
+		o.IsVotable = &isVotableDefault
 		return nil
 	}
 
@@ -219,15 +237,18 @@ func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, format
 }
 
 func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("privacy", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Privacy = &raw
+	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
 		return err
@@ -238,7 +259,7 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 
 func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}); err != nil {
+	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}); err != nil {
 		return err
 	}
 
@@ -251,6 +272,8 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var titleDefault string = string("")
+		o.Title = &titleDefault
 		return nil
 	}
 

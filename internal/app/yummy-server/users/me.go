@@ -96,7 +96,7 @@ func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middlewar
 func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
 	id := int64(*userID)
 
-	if params.Birthday != nil {
+	if params.Birthday != nil && len(*params.Birthday) > 0 {
 		const q = "update users set birthday = $2 where id = $1"
 		tx.Exec(q, id, *params.Birthday)
 	}
@@ -121,19 +121,12 @@ func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMe
 		tx.Exec(q, id, *params.IsDaylog)
 	}
 
-	if params.Privacy != nil {
-		const q = "update users set privacy = (select id from user_privacy where type = $2) where id = $1"
-		tx.Exec(q, id, *params.Privacy)
-	}
+	const q = "update users set privacy = (select id from user_privacy where type = $2), show_name = $3 where id = $1"
+	tx.Exec(q, id, params.Privacy, params.ShowName)
 
 	if params.ShowInTops != nil {
 		const q = "update users set show_in_tops = $2 where id = $1"
 		tx.Exec(q, id, *params.ShowInTops)
-	}
-
-	if params.ShowName != nil {
-		const q = "update users set show_name = $2 where id = $1"
-		tx.Exec(q, id, *params.ShowName)
 	}
 
 	if params.Title != nil {
@@ -141,8 +134,8 @@ func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMe
 		tx.Exec(q, id, *params.Title)
 	}
 
-	const q = profileQuery + "WHERE long_users.id = $1"
-	return loadUserProfile(tx, q, userID, id)
+	const loadQuery = profileQuery + "WHERE long_users.id = $1"
+	return loadUserProfile(tx, loadQuery, userID, id)
 }
 
 func newMeEditor(db *sql.DB) func(me.PutUsersMeParams, *models.UserID) middleware.Responder {

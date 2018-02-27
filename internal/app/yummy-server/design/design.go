@@ -71,9 +71,7 @@ func editDesign(tx *utils.AutoTx, params design.PutDesignParams, id int64) model
 		textColor = string(design.TextColor)
 	}
 
-	if params.TextAlignment != nil {
-		design.TextAlignment = *params.TextAlignment
-	}
+	design.TextAlignment = params.TextAlignment
 
 	if params.FontFamily != nil {
 		design.FontFamily = *params.FontFamily

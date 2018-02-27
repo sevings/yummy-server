@@ -59,7 +59,7 @@ func checkPostEntry(t *testing.T,
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, *params.Privacy, *params.IsVotable, *params.Title, params.Content)
+	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 
 	return entry.ID
 }
@@ -81,7 +81,7 @@ func checkEditEntry(t *testing.T,
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, *params.Privacy, *params.IsVotable, *params.Title, params.Content)
+	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 }
 
 func TestPostMyTlog(t *testing.T) {
@@ -93,7 +93,7 @@ func TestPostMyTlog(t *testing.T) {
 	params.IsVotable = &votable
 
 	privacy := models.EntryPrivacyAll
-	params.Privacy = &privacy
+	params.Privacy = privacy
 
 	title := "title title ti"
 	params.Title = &title
@@ -107,7 +107,7 @@ func TestPostMyTlog(t *testing.T) {
 		Content:   "content",
 		Title:     &title,
 		IsVotable: &votable,
-		Privacy:   &privacy,
+		Privacy:   privacy,
 	}
 
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
@@ -120,7 +120,7 @@ func postEntry(id *models.UserID, privacy string) {
 	params := entries.PostEntriesUsersMeParams{
 		Content:   "test test test",
 		Title:     &title,
-		Privacy:   &privacy,
+		Privacy:   privacy,
 		IsVotable: &votable,
 	}
 	post(params, id)

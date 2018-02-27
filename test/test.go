@@ -58,7 +58,7 @@ func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bo
 	params := entries.PostEntriesUsersMeParams{
 		Content:   "test test test",
 		Title:     &title,
-		Privacy:   &privacy,
+		Privacy:   privacy,
 		IsVotable: &votable,
 	}
 

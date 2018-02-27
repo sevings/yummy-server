@@ -22,14 +22,11 @@ import (
 // with the default values initialized.
 func NewPostEntriesUsersMeParams() PostEntriesUsersMeParams {
 	var (
-		isVotableDefault = bool(true)
-		privacyDefault   = string("all")
+		isVotableDefault = bool(false)
 		titleDefault     = string("")
 	)
 	return PostEntriesUsersMeParams{
 		IsVotable: &isVotableDefault,
-
-		Privacy: &privacyDefault,
 
 		Title: &titleDefault,
 	}
@@ -52,14 +49,14 @@ type PostEntriesUsersMeParams struct {
 	Content string
 	/*
 	  In: formData
-	  Default: true
+	  Default: false
 	*/
 	IsVotable *bool
 	/*
+	  Required: true
 	  In: formData
-	  Default: "all"
 	*/
-	Privacy *string
+	Privacy string
 	/*
 	  Max Length: 500
 	  In: formData
@@ -154,7 +151,7 @@ func (o *PostEntriesUsersMeParams) bindIsVotable(rawData []string, hasKey bool, 
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		var isVotableDefault bool = bool(true)
+		var isVotableDefault bool = bool(false)
 		o.IsVotable = &isVotableDefault
 		return nil
 	}
@@ -169,17 +166,18 @@ func (o *PostEntriesUsersMeParams) bindIsVotable(rawData []string, hasKey bool, 
 }
 
 func (o *PostEntriesUsersMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("privacy", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		var privacyDefault string = string("all")
-		o.Privacy = &privacyDefault
-		return nil
+	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Privacy = &raw
+	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
 		return err
@@ -190,7 +188,7 @@ func (o *PostEntriesUsersMeParams) bindPrivacy(rawData []string, hasKey bool, fo
 
 func (o *PostEntriesUsersMeParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", *o.Privacy, []interface{}{"all", "followers", "some", "me"}); err != nil {
+	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me"}); err != nil {
 		return err
 	}
 

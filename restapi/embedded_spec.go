@@ -597,18 +597,21 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "default": "",
             "name": "css",
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-d]{6}",
+            "pattern": "#[0-9a-fA-F]{6}",
             "type": "string",
+            "default": "#ffffff",
             "name": "backgroundColor",
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-d]{6}",
+            "pattern": "#[0-9a-fA-F]{6}",
             "type": "string",
+            "default": "#000000",
             "name": "textColor",
             "in": "formData"
           },
@@ -631,7 +634,8 @@ func init() {
             ],
             "type": "string",
             "name": "textAlignment",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -724,16 +728,19 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "default": "",
             "name": "title",
             "in": "formData"
           },
           {
             "type": "string",
             "name": "content",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "type": "boolean",
+            "default": false,
             "name": "anonymous_comments",
             "in": "formData"
           }
@@ -1026,9 +1033,9 @@ func init() {
               "me"
             ],
             "type": "string",
-            "default": "all",
             "name": "privacy",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "type": "array",
@@ -1042,7 +1049,7 @@ func init() {
           },
           {
             "type": "boolean",
-            "default": true,
+            "default": false,
             "name": "isVotable",
             "in": "formData"
           }
@@ -1262,6 +1269,7 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "default": "",
             "name": "title",
             "in": "formData"
           },
@@ -1282,7 +1290,8 @@ func init() {
             ],
             "type": "string",
             "name": "privacy",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "type": "array",
@@ -1296,11 +1305,13 @@ func init() {
           },
           {
             "type": "boolean",
+            "default": false,
             "name": "isVotable",
             "in": "formData"
           },
           {
             "type": "boolean",
+            "default": false,
             "name": "anonymous_comments",
             "in": "formData"
           }
@@ -2103,7 +2114,8 @@ func init() {
             "minLength": 1,
             "type": "string",
             "name": "showName",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "enum": [
@@ -2112,6 +2124,7 @@ func init() {
               "not set"
             ],
             "type": "string",
+            "default": "not set",
             "name": "gender",
             "in": "formData"
           },
@@ -2122,6 +2135,7 @@ func init() {
           },
           {
             "type": "boolean",
+            "default": false,
             "name": "isDaylog",
             "in": "formData"
           },
@@ -2132,34 +2146,40 @@ func init() {
             ],
             "type": "string",
             "name": "privacy",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
             "maxLength": 260,
             "type": "string",
+            "default": "",
             "name": "title",
             "in": "formData"
           },
           {
             "type": "string",
             "format": "full-date",
+            "default": "",
             "name": "birthday",
             "in": "formData"
           },
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "country",
             "in": "formData"
           },
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "city",
             "in": "formData"
           },
           {
             "type": "boolean",
+            "default": false,
             "name": "showInTops",
             "in": "formData"
           }
@@ -2583,7 +2603,7 @@ func init() {
     "Color": {
       "description": "color in rgb",
       "type": "string",
-      "pattern": "#[0-9a-d]{6}",
+      "pattern": "#[0-9a-fA-F]{6}",
       "example": "#373737"
     },
     "Comment": {

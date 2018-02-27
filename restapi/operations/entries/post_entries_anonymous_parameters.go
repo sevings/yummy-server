@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -19,8 +20,15 @@ import (
 // NewPostEntriesAnonymousParams creates a new PostEntriesAnonymousParams object
 // with the default values initialized.
 func NewPostEntriesAnonymousParams() PostEntriesAnonymousParams {
-	var ()
-	return PostEntriesAnonymousParams{}
+	var (
+		anonymousCommentsDefault = bool(false)
+		titleDefault             = string("")
+	)
+	return PostEntriesAnonymousParams{
+		AnonymousComments: &anonymousCommentsDefault,
+
+		Title: &titleDefault,
+	}
 }
 
 // PostEntriesAnonymousParams contains all the bound params for the post entries anonymous operation
@@ -34,14 +42,17 @@ type PostEntriesAnonymousParams struct {
 
 	/*
 	  In: formData
+	  Default: false
 	*/
 	AnonymousComments *bool
 	/*
+	  Required: true
 	  In: formData
 	*/
-	Content *string
+	Content string
 	/*
 	  In: formData
+	  Default: ""
 	*/
 	Title *string
 }
@@ -88,6 +99,8 @@ func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, has
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var anonymousCommentsDefault bool = bool(false)
+		o.AnonymousComments = &anonymousCommentsDefault
 		return nil
 	}
 
@@ -101,15 +114,18 @@ func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, has
 }
 
 func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("content", "formData")
+	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
-	if raw == "" { // empty values pass all other validations
-		return nil
+	if err := validate.RequiredString("content", "formData", raw); err != nil {
+		return err
 	}
 
-	o.Content = &raw
+	o.Content = raw
 
 	return nil
 }
@@ -120,6 +136,8 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
+		var titleDefault string = string("")
+		o.Title = &titleDefault
 		return nil
 	}
 
