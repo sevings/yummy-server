@@ -152,10 +152,10 @@ func newMeEditor(db *sql.DB) func(me.PutUsersMeParams, *models.UserID) middlewar
 	}
 }
 
-func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query string, args ...interface{}) middleware.Responder {
+func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query, relation string, args ...interface{}) middleware.Responder {
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 		id := int64(*userID)
-		list := loadRelatedUsers(tx, query, append([]interface{}{id}, args...)...)
+		list := loadRelatedUsers(tx, query, loadUserQueryID, relation, append([]interface{}{id}, args...)...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return me.NewGetUsersMeFollowersForbidden()
 		}
@@ -166,35 +166,35 @@ func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query string, args 
 
 func newMyFollowersLoader(db *sql.DB) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowersParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryToID,
+		return loadRelatedToMeUsers(db, userID, usersQueryToID, models.UserListRelationFollowers,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyFollowingsLoader(db *sql.DB) func(me.GetUsersMeFollowingsParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowingsParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID,
+		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationFollowings,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyInvitedLoader(db *sql.DB) func(me.GetUsersMeInvitedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, invitedUsersQuery,
+		return loadRelatedToMeUsers(db, userID, invitedUsersQuery, models.UserListRelationInvited,
 			*params.Limit, *params.Skip)
 	}
 }
 
 func newMyIgnoredLoader(db *sql.DB) func(me.GetUsersMeIgnoredParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeIgnoredParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID,
+		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationIgnored,
 			models.RelationshipRelationIgnored, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyRequestedLoader(db *sql.DB) func(me.GetUsersMeRequestedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeRequestedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID,
+		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationRequested,
 			models.RelationshipRelationRequested, *params.Limit, *params.Skip)
 	}
 }

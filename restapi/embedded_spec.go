@@ -3023,6 +3023,19 @@ func init() {
         "users"
       ],
       "properties": {
+        "relation": {
+          "type": "string",
+          "enum": [
+            "followers",
+            "followings",
+            "requested",
+            "ignored",
+            "invited"
+          ]
+        },
+        "subject": {
+          "$ref": "#/definitions/User"
+        },
         "users": {
           "type": "array",
           "items": {

@@ -51,6 +51,11 @@ definitions:
   UserList:
     type: object
     properties:
+      subject:
+        $ref: '#/definitions/User'
+      relation:
+        type: string
+        enum: [followers, followings, requested, ignored, invited]
       users:
         type: array
         items:

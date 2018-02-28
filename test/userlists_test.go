@@ -22,10 +22,12 @@ func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, models.UserListRelationFollowers, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
@@ -39,10 +41,12 @@ func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, siz
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, models.UserListRelationFollowings, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
@@ -56,10 +60,12 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, models.UserListRelationIgnored, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) models.UserListUsers {
@@ -73,10 +79,12 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, models.UserListRelationInvited, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
@@ -91,10 +99,12 @@ func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, 
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, id, list.Subject.ID)
+	require.Equal(t, models.UserListRelationFollowers, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
@@ -109,10 +119,12 @@ func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64,
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, id, list.Subject.ID)
+	require.Equal(t, models.UserListRelationFollowings, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.UserListUsers {
@@ -127,10 +139,12 @@ func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, si
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, id, list.Subject.ID)
+	require.Equal(t, models.UserListRelationInvited, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
@@ -145,10 +159,12 @@ func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, li
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, strings.ToLower(name), strings.ToLower(list.Subject.Name))
+	require.Equal(t, models.UserListRelationFollowers, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
@@ -163,10 +179,12 @@ func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, l
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, strings.ToLower(name), strings.ToLower(list.Subject.Name))
+	require.Equal(t, models.UserListRelationFollowings, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.UserListUsers {
@@ -181,10 +199,12 @@ func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limi
 
 	require.True(t, ok)
 
-	list := body.Payload.Users
-	require.Equal(t, size, len(list))
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, strings.ToLower(name), strings.ToLower(list.Subject.Name))
+	require.Equal(t, models.UserListRelationInvited, list.Relation)
 
-	return list
+	return list.Users
 }
 
 func TestOpenUserLists(t *testing.T) {

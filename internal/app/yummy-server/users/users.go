@@ -229,7 +229,7 @@ WHERE invited_by = by.id
 ORDER BY long_users.id DESC
 LIMIT $2 OFFSET $3`
 
-func loadRelatedUsers(tx *utils.AutoTx, usersQuery string, args ...interface{}) *models.UserList {
+func loadRelatedUsers(tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.UserList {
 	var list models.UserList
 	tx.Query(usersQuery, args...)
 
@@ -245,10 +245,13 @@ func loadRelatedUsers(tx *utils.AutoTx, usersQuery string, args ...interface{}) 
 		list.Users = append(list.Users, &user)
 	}
 
+	list.Subject = loadUser(tx, subjectQuery, args[0])
+	list.Relation = relation
+
 	return &list
 }
 
-func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
+func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery, subjectQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
 	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
@@ -260,7 +263,7 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery string,
 			return users.NewGetUsersIDFollowersForbidden()
 		}
 
-		list := loadRelatedUsers(tx, usersQuery, args...)
+		list := loadRelatedUsers(tx, usersQuery, subjectQuery, relation, args...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return users.NewGetUsersIDFollowersNotFound()
 		}
@@ -276,6 +279,9 @@ avatar
 FROM long_users
 WHERE `
 
+const loadUserQueryID = loadUserQuery + "id = $1"
+const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
+
 func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
 
@@ -288,6 +294,10 @@ func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 
 // LoadUserByID returns short user profile by its ID.
 func LoadUserByID(tx *utils.AutoTx, id int64) *models.User {
-	const q = loadUserQuery + "id = $1"
-	return loadUser(tx, q, id)
+	return loadUser(tx, loadUserQueryID, id)
+}
+
+// LoadUserByName returns short user profile by its ID.
+func LoadUserByName(tx *utils.AutoTx, name string) *models.User {
+	return loadUser(tx, loadUserQueryName, name)
 }

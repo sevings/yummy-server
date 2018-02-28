@@ -21,15 +21,15 @@ const idFromName = "(SELECT id from users WHERE lower(name) = lower($1))"
 const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = short_users.id" + usersQueryEnd
 const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = short_users.id" + usersQueryEnd
 
-func loadUsersRelatedToName(db *sql.DB, usersQuery string,
+func loadUsersRelatedToName(db *sql.DB, usersQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
-	return loadUsers(db, usersQuery, privacyQueryName, relationToNameQuery,
+	return loadUsers(db, usersQuery, privacyQueryName, relationToNameQuery, loadUserQueryName, relation,
 		userID, args...)
 }
 
 func newFollowersLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowersParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameFollowersParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToName(db, usersQueryToName,
+		return loadUsersRelatedToName(db, usersQueryToName, models.UserListRelationFollowers,
 			userID,
 			params.Name, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
@@ -37,14 +37,14 @@ func newFollowersLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowers
 
 func newFollowingsLoaderByName(db *sql.DB) func(users.GetUsersByNameNameFollowingsParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameFollowingsParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToName(db, usersQueryFromName, userID,
+		return loadUsersRelatedToName(db, usersQueryFromName, models.UserListRelationFollowings, userID,
 			params.Name, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
 func newInvitedLoaderByName(db *sql.DB) func(users.GetUsersByNameNameInvitedParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersByNameNameInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToName(db, invitedUsersByNameQuery,
+		return loadUsersRelatedToName(db, invitedUsersByNameQuery, models.UserListRelationInvited,
 			userID, params.Name, *params.Limit, *params.Skip)
 	}
 }

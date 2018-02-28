@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -17,6 +19,12 @@ import (
 // swagger:model UserList
 type UserList struct {
 
+	// relation
+	Relation string `json:"relation,omitempty"`
+
+	// subject
+	Subject *User `json:"subject,omitempty"`
+
 	// users
 	// Required: true
 	Users UserListUsers `json:"users"`
@@ -26,6 +34,16 @@ type UserList struct {
 func (m *UserList) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateRelation(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateSubject(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateUsers(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -34,6 +52,72 @@ func (m *UserList) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+var userListTypeRelationPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["followers","followings","requested","ignored","invited"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		userListTypeRelationPropEnum = append(userListTypeRelationPropEnum, v)
+	}
+}
+
+const (
+	// UserListRelationFollowers captures enum value "followers"
+	UserListRelationFollowers string = "followers"
+	// UserListRelationFollowings captures enum value "followings"
+	UserListRelationFollowings string = "followings"
+	// UserListRelationRequested captures enum value "requested"
+	UserListRelationRequested string = "requested"
+	// UserListRelationIgnored captures enum value "ignored"
+	UserListRelationIgnored string = "ignored"
+	// UserListRelationInvited captures enum value "invited"
+	UserListRelationInvited string = "invited"
+)
+
+// prop value enum
+func (m *UserList) validateRelationEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, userListTypeRelationPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *UserList) validateRelation(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Relation) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateRelationEnum("relation", "body", m.Relation); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *UserList) validateSubject(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Subject) { // not required
+		return nil
+	}
+
+	if m.Subject != nil {
+
+		if err := m.Subject.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subject")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
