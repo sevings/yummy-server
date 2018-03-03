@@ -104,7 +104,7 @@ func newFromRelationDeleter(db *sql.DB) func(relations.DeleteRelationsFromIDPara
 				return relations.NewDeleteRelationsFromIDForbidden()
 			}
 
-			relation = removeRelationship(tx, userID, params.ID)
+			relation = removeRelationship(tx, params.ID, userID)
 			return relations.NewDeleteRelationsFromIDOK().WithPayload(relation)
 		})
 	}

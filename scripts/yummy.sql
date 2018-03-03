@@ -142,7 +142,7 @@ CREATE TRIGGER crt_vote_weights
 
 INSERT INTO mindwell.users
     (name, show_name, email, password_hash, api_key, invited_by)
-    VALUES('HaveANiceDay', 'Хорошего дня!', '', '', '', 1);
+    VALUES('Mindwell', 'Mindwell', '', '', '', 1);
 
 
 
