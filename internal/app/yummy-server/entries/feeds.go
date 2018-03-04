@@ -27,13 +27,15 @@ FROM entries
 INNER JOIN users ON entries.author_id = users.id
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 INNER JOIN user_privacy ON users.privacy = user_privacy.id
-LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id
+LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id`
+
+const tlogFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
 	AND user_privacy.type = 'all' `
 
 const feedQueryEnd = " ORDER BY created_at DESC LIMIT $2 OFFSET $3"
 
-const liveFeedQuery = tlogFeedQueryStart + feedQueryEnd
+const liveFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + feedQueryEnd
 
 const anonymousFeedQuery = `
 SELECT entries.id, entries.created_at, 0, 
@@ -50,9 +52,9 @@ INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 WHERE entry_privacy.type = 'anonymous' 
 ORDER BY created_at DESC LIMIT $2 OFFSET $3`
 
-const bestFeedQuery = tlogFeedQueryStart + " AND entries.rating > 5 " + feedQueryEnd
+const bestFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + " AND entries.rating > 5 " + feedQueryEnd
 
-const tlogFeedQuery = tlogFeedQueryStart + " AND entries.author_id = $4 " + feedQueryEnd
+const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + " AND entries.author_id = $4 " + feedQueryEnd
 
 const myTlogFeedQuery = feedQueryStart + `
 NULL, 
@@ -62,6 +64,16 @@ FROM entries
 INNER JOIN users ON entries.author_id = users.id
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 WHERE entries.author_id = $1 ` + feedQueryEnd
+
+const friendsFeedQuery = tlogFeedQueryStart + `
+WHERE (users.id = $1 
+		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
+			AND type = (SELECT id FROM relation WHERE type = 'followed')))
+	AND (entry_privacy.type = 'all' 
+		OR (entry_privacy.type = 'some' 
+			AND (users.id = $1
+				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
+` + feedQueryEnd
 
 func loadComments(tx *utils.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
@@ -123,11 +135,6 @@ func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID
 	return func(params entries.GetEntriesLiveParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadLiveFeed(tx, userID, *params.Limit, *params.Skip)
-
-			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return entries.NewGetEntriesLiveOK()
-			}
-
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
 		})
 	}
@@ -142,11 +149,6 @@ func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *mod
 	return func(params entries.GetEntriesAnonymousParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadAnonymousFeed(tx, userID, *params.Limit, *params.Skip)
-
-			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return entries.NewGetEntriesAnonymousOK()
-			}
-
 			return entries.NewGetEntriesAnonymousOK().WithPayload(feed)
 		})
 	}
@@ -160,11 +162,6 @@ func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadBestFeed(tx, userID, *params.Limit, *params.Skip)
-
-			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return entries.NewGetEntriesBestOK()
-			}
-
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}
@@ -182,11 +179,6 @@ func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.Use
 	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadTlogFeed(tx, userID, *params.Limit, *params.Skip, params.ID)
-
-			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return entries.NewGetEntriesUsersIDNotFound()
-			}
-
 			return entries.NewGetEntriesUsersIDOK().WithPayload(feed)
 		})
 	}
@@ -206,6 +198,19 @@ func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.U
 			}
 
 			return entries.NewGetEntriesUsersMeOK().WithPayload(feed)
+		})
+	}
+}
+
+func loadFriendsFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
+	return loadFeed(tx, friendsFeedQuery, userID, limit, offset)
+}
+
+func newFriendsFeedLoader(db *sql.DB) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesFriendsParams, userID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadFriendsFeed(tx, userID, *params.Limit, *params.Skip)
+			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
 		})
 	}
 }

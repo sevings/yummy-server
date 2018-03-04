@@ -260,3 +260,59 @@ func TestLoadMyTlog(t *testing.T) {
 	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
 	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 }
+
+func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit, skip int64, size int) models.FeedEntries {
+	params := entries.GetEntriesFriendsParams{
+		Limit: &limit,
+		Skip:  &skip,
+	}
+
+	load := api.EntriesGetEntriesFriendsHandler.Handle
+	resp := load(params, user)
+	body, ok := resp.(*entries.GetEntriesFriendsOK)
+	if !ok {
+		t.Fatal("error load tlog")
+	}
+
+	feed := body.Payload.Entries
+	require.Equal(t, size, len(feed))
+
+	return feed
+}
+
+func TestLoadFriendsFeed(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+
+	checkFollow(t, userIDs[0], userIDs[1], "followed")
+
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+	postEntry(userIDs[0], models.EntryPrivacySome)
+	postEntry(userIDs[0], models.EntryPrivacyMe)
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+
+	postEntry(userIDs[1], models.EntryPrivacyAll)
+	postEntry(userIDs[1], models.EntryPrivacySome)
+	postEntry(userIDs[1], models.EntryPrivacyMe)
+
+	postEntry(userIDs[2], models.EntryPrivacyAll)
+	postEntry(userIDs[2], models.EntryPrivacySome)
+	postEntry(userIDs[2], models.EntryPrivacyMe)
+
+	feed := checkLoadFriendsFeed(t, userIDs[0], 10, 0, 4)
+	checkEntry(t, feed[0], profiles[1], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	feed = checkLoadFriendsFeed(t, userIDs[1], 10, 0, 2)
+	checkEntry(t, feed[0], profiles[1], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[1], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	feed = checkLoadFriendsFeed(t, userIDs[0], 4, 1, 3)
+	checkEntry(t, feed[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	checkUnfollow(t, userIDs[0], userIDs[1])
+}
