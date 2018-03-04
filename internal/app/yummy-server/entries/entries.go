@@ -19,6 +19,8 @@ import (
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 	api.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(db))
+
+	api.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(db))
 	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(db))
 
 	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
@@ -154,6 +156,67 @@ func newEntryEditor(db *sql.DB) func(entries.PutEntriesIDParams, *models.UserID)
 			}
 
 			return entries.NewPutEntriesIDOK().WithPayload(entry)
+		})
+	}
+}
+
+func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
+	switch {
+	case authorID == userID:
+		return models.EntryVoteBan
+	case !vote.Valid:
+		return models.EntryVoteNot
+	case vote.Float64 > 0:
+		return models.EntryVotePos
+	default:
+		return models.EntryVoteNeg
+	}
+}
+
+func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
+	const q = tlogFeedQueryStart + `
+		WHERE (users.id = $1 
+				OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
+					AND type = (SELECT id FROM relation WHERE type = 'followed')))
+			AND (entry_privacy.type = 'all' 
+				OR (entry_privacy.type = 'some' 
+					AND (users.id = $1
+						OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
+		` + feedQueryEnd
+
+	var entry models.Entry
+	var author models.User
+	var vote sql.NullFloat64
+	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
+		&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
+		&entry.Privacy,
+		&entry.IsVotable, &entry.CommentCount,
+		&author.ID, &author.Name, &author.ShowName,
+		&author.IsOnline,
+		&author.Avatar,
+		&vote, &entry.IsFavorited, &entry.IsWatching)
+
+	if author.ID != userID {
+		entry.EditContent = ""
+	}
+
+	entry.Vote = entryVoteStatus(author.ID, userID, vote)
+
+	entry.Author = &author
+
+	return &entry
+}
+
+func newEntryLoader(db *sql.DB) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesIDParams, uID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			entry := loadEntry(tx, params.ID, int64(*uID))
+
+			if tx.Error() != nil {
+				return entries.NewGetEntriesIDNotFound()
+			}
+
+			return entries.NewGetEntriesIDOK().WithPayload(entry)
 		})
 	}
 }

@@ -16,7 +16,7 @@ entries.title, content, edit_content, word_count,
 entry_privacy.type,
 is_votable, entries.comments_count,
 users.id, users.name, users.show_name,
-now() - users.last_seen_at < interval '15 minutes' AS author_is_online,
+now() - users.last_seen_at < interval '15 minutes',
 users.avatar, `
 
 const tlogFeedQueryStart = feedQueryStart + `
@@ -107,16 +107,7 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 			entry.EditContent = ""
 		}
 
-		switch {
-		case author.ID == userID:
-			entry.Vote = models.EntryVoteBan
-		case !vote.Valid:
-			entry.Vote = models.EntryVoteNot
-		case vote.Float64 > 0:
-			entry.Vote = models.EntryVotePos
-		default:
-			entry.Vote = models.EntryVoteNeg
-		}
+		entry.Vote = entryVoteStatus(author.ID, userID, vote)
 
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)

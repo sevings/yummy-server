@@ -42,6 +42,22 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(user.Avatar, author.Avatar)
 }
 
+func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success bool,
+	user *models.AuthProfile, canEdit bool, vote string, watching bool,
+	wc int64, privacy string, votable bool, title, content string) {
+
+	load := api.EntriesGetEntriesIDHandler.Handle
+	resp := load(entries.GetEntriesIDParams{ID: entryID}, userID)
+	body, ok := resp.(*entries.GetEntriesIDOK)
+	require.Equal(t, success, ok)
+	if !success {
+		return
+	}
+
+	entry := body.Payload
+	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, privacy, votable, title, content)
+}
+
 func checkPostEntry(t *testing.T,
 	params entries.PostEntriesUsersMeParams,
 	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
@@ -60,6 +76,9 @@ func checkPostEntry(t *testing.T,
 
 	entry := body.Payload
 	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+
+	checkLoadEntry(t, entry.ID, id, true, user,
+		true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 
 	return entry.ID
 }
@@ -82,6 +101,9 @@ func checkEditEntry(t *testing.T,
 
 	entry := body.Payload
 	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+
+	checkLoadEntry(t, entry.ID, id, true, user,
+		true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 }
 
 func TestPostMyTlog(t *testing.T) {
@@ -92,22 +114,20 @@ func TestPostMyTlog(t *testing.T) {
 	votable := false
 	params.IsVotable = &votable
 
-	privacy := models.EntryPrivacyAll
-	params.Privacy = privacy
+	params.Privacy = models.EntryPrivacyAll
 
 	title := "title title ti"
 	params.Title = &title
 
 	id := checkPostEntry(t, params, profiles[0], userIDs[0], 5)
 
-	privacy = models.EntryPrivacyMe
 	title = "title"
 	editParams := entries.PutEntriesIDParams{
 		ID:        id,
 		Content:   "content",
 		Title:     &title,
 		IsVotable: &votable,
-		Privacy:   privacy,
+		Privacy:   models.EntryPrivacyMe,
 	}
 
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
