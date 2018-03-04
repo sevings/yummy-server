@@ -136,7 +136,7 @@ func newKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
 				log.Print(err)
 			}
 
-			return nil, errors.New(403, "Access denied")
+			return nil, errors.New(401, "Unauthorized")
 		}
 
 		userID := models.UserID(id)

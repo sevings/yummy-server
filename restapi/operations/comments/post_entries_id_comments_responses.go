@@ -13,14 +13,14 @@ import (
 	"github.com/sevings/yummy-server/models"
 )
 
-// PostEntriesIDCommentsOKCode is the HTTP code returned for type PostEntriesIDCommentsOK
-const PostEntriesIDCommentsOKCode int = 200
+// PostEntriesIDCommentsCreatedCode is the HTTP code returned for type PostEntriesIDCommentsCreated
+const PostEntriesIDCommentsCreatedCode int = 201
 
-/*PostEntriesIDCommentsOK Comment data
+/*PostEntriesIDCommentsCreated Comment data
 
-swagger:response postEntriesIdCommentsOK
+swagger:response postEntriesIdCommentsCreated
 */
-type PostEntriesIDCommentsOK struct {
+type PostEntriesIDCommentsCreated struct {
 
 	/*
 	  In: Body
@@ -28,26 +28,26 @@ type PostEntriesIDCommentsOK struct {
 	Payload *models.Comment `json:"body,omitempty"`
 }
 
-// NewPostEntriesIDCommentsOK creates PostEntriesIDCommentsOK with default headers values
-func NewPostEntriesIDCommentsOK() *PostEntriesIDCommentsOK {
-	return &PostEntriesIDCommentsOK{}
+// NewPostEntriesIDCommentsCreated creates PostEntriesIDCommentsCreated with default headers values
+func NewPostEntriesIDCommentsCreated() *PostEntriesIDCommentsCreated {
+	return &PostEntriesIDCommentsCreated{}
 }
 
-// WithPayload adds the payload to the post entries Id comments o k response
-func (o *PostEntriesIDCommentsOK) WithPayload(payload *models.Comment) *PostEntriesIDCommentsOK {
+// WithPayload adds the payload to the post entries Id comments created response
+func (o *PostEntriesIDCommentsCreated) WithPayload(payload *models.Comment) *PostEntriesIDCommentsCreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post entries Id comments o k response
-func (o *PostEntriesIDCommentsOK) SetPayload(payload *models.Comment) {
+// SetPayload sets the payload to the post entries Id comments created response
+func (o *PostEntriesIDCommentsCreated) SetPayload(payload *models.Comment) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostEntriesIDCommentsOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostEntriesIDCommentsCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(201)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

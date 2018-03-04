@@ -13,14 +13,14 @@ import (
 	"github.com/sevings/yummy-server/models"
 )
 
-// PostAccountRegisterOKCode is the HTTP code returned for type PostAccountRegisterOK
-const PostAccountRegisterOKCode int = 200
+// PostAccountRegisterCreatedCode is the HTTP code returned for type PostAccountRegisterCreated
+const PostAccountRegisterCreatedCode int = 201
 
-/*PostAccountRegisterOK OK
+/*PostAccountRegisterCreated OK
 
-swagger:response postAccountRegisterOK
+swagger:response postAccountRegisterCreated
 */
-type PostAccountRegisterOK struct {
+type PostAccountRegisterCreated struct {
 
 	/*
 	  In: Body
@@ -28,26 +28,26 @@ type PostAccountRegisterOK struct {
 	Payload *models.AuthProfile `json:"body,omitempty"`
 }
 
-// NewPostAccountRegisterOK creates PostAccountRegisterOK with default headers values
-func NewPostAccountRegisterOK() *PostAccountRegisterOK {
-	return &PostAccountRegisterOK{}
+// NewPostAccountRegisterCreated creates PostAccountRegisterCreated with default headers values
+func NewPostAccountRegisterCreated() *PostAccountRegisterCreated {
+	return &PostAccountRegisterCreated{}
 }
 
-// WithPayload adds the payload to the post account register o k response
-func (o *PostAccountRegisterOK) WithPayload(payload *models.AuthProfile) *PostAccountRegisterOK {
+// WithPayload adds the payload to the post account register created response
+func (o *PostAccountRegisterCreated) WithPayload(payload *models.AuthProfile) *PostAccountRegisterCreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post account register o k response
-func (o *PostAccountRegisterOK) SetPayload(payload *models.AuthProfile) {
+// SetPayload sets the payload to the post account register created response
+func (o *PostAccountRegisterCreated) SetPayload(payload *models.AuthProfile) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostAccountRegisterOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostAccountRegisterCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(201)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

@@ -48,7 +48,7 @@ func checkPostEntry(t *testing.T,
 
 	post := api.EntriesPostEntriesUsersMeHandler.Handle
 	resp := post(params, id)
-	body, ok := resp.(*entries.PostEntriesUsersMeOK)
+	body, ok := resp.(*entries.PostEntriesUsersMeCreated)
 	if !ok {
 		badBody, ok := resp.(*entries.PostEntriesUsersMeForbidden)
 		if ok {

@@ -303,7 +303,7 @@ func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middlewa
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
-			return account.NewPostAccountRegisterOK().WithPayload(user)
+			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})
 	}
 }

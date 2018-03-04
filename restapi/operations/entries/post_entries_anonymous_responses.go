@@ -13,14 +13,14 @@ import (
 	"github.com/sevings/yummy-server/models"
 )
 
-// PostEntriesAnonymousOKCode is the HTTP code returned for type PostEntriesAnonymousOK
-const PostEntriesAnonymousOKCode int = 200
+// PostEntriesAnonymousCreatedCode is the HTTP code returned for type PostEntriesAnonymousCreated
+const PostEntriesAnonymousCreatedCode int = 201
 
-/*PostEntriesAnonymousOK Entry data
+/*PostEntriesAnonymousCreated Entry data
 
-swagger:response postEntriesAnonymousOK
+swagger:response postEntriesAnonymousCreated
 */
-type PostEntriesAnonymousOK struct {
+type PostEntriesAnonymousCreated struct {
 
 	/*
 	  In: Body
@@ -28,26 +28,26 @@ type PostEntriesAnonymousOK struct {
 	Payload *models.Entry `json:"body,omitempty"`
 }
 
-// NewPostEntriesAnonymousOK creates PostEntriesAnonymousOK with default headers values
-func NewPostEntriesAnonymousOK() *PostEntriesAnonymousOK {
-	return &PostEntriesAnonymousOK{}
+// NewPostEntriesAnonymousCreated creates PostEntriesAnonymousCreated with default headers values
+func NewPostEntriesAnonymousCreated() *PostEntriesAnonymousCreated {
+	return &PostEntriesAnonymousCreated{}
 }
 
-// WithPayload adds the payload to the post entries anonymous o k response
-func (o *PostEntriesAnonymousOK) WithPayload(payload *models.Entry) *PostEntriesAnonymousOK {
+// WithPayload adds the payload to the post entries anonymous created response
+func (o *PostEntriesAnonymousCreated) WithPayload(payload *models.Entry) *PostEntriesAnonymousCreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post entries anonymous o k response
-func (o *PostEntriesAnonymousOK) SetPayload(payload *models.Entry) {
+// SetPayload sets the payload to the post entries anonymous created response
+func (o *PostEntriesAnonymousCreated) SetPayload(payload *models.Entry) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostEntriesAnonymousOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostEntriesAnonymousCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(201)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

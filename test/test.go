@@ -24,7 +24,7 @@ func register(name string) (*models.UserID, *models.AuthProfile) {
 	}
 
 	resp := api.AccountPostAccountRegisterHandler.Handle(params)
-	body, ok := resp.(*account.PostAccountRegisterOK)
+	body, ok := resp.(*account.PostAccountRegisterCreated)
 	if !ok {
 		badBody, ok := resp.(*account.PostAccountRegisterBadRequest)
 		if ok {
@@ -63,7 +63,7 @@ func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bo
 	}
 
 	resp := api.EntriesPostEntriesUsersMeHandler.Handle(params, id)
-	body, ok := resp.(*entries.PostEntriesUsersMeOK)
+	body, ok := resp.(*entries.PostEntriesUsersMeCreated)
 	require.True(t, ok)
 
 	return body.Payload

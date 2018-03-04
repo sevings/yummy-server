@@ -247,7 +247,7 @@ func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *mo
 				return comments.NewPostEntriesIDCommentsNotFound()
 			}
 
-			return comments.NewPostEntriesIDCommentsOK().WithPayload(comment)
+			return comments.NewPostEntriesIDCommentsCreated().WithPayload(comment)
 		})
 	}
 }

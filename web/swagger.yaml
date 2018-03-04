@@ -495,7 +495,7 @@ paths:
       tags:
         - account
       responses:
-        200:
+        201:
           description: OK
           schema:
             $ref: '#/definitions/AuthProfile'
@@ -1264,7 +1264,7 @@ paths:
           type: boolean
           default: false
       responses:
-        200:
+        201:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
@@ -1411,7 +1411,7 @@ paths:
           type: boolean
           default: false
       responses:
-        200:
+        201:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
@@ -1730,7 +1730,7 @@ paths:
       tags:
         - comments
       responses:
-        200:
+        201:
           description: Comment data
           schema:
             $ref: '#/definitions/Comment'

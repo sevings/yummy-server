@@ -13,14 +13,14 @@ import (
 	"github.com/sevings/yummy-server/models"
 )
 
-// PostEntriesUsersMeOKCode is the HTTP code returned for type PostEntriesUsersMeOK
-const PostEntriesUsersMeOKCode int = 200
+// PostEntriesUsersMeCreatedCode is the HTTP code returned for type PostEntriesUsersMeCreated
+const PostEntriesUsersMeCreatedCode int = 201
 
-/*PostEntriesUsersMeOK Entry data
+/*PostEntriesUsersMeCreated Entry data
 
-swagger:response postEntriesUsersMeOK
+swagger:response postEntriesUsersMeCreated
 */
-type PostEntriesUsersMeOK struct {
+type PostEntriesUsersMeCreated struct {
 
 	/*
 	  In: Body
@@ -28,26 +28,26 @@ type PostEntriesUsersMeOK struct {
 	Payload *models.Entry `json:"body,omitempty"`
 }
 
-// NewPostEntriesUsersMeOK creates PostEntriesUsersMeOK with default headers values
-func NewPostEntriesUsersMeOK() *PostEntriesUsersMeOK {
-	return &PostEntriesUsersMeOK{}
+// NewPostEntriesUsersMeCreated creates PostEntriesUsersMeCreated with default headers values
+func NewPostEntriesUsersMeCreated() *PostEntriesUsersMeCreated {
+	return &PostEntriesUsersMeCreated{}
 }
 
-// WithPayload adds the payload to the post entries users me o k response
-func (o *PostEntriesUsersMeOK) WithPayload(payload *models.Entry) *PostEntriesUsersMeOK {
+// WithPayload adds the payload to the post entries users me created response
+func (o *PostEntriesUsersMeCreated) WithPayload(payload *models.Entry) *PostEntriesUsersMeCreated {
 	o.Payload = payload
 	return o
 }
 
-// SetPayload sets the payload to the post entries users me o k response
-func (o *PostEntriesUsersMeOK) SetPayload(payload *models.Entry) {
+// SetPayload sets the payload to the post entries users me created response
+func (o *PostEntriesUsersMeCreated) SetPayload(payload *models.Entry) {
 	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PostEntriesUsersMeOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PostEntriesUsersMeCreated) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(201)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

@@ -100,7 +100,7 @@ func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.
 				return entries.NewPostEntriesUsersMeForbidden()
 			}
 
-			return entries.NewPostEntriesUsersMeOK().WithPayload(entry)
+			return entries.NewPostEntriesUsersMeCreated().WithPayload(entry)
 		})
 	}
 }

@@ -339,7 +339,7 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "OK",
             "schema": {
               "$ref": "#/definitions/AuthProfile"
@@ -746,7 +746,7 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Entry data",
             "schema": {
               "$ref": "#/definitions/Entry"
@@ -1055,7 +1055,7 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Entry data",
             "schema": {
               "$ref": "#/definitions/Entry"
@@ -1426,7 +1426,7 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Comment data",
             "schema": {
               "$ref": "#/definitions/Comment"

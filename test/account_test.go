@@ -153,7 +153,7 @@ func TestRegister(t *testing.T) {
 
 	register := api.AccountPostAccountRegisterHandler.Handle
 	resp := register(params)
-	body, ok := resp.(*account.PostAccountRegisterOK)
+	body, ok := resp.(*account.PostAccountRegisterCreated)
 	if !ok {
 		badBody, ok := resp.(*account.PostAccountRegisterBadRequest)
 		if ok {
@@ -237,7 +237,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	resp = register(params)
-	body, ok = resp.(*account.PostAccountRegisterOK)
+	body, ok = resp.(*account.PostAccountRegisterCreated)
 	req.True(ok)
 
 	user = body.Payload
