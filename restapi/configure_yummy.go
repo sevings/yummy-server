@@ -16,13 +16,11 @@ import (
 	votesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/votes"
 	watchingsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
 
-	"github.com/didip/tollbooth"
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	graceful "github.com/tylerb/graceful"
 
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/models"
 	"github.com/sevings/yummy-server/restapi/operations"
 
 	_ "github.com/lib/pq"
@@ -91,14 +89,8 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	lmt := tollbooth.NewLimiter(10, nil)
-	lmt.SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"})
-	lmt.SetMessage("")
-	lmt.SetMessageContentType("application/json")
-	lmt.SetOnLimitReached(func(w http.ResponseWriter, r *http.Request) {
-		err := models.Error{Message: "Too many requests"}
-		data, _ := err.MarshalBinary()
-		w.Write(data)
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		resp.Header().Set("Cache-Control", "no-store")
+		handler.ServeHTTP(resp, req)
 	})
-	return tollbooth.LimitHandler(lmt, handler)
 }
