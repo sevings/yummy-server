@@ -131,6 +131,8 @@ func TestPostMyTlog(t *testing.T) {
 	}
 
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
+
+	checkLoadEntry(t, id, userIDs[1], false, nil, false, "", false, 0, "", false, "", "")
 }
 
 func postEntry(id *models.UserID, privacy string) {

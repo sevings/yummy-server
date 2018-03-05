@@ -175,14 +175,12 @@ func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
 
 func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 	const q = tlogFeedQueryStart + `
-		WHERE (users.id = $1 
-				OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
-					AND type = (SELECT id FROM relation WHERE type = 'followed')))
-			AND (entry_privacy.type = 'all' 
+		WHERE entries.id = $2
+			AND (entries.author_id = $1
+				OR entry_privacy.type = 'all' 
 				OR (entry_privacy.type = 'some' 
-					AND (users.id = $1
-						OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
-		` + feedQueryEnd
+					AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
+		`
 
 	var entry models.Entry
 	var author models.User
