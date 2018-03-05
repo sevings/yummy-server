@@ -106,6 +106,13 @@ func checkEditEntry(t *testing.T,
 		true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 }
 
+func checkDeleteEntry(t *testing.T, entryID int64, userID *models.UserID, success bool) {
+	del := api.EntriesDeleteEntriesIDHandler.Handle
+	resp := del(entries.DeleteEntriesIDParams{ID: entryID}, userID)
+	_, ok := resp.(*entries.DeleteEntriesIDOK)
+	require.Equal(t, success, ok)
+}
+
 func TestPostMyTlog(t *testing.T) {
 	params := entries.PostEntriesUsersMeParams{
 		Content: "test content",
@@ -133,6 +140,10 @@ func TestPostMyTlog(t *testing.T) {
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
 
 	checkLoadEntry(t, id, userIDs[1], false, nil, false, "", false, 0, "", false, "", "")
+
+	checkDeleteEntry(t, id, userIDs[1], false)
+	checkDeleteEntry(t, id, userIDs[0], true)
+	checkDeleteEntry(t, id, userIDs[0], false)
 }
 
 func postEntry(id *models.UserID, privacy string) {

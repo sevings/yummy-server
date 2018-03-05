@@ -22,6 +22,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 
 	api.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(db))
 	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(db))
+	api.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(newEntryDeleter(db))
 
 	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
 	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(db))
@@ -215,6 +216,34 @@ func newEntryLoader(db *sql.DB) func(entries.GetEntriesIDParams, *models.UserID)
 			}
 
 			return entries.NewGetEntriesIDOK().WithPayload(entry)
+		})
+	}
+}
+
+func deleteEntry(tx *utils.AutoTx, entryID, userID int64) bool {
+	var authorID int64
+	tx.Query("SELECT author_id FROM entries WHERE id = $1", entryID).Scan(&authorID)
+	if authorID != userID {
+		return false
+	}
+
+	tx.Exec("DELETE from entries WHERE id = $1", entryID)
+	return true
+}
+
+func newEntryDeleter(db *sql.DB) func(entries.DeleteEntriesIDParams, *models.UserID) middleware.Responder {
+	return func(params entries.DeleteEntriesIDParams, uID *models.UserID) middleware.Responder {
+		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+			ok := deleteEntry(tx, params.ID, int64(*uID))
+			if ok {
+				return entries.NewDeleteEntriesIDOK()
+			}
+
+			if tx.Error() == sql.ErrNoRows {
+				return entries.NewDeleteEntriesIDNotFound()
+			}
+
+			return entries.NewDeleteEntriesIDForbidden()
 		})
 	}
 }
