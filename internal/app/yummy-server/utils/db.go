@@ -26,7 +26,7 @@ func ClearDatabase(db *sql.DB) {
 
 	dropTable(tx, "vote_weights")
 	dropTable(tx, "entries_privacy")
-	// dropTable(tx, "entry_tags")
+	dropTable(tx, "entry_tags")
 	dropTable(tx, "entry_votes")
 	dropTable(tx, "comment_votes")
 	dropTable(tx, "comments")

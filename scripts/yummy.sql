@@ -856,7 +856,7 @@ CREATE UNIQUE INDEX "index_tag" ON "mindwell"."tags" USING btree( "tag" ) ;
 CREATE TABLE "mindwell"."entry_tags" (
     "entry_id" Integer NOT NULL,
     "tag_id" Integer NOT NULL,
-    CONSTRAINT "entry_tags_entry" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
+    CONSTRAINT "entry_tags_entry" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "entry_tags_tag" FOREIGN KEY("tag_id") REFERENCES "mindwell"."tags"("id"),
     CONSTRAINT "unique_entry_tag" UNIQUE("entry_id", "tag_id") );
 ;
@@ -872,14 +872,15 @@ CREATE INDEX "index_entry_tags_tag" ON "mindwell"."entry_tags" USING btree( "tag
 
 CREATE OR REPLACE FUNCTION mindwell.count_tags() RETURNS TRIGGER AS $$
     BEGIN
-        UPDATE mindwell.users
-        SET tags_count = counts.cnt 
-        FROM mindwell.users,
+        WITH authors AS 
         (
             SELECT DISTINCT author_id as id
             FROM mindwell.entries, changes
             WHERE entries.id = changes.entry_id
-        ) AS authors,
+        )
+        UPDATE mindwell.users
+        SET tags_count = counts.cnt 
+        FROM authors,
         (
             SELECT author_id, COUNT(tag_id) as cnt
             FROM mindwell.entries, mindwell.entry_tags, authors
@@ -910,7 +911,7 @@ CREATE TABLE "mindwell"."favorites" (
 	"entry_id" Integer NOT NULL,
     "date" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "favorite_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "favorite_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
+    CONSTRAINT "favorite_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_user_favorite" UNIQUE("user_id", "entry_id") );
  ;
 -- -------------------------------------------------------------
@@ -959,7 +960,7 @@ CREATE TABLE "mindwell"."watching" (
 	"entry_id" Integer NOT NULL,
     "date" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "watching_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "watching_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
+    CONSTRAINT "watching_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_user_watching" UNIQUE("user_id", "entry_id") );
  ;
 -- -------------------------------------------------------------
@@ -980,7 +981,7 @@ CREATE TABLE "mindwell"."entry_votes" (
 	"entry_id" Integer NOT NULL,
     "vote" Real NOT NULL,
     CONSTRAINT "entry_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "entry_vote_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
+    CONSTRAINT "entry_vote_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_entry_vote" UNIQUE("user_id", "entry_id") );
  ;
 -- -------------------------------------------------------------
@@ -1173,7 +1174,7 @@ CREATE TABLE "mindwell"."entries_privacy" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
     CONSTRAINT "entries_privacy_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "entries_privacy_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id"),
+    CONSTRAINT "entries_privacy_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_entry_privacy" UNIQUE("user_id", "entry_id") );
  ;
 -- -------------------------------------------------------------
@@ -1198,7 +1199,7 @@ CREATE TABLE "mindwell"."comments" (
 	"rating" Integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "unique_comment_id" PRIMARY KEY( "id" ),
     CONSTRAINT "comment_user_id" FOREIGN KEY("author_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "comment_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") );
+    CONSTRAINT "comment_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE );
  ;
 -- -------------------------------------------------------------
 
@@ -1251,7 +1252,7 @@ CREATE TABLE "mindwell"."comment_votes" (
 	"positive" Boolean NOT NULL,
 	"taken" Boolean DEFAULT TRUE NOT NULL,
     CONSTRAINT "comment_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "comment_vote_comment_id" FOREIGN KEY("comment_id") REFERENCES "mindwell"."comments"("id"),
+    CONSTRAINT "comment_vote_comment_id" FOREIGN KEY("comment_id") REFERENCES "mindwell"."comments"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_comment_vote" UNIQUE("user_id", "comment_id") );
  ;
 -- -------------------------------------------------------------
