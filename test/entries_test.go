@@ -129,6 +129,7 @@ func TestPostMyTlog(t *testing.T) {
 	id := checkPostEntry(t, params, profiles[0], userIDs[0], 5)
 
 	title = "title"
+	votable = true
 	editParams := entries.PutEntriesIDParams{
 		ID:        id,
 		Content:   "content",

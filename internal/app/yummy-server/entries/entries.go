@@ -122,6 +122,7 @@ func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy 
 		Privacy:     privacy,
 		Vote:        models.EntryVoteBan,
 		IsWatching:  true,
+		IsVotable:   isVotable,
 	}
 
 	category := entryCategory(&entry)
