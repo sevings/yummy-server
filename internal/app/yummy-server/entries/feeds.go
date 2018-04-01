@@ -113,7 +113,7 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
-	loadComments(tx, userID, &feed)
+	// loadComments(tx, userID, &feed)
 
 	return &feed
 }

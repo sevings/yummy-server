@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/sevings/yummy-server/models"
@@ -9,7 +10,7 @@ import (
 
 func BenchmarkLoadLive(b *testing.B) {
 	post := api.EntriesPostEntriesUsersMeHandler.Handle
-	title := "title"
+	var title string
 	votable := true
 	entryParams := entries.PostEntriesUsersMeParams{
 		Content:   "test test test",
@@ -17,7 +18,8 @@ func BenchmarkLoadLive(b *testing.B) {
 		Privacy:   models.EntryPrivacyAll,
 		IsVotable: &votable,
 	}
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 1000; i++ {
+		title = fmt.Sprintf("Entry %d", i)
 		post(entryParams, userIDs[0])
 	}
 
