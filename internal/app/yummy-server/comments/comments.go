@@ -25,7 +25,7 @@ func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
 const commentQuery = `
 	SELECT comments.id, entry_id,
 		created_at, content, rating,
-		votes.positive AS vote,
+		votes.positive,
 		author_id, name, show_name, 
 		is_online,
 		avatar
@@ -205,7 +205,7 @@ func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams
 			}
 
 			list := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
-			if tx.Error() != nil {
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 

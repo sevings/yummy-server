@@ -9,6 +9,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/yummy-server/restapi/operations/entries"
 
+	"github.com/sevings/yummy-server/internal/app/yummy-server/comments"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
 	"github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
@@ -204,6 +205,9 @@ func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 
 	entry.Author = &author
 
+	cmt := comments.LoadEntryComments(tx, userID, entryID, 5, 0)
+	entry.Comments = cmt
+
 	return &entry
 }
 
@@ -212,7 +216,7 @@ func newEntryLoader(db *sql.DB) func(entries.GetEntriesIDParams, *models.UserID)
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			entry := loadEntry(tx, params.ID, int64(*uID))
 
-			if tx.Error() != nil {
+			if entry.ID == 0 {
 				return entries.NewGetEntriesIDNotFound()
 			}
 
