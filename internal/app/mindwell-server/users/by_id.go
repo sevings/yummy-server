@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
 )
 
 func newUserLoader(db *sql.DB) func(users.GetUsersIDParams, *models.UserID) middleware.Responder {

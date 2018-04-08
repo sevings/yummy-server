@@ -7,14 +7,14 @@ import (
 	"github.com/golang-commonmark/markdown"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/entries"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/comments"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/users"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations"
 )
 
 // ConfigureAPI creates operations handlers

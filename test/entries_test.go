@@ -3,9 +3,9 @@ package test
 import (
 	"testing"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/entries"
 	"github.com/stretchr/testify/require"
 )
 

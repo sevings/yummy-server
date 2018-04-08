@@ -3,8 +3,8 @@ package votes
 import (
 	"database/sql"
 
-	"github.com/sevings/yummy-server/restapi/operations"
-	"github.com/sevings/yummy-server/restapi/operations/votes"
+	"github.com/sevings/mindwell-server/restapi/operations"
+	"github.com/sevings/mindwell-server/restapi/operations/votes"
 )
 
 // ConfigureAPI creates operations handlers

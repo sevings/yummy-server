@@ -5,7 +5,7 @@ import (
 
 	goconf "github.com/zpatrick/go-config"
 
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/models"
 
 	// to use postgres
 	_ "github.com/lib/pq"

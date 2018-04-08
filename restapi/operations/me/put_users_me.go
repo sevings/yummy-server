@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PutUsersMeHandlerFunc turns a function with the right signature into a put users me handler

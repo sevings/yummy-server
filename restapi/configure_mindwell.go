@@ -6,22 +6,22 @@ import (
 	"net/http"
 	"time"
 
-	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
-	commentsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/comments"
-	designImpl "github.com/sevings/yummy-server/internal/app/yummy-server/design"
-	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
-	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
-	relationsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/relations"
-	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
-	votesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/votes"
-	watchingsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
+	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
+	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
+	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
+	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
+	relationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/relations"
+	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
+	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
+	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/restapi/operations"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/restapi/operations"
 
 	_ "github.com/lib/pq"
 )

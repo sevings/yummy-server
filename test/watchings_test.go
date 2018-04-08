@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/watchings"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 	"github.com/stretchr/testify/require"
 )
 

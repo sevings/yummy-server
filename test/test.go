@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/account"
-	"github.com/sevings/yummy-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/restapi/operations/entries"
 )
 
 func register(name string) (*models.UserID, *models.AuthProfile) {

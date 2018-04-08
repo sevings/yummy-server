@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sevings/yummy-server/restapi/operations/me"
-	"github.com/sevings/yummy-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 func TestKeyAuth(t *testing.T) {

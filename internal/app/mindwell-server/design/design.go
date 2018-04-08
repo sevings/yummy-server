@@ -3,13 +3,13 @@ package design
 import (
 	"database/sql"
 
-	"github.com/sevings/yummy-server/restapi/operations/design"
+	"github.com/sevings/mindwell-server/restapi/operations/design"
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations"
 )
 
 // ConfigureAPI creates operations handlers

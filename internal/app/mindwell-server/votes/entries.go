@@ -4,9 +4,9 @@ import (
 	"database/sql"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/votes"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/votes"
 )
 
 func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {

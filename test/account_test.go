@@ -6,24 +6,24 @@ import (
 	"strings"
 	"testing"
 
-	accountImpl "github.com/sevings/yummy-server/internal/app/yummy-server/account"
-	commentsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/comments"
-	designImpl "github.com/sevings/yummy-server/internal/app/yummy-server/design"
-	entriesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/entries"
-	favoritesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/favorites"
-	relationsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/relations"
-	usersImpl "github.com/sevings/yummy-server/internal/app/yummy-server/users"
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	votesImpl "github.com/sevings/yummy-server/internal/app/yummy-server/votes"
-	watchingsImpl "github.com/sevings/yummy-server/internal/app/yummy-server/watchings"
+	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
+	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
+	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
+	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
+	relationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/relations"
+	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
+	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations"
-	"github.com/sevings/yummy-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations"
+	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/stretchr/testify/require"
 )
 
-var api *operations.YummyAPI
+var api *operations.MindwellAPI
 var db *sql.DB
 var userIDs []*models.UserID
 var profiles []*models.AuthProfile
@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 	db = utils.OpenDatabase(config)
 	utils.ClearDatabase(db)
 
-	api = &operations.YummyAPI{}
+	api = &operations.MindwellAPI{}
 
 	accountImpl.ConfigureAPI(db, api)
 	usersImpl.ConfigureAPI(db, api)

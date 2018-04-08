@@ -3,8 +3,8 @@ package relations
 import (
 	"database/sql"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/models"
 )
 
 func relationship(tx *utils.AutoTx, from, to int64) *models.Relationship {

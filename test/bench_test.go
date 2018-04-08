@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/entries"
 )
 
 func BenchmarkLoadLive(b *testing.B) {

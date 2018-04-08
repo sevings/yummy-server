@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesUsersIDFavoritesHandlerFunc turns a function with the right signature into a get entries users ID favorites handler

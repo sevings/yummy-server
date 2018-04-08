@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/yummy-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersIDFollowersOKCode is the HTTP code returned for type GetUsersIDFollowersOK

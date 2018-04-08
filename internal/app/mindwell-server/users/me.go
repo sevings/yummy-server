@@ -3,11 +3,11 @@ package users
 import (
 	"database/sql"
 
-	"github.com/sevings/yummy-server/internal/app/yummy-server/utils"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
 )
 
 func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile {

@@ -19,17 +19,17 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/account"
-	"github.com/sevings/yummy-server/restapi/operations/comments"
-	"github.com/sevings/yummy-server/restapi/operations/design"
-	"github.com/sevings/yummy-server/restapi/operations/entries"
-	"github.com/sevings/yummy-server/restapi/operations/favorites"
-	"github.com/sevings/yummy-server/restapi/operations/me"
-	"github.com/sevings/yummy-server/restapi/operations/relations"
-	"github.com/sevings/yummy-server/restapi/operations/users"
-	"github.com/sevings/yummy-server/restapi/operations/votes"
-	"github.com/sevings/yummy-server/restapi/operations/watchings"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/restapi/operations/comments"
+	"github.com/sevings/mindwell-server/restapi/operations/design"
+	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/favorites"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/relations"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/restapi/operations/votes"
+	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 )
 
 // NewMindwellAPI creates a new Mindwell instance

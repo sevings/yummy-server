@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sevings/yummy-server/models"
-	"github.com/sevings/yummy-server/restapi/operations/me"
-	"github.com/sevings/yummy-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/stretchr/testify/require"
 )
 
