@@ -18,8 +18,8 @@ import (
 type GetEntriesIDCommentsURL struct {
 	ID int64
 
-	After  *int64
-	Before *int64
+	After  *string
+	Before *string
 	Limit  *int64
 
 	_basePath string
@@ -64,7 +64,7 @@ func (o *GetEntriesIDCommentsURL) Build() (*url.URL, error) {
 
 	var after string
 	if o.After != nil {
-		after = swag.FormatInt64(*o.After)
+		after = *o.After
 	}
 	if after != "" {
 		qs.Set("after", after)
@@ -72,7 +72,7 @@ func (o *GetEntriesIDCommentsURL) Build() (*url.URL, error) {
 
 	var before string
 	if o.Before != nil {
-		before = swag.FormatInt64(*o.Before)
+		before = *o.Before
 	}
 	if before != "" {
 		qs.Set("before", before)

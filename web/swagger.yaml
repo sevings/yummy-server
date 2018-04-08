@@ -341,11 +341,11 @@ definitions:
         items:
           $ref: '#/definitions/Comment'
       nextAfter:
-        type: integer
+        type: string
       hasAfter:
         type: boolean
       nextBefore:
-        type: integer
+        type: string
       hasBefore:
         type: boolean
 parameters:
@@ -378,13 +378,13 @@ parameters:
   after:
     in: query
     name: after
-    type: integer
-    default: 0
+    type: string
+    default: ""
   before:
     in: query
     name: before
-    type: integer
-    default: 0
+    type: string
+    default: ""
   longerThan:
     in: query
     name: longer_than

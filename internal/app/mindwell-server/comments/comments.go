@@ -2,6 +2,8 @@ package comments
 
 import (
 	"database/sql"
+	"log"
+	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
@@ -162,8 +164,18 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, after, before int64) *models.CommentList {
+func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
 	var list []*models.Comment
+
+	before, err := strconv.ParseInt(beforeS, 10, 8)
+	if err != nil {
+		log.Printf("error parse before: %s", beforeS)
+	}
+
+	after, err := strconv.ParseInt(afterS, 10, 8)
+	if err != nil {
+		log.Printf("error parse after: %s", afterS)
+	}
 
 	if before > 0 {
 		const q = commentQuery + `
@@ -210,12 +222,13 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, after, before i
 		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id < $2)", entryID, nextBefore)
 		tx.Scan(&hasBefore)
 		if hasBefore {
-			comments.NextBefore = nextBefore
+			comments.NextBefore = strconv.FormatInt(nextBefore, 10)
 			comments.HasBefore = hasBefore
 		}
 
-		comments.NextAfter = list[len(list)-1].ID
-		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id > $2)", entryID, comments.NextAfter)
+		nextAfter := list[len(list)-1].ID
+		comments.NextAfter = strconv.FormatInt(nextAfter, 10)
+		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id > $2)", entryID, nextAfter)
 		tx.Scan(&comments.HasAfter)
 	}
 

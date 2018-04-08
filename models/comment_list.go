@@ -26,10 +26,10 @@ type CommentList struct {
 	HasBefore bool `json:"hasBefore,omitempty"`
 
 	// next after
-	NextAfter int64 `json:"nextAfter,omitempty"`
+	NextAfter string `json:"nextAfter,omitempty"`
 
 	// next before
-	NextBefore int64 `json:"nextBefore,omitempty"`
+	NextBefore string `json:"nextBefore,omitempty"`
 }
 
 // Validate validates this comment list

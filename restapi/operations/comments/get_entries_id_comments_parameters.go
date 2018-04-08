@@ -21,8 +21,8 @@ import (
 // with the default values initialized.
 func NewGetEntriesIDCommentsParams() GetEntriesIDCommentsParams {
 	var (
-		afterDefault  = int64(0)
-		beforeDefault = int64(0)
+		afterDefault  = string("")
+		beforeDefault = string("")
 		limitDefault  = int64(50)
 	)
 	return GetEntriesIDCommentsParams{
@@ -45,14 +45,14 @@ type GetEntriesIDCommentsParams struct {
 
 	/*
 	  In: query
-	  Default: 0
+	  Default: ""
 	*/
-	After *int64
+	After *string
 	/*
 	  In: query
-	  Default: 0
+	  Default: ""
 	*/
-	Before *int64
+	Before *string
 	/*
 	  Required: true
 	  Minimum: 1
@@ -108,16 +108,12 @@ func (o *GetEntriesIDCommentsParams) bindAfter(rawData []string, hasKey bool, fo
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		var afterDefault int64 = int64(0)
+		var afterDefault string = string("")
 		o.After = &afterDefault
 		return nil
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("after", "query", "int64", raw)
-	}
-	o.After = &value
+	o.After = &raw
 
 	return nil
 }
@@ -128,16 +124,12 @@ func (o *GetEntriesIDCommentsParams) bindBefore(rawData []string, hasKey bool, f
 		raw = rawData[len(rawData)-1]
 	}
 	if raw == "" { // empty values pass all other validations
-		var beforeDefault int64 = int64(0)
+		var beforeDefault string = string("")
 		o.Before = &beforeDefault
 		return nil
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("before", "query", "int64", raw)
-	}
-	o.Before = &value
+	o.Before = &raw
 
 	return nil
 }

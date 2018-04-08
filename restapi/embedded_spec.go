@@ -2669,10 +2669,10 @@ func init() {
           "type": "boolean"
         },
         "nextAfter": {
-          "type": "integer"
+          "type": "string"
         },
         "nextBefore": {
-          "type": "integer"
+          "type": "string"
         }
       }
     },
@@ -3098,14 +3098,14 @@ func init() {
   },
   "parameters": {
     "after": {
-      "type": "integer",
-      "default": 0,
+      "type": "string",
+      "default": "",
       "name": "after",
       "in": "query"
     },
     "before": {
-      "type": "integer",
-      "default": 0,
+      "type": "string",
+      "default": "",
       "name": "before",
       "in": "query"
     },

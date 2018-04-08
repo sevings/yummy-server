@@ -205,7 +205,7 @@ func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 
 	entry.Author = &author
 
-	cmt := comments.LoadEntryComments(tx, userID, entryID, 5, 0, 0)
+	cmt := comments.LoadEntryComments(tx, userID, entryID, 5, "", "")
 	entry.Comments = cmt
 
 	return &entry
