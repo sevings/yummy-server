@@ -14,7 +14,7 @@ import (
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
+func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
 	api.APIKeyHeaderAuth = newKeyAuth(db)
 
 	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))

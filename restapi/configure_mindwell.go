@@ -30,11 +30,11 @@ import (
 
 //go:generate swagger generate server --target ../gen --name  --spec ../swagger-ui/swagger.yaml
 
-func configureFlags(api *operations.YummyAPI) {
+func configureFlags(api *operations.MindwellAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
-func configureAPI(api *operations.YummyAPI) http.Handler {
+func configureAPI(api *operations.MindwellAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	config := utils.LoadConfig("configs/server")

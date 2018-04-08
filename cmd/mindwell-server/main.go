@@ -23,12 +23,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	api := operations.NewYummyAPI(swaggerSpec)
+	api := operations.NewMindwellAPI(swaggerSpec)
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
 	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = "Yummy"
+	parser.ShortDescription = "Mindwell"
 	parser.LongDescription = swaggerSpec.Spec().Info.Description
 
 	server.ConfigureFlags()

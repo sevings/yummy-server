@@ -25,7 +25,7 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "title": "Yummy",
+    "title": "Mindwell",
     "version": "0.1.0"
   },
   "basePath": "/api/v1",

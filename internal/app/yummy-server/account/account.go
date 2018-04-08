@@ -19,7 +19,7 @@ import (
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
+func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
 	api.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(db))
 	api.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(db))
 	api.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(newRegistrator(db))

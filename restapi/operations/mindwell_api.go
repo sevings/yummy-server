@@ -32,9 +32,9 @@ import (
 	"github.com/sevings/yummy-server/restapi/operations/watchings"
 )
 
-// NewYummyAPI creates a new Yummy instance
-func NewYummyAPI(spec *loads.Document) *YummyAPI {
-	return &YummyAPI{
+// NewMindwellAPI creates a new Mindwell instance
+func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
+	return &MindwellAPI{
 		handlers:              make(map[string]map[string]http.Handler),
 		formats:               strfmt.Default,
 		defaultConsumes:       "application/json",
@@ -255,8 +255,8 @@ func NewYummyAPI(spec *loads.Document) *YummyAPI {
 	}
 }
 
-/*YummyAPI the yummy API */
-type YummyAPI struct {
+/*MindwellAPI the mindwell API */
+type MindwellAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
@@ -439,42 +439,42 @@ type YummyAPI struct {
 }
 
 // SetDefaultProduces sets the default produces media type
-func (o *YummyAPI) SetDefaultProduces(mediaType string) {
+func (o *MindwellAPI) SetDefaultProduces(mediaType string) {
 	o.defaultProduces = mediaType
 }
 
 // SetDefaultConsumes returns the default consumes media type
-func (o *YummyAPI) SetDefaultConsumes(mediaType string) {
+func (o *MindwellAPI) SetDefaultConsumes(mediaType string) {
 	o.defaultConsumes = mediaType
 }
 
 // SetSpec sets a spec that will be served for the clients.
-func (o *YummyAPI) SetSpec(spec *loads.Document) {
+func (o *MindwellAPI) SetSpec(spec *loads.Document) {
 	o.spec = spec
 }
 
 // DefaultProduces returns the default produces media type
-func (o *YummyAPI) DefaultProduces() string {
+func (o *MindwellAPI) DefaultProduces() string {
 	return o.defaultProduces
 }
 
 // DefaultConsumes returns the default consumes media type
-func (o *YummyAPI) DefaultConsumes() string {
+func (o *MindwellAPI) DefaultConsumes() string {
 	return o.defaultConsumes
 }
 
 // Formats returns the registered string formats
-func (o *YummyAPI) Formats() strfmt.Registry {
+func (o *MindwellAPI) Formats() strfmt.Registry {
 	return o.formats
 }
 
 // RegisterFormat registers a custom format validator
-func (o *YummyAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
+func (o *MindwellAPI) RegisterFormat(name string, format strfmt.Format, validator strfmt.Validator) {
 	o.formats.Add(name, format, validator)
 }
 
-// Validate validates the registrations in the YummyAPI
-func (o *YummyAPI) Validate() error {
+// Validate validates the registrations in the MindwellAPI
+func (o *MindwellAPI) Validate() error {
 	var unregistered []string
 
 	if o.JSONConsumer == nil {
@@ -765,12 +765,12 @@ func (o *YummyAPI) Validate() error {
 }
 
 // ServeErrorFor gets a error handler for a given operation id
-func (o *YummyAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
+func (o *MindwellAPI) ServeErrorFor(operationID string) func(http.ResponseWriter, *http.Request, error) {
 	return o.ServeError
 }
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
-func (o *YummyAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
+func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
 
 	result := make(map[string]runtime.Authenticator)
 	for name, scheme := range schemes {
@@ -789,14 +789,14 @@ func (o *YummyAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map
 }
 
 // Authorizer returns the registered authorizer
-func (o *YummyAPI) Authorizer() runtime.Authorizer {
+func (o *MindwellAPI) Authorizer() runtime.Authorizer {
 
 	return o.APIAuthorizer
 
 }
 
 // ConsumersFor gets the consumers for the specified media types
-func (o *YummyAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
+func (o *MindwellAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
 
 	result := make(map[string]runtime.Consumer)
 	for _, mt := range mediaTypes {
@@ -818,7 +818,7 @@ func (o *YummyAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer
 }
 
 // ProducersFor gets the producers for the specified media types
-func (o *YummyAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
+func (o *MindwellAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
 
 	result := make(map[string]runtime.Producer)
 	for _, mt := range mediaTypes {
@@ -834,7 +834,7 @@ func (o *YummyAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
-func (o *YummyAPI) HandlerFor(method, path string) (http.Handler, bool) {
+func (o *MindwellAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	if o.handlers == nil {
 		return nil, false
 	}
@@ -849,8 +849,8 @@ func (o *YummyAPI) HandlerFor(method, path string) (http.Handler, bool) {
 	return h, ok
 }
 
-// Context returns the middleware context for the yummy API
-func (o *YummyAPI) Context() *middleware.Context {
+// Context returns the middleware context for the mindwell API
+func (o *MindwellAPI) Context() *middleware.Context {
 	if o.context == nil {
 		o.context = middleware.NewRoutableContext(o.spec, o, nil)
 	}
@@ -858,7 +858,7 @@ func (o *YummyAPI) Context() *middleware.Context {
 	return o.context
 }
 
-func (o *YummyAPI) initHandlerCache() {
+func (o *MindwellAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
 
 	if o.handlers == nil {
@@ -1194,7 +1194,7 @@ func (o *YummyAPI) initHandlerCache() {
 
 // Serve creates a http handler to serve the API over HTTP
 // can be used directly in http.ListenAndServe(":8000", api.Serve(nil))
-func (o *YummyAPI) Serve(builder middleware.Builder) http.Handler {
+func (o *MindwellAPI) Serve(builder middleware.Builder) http.Handler {
 	o.Init()
 
 	if o.Middleware != nil {
@@ -1204,7 +1204,7 @@ func (o *YummyAPI) Serve(builder middleware.Builder) http.Handler {
 }
 
 // Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
-func (o *YummyAPI) Init() {
+func (o *MindwellAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}

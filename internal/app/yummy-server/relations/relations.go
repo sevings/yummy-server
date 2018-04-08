@@ -11,7 +11,7 @@ import (
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
+func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
 	api.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(newToRelationLoader(db))
 	api.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(newFromRelationLoader(db))
 

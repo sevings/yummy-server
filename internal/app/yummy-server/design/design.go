@@ -13,7 +13,7 @@ import (
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.YummyAPI) {
+func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
 	api.DesignGetDesignHandler = design.GetDesignHandlerFunc(newDesignGetter(db))
 	api.DesignPutDesignHandler = design.PutDesignHandlerFunc(newDesignEditor(db))
 }
