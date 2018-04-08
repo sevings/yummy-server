@@ -37,7 +37,7 @@ type ProfileAllOf1 struct {
 	Counts *ProfileAllOf1Counts `json:"counts,omitempty"`
 
 	// created at
-	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
+	CreatedAt float64 `json:"createdAt,omitempty"`
 
 	// design
 	Design *Design `json:"design,omitempty"`
@@ -55,7 +55,7 @@ type ProfileAllOf1 struct {
 	Karma float32 `json:"karma,omitempty"`
 
 	// last seen at
-	LastSeenAt strfmt.DateTime `json:"lastSeenAt,omitempty"`
+	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
 	// privacy
 	Privacy string `json:"privacy,omitempty"`

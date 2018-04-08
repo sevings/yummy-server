@@ -11,7 +11,7 @@ import (
 )
 
 const feedQueryStart = `
-SELECT entries.id, entries.created_at, rating, entries.votes,
+SELECT entries.id, extract(epoch from entries.created_at), rating, entries.votes,
 entries.title, content, edit_content, word_count,
 entry_privacy.type,
 is_votable, entries.comments_count,
@@ -33,12 +33,12 @@ const tlogFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
 	AND user_privacy.type = 'all' `
 
-const feedQueryEnd = " ORDER BY created_at DESC LIMIT $2 OFFSET $3"
+const feedQueryEnd = " ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3"
 
 const liveFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + feedQueryEnd
 
 const anonymousFeedQuery = `
-SELECT entries.id, entries.created_at, 0, 
+SELECT entries.id, extract(epoch from entries.created_at), 0, 
 entries.title, content, edit_content, word_count,
 entry_privacy.type,
 false, entries.comments_count,
@@ -50,7 +50,7 @@ EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id)
 FROM entries
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 WHERE entry_privacy.type = 'anonymous' 
-ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3`
 
 const bestFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + " AND entries.rating > 5 " + feedQueryEnd
 

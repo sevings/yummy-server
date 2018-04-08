@@ -82,7 +82,7 @@ func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string,
 	INSERT INTO entries (author_id, title, content, edit_content, word_count, visible_for, is_votable, category)
 	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), 
 		$7, (SELECT id from categories WHERE type = $8))
-	RETURNING id, created_at`
+	RETURNING id, extract(epoch from created_at)`
 
 	tx.Query(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
 		privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
@@ -135,7 +135,7 @@ func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy 
 	is_votable = $6,
 	category = (SELECT id from categories WHERE type = $7)
 	WHERE id = $8 AND author_id = $9
-	RETURNING created_at`
+	RETURNING extract(epoch from created_at)`
 
 	tx.Query(q, title, entry.Content, entry.EditContent, entry.WordCount,
 		privacy, isVotable, category, entryID, userID).Scan(&entry.CreatedAt)

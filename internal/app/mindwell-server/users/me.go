@@ -17,7 +17,7 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 	gender, is_daylog,
 	privacy,
 	title, karma, 
-	created_at, last_seen_at, is_online,
+	extract(epoch from created_at), extract(epoch from last_seen_at), is_online,
 	age,
 	entries_count, followings_count, followers_count, 
 	ignored_count, invited_count, comments_count, 

@@ -25,13 +25,21 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(vote, entry.Vote)
 	req.False(entry.IsFavorited)
 	req.Equal(watching, entry.IsWatching)
-	req.Empty(entry.Comments)
 	req.Equal(title, entry.Title)
 
 	if canEdit {
 		req.Equal(content, entry.EditContent)
 	} else {
 		req.Empty(entry.EditContent)
+	}
+
+	cmts := entry.Comments
+	if cmts != nil {
+		req.Empty(cmts.Data)
+		req.False(cmts.HasAfter)
+		req.False(cmts.HasBefore)
+		req.Zero(cmts.NextAfter)
+		req.Zero(cmts.NextBefore)
 	}
 
 	author := entry.Author

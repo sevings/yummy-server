@@ -24,7 +24,7 @@ func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
 
 const commentQuery = `
 	SELECT comments.id, entry_id,
-		created_at, content, rating,
+		extract(epoch from created_at), content, rating,
 		votes.positive,
 		author_id, name, show_name, 
 		is_online,

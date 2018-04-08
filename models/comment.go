@@ -27,7 +27,7 @@ type Comment struct {
 	Content string `json:"content,omitempty"`
 
 	// created at
-	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
+	CreatedAt float64 `json:"createdAt,omitempty"`
 
 	// entry Id
 	// Minimum: 1

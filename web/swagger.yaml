@@ -82,11 +82,11 @@ definitions:
             type: number
             format: float
           createdAt:
-            type: string
-            format: date-time
+            type: number
+            format: double
           lastSeenAt:
-            type: string
-            format: date-time
+            type: number
+            format: double
           invitedBy:
             $ref: '#/definitions/User'
           ageLowerBound:
@@ -183,8 +183,8 @@ definitions:
               apiKey:
                 type: string
               validThru:
-                type: string
-                format: date-time
+                type: number
+                format: double
               email:
                 type: string
               verified:
@@ -205,8 +205,8 @@ definitions:
       author:
         $ref: '#/definitions/User'
       createdAt:
-        type: string
-        format: date-time
+        type: number
+        format: double
       votes:
         type: integer
       rating:
@@ -318,8 +318,8 @@ definitions:
         format: int64
         minimum: 1
       createdAt:
-        type: string
-        format: date-time
+        type: number
+        format: double
       content:
         type: string
         minLength: 1

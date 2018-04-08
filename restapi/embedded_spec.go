@@ -2576,8 +2576,8 @@ func init() {
                   "type": "string"
                 },
                 "validThru": {
-                  "type": "string",
-                  "format": "date-time"
+                  "type": "number",
+                  "format": "double"
                 },
                 "verified": {
                   "type": "boolean"
@@ -2620,8 +2620,8 @@ func init() {
           "minLength": 1
         },
         "createdAt": {
-          "type": "string",
-          "format": "date-time"
+          "type": "number",
+          "format": "double"
         },
         "entryId": {
           "type": "integer",
@@ -2721,8 +2721,8 @@ func init() {
           "type": "string"
         },
         "createdAt": {
-          "type": "string",
-          "format": "date-time"
+          "type": "number",
+          "format": "double"
         },
         "editContent": {
           "type": "string"
@@ -2878,8 +2878,8 @@ func init() {
               }
             },
             "createdAt": {
-              "type": "string",
-              "format": "date-time"
+              "type": "number",
+              "format": "double"
             },
             "design": {
               "$ref": "#/definitions/Design"
@@ -2903,8 +2903,8 @@ func init() {
               "format": "float"
             },
             "lastSeenAt": {
-              "type": "string",
-              "format": "date-time"
+              "type": "number",
+              "format": "double"
             },
             "privacy": {
               "type": "string",

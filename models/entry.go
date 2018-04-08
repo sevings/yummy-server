@@ -32,7 +32,7 @@ type Entry struct {
 	Content string `json:"content,omitempty"`
 
 	// created at
-	CreatedAt strfmt.DateTime `json:"createdAt,omitempty"`
+	CreatedAt float64 `json:"createdAt,omitempty"`
 
 	// edit content
 	EditContent string `json:"editContent,omitempty"`

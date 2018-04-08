@@ -23,7 +23,7 @@ type AuthProfileAllOf1Account struct {
 	Email string `json:"email,omitempty"`
 
 	// valid thru
-	ValidThru strfmt.DateTime `json:"validThru,omitempty"`
+	ValidThru float64 `json:"validThru,omitempty"`
 
 	// verified
 	Verified bool `json:"verified,omitempty"`
