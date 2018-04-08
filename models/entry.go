@@ -26,7 +26,7 @@ type Entry struct {
 	CommentCount int64 `json:"commentCount,omitempty"`
 
 	// comments
-	Comments EntryComments `json:"comments"`
+	Comments *CommentList `json:"comments,omitempty"`
 
 	// content
 	Content string `json:"content,omitempty"`
@@ -81,6 +81,11 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateComments(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
 	if err := m.validateID(formats); err != nil {
 		// prop
 		res = append(res, err)
@@ -113,6 +118,25 @@ func (m *Entry) validateAuthor(formats strfmt.Registry) error {
 		if err := m.Author.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Entry) validateComments(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Comments) { // not required
+		return nil
+	}
+
+	if m.Comments != nil {
+
+		if err := m.Comments.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("comments")
 			}
 			return err
 		}

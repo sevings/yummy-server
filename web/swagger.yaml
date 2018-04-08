@@ -239,9 +239,7 @@ definitions:
       isWatching:
         type: boolean
       comments:
-        type: array
-        items:
-          $ref: '#/definitions/Comment'
+          $ref: '#/definitions/CommentList'
     example:
       id: 152
       createdAt: '1985-04-12T23:20:50.52Z'
@@ -338,10 +336,18 @@ definitions:
   CommentList:
     type: object
     properties:
-      comments:
+      data:
         type: array
         items:
           $ref: '#/definitions/Comment'
+      nextAfter:
+        type: integer
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: integer
+      hasBefore:
+        type: boolean
 parameters:
   pathId:
     in: path
@@ -367,6 +373,16 @@ parameters:
   skip:
     in: query
     name: skip
+    type: integer
+    default: 0
+  after:
+    in: query
+    name: after
+    type: integer
+    default: 0
+  before:
+    in: query
+    name: before
     type: integer
     default: 0
   longerThan:
@@ -1701,7 +1717,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:

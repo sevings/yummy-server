@@ -1385,7 +1385,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2653,11 +2656,23 @@ func init() {
     "CommentList": {
       "type": "object",
       "properties": {
-        "comments": {
+        "data": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Comment"
           }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "integer"
+        },
+        "nextBefore": {
+          "type": "integer"
         }
       }
     },
@@ -2700,10 +2715,7 @@ func init() {
           "type": "integer"
         },
         "comments": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Comment"
-          }
+          "$ref": "#/definitions/CommentList"
         },
         "content": {
           "type": "string"
@@ -3085,6 +3097,18 @@ func init() {
     }
   },
   "parameters": {
+    "after": {
+      "type": "integer",
+      "default": 0,
+      "name": "after",
+      "in": "query"
+    },
+    "before": {
+      "type": "integer",
+      "default": 0,
+      "name": "before",
+      "in": "query"
+    },
     "limit": {
       "maximum": 100,
       "minimum": 1,

@@ -16,8 +16,20 @@ import (
 // swagger:model CommentList
 type CommentList struct {
 
-	// comments
-	Comments CommentListComments `json:"comments"`
+	// data
+	Data CommentListData `json:"data"`
+
+	// has after
+	HasAfter bool `json:"hasAfter,omitempty"`
+
+	// has before
+	HasBefore bool `json:"hasBefore,omitempty"`
+
+	// next after
+	NextAfter int64 `json:"nextAfter,omitempty"`
+
+	// next before
+	NextBefore int64 `json:"nextBefore,omitempty"`
 }
 
 // Validate validates this comment list

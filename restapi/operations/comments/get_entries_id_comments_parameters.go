@@ -21,13 +21,16 @@ import (
 // with the default values initialized.
 func NewGetEntriesIDCommentsParams() GetEntriesIDCommentsParams {
 	var (
-		limitDefault = int64(50)
-		skipDefault  = int64(0)
+		afterDefault  = int64(0)
+		beforeDefault = int64(0)
+		limitDefault  = int64(50)
 	)
 	return GetEntriesIDCommentsParams{
-		Limit: &limitDefault,
+		After: &afterDefault,
 
-		Skip: &skipDefault,
+		Before: &beforeDefault,
+
+		Limit: &limitDefault,
 	}
 }
 
@@ -41,6 +44,16 @@ type GetEntriesIDCommentsParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
+	  In: query
+	  Default: 0
+	*/
+	After *int64
+	/*
+	  In: query
+	  Default: 0
+	*/
+	Before *int64
+	/*
 	  Required: true
 	  Minimum: 1
 	  In: path
@@ -53,11 +66,6 @@ type GetEntriesIDCommentsParams struct {
 	  Default: 50
 	*/
 	Limit *int64
-	/*
-	  In: query
-	  Default: 0
-	*/
-	Skip *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -67,6 +75,16 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
+
+	qAfter, qhkAfter, _ := qs.GetOK("after")
+	if err := o.bindAfter(qAfter, qhkAfter, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qBefore, qhkBefore, _ := qs.GetOK("before")
+	if err := o.bindBefore(qBefore, qhkBefore, route.Formats); err != nil {
+		res = append(res, err)
+	}
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
@@ -78,14 +96,49 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 		res = append(res, err)
 	}
 
-	qSkip, qhkSkip, _ := qs.GetOK("skip")
-	if err := o.bindSkip(qSkip, qhkSkip, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *GetEntriesIDCommentsParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var afterDefault int64 = int64(0)
+		o.After = &afterDefault
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("after", "query", "int64", raw)
+	}
+	o.After = &value
+
+	return nil
+}
+
+func (o *GetEntriesIDCommentsParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var beforeDefault int64 = int64(0)
+		o.Before = &beforeDefault
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("before", "query", "int64", raw)
+	}
+	o.Before = &value
+
 	return nil
 }
 
@@ -150,26 +203,6 @@ func (o *GetEntriesIDCommentsParams) validateLimit(formats strfmt.Registry) erro
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (o *GetEntriesIDCommentsParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		var skipDefault int64 = int64(0)
-		o.Skip = &skipDefault
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("skip", "query", "int64", raw)
-	}
-	o.Skip = &value
 
 	return nil
 }

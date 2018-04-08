@@ -77,7 +77,7 @@ WHERE (users.id = $1
 
 func loadComments(tx *utils.AutoTx, userID int64, feed *models.Feed) {
 	for _, entry := range feed.Entries {
-		cmt := comments.LoadEntryComments(tx, userID, entry.ID, 5, 0)
+		cmt := comments.LoadEntryComments(tx, userID, entry.ID, 5, 0, 0)
 		entry.Comments = cmt
 	}
 }

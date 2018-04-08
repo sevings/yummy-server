@@ -162,14 +162,24 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, offset int64) []*models.Comment {
-	const q = commentQuery + `
-		WHERE entry_id = $2
-		ORDER BY created_at DESC
-		LIMIT $3 OFFSET $4`
-
+func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, after, before int64) *models.CommentList {
 	var list []*models.Comment
-	tx.Query(q, userID, entryID, limit, offset)
+
+	if before > 0 {
+		const q = commentQuery + `
+			WHERE entry_id = $2 AND comments.id < $3
+			ORDER BY comments.id DESC
+			LIMIT $4`
+
+		tx.Query(q, userID, entryID, before, limit)
+	} else {
+		const q = commentQuery + `
+			WHERE entry_id = $2 AND comments.id > $3
+			ORDER BY comments.id DESC
+			LIMIT $4`
+
+		tx.Query(q, userID, entryID, after, limit)
+	}
 
 	for {
 		comment := models.Comment{Author: &models.User{}}
@@ -192,7 +202,24 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit, offset int64) [
 		list[i], list[j] = list[j], list[i]
 	}
 
-	return list
+	comments := &models.CommentList{Data: list}
+
+	if len(list) > 0 {
+		nextBefore := list[0].ID
+		var hasBefore bool
+		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id < $2)", entryID, nextBefore)
+		tx.Scan(&hasBefore)
+		if hasBefore {
+			comments.NextBefore = nextBefore
+			comments.HasBefore = hasBefore
+		}
+
+		comments.NextAfter = list[len(list)-1].ID
+		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id > $2)", entryID, comments.NextAfter)
+		tx.Scan(&comments.HasAfter)
+	}
+
+	return comments
 }
 
 func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
@@ -204,13 +231,12 @@ func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams
 				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 
-			list := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.Skip)
+			data := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.After, *params.Before)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 
-			res := models.CommentList{Comments: list}
-			return comments.NewGetEntriesIDCommentsOK().WithPayload(&res)
+			return comments.NewGetEntriesIDCommentsOK().WithPayload(data)
 		})
 	}
 }
