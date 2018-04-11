@@ -3,7 +3,6 @@ package utils
 import (
 	"database/sql"
 	"log"
-	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	goconf "github.com/zpatrick/go-config"
@@ -61,7 +60,7 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 		log.Print(err)
 	}
 
-	port, err := config.Int("database.port")
+	port, err := config.String("database.port")
 	if err != nil {
 		log.Print(err)
 	}
@@ -81,17 +80,7 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 		log.Print(err)
 	}
 
-	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name+" port="+strconv.Itoa(port))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	schema, err := config.String("database.schema")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = db.Exec("SET search_path = " + schema + ", public")
+	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name+" port="+port)
 	if err != nil {
 		log.Fatal(err)
 	}

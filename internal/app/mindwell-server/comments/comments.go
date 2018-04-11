@@ -168,12 +168,12 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, b
 	var list []*models.Comment
 
 	before, err := strconv.ParseInt(beforeS, 10, 8)
-	if err != nil {
+	if len(beforeS) > 0 && err != nil {
 		log.Printf("error parse before: %s", beforeS)
 	}
 
 	after, err := strconv.ParseInt(afterS, 10, 8)
-	if err != nil {
+	if len(afterS) > 0 && err != nil {
 		log.Printf("error parse after: %s", afterS)
 	}
 
