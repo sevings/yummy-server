@@ -1,5 +1,7 @@
 CREATE SCHEMA "mindwell";
 
+ALTER DATABASE mindwell SET search_path TO mindwell, public;
+
 -- CREATE TABLE "gender" ---------------------------------
 CREATE TABLE "mindwell"."gender" (
     "id" Integer UNIQUE NOT NULL,
