@@ -18,6 +18,18 @@ type Feed struct {
 
 	// entries
 	Entries FeedEntries `json:"entries"`
+
+	// has after
+	HasAfter bool `json:"hasAfter,omitempty"`
+
+	// has before
+	HasBefore bool `json:"hasBefore,omitempty"`
+
+	// next after
+	NextAfter string `json:"nextAfter,omitempty"`
+
+	// next before
+	NextBefore string `json:"nextBefore,omitempty"`
 }
 
 // Validate validates this feed

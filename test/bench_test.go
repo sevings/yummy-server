@@ -24,10 +24,12 @@ func BenchmarkLoadLive(b *testing.B) {
 	}
 
 	var limit int64 = 50
-	var skip int64 = 50
+	before := "0"
+	after := "0"
 	params := entries.GetEntriesLiveParams{
-		Limit: &limit,
-		Skip:  &skip,
+		Limit:  &limit,
+		Before: &before,
+		After:  &after,
 	}
 
 	load := api.EntriesGetEntriesLiveHandler.Handle

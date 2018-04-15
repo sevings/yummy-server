@@ -691,7 +691,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -776,7 +779,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -818,7 +824,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -855,7 +864,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -892,7 +904,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -937,7 +952,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -976,7 +994,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -1085,7 +1106,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -1119,7 +1143,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -1153,7 +1180,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           },
           {
             "$ref": "#/parameters/tag"
@@ -1198,7 +1228,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2823,6 +2856,18 @@ func init() {
           "items": {
             "$ref": "#/definitions/Entry"
           }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
         }
       }
     },

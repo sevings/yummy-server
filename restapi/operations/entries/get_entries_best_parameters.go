@@ -21,13 +21,16 @@ import (
 // with the default values initialized.
 func NewGetEntriesBestParams() GetEntriesBestParams {
 	var (
-		limitDefault = int64(50)
-		skipDefault  = int64(0)
+		afterDefault  = string("")
+		beforeDefault = string("")
+		limitDefault  = int64(50)
 	)
 	return GetEntriesBestParams{
-		Limit: &limitDefault,
+		After: &afterDefault,
 
-		Skip: &skipDefault,
+		Before: &beforeDefault,
+
+		Limit: &limitDefault,
 	}
 }
 
@@ -40,6 +43,16 @@ type GetEntriesBestParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
+	/*
+	  In: query
+	  Default: ""
+	*/
+	After *string
+	/*
+	  In: query
+	  Default: ""
+	*/
+	Before *string
 	/*
 	  Maximum: 100
 	  Minimum: 1
@@ -60,11 +73,6 @@ type GetEntriesBestParams struct {
 	*/
 	ShorterThan *int64
 	/*
-	  In: query
-	  Default: 0
-	*/
-	Skip *int64
-	/*
 	  Max Length: 50
 	  In: query
 	*/
@@ -78,6 +86,16 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
+
+	qAfter, qhkAfter, _ := qs.GetOK("after")
+	if err := o.bindAfter(qAfter, qhkAfter, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qBefore, qhkBefore, _ := qs.GetOK("before")
+	if err := o.bindBefore(qBefore, qhkBefore, route.Formats); err != nil {
+		res = append(res, err)
+	}
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
@@ -99,11 +117,6 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 		res = append(res, err)
 	}
 
-	qSkip, qhkSkip, _ := qs.GetOK("skip")
-	if err := o.bindSkip(qSkip, qhkSkip, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
 	qTag, qhkTag, _ := qs.GetOK("tag")
 	if err := o.bindTag(qTag, qhkTag, route.Formats); err != nil {
 		res = append(res, err)
@@ -112,6 +125,38 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *GetEntriesBestParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var afterDefault string = string("")
+		o.After = &afterDefault
+		return nil
+	}
+
+	o.After = &raw
+
+	return nil
+}
+
+func (o *GetEntriesBestParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var beforeDefault string = string("")
+		o.Before = &beforeDefault
+		return nil
+	}
+
+	o.Before = &raw
+
 	return nil
 }
 
@@ -202,26 +247,6 @@ func (o *GetEntriesBestParams) bindShorterThan(rawData []string, hasKey bool, fo
 		return errors.InvalidType("shorter_than", "query", "int64", raw)
 	}
 	o.ShorterThan = &value
-
-	return nil
-}
-
-func (o *GetEntriesBestParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		var skipDefault int64 = int64(0)
-		o.Skip = &skipDefault
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("skip", "query", "int64", raw)
-	}
-	o.Skip = &value
 
 	return nil
 }

@@ -21,14 +21,17 @@ import (
 // with the default values initialized.
 func NewGetEntriesUsersByNameNameParams() GetEntriesUsersByNameNameParams {
 	var (
-		limitDefault = int64(50)
-		skipDefault  = int64(0)
-		sortDefault  = string("new")
+		afterDefault  = string("")
+		beforeDefault = string("")
+		limitDefault  = int64(50)
+		sortDefault   = string("new")
 	)
 	return GetEntriesUsersByNameNameParams{
-		Limit: &limitDefault,
+		After: &afterDefault,
 
-		Skip: &skipDefault,
+		Before: &beforeDefault,
+
+		Limit: &limitDefault,
 
 		Sort: &sortDefault,
 	}
@@ -44,6 +47,16 @@ type GetEntriesUsersByNameNameParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
+	  In: query
+	  Default: ""
+	*/
+	After *string
+	/*
+	  In: query
+	  Default: ""
+	*/
+	Before *string
+	/*
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
@@ -57,11 +70,6 @@ type GetEntriesUsersByNameNameParams struct {
 	  In: path
 	*/
 	Name string
-	/*
-	  In: query
-	  Default: 0
-	*/
-	Skip *int64
 	/*
 	  In: query
 	  Default: "new"
@@ -82,6 +90,16 @@ func (o *GetEntriesUsersByNameNameParams) BindRequest(r *http.Request, route *mi
 
 	qs := runtime.Values(r.URL.Query())
 
+	qAfter, qhkAfter, _ := qs.GetOK("after")
+	if err := o.bindAfter(qAfter, qhkAfter, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qBefore, qhkBefore, _ := qs.GetOK("before")
+	if err := o.bindBefore(qBefore, qhkBefore, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
@@ -89,11 +107,6 @@ func (o *GetEntriesUsersByNameNameParams) BindRequest(r *http.Request, route *mi
 
 	rName, rhkName, _ := route.Params.GetOK("name")
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qSkip, qhkSkip, _ := qs.GetOK("skip")
-	if err := o.bindSkip(qSkip, qhkSkip, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -110,6 +123,38 @@ func (o *GetEntriesUsersByNameNameParams) BindRequest(r *http.Request, route *mi
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (o *GetEntriesUsersByNameNameParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var afterDefault string = string("")
+		o.After = &afterDefault
+		return nil
+	}
+
+	o.After = &raw
+
+	return nil
+}
+
+func (o *GetEntriesUsersByNameNameParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+	if raw == "" { // empty values pass all other validations
+		var beforeDefault string = string("")
+		o.Before = &beforeDefault
+		return nil
+	}
+
+	o.Before = &raw
+
 	return nil
 }
 
@@ -174,26 +219,6 @@ func (o *GetEntriesUsersByNameNameParams) validateName(formats strfmt.Registry) 
 	if err := validate.MaxLength("name", "path", o.Name, 20); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (o *GetEntriesUsersByNameNameParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		var skipDefault int64 = int64(0)
-		o.Skip = &skipDefault
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("skip", "query", "int64", raw)
-	}
-	o.Skip = &value
 
 	return nil
 }

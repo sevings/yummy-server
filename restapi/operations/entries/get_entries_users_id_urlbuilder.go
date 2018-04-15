@@ -18,10 +18,11 @@ import (
 type GetEntriesUsersIDURL struct {
 	ID int64
 
-	Limit *int64
-	Skip  *int64
-	Sort  *string
-	Tag   *string
+	After  *string
+	Before *string
+	Limit  *int64
+	Sort   *string
+	Tag    *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -63,20 +64,28 @@ func (o *GetEntriesUsersIDURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
+	var after string
+	if o.After != nil {
+		after = *o.After
+	}
+	if after != "" {
+		qs.Set("after", after)
+	}
+
+	var before string
+	if o.Before != nil {
+		before = *o.Before
+	}
+	if before != "" {
+		qs.Set("before", before)
+	}
+
 	var limit string
 	if o.Limit != nil {
 		limit = swag.FormatInt64(*o.Limit)
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
-	}
-
-	var skip string
-	if o.Skip != nil {
-		skip = swag.FormatInt64(*o.Skip)
-	}
-	if skip != "" {
-		qs.Set("skip", skip)
 	}
 
 	var sort string

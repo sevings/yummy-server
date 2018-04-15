@@ -15,10 +15,11 @@ import (
 
 // GetEntriesFriendsURL generates an URL for the get entries friends operation
 type GetEntriesFriendsURL struct {
+	After       *string
+	Before      *string
 	Limit       *int64
 	LongerThan  *int64
 	ShorterThan *int64
-	Skip        *int64
 	Tag         *string
 
 	_basePath string
@@ -55,6 +56,22 @@ func (o *GetEntriesFriendsURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
+	var after string
+	if o.After != nil {
+		after = *o.After
+	}
+	if after != "" {
+		qs.Set("after", after)
+	}
+
+	var before string
+	if o.Before != nil {
+		before = *o.Before
+	}
+	if before != "" {
+		qs.Set("before", before)
+	}
+
 	var limit string
 	if o.Limit != nil {
 		limit = swag.FormatInt64(*o.Limit)
@@ -77,14 +94,6 @@ func (o *GetEntriesFriendsURL) Build() (*url.URL, error) {
 	}
 	if shorterThan != "" {
 		qs.Set("shorter_than", shorterThan)
-	}
-
-	var skip string
-	if o.Skip != nil {
-		skip = swag.FormatInt64(*o.Skip)
-	}
-	if skip != "" {
-		qs.Set("skip", skip)
 	}
 
 	var tag string

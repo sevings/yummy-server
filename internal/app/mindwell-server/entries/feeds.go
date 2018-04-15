@@ -2,9 +2,10 @@ package entries
 
 import (
 	"database/sql"
+	"log"
+	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
@@ -29,13 +30,11 @@ INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 INNER JOIN user_privacy ON users.privacy = user_privacy.id
 LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id`
 
-const tlogFeedQueryWhere = `
+const liveFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
 	AND user_privacy.type = 'all' `
 
-const feedQueryEnd = " ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3"
-
-const liveFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + feedQueryEnd
+const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
 const anonymousFeedQuery = `
 SELECT entries.id, extract(epoch from entries.created_at), 0, 
@@ -52,9 +51,15 @@ INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 WHERE entry_privacy.type = 'anonymous' 
 ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3`
 
-const bestFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + " AND entries.rating > 5 " + feedQueryEnd
+const bestFeedQueryWhere = liveFeedQueryWhere + " AND entries.rating > 5 "
 
-const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere + " AND entries.author_id = $4 " + feedQueryEnd
+const bestFeedQuery = tlogFeedQueryStart + bestFeedQueryWhere
+
+const tlogFeedQueryWhere = liveFeedQueryWhere + " AND entries.author_id = $2 "
+
+const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere
+
+const myTlogFeedQueryWhere = " WHERE entries.author_id = $1 "
 
 const myTlogFeedQuery = feedQueryStart + `
 NULL, 
@@ -63,9 +68,9 @@ true
 FROM entries
 INNER JOIN users ON entries.author_id = users.id
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-WHERE entries.author_id = $1 ` + feedQueryEnd
+` + myTlogFeedQueryWhere
 
-const friendsFeedQuery = tlogFeedQueryStart + `
+const friendsFeedQueryWhere = `
 WHERE (users.id = $1 
 		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
 			AND type = (SELECT id FROM relation WHERE type = 'followed')))
@@ -73,19 +78,25 @@ WHERE (users.id = $1
 		OR (entry_privacy.type = 'some' 
 			AND (users.id = $1
 				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
-` + feedQueryEnd
+`
 
-func loadComments(tx *utils.AutoTx, userID int64, feed *models.Feed) {
-	for _, entry := range feed.Entries {
-		cmt := comments.LoadEntryComments(tx, userID, entry.ID, 5, "", "")
-		entry.Comments = cmt
+const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
+
+func parseFloat(val string) float64 {
+	res, err := strconv.ParseFloat(val, 64)
+	if len(val) > 0 && err != nil {
+		log.Printf("error parse float: '%s'", val)
 	}
+
+	return res
 }
 
-func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interface{}) *models.Feed {
-	var feed models.Feed
-	userID := int64(*uID)
-	tx.Query(query, append([]interface{}{userID}, args...)...)
+func formatFloat(val float64) string {
+	return strconv.FormatFloat(val, 'f', 6, 64)
+}
+
+func loadFeed(tx *utils.AutoTx, userID int64) *models.Feed {
+	feed := models.Feed{}
 
 	for {
 		var entry models.Entry
@@ -113,76 +124,213 @@ func loadFeed(tx *utils.AutoTx, query string, uID *models.UserID, args ...interf
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
-	// loadComments(tx, userID, &feed)
-
 	return &feed
 }
 
-func loadLiveFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
-	return loadFeed(tx, liveFeedQuery, userID, limit, offset)
+func loadLiveFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+	before := parseFloat(beforeS)
+	after := parseFloat(afterS)
+
+	var q string
+	var arg float64
+	if before > 0 {
+		q = liveFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = before
+	} else {
+		q = liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = after
+	}
+
+	userID := int64(*uID)
+	tx.Query(q, userID, arg, limit)
+
+	feed := loadFeed(tx, userID)
+
+	if len(feed.Entries) == 0 {
+		return feed
+	}
+
+	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+	feed.NextBefore = formatFloat(nextBefore)
+
+	const beforeQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+	` + liveFeedQueryWhere + " AND entries.created_at < to_timestamp($1))"
+
+	tx.Query(beforeQuery, nextBefore)
+	tx.Scan(&feed.HasBefore)
+
+	const afterQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+	` + liveFeedQueryWhere + " AND entries.created_at > to_timestamp($1))"
+
+	nextAfter := feed.Entries[0].CreatedAt
+	feed.NextAfter = formatFloat(nextAfter)
+	tx.Query(afterQuery, nextAfter)
+	tx.Scan(&feed.HasAfter)
+
+	return feed
 }
 
 func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesLiveParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadLiveFeed(tx, userID, *params.Limit, *params.Skip)
+			feed := loadLiveFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadAnonymousFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
+func loadAnonymousFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	//! \todo do not load authors
-	return loadFeed(tx, anonymousFeedQuery, userID, limit, offset)
+	return &models.Feed{}
 }
 
 func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesAnonymousParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadAnonymousFeed(tx, userID, *params.Limit, *params.Skip)
+			feed := loadAnonymousFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesAnonymousOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadBestFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
-	return loadFeed(tx, bestFeedQuery, userID, limit, offset)
+func loadBestFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+	return &models.Feed{}
 }
 
 func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadBestFeed(tx, userID, *params.Limit, *params.Skip)
+			feed := loadBestFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadTlogFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset, tlog int64) *models.Feed {
-	if int64(*userID) == tlog {
-		return loadMyTlogFeed(tx, userID, limit, offset)
+func loadTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit, tlog int64) *models.Feed {
+	userID := int64(*uID)
+	if userID == tlog {
+		return loadMyTlogFeed(tx, uID, beforeS, afterS, limit)
 	}
 
-	return loadFeed(tx, tlogFeedQuery, userID, limit, offset, tlog)
+	before := parseFloat(beforeS)
+	after := parseFloat(afterS)
+
+	var q string
+	var arg float64
+	if before > 0 {
+		q = tlogFeedQuery + " AND entries.created_at < to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
+		arg = before
+	} else {
+		q = tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
+		arg = after
+	}
+
+	tx.Query(q, userID, tlog, arg, limit)
+
+	feed := loadFeed(tx, userID)
+
+	if len(feed.Entries) == 0 {
+		return feed
+	}
+
+	const beforeQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+	` + tlogFeedQueryWhere + " AND entries.created_at < to_timestamp($1))"
+
+	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+	feed.NextBefore = formatFloat(nextBefore)
+	tx.Query(beforeQuery, nextBefore, tlog)
+	tx.Scan(&feed.HasBefore)
+
+	const afterQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+	` + tlogFeedQueryWhere + " AND entries.created_at > to_timestamp($1))"
+
+	nextAfter := feed.Entries[0].CreatedAt
+	feed.NextAfter = formatFloat(nextAfter)
+	tx.Query(afterQuery, nextAfter, tlog)
+	tx.Scan(&feed.HasAfter)
+
+	return feed
 }
 
 func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadTlogFeed(tx, userID, *params.Limit, *params.Skip, params.ID)
+			feed := loadTlogFeed(tx, userID, *params.Before, *params.After, *params.Limit, params.ID)
 			return entries.NewGetEntriesUsersIDOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadMyTlogFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
-	return loadFeed(tx, myTlogFeedQuery, userID, limit, offset)
+func loadMyTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+	before := parseFloat(beforeS)
+	after := parseFloat(afterS)
+
+	var q string
+	var arg float64
+	if before > 0 {
+		q = myTlogFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = before
+	} else {
+		q = myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = after
+	}
+
+	userID := int64(*uID)
+	tx.Query(q, userID, arg, limit)
+
+	feed := loadFeed(tx, userID)
+
+	if len(feed.Entries) == 0 {
+		return feed
+	}
+
+	const beforeQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+	` + myTlogFeedQueryWhere + " AND created_at < to_timestamp($2))"
+
+	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+	feed.NextBefore = formatFloat(nextBefore)
+	tx.Query(beforeQuery, userID, nextBefore)
+	tx.Scan(&feed.HasBefore)
+
+	const afterQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+	` + myTlogFeedQueryWhere + " AND created_at > to_timestamp($2))"
+
+	nextAfter := feed.Entries[0].CreatedAt
+	feed.NextAfter = formatFloat(nextAfter)
+	tx.Query(afterQuery, userID, nextAfter)
+	tx.Scan(&feed.HasAfter)
+
+	return feed
 }
 
 func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersMeParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadMyTlogFeed(tx, userID, *params.Limit, *params.Skip)
+			feed := loadMyTlogFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesUsersMeForbidden()
@@ -193,14 +341,60 @@ func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.U
 	}
 }
 
-func loadFriendsFeed(tx *utils.AutoTx, userID *models.UserID, limit, offset int64) *models.Feed {
-	return loadFeed(tx, friendsFeedQuery, userID, limit, offset)
+func loadFriendsFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+	before := parseFloat(beforeS)
+	after := parseFloat(afterS)
+
+	var q string
+	var arg float64
+	if before > 0 {
+		q = friendsFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = before
+	} else {
+		q = friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		arg = after
+	}
+
+	userID := int64(*uID)
+	tx.Query(q, userID, arg, limit)
+
+	feed := loadFeed(tx, userID)
+
+	if len(feed.Entries) == 0 {
+		return feed
+	}
+
+	const beforeQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+	` + friendsFeedQueryWhere + " AND entries.created_at < to_timestamp($2))"
+
+	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+	feed.NextBefore = formatFloat(nextBefore)
+	tx.Query(beforeQuery, userID, nextBefore)
+	tx.Scan(&feed.HasBefore)
+
+	const afterQuery = `SELECT EXISTS(
+		SELECT 1 
+		FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+	` + friendsFeedQueryWhere + " AND entries.created_at > to_timestamp($2))"
+
+	nextAfter := feed.Entries[0].CreatedAt
+	feed.NextAfter = formatFloat(nextAfter)
+	tx.Query(afterQuery, userID, nextAfter)
+	tx.Scan(&feed.HasAfter)
+
+	return feed
 }
 
 func newFriendsFeedLoader(db *sql.DB) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesFriendsParams, userID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadFriendsFeed(tx, userID, *params.Limit, *params.Skip)
+			feed := loadFriendsFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
 		})
 	}

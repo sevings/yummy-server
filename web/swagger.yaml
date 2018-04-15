@@ -257,6 +257,14 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Entry'
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
   VoteStatus:
     type: object
     properties:
@@ -1191,7 +1199,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
@@ -1208,7 +1217,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
@@ -1225,7 +1235,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
@@ -1245,7 +1256,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/longerThan'
         - $ref: '#/parameters/shorterThan'
@@ -1294,7 +1306,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
       security:
@@ -1316,7 +1329,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
       security:
@@ -1338,7 +1352,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1358,7 +1373,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1376,7 +1392,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
       security:
         - ApiKeyHeader: []
@@ -1439,7 +1456,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1457,7 +1475,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:

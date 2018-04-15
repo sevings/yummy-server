@@ -167,12 +167,12 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models
 func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
 	var list []*models.Comment
 
-	before, err := strconv.ParseInt(beforeS, 10, 8)
+	before, err := strconv.ParseInt(beforeS, 10, 64)
 	if len(beforeS) > 0 && err != nil {
 		log.Printf("error parse before: %s", beforeS)
 	}
 
-	after, err := strconv.ParseInt(afterS, 10, 8)
+	after, err := strconv.ParseInt(afterS, 10, 64)
 	if len(afterS) > 0 && err != nil {
 		log.Printf("error parse after: %s", afterS)
 	}
