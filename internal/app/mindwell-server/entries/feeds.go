@@ -239,35 +239,49 @@ func loadTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, 
 
 	feed := loadFeed(tx, userID)
 
+	const scrollQ = `FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+		` + tlogFeedQueryWhere + " AND entries.created_at "
+
 	if len(feed.Entries) == 0 {
-		return feed
+		if before > 0 {
+			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` >= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(afterQuery, before, tlog)
+			var nextAfter float64
+			tx.Scan(&nextAfter)
+			feed.NextAfter = formatFloat(nextAfter)
+		}
+
+		if after > 0 {
+			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` <= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(beforeQuery, after, tlog)
+			var nextBefore float64
+			tx.Scan(&nextBefore)
+			feed.NextBefore = formatFloat(nextBefore)
+		}
+	} else {
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($1))"
+
+		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+		feed.NextBefore = formatFloat(nextBefore)
+		tx.Query(beforeQuery, nextBefore, tlog)
+		tx.Scan(&feed.HasBefore)
+
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($1))"
+
+		nextAfter := feed.Entries[0].CreatedAt
+		feed.NextAfter = formatFloat(nextAfter)
+		tx.Query(afterQuery, nextAfter, tlog)
+		tx.Scan(&feed.HasAfter)
 	}
-
-	const beforeQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + tlogFeedQueryWhere + " AND entries.created_at < to_timestamp($1))"
-
-	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-	feed.NextBefore = formatFloat(nextBefore)
-	tx.Query(beforeQuery, nextBefore, tlog)
-	tx.Scan(&feed.HasBefore)
-
-	const afterQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + tlogFeedQueryWhere + " AND entries.created_at > to_timestamp($1))"
-
-	nextAfter := feed.Entries[0].CreatedAt
-	feed.NextAfter = formatFloat(nextAfter)
-	tx.Query(afterQuery, nextAfter, tlog)
-	tx.Scan(&feed.HasAfter)
 
 	return feed
 }
@@ -300,29 +314,45 @@ func loadMyTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string
 
 	feed := loadFeed(tx, userID)
 
+	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
+
 	if len(feed.Entries) == 0 {
-		return feed
+		if before > 0 {
+			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` >= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(afterQuery, userID, before)
+			var nextAfter float64
+			tx.Scan(&nextAfter)
+			feed.NextAfter = formatFloat(nextAfter)
+		}
+
+		if after > 0 {
+			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` <= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(beforeQuery, userID, after)
+			var nextBefore float64
+			tx.Scan(&nextBefore)
+			feed.NextBefore = formatFloat(nextBefore)
+		}
+	} else {
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "	< to_timestamp($2))"
+
+		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+		feed.NextBefore = formatFloat(nextBefore)
+		tx.Query(beforeQuery, userID, nextBefore)
+		tx.Scan(&feed.HasBefore)
+
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
+
+		nextAfter := feed.Entries[0].CreatedAt
+		feed.NextAfter = formatFloat(nextAfter)
+		tx.Query(afterQuery, userID, nextAfter)
+		tx.Scan(&feed.HasAfter)
 	}
-
-	const beforeQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-	` + myTlogFeedQueryWhere + " AND created_at < to_timestamp($2))"
-
-	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-	feed.NextBefore = formatFloat(nextBefore)
-	tx.Query(beforeQuery, userID, nextBefore)
-	tx.Scan(&feed.HasBefore)
-
-	const afterQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-	` + myTlogFeedQueryWhere + " AND created_at > to_timestamp($2))"
-
-	nextAfter := feed.Entries[0].CreatedAt
-	feed.NextAfter = formatFloat(nextAfter)
-	tx.Query(afterQuery, userID, nextAfter)
-	tx.Scan(&feed.HasAfter)
 
 	return feed
 }
@@ -360,33 +390,48 @@ func loadFriendsFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS strin
 
 	feed := loadFeed(tx, userID)
 
+	const scrollQ = `FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		` + friendsFeedQueryWhere + " AND entries.created_at"
+
 	if len(feed.Entries) == 0 {
-		return feed
+		if before > 0 {
+			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` >= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(afterQuery, userID, before)
+			var nextAfter float64
+			tx.Scan(&nextAfter)
+			feed.NextAfter = formatFloat(nextAfter)
+		}
+
+		if after > 0 {
+			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
+				` <= to_timestamp($1)
+				ORDER BY entries.created_at DESC LIMIT 1`
+
+			tx.Query(beforeQuery, userID, after)
+			var nextBefore float64
+			tx.Scan(&nextBefore)
+			feed.NextBefore = formatFloat(nextBefore)
+		}
+	} else {
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < to_timestamp($2))"
+
+		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+		feed.NextBefore = formatFloat(nextBefore)
+		tx.Query(beforeQuery, userID, nextBefore)
+		tx.Scan(&feed.HasBefore)
+
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
+
+		nextAfter := feed.Entries[0].CreatedAt
+		feed.NextAfter = formatFloat(nextAfter)
+		tx.Query(afterQuery, userID, nextAfter)
+		tx.Scan(&feed.HasAfter)
 	}
-
-	const beforeQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-	` + friendsFeedQueryWhere + " AND entries.created_at < to_timestamp($2))"
-
-	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-	feed.NextBefore = formatFloat(nextBefore)
-	tx.Query(beforeQuery, userID, nextBefore)
-	tx.Scan(&feed.HasBefore)
-
-	const afterQuery = `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-	` + friendsFeedQueryWhere + " AND entries.created_at > to_timestamp($2))"
-
-	nextAfter := feed.Entries[0].CreatedAt
-	feed.NextAfter = formatFloat(nextAfter)
-	tx.Query(afterQuery, userID, nextAfter)
-	tx.Scan(&feed.HasAfter)
 
 	return feed
 }
