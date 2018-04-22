@@ -258,7 +258,7 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 	const q = `
 		INSERT INTO comments (author_id, entry_id, content)
 		VALUES ($1, $2, $3)
-		RETURNING id, created_at`
+		RETURNING id, extract(epoch from created_at)`
 
 	comment := models.Comment{
 		Author:  author,
