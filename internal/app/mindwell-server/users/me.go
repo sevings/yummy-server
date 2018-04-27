@@ -1,10 +1,17 @@
 package users
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
+	"log"
+	"net/http"
+	"os"
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
@@ -91,6 +98,60 @@ func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middlewar
 			return me.NewGetUsersMeOK().WithPayload(user)
 		})
 	}
+}
+
+func storeAvatar(tx *utils.AutoTx, userID int64, avatar *runtime.File) error {
+	var oldPath string
+	tx.Query("select avatar_path from users where id = $1", userID).Scan(&oldPath)
+
+	if err := os.Remove(oldPath); err != nil {
+		log.Print(err)
+	}
+
+	// imaginary -a 127.0.0.1 -p 7000 -mount $HOME/images -http-cache-ttl 31556926 -enable-url-signature -url-signature-key 4f46feebafc4b5e988f131c4ff8b5997 -url-signature-salt 88f131c4ff8b59974f46feebafc4b5e9
+	signKey := "4f46feebafc4b5e988f131c4ff8b5997"
+	signSalt := "88f131c4ff8b59974f46feebafc4b5e9"
+	urlPath := "/thumbnail"
+	urlQuery := "width=1280&height=1280&type=jpeg"
+
+	h := hmac.New(sha256.New, []byte(signKey))
+	h.Write([]byte(urlPath))
+	h.Write([]byte(urlQuery))
+	h.Write([]byte(signSalt))
+	buf := h.Sum(nil)
+	sign := base64.RawURLEncoding.EncodeToString(buf)
+
+	url := "http://127.0.0.1:7000" + urlPath + "?" + urlQuery + "&sign=" + sign
+	req, err := http.NewRequest("POST", url, avatar.Data)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultTransport.RoundTrip(req)
+	if err != nil {
+		return err
+	}
+
+	image := make([]byte, 0)
+	_, err = resp.Body.Read(image)
+	resp.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	path := "a/aaaaa.jpeg"
+	file, err := os.Create("../avatars/" + path)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(image)
+	if err != nil {
+		return err
+	}
+
+	tx.Exec("update users set avatar = $1, avatar_path = $2 where id = $3", "/avatars/"+path, path, userID)
+	return nil
 }
 
 func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
