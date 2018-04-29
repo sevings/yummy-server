@@ -1,10 +1,13 @@
 package utils
 
 import (
+	"database/sql"
 	"log"
+	"math/rand"
 
 	goconf "github.com/zpatrick/go-config"
 
+	"github.com/go-openapi/errors"
 	"github.com/sevings/mindwell-server/models"
 
 	// to use postgres
@@ -49,4 +52,52 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 	tx.Query(q, userID, entryID).Scan(&allowed)
 
 	return allowed
+}
+
+func NewKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
+	const q = `
+		SELECT id
+		FROM users
+		WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
+
+	return func(apiKey string) (*models.UserID, error) {
+		var id int64
+		err := db.QueryRow(q, apiKey).Scan(&id)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Print(err)
+			}
+
+			return nil, errors.New(401, "Unauthorized")
+		}
+
+		userID := models.UserID(id)
+		return &userID, nil
+	}
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+)
+
+// GenerateString returns random string
+func GenerateString(length int) string {
+	b := make([]byte, length)
+	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
+	for i, cache, remain := len(b)-1, rand.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = rand.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return string(b)
 }

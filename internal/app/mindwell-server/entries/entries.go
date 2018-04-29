@@ -11,10 +11,10 @@ import (
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers

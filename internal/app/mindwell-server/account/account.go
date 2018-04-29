@@ -4,7 +4,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 
@@ -12,10 +11,10 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
@@ -103,31 +102,6 @@ func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
 	return userID, rows == 1
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-func generateString(length int) string {
-	b := make([]byte, length)
-	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
-	for i, cache, remain := len(b)-1, rand.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = rand.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-
-	return string(b)
-}
-
 func passwordHash(password string) []byte {
 	const salt = "RZZer3fSMd1K0DZpYdJe"
 	sum := sha256.Sum256([]byte(password + salt))
@@ -151,7 +125,7 @@ func generateAvatar(name, gender string) string {
 		log.Print(err)
 	}
 
-	path := "/avatars/" + name[:1] + "/" + generateString(5) + ".png"
+	path := "/avatars/" + name[:1] + "/" + utils.GenerateString(5) + ".png"
 	err = govatar.GenerateFileFromUsername(g, name, ".."+path)
 	if err != nil {
 		log.Print(err)
@@ -162,7 +136,7 @@ func generateAvatar(name, gender string) string {
 
 func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
 	hash := passwordHash(params.Password)
-	apiKey := generateString(32)
+	apiKey := utils.GenerateString(32)
 
 	const q = `
 		INSERT INTO users 

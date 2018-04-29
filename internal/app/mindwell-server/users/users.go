@@ -2,20 +2,18 @@ package users
 
 import (
 	"database/sql"
-	"log"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.APIKeyHeaderAuth = newKeyAuth(db)
+	api.APIKeyHeaderAuth = utils.NewKeyAuth(db)
 
 	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
 	api.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(db))
@@ -120,28 +118,6 @@ func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{
 
 		return result
 	})
-}
-
-func newKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
-	const q = `
-		SELECT id
-		FROM users
-		WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
-
-	return func(apiKey string) (*models.UserID, error) {
-		var id int64
-		err := db.QueryRow(q, apiKey).Scan(&id)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.Print(err)
-			}
-
-			return nil, errors.New(401, "Unauthorized")
-		}
-
-		userID := models.UserID(id)
-		return &userID, nil
-	}
 }
 
 const relationToIDQuery = `

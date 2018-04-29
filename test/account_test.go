@@ -13,9 +13,9 @@ import (
 	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
 	relationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/relations"
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
 	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
+	"github.com/sevings/mindwell-server/utils"
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"

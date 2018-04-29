@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
 )
 
