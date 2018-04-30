@@ -112,8 +112,9 @@ func NewAvatar(avatar string) *models.Avatar {
 	}
 
 	return &models.Avatar{
-		Nr400: base + "400/" + avatar,
-		Nr800: base + "800/" + avatar,
+		X100: base + "100/" + avatar,
+		X400: base + "400/" + avatar,
+		X800: base + "800/" + avatar,
 	}
 }
 

@@ -27,9 +27,11 @@ definitions:
   Avatar:
     type: object
     properties:
-      '800':
+      x800:
         type: string
-      '400':
+      x400:
+        type: string
+      x100:
         type: string
   User:
     type: object
