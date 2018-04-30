@@ -24,6 +24,13 @@ definitions:
     pattern: '#[0-9a-fA-F]{6}'
     example: '#373737'
     description: color in rgb
+  Avatar:
+    type: object
+    properties:
+      '800':
+        type: string
+      '400':
+        type: string
   User:
     type: object
     properties:
@@ -42,7 +49,7 @@ definitions:
       isOnline:
         type: boolean
       avatar:
-        type: string
+        $ref: '#/definitions/Avatar'
     example:
       id: 1
       name: 'binque'
@@ -875,9 +882,6 @@ paths:
           enum: [male, female, not set]
           default: 'not set'
         - in: formData
-          name: avatar
-          type: file
-        - in: formData
           name: isDaylog
           type: boolean
           default: false
@@ -917,6 +921,27 @@ paths:
             $ref: '#/definitions/Profile'
         403:
           description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+  /users/me/avatar:
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: file
+          type: file
+      responses:
+        200:
+          description: Avatar
+          schema:
+            $ref: '#/definitions/Avatar'
+        400:
+          description: bad request
           schema:
             $ref: '#/definitions/Error'
   /users/me/followers:

@@ -69,10 +69,12 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 	var textColor string
 
 	var age sql.NullInt64
+	var avatar string
+	var invitedAvatar string
 
 	tx.Query(query, arg)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
+		&avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -87,10 +89,13 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
+		&invitedAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
+
+	profile.Avatar = utils.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
@@ -211,13 +216,15 @@ func loadRelatedUsers(tx *utils.AutoTx, usersQuery, subjectQuery, relation strin
 
 	for {
 		var user models.User
+		var avatar string
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
 			&user.IsOnline,
-			&user.Avatar)
+			&avatar)
 		if !ok {
 			break
 		}
 
+		user.Avatar = utils.NewAvatar(avatar)
 		list.Users = append(list.Users, &user)
 	}
 
@@ -260,11 +267,13 @@ const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
 
 func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
+	var avatar string
 
 	tx.Query(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
-		&user.Avatar)
+		&avatar)
 
+	user.Avatar = utils.NewAvatar(avatar)
 	return &user
 }
 

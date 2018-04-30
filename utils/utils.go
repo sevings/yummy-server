@@ -14,6 +14,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var cfg *goconf.Config
+
 // LoadConfig creates app config from file
 func LoadConfig(fileName string) *goconf.Config {
 	toml := goconf.NewTOMLFile(fileName + ".toml")
@@ -22,6 +24,7 @@ func LoadConfig(fileName string) *goconf.Config {
 	if err := config.Load(); err != nil {
 		log.Fatal(err)
 	}
+	cfg = config
 	return config
 }
 
@@ -100,4 +103,25 @@ func GenerateString(length int) string {
 	}
 
 	return string(b)
+}
+
+func NewAvatar(avatar string) *models.Avatar {
+	base, err := cfg.String("images.base_url")
+	if err != nil {
+		log.Print(err)
+	}
+
+	return &models.Avatar{
+		Nr400: base + "400/" + avatar,
+		Nr800: base + "800/" + avatar,
+	}
+}
+
+func ImagesFolder() string {
+	folder, err := cfg.String("images.folder")
+	if err != nil {
+		log.Print(err)
+	}
+
+	return folder
 }

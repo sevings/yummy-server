@@ -3,10 +3,13 @@ package account
 import (
 	"crypto/sha256"
 	"database/sql"
+	"image"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/o1egl/govatar"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -108,6 +111,19 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
+func saveAvatar(img image.Image, size int, folder, name string) {
+	path := utils.ImagesFolder() + strconv.Itoa(size) + "/" + folder
+	err := os.MkdirAll(path, 0777)
+	if err != nil {
+		log.Print(err)
+	}
+
+	err = imaging.Save(img, path+name, imaging.JPEGQuality(90))
+	if err != nil {
+		log.Print(err)
+	}
+}
+
 func generateAvatar(name, gender string) string {
 	var g govatar.Gender
 	if gender == models.ProfileAllOf1GenderMale {
@@ -120,18 +136,18 @@ func generateAvatar(name, gender string) string {
 		g = govatar.MALE
 	}
 
-	err := os.MkdirAll("../avatars/"+name[:1], 0777)
+	img, err := govatar.GenerateFromUsername(g, name)
 	if err != nil {
 		log.Print(err)
 	}
 
-	path := "/avatars/" + name[:1] + "/" + utils.GenerateString(5) + ".png"
-	err = govatar.GenerateFileFromUsername(g, name, ".."+path)
-	if err != nil {
-		log.Print(err)
-	}
+	folder := name[:1] + "/"
+	fileName := utils.GenerateString(5) + ".jpg"
 
-	return path
+	saveAvatar(img, 400, folder, fileName)
+	saveAvatar(img, 800, folder, fileName)
+
+	return folder + fileName
 }
 
 func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
@@ -212,10 +228,12 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 
 	var age sql.NullInt64
 	var bday sql.NullString
+	var avatar string
+	var invitedAvatar string
 
 	tx.Query(query, args...)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
+		&avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -232,10 +250,12 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
+		&invitedAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
+	profile.Avatar = utils.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
 	if bday.Valid {
 		profile.Birthday = bday.String

@@ -188,13 +188,14 @@ func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 	var entry models.Entry
 	var author models.User
 	var vote sql.NullFloat64
+	var avatar string
 	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
 		&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
 		&entry.Privacy,
 		&entry.IsVotable, &entry.CommentCount,
 		&author.ID, &author.Name, &author.ShowName,
 		&author.IsOnline,
-		&author.Avatar,
+		&avatar,
 		&vote, &entry.IsFavorited, &entry.IsWatching)
 
 	if author.ID != userID {
@@ -203,6 +204,7 @@ func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 
 	entry.Vote = entryVoteStatus(author.ID, userID, vote)
 
+	author.Avatar = utils.NewAvatar(avatar)
 	entry.Author = &author
 
 	cmt := comments.LoadEntryComments(tx, userID, entryID, 5, "", "")

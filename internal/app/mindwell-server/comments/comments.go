@@ -54,6 +54,7 @@ func loadComment(tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullBool
+	var avatar string
 	comment := models.Comment{
 		Author: &models.User{},
 	}
@@ -63,9 +64,10 @@ func loadComment(tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
-		&comment.Author.Avatar)
+		&avatar)
 
 	comment.Vote = commentVote(userID, comment.Author.ID, vote)
+	comment.Author.Avatar = utils.NewAvatar(avatar)
 	return &comment
 }
 
@@ -196,17 +198,19 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, b
 	for {
 		comment := models.Comment{Author: &models.User{}}
 		var vote sql.NullBool
+		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.Rating,
 			&vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
-			&comment.Author.Avatar)
+			&avatar)
 		if !ok {
 			break
 		}
 
 		comment.Vote = commentVote(userID, comment.Author.ID, vote)
+		comment.Author.Avatar = utils.NewAvatar(avatar)
 		list = append(list, &comment)
 	}
 
