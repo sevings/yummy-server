@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
+	"github.com/sevings/mindwell-server/utils"
 
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
@@ -50,10 +50,12 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 
 	var age sql.NullInt64
 	var bday sql.NullString
+	var avatar string
+	var invitedAvatar string
 
 	tx.Query(q, *userID)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
+		&avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -69,10 +71,13 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
+		&invitedAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
+
+	profile.Avatar = utils.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
 	if bday.Valid {
 		profile.Birthday = bday.String

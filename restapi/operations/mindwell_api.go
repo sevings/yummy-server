@@ -241,6 +241,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePutUsersMeHandler: me.PutUsersMeHandlerFunc(func(params me.PutUsersMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutUsersMe has not yet been implemented")
 		}),
+		MePutUsersMeAvatarHandler: me.PutUsersMeAvatarHandlerFunc(func(params me.PutUsersMeAvatarParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutUsersMeAvatar has not yet been implemented")
+		}),
 		MePutUsersMeOnlineHandler: me.PutUsersMeOnlineHandlerFunc(func(params me.PutUsersMeOnlineParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutUsersMeOnline has not yet been implemented")
 		}),
@@ -420,6 +423,8 @@ type MindwellAPI struct {
 	RelationsPutRelationsToIDHandler relations.PutRelationsToIDHandler
 	// MePutUsersMeHandler sets the operation handler for the put users me operation
 	MePutUsersMeHandler me.PutUsersMeHandler
+	// MePutUsersMeAvatarHandler sets the operation handler for the put users me avatar operation
+	MePutUsersMeAvatarHandler me.PutUsersMeAvatarHandler
 	// MePutUsersMeOnlineHandler sets the operation handler for the put users me online operation
 	MePutUsersMeOnlineHandler me.PutUsersMeOnlineHandler
 
@@ -751,6 +756,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePutUsersMeHandler == nil {
 		unregistered = append(unregistered, "me.PutUsersMeHandler")
+	}
+
+	if o.MePutUsersMeAvatarHandler == nil {
+		unregistered = append(unregistered, "me.PutUsersMeAvatarHandler")
 	}
 
 	if o.MePutUsersMeOnlineHandler == nil {
@@ -1184,6 +1193,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/users/me"] = me.NewPutUsersMe(o.context, o.MePutUsersMeHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/users/me/avatar"] = me.NewPutUsersMeAvatar(o.context, o.MePutUsersMeAvatarHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

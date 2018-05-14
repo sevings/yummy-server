@@ -6,7 +6,6 @@ package me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"mime/multipart"
 	"net/http"
 
 	"github.com/go-openapi/errors"
@@ -56,10 +55,6 @@ type PutUsersMeParams struct {
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*
-	  In: formData
-	*/
-	Avatar *runtime.File
 	/*
 	  In: formData
 	  Default: ""
@@ -127,17 +122,6 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 	}
 	fds := runtime.Values(r.Form)
 
-	avatar, avatarHeader, err := r.FormFile("avatar")
-	if err != nil && err != http.ErrMissingFile {
-		res = append(res, errors.New(400, "reading file %q failed: %v", "avatar", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
-	} else if err := o.bindAvatar(avatar, avatarHeader); err != nil {
-		res = append(res, err)
-	} else {
-		o.Avatar = &runtime.File{Data: avatar, Header: avatarHeader}
-	}
-
 	fdBirthday, fdhkBirthday, _ := fds.GetOK("birthday")
 	if err := o.bindBirthday(fdBirthday, fdhkBirthday, route.Formats); err != nil {
 		res = append(res, err)
@@ -186,11 +170,6 @@ func (o *PutUsersMeParams) BindRequest(r *http.Request, route *middleware.Matche
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (o *PutUsersMeParams) bindAvatar(file multipart.File, header *multipart.FileHeader) error {
-
 	return nil
 }
 

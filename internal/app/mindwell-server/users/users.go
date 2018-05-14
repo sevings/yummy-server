@@ -2,20 +2,18 @@ package users
 
 import (
 	"database/sql"
-	"log"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.APIKeyHeaderAuth = newKeyAuth(db)
+	api.APIKeyHeaderAuth = utils.NewKeyAuth(db)
 
 	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
 	api.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(db))
@@ -71,10 +69,12 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 	var textColor string
 
 	var age sql.NullInt64
+	var avatar string
+	var invitedAvatar string
 
 	tx.Query(query, arg)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
+		&avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -89,10 +89,13 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
+		&invitedAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
+
+	profile.Avatar = utils.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
@@ -120,28 +123,6 @@ func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{
 
 		return result
 	})
-}
-
-func newKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
-	const q = `
-		SELECT id
-		FROM users
-		WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
-
-	return func(apiKey string) (*models.UserID, error) {
-		var id int64
-		err := db.QueryRow(q, apiKey).Scan(&id)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.Print(err)
-			}
-
-			return nil, errors.New(401, "Unauthorized")
-		}
-
-		userID := models.UserID(id)
-		return &userID, nil
-	}
 }
 
 const relationToIDQuery = `
@@ -235,13 +216,15 @@ func loadRelatedUsers(tx *utils.AutoTx, usersQuery, subjectQuery, relation strin
 
 	for {
 		var user models.User
+		var avatar string
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
 			&user.IsOnline,
-			&user.Avatar)
+			&avatar)
 		if !ok {
 			break
 		}
 
+		user.Avatar = utils.NewAvatar(avatar)
 		list.Users = append(list.Users, &user)
 	}
 
@@ -284,11 +267,13 @@ const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
 
 func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
+	var avatar string
 
 	tx.Query(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
 		&user.IsOnline,
-		&user.Avatar)
+		&avatar)
 
+	user.Avatar = utils.NewAvatar(avatar)
 	return &user
 }
 

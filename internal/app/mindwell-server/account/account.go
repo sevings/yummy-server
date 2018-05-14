@@ -3,19 +3,21 @@ package account
 import (
 	"crypto/sha256"
 	"database/sql"
+	"image"
 	"log"
-	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/o1egl/govatar"
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
@@ -103,35 +105,28 @@ func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
 	return userID, rows == 1
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-func generateString(length int) string {
-	b := make([]byte, length)
-	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
-	for i, cache, remain := len(b)-1, rand.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = rand.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-
-	return string(b)
-}
-
 func passwordHash(password string) []byte {
 	const salt = "RZZer3fSMd1K0DZpYdJe"
 	sum := sha256.Sum256([]byte(password + salt))
 	return sum[:]
+}
+
+func saveAvatar(img image.Image, size int, folder, name string) {
+	path := utils.ImagesFolder() + strconv.Itoa(size) + "/" + folder
+	err := os.MkdirAll(path, 0777)
+	if err != nil {
+		log.Print(err)
+	}
+
+	w := img.Bounds().Dx()
+	if size < w {
+		img = imaging.Resize(img, size, size, imaging.CatmullRom)
+	}
+
+	err = imaging.Save(img, path+name, imaging.JPEGQuality(90))
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 func generateAvatar(name, gender string) string {
@@ -146,23 +141,24 @@ func generateAvatar(name, gender string) string {
 		g = govatar.MALE
 	}
 
-	err := os.MkdirAll("../avatars/"+name[:1], 0777)
+	img, err := govatar.GenerateFromUsername(g, name)
 	if err != nil {
 		log.Print(err)
 	}
 
-	path := "/avatars/" + name[:1] + "/" + generateString(5) + ".png"
-	err = govatar.GenerateFileFromUsername(g, name, ".."+path)
-	if err != nil {
-		log.Print(err)
-	}
+	folder := name[:1] + "/"
+	fileName := utils.GenerateString(5) + ".jpg"
 
-	return path
+	saveAvatar(img, 800, folder, fileName)
+	saveAvatar(img, 400, folder, fileName)
+	saveAvatar(img, 100, folder, fileName)
+
+	return folder + fileName
 }
 
 func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
 	hash := passwordHash(params.Password)
-	apiKey := generateString(32)
+	apiKey := utils.GenerateString(32)
 
 	const q = `
 		INSERT INTO users 
@@ -238,10 +234,12 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 
 	var age sql.NullInt64
 	var bday sql.NullString
+	var avatar string
+	var invitedAvatar string
 
 	tx.Query(query, args...)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
-		&profile.Avatar,
+		&avatar,
 		&profile.Gender, &profile.IsDaylog,
 		&profile.Privacy,
 		&profile.Title, &profile.Karma,
@@ -258,10 +256,12 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
-		&profile.InvitedBy.Avatar)
+		&invitedAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
+	profile.Avatar = utils.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
 	if bday.Valid {
 		profile.Birthday = bday.String

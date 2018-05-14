@@ -2165,11 +2165,6 @@ func init() {
             "in": "formData"
           },
           {
-            "type": "file",
-            "name": "avatar",
-            "in": "formData"
-          },
-          {
             "type": "boolean",
             "default": false,
             "name": "isDaylog",
@@ -2229,6 +2224,42 @@ func init() {
           },
           "403": {
             "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users/me/avatar": {
+      "put": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "file",
+            "name": "file",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Avatar",
+            "schema": {
+              "$ref": "#/definitions/Avatar"
+            }
+          },
+          "400": {
+            "description": "bad request",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2636,6 +2667,20 @@ func init() {
         }
       ]
     },
+    "Avatar": {
+      "type": "object",
+      "properties": {
+        "x100": {
+          "type": "string"
+        },
+        "x400": {
+          "type": "string"
+        },
+        "x800": {
+          "type": "string"
+        }
+      }
+    },
     "Color": {
       "description": "color in rgb",
       "type": "string",
@@ -3042,7 +3087,7 @@ func init() {
       "type": "object",
       "properties": {
         "avatar": {
-          "type": "string"
+          "$ref": "#/definitions/Avatar"
         },
         "id": {
           "type": "integer",

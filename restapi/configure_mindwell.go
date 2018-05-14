@@ -20,8 +20,8 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/utils"
 	"github.com/sevings/mindwell-server/restapi/operations"
+	"github.com/sevings/mindwell-server/utils"
 
 	_ "github.com/lib/pq"
 )
