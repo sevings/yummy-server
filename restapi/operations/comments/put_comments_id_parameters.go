@@ -35,6 +35,7 @@ type PutCommentsIDParams struct {
 
 	/*
 	  Required: true
+	  Max Length: 1000
 	  Min Length: 1
 	  In: formData
 	*/
@@ -102,6 +103,10 @@ func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats
 func (o *PutCommentsIDParams) validateContent(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("content", "formData", o.Content, 1000); err != nil {
 		return err
 	}
 

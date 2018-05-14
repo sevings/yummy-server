@@ -41,6 +41,7 @@ type PostAccountLoginParams struct {
 	Name string
 	/*
 	  Required: true
+	  Max Length: 500
 	  Min Length: 6
 	  In: formData
 	*/
@@ -136,6 +137,10 @@ func (o *PostAccountLoginParams) bindPassword(rawData []string, hasKey bool, for
 func (o *PostAccountLoginParams) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("password", "formData", o.Password, 6); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("password", "formData", o.Password, 500); err != nil {
 		return err
 	}
 

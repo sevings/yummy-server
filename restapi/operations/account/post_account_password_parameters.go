@@ -34,12 +34,14 @@ type PostAccountPasswordParams struct {
 
 	/*
 	  Required: true
+	  Max Length: 100
 	  Min Length: 6
 	  In: formData
 	*/
 	NewPassword string
 	/*
 	  Required: true
+	  Max Length: 100
 	  Min Length: 6
 	  In: formData
 	*/
@@ -104,6 +106,10 @@ func (o *PostAccountPasswordParams) validateNewPassword(formats strfmt.Registry)
 		return err
 	}
 
+	if err := validate.MaxLength("new_password", "formData", o.NewPassword, 100); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -131,6 +137,10 @@ func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey boo
 func (o *PostAccountPasswordParams) validateOldPassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("old_password", "formData", o.OldPassword, 6); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("old_password", "formData", o.OldPassword, 100); err != nil {
 		return err
 	}
 

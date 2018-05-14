@@ -52,6 +52,7 @@ type PutEntriesIDParams struct {
 	/*
 	  Required: true
 	  Max Length: 30000
+	  Min Length: 1
 	  In: formData
 	*/
 	Content string
@@ -72,6 +73,7 @@ type PutEntriesIDParams struct {
 	*/
 	Privacy string
 	/*
+	  Max Length: 500
 	  In: formData
 	  Default: ""
 	*/
@@ -181,6 +183,10 @@ func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats 
 
 func (o *PutEntriesIDParams) validateContent(formats strfmt.Registry) error {
 
+	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
+		return err
+	}
+
 	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
 		return err
 	}
@@ -278,6 +284,19 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 	}
 
 	o.Title = &raw
+
+	if err := o.validateTitle(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutEntriesIDParams) validateTitle(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+		return err
+	}
 
 	return nil
 }

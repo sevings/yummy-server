@@ -50,6 +50,7 @@ type PutDesignParams struct {
 	*/
 	BackgroundColor *string
 	/*
+	  Max Length: 10000
 	  In: formData
 	  Default: ""
 	*/
@@ -167,6 +168,19 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 	}
 
 	o.CSS = &raw
+
+	if err := o.validateCSS(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PutDesignParams) validateCSS(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("css", "formData", (*o.CSS), 10000); err != nil {
+		return err
+	}
 
 	return nil
 }

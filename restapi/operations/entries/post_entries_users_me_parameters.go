@@ -44,6 +44,7 @@ type PostEntriesUsersMeParams struct {
 	/*
 	  Required: true
 	  Max Length: 30000
+	  Min Length: 1
 	  In: formData
 	*/
 	Content string
@@ -137,6 +138,10 @@ func (o *PostEntriesUsersMeParams) bindContent(rawData []string, hasKey bool, fo
 }
 
 func (o *PostEntriesUsersMeParams) validateContent(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
+		return err
+	}
 
 	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
 		return err

@@ -100,7 +100,7 @@ type PutUsersMeParams struct {
 	*/
 	ShowName string
 	/*
-	  Max Length: 260
+	  Max Length: 500
 	  In: formData
 	  Default: ""
 	*/
@@ -402,7 +402,7 @@ func (o *PutUsersMeParams) bindTitle(rawData []string, hasKey bool, formats strf
 
 func (o *PutUsersMeParams) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("title", "formData", (*o.Title), 260); err != nil {
+	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
 		return err
 	}
 

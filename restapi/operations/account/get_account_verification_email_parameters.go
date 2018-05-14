@@ -41,6 +41,7 @@ type GetAccountVerificationEmailParams struct {
 	Code string
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: path
 	*/
 	Email string
@@ -111,6 +112,19 @@ func (o *GetAccountVerificationEmailParams) bindEmail(rawData []string, hasKey b
 	}
 
 	o.Email = raw
+
+	if err := o.validateEmail(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetAccountVerificationEmailParams) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("email", "path", o.Email, 500); err != nil {
+		return err
+	}
 
 	return nil
 }
