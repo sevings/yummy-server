@@ -1148,6 +1148,10 @@ paths:
           description: your relationship with the user
           schema:
             $ref: '#/definitions/Relationship'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
         404:
           description: User not found
           schema:

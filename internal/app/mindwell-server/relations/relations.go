@@ -46,6 +46,11 @@ func newToRelationSetter(db *sql.DB) func(relations.PutRelationsToIDParams, *mod
 	return func(params relations.PutRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
+
+			if userID == params.ID {
+				return relations.NewPutRelationsToIDForbidden()
+			}
+
 			var relation *models.Relationship
 			var ok bool
 			if params.R == models.RelationshipRelationIgnored || !isPrivateTlog(tx, params.ID) {
