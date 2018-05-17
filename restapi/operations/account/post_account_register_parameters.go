@@ -47,17 +47,20 @@ type PostAccountRegisterParams struct {
 	*/
 	Birthday *string
 	/*
+	  Max Length: 50
 	  In: formData
 	  Default: ""
 	*/
 	City *string
 	/*
+	  Max Length: 50
 	  In: formData
 	  Default: ""
 	*/
 	Country *string
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: formData
 	*/
 	Email string
@@ -68,6 +71,7 @@ type PostAccountRegisterParams struct {
 	Gender *string
 	/*
 	  Required: true
+	  Max Length: 100
 	  In: formData
 	*/
 	Invite string
@@ -80,6 +84,7 @@ type PostAccountRegisterParams struct {
 	Name string
 	/*
 	  Required: true
+	  Max Length: 100
 	  Min Length: 6
 	  In: formData
 	*/
@@ -186,6 +191,19 @@ func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, form
 
 	o.City = &raw
 
+	if err := o.validateCity(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostAccountRegisterParams) validateCity(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("city", "formData", (*o.City), 50); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -201,6 +219,19 @@ func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, f
 	}
 
 	o.Country = &raw
+
+	if err := o.validateCountry(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostAccountRegisterParams) validateCountry(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("country", "formData", (*o.Country), 50); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -218,6 +249,19 @@ func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, for
 	}
 
 	o.Email = raw
+
+	if err := o.validateEmail(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostAccountRegisterParams) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -264,6 +308,19 @@ func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, fo
 	}
 
 	o.Invite = raw
+
+	if err := o.validateInvite(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostAccountRegisterParams) validateInvite(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("invite", "formData", o.Invite, 100); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -326,6 +383,10 @@ func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, 
 func (o *PostAccountRegisterParams) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("password", "formData", o.Password, 6); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("password", "formData", o.Password, 100); err != nil {
 		return err
 	}
 

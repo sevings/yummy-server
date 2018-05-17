@@ -47,10 +47,13 @@ type PostEntriesAnonymousParams struct {
 	AnonymousComments *bool
 	/*
 	  Required: true
+	  Max Length: 30000
+	  Min Length: 1
 	  In: formData
 	*/
 	Content string
 	/*
+	  Max Length: 500
 	  In: formData
 	  Default: ""
 	*/
@@ -127,6 +130,23 @@ func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, 
 
 	o.Content = raw
 
+	if err := o.validateContent(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostEntriesAnonymousParams) validateContent(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -142,6 +162,19 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 	}
 
 	o.Title = &raw
+
+	if err := o.validateTitle(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostEntriesAnonymousParams) validateTitle(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+		return err
+	}
 
 	return nil
 }

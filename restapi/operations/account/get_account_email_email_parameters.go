@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
@@ -32,6 +33,7 @@ type GetAccountEmailEmailParams struct {
 
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: path
 	*/
 	Email string
@@ -61,6 +63,19 @@ func (o *GetAccountEmailEmailParams) bindEmail(rawData []string, hasKey bool, fo
 	}
 
 	o.Email = raw
+
+	if err := o.validateEmail(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetAccountEmailEmailParams) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("email", "path", o.Email, 500); err != nil {
+		return err
+	}
 
 	return nil
 }

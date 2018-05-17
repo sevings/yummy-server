@@ -34,6 +34,7 @@ type PostAccountRecoverParams struct {
 
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: formData
 	*/
 	Email string
@@ -78,6 +79,19 @@ func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, form
 	}
 
 	o.Email = raw
+
+	if err := o.validateEmail(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *PostAccountRecoverParams) validateEmail(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
+		return err
+	}
 
 	return nil
 }

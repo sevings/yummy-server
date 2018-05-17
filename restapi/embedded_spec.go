@@ -38,6 +38,7 @@ func init() {
         "summary": "check if email is used",
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
             "name": "email",
             "in": "path",
@@ -123,6 +124,7 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "minLength": 6,
             "type": "string",
             "name": "password",
@@ -205,6 +207,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 100,
             "minLength": 6,
             "type": "string",
             "name": "old_password",
@@ -212,6 +215,7 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 100,
             "minLength": 6,
             "type": "string",
             "name": "new_password",
@@ -243,6 +247,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
             "name": "email",
             "in": "formData",
@@ -282,12 +287,14 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "email",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 100,
             "minLength": 6,
             "type": "string",
             "name": "password",
@@ -295,6 +302,7 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 100,
             "type": "string",
             "name": "invite",
             "in": "formData",
@@ -326,12 +334,14 @@ func init() {
             "in": "formData"
           },
           {
+            "maxLength": 50,
             "type": "string",
             "default": "",
             "name": "country",
             "in": "formData"
           },
           {
+            "maxLength": 50,
             "type": "string",
             "default": "",
             "name": "city",
@@ -391,6 +401,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
             "name": "email",
             "in": "path",
@@ -464,6 +475,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 1000,
             "minLength": 1,
             "type": "string",
             "name": "content",
@@ -596,6 +608,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 10000,
             "type": "string",
             "default": "",
             "name": "css",
@@ -698,12 +711,6 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
-          },
-          {
-            "$ref": "#/parameters/longerThan"
-          },
-          {
-            "$ref": "#/parameters/shorterThan"
           }
         ],
         "responses": {
@@ -730,12 +737,15 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
             "default": "",
             "name": "title",
             "in": "formData"
           },
           {
+            "maxLength": 30000,
+            "minLength": 1,
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -788,12 +798,6 @@ func init() {
             "$ref": "#/parameters/tag"
           },
           {
-            "$ref": "#/parameters/longerThan"
-          },
-          {
-            "$ref": "#/parameters/shorterThan"
-          },
-          {
             "type": "integer",
             "name": "min_rating",
             "in": "query"
@@ -831,12 +835,6 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
-          },
-          {
-            "$ref": "#/parameters/longerThan"
-          },
-          {
-            "$ref": "#/parameters/shorterThan"
           }
         ],
         "responses": {
@@ -871,12 +869,6 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
-          },
-          {
-            "$ref": "#/parameters/longerThan"
-          },
-          {
-            "$ref": "#/parameters/shorterThan"
           }
         ],
         "responses": {
@@ -1041,6 +1033,7 @@ func init() {
           },
           {
             "maxLength": 30000,
+            "minLength": 1,
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -1301,6 +1294,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 500,
             "type": "string",
             "default": "",
             "name": "title",
@@ -1308,6 +1302,7 @@ func init() {
           },
           {
             "maxLength": 30000,
+            "minLength": 1,
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -1454,6 +1449,7 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 1000,
             "minLength": 1,
             "type": "string",
             "name": "content",
@@ -1840,12 +1836,7 @@ func init() {
       },
       "parameters": [
         {
-          "minimum": 1,
-          "type": "integer",
-          "format": "int64",
-          "name": "id",
-          "in": "path",
-          "required": true
+          "$ref": "#/parameters/pathId"
         }
       ]
     },
@@ -2181,7 +2172,7 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 260,
+            "maxLength": 500,
             "type": "string",
             "default": "",
             "name": "title",
@@ -3207,11 +3198,6 @@ func init() {
       "name": "limit",
       "in": "query"
     },
-    "longerThan": {
-      "type": "integer",
-      "name": "longer_than",
-      "in": "query"
-    },
     "pathId": {
       "minimum": 1,
       "type": "integer",
@@ -3227,11 +3213,6 @@ func init() {
       "name": "name",
       "in": "path",
       "required": true
-    },
-    "shorterThan": {
-      "type": "integer",
-      "name": "shorter_than",
-      "in": "query"
     },
     "skip": {
       "type": "integer",

@@ -15,12 +15,10 @@ import (
 
 // GetEntriesAnonymousURL generates an URL for the get entries anonymous operation
 type GetEntriesAnonymousURL struct {
-	After       *string
-	Before      *string
-	Limit       *int64
-	LongerThan  *int64
-	ShorterThan *int64
-	Tag         *string
+	After  *string
+	Before *string
+	Limit  *int64
+	Tag    *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -78,22 +76,6 @@ func (o *GetEntriesAnonymousURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
-	}
-
-	var longerThan string
-	if o.LongerThan != nil {
-		longerThan = swag.FormatInt64(*o.LongerThan)
-	}
-	if longerThan != "" {
-		qs.Set("longer_than", longerThan)
-	}
-
-	var shorterThan string
-	if o.ShorterThan != nil {
-		shorterThan = swag.FormatInt64(*o.ShorterThan)
-	}
-	if shorterThan != "" {
-		qs.Set("shorter_than", shorterThan)
 	}
 
 	var tag string

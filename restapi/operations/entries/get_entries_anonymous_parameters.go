@@ -61,14 +61,6 @@ type GetEntriesAnonymousParams struct {
 	*/
 	Limit *int64
 	/*
-	  In: query
-	*/
-	LongerThan *int64
-	/*
-	  In: query
-	*/
-	ShorterThan *int64
-	/*
 	  Max Length: 50
 	  In: query
 	*/
@@ -95,16 +87,6 @@ func (o *GetEntriesAnonymousParams) BindRequest(r *http.Request, route *middlewa
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qLongerThan, qhkLongerThan, _ := qs.GetOK("longer_than")
-	if err := o.bindLongerThan(qLongerThan, qhkLongerThan, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qShorterThan, qhkShorterThan, _ := qs.GetOK("shorter_than")
-	if err := o.bindShorterThan(qShorterThan, qhkShorterThan, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -184,42 +166,6 @@ func (o *GetEntriesAnonymousParams) validateLimit(formats strfmt.Registry) error
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (o *GetEntriesAnonymousParams) bindLongerThan(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("longer_than", "query", "int64", raw)
-	}
-	o.LongerThan = &value
-
-	return nil
-}
-
-func (o *GetEntriesAnonymousParams) bindShorterThan(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("shorter_than", "query", "int64", raw)
-	}
-	o.ShorterThan = &value
 
 	return nil
 }

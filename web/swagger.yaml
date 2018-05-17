@@ -402,14 +402,6 @@ parameters:
     name: before
     type: string
     default: ""
-  longerThan:
-    in: query
-    name: longer_than
-    type: integer
-  shorterThan:
-    in: query
-    name: shorter_than
-    type: integer
   tag:
     in: query
     name: tag
@@ -430,6 +422,7 @@ paths:
           name: email
           type: string
           required: true
+          maxLength: 500
       tags:
         - account
       responses:
@@ -492,16 +485,19 @@ paths:
         - in: formData
           name: email
           type: string
+          maxLength: 500
           required: true
         - in: formData
           name: password
           type: string
           minLength: 6
+          maxLength: 100
           required: true
         - in: formData
           name: invite
           type: string
           required: true
+          maxLength: 100
         - in: formData
           name: referrer
           type: string
@@ -521,10 +517,12 @@ paths:
           name: country
           type: string
           default: ''
+          maxLength: 50
         - in: formData
           name: city
           type: string
           default: ''
+          maxLength: 50
       tags:
         - account
       responses:
@@ -552,6 +550,7 @@ paths:
           name: password
           type: string
           minLength: 6
+          maxLength: 500
           required: true
       tags:
         - account
@@ -585,6 +584,7 @@ paths:
         - in: path
           type: string
           name: email
+          maxLength: 500
           required: true
         - in: query
           type: string
@@ -614,11 +614,13 @@ paths:
           type: string
           name: old_password
           minLength: 6
+          maxLength: 100
           required: true
         - in: formData
           type: string
           name: new_password
           minLength: 6
+          maxLength: 100
           required: true
       security:
         - ApiKeyHeader: []
@@ -640,6 +642,7 @@ paths:
         - in: formData
           name: email
           type: string
+          maxLength: 500
           required: true
       tags:
         - account
@@ -895,7 +898,7 @@ paths:
         - in: formData
           name: title
           type: string
-          maxLength: 260
+          maxLength: 500
           default: ''
         - in: formData
           name: birthday
@@ -1065,6 +1068,7 @@ paths:
           name: css
           type: string
           default: ''
+          maxLength: 10000
         - in: formData
           name: backgroundColor
           type: string
@@ -1164,12 +1168,7 @@ paths:
             $ref: '#/definitions/Error'
   /relations/from/{id}:
     parameters:
-      - in: path
-        name: id
-        type: integer
-        format: int64
-        minimum: 1
-        required: true
+      - $ref: '#/parameters/pathId'
     get:
       security:
         - ApiKeyHeader: []
@@ -1229,8 +1228,6 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/longerThan'
-        - $ref: '#/parameters/shorterThan'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1247,8 +1244,6 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/longerThan'
-        - $ref: '#/parameters/shorterThan'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1265,8 +1260,6 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/longerThan'
-        - $ref: '#/parameters/shorterThan'
         - in: query
           name: min_rating
           type: integer
@@ -1286,8 +1279,6 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/longerThan'
-        - $ref: '#/parameters/shorterThan'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1310,9 +1301,12 @@ paths:
           name: title
           type: string
           default: ''
+          maxLength: 500
         - in: formData
           name: content
           type: string
+          minLength: 1
+          maxLength: 30000
           required: true
         - in: formData
           name: anonymous_comments
@@ -1453,6 +1447,7 @@ paths:
           name: content
           type: string
           required: true
+          minLength: 1
           maxLength: 30000
         - in: formData
           name: privacy
@@ -1551,10 +1546,12 @@ paths:
           name: title
           type: string
           default: ''
+          maxLength: 500
         - in: formData
           name: content
           type: string
           required: true
+          minLength: 1
           maxLength: 30000
         - in: formData
           name: privacy
@@ -1787,6 +1784,7 @@ paths:
           name: content
           type: string
           minLength: 1
+          maxLength: 1000
           required: true
       security:
         - ApiKeyHeader: []
@@ -1835,6 +1833,7 @@ paths:
           name: content
           type: string
           minLength: 1
+          maxLength: 1000
           required: true
       security:
         - ApiKeyHeader: []
