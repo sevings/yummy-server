@@ -212,6 +212,7 @@ entries_count, followings_count, followers_count,
 ignored_count, invited_count, comments_count, 
 favorites_count, tags_count,
 country, city,
+cover,
 css, background_color, text_color, 
 font_family, font_size, text_alignment, 
 email, verified, birthday,
@@ -249,6 +250,7 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
+		&profile.Cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
@@ -270,6 +272,10 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 4
+	}
+
+	if len(profile.Cover) == 0 {
+		profile.Cover = utils.DefaultCover()
 	}
 
 	return &profile

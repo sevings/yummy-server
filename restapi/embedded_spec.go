@@ -2258,6 +2258,52 @@ func init() {
         }
       }
     },
+    "/users/me/cover": {
+      "put": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "file",
+            "name": "file",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cover",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "cover": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "minimum": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/users/me/followers": {
       "get": {
         "tags": [
@@ -2954,6 +3000,9 @@ func init() {
                   "type": "integer"
                 }
               }
+            },
+            "cover": {
+              "type": "string"
             },
             "createdAt": {
               "type": "number",

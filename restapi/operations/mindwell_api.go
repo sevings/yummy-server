@@ -244,6 +244,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePutUsersMeAvatarHandler: me.PutUsersMeAvatarHandlerFunc(func(params me.PutUsersMeAvatarParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutUsersMeAvatar has not yet been implemented")
 		}),
+		MePutUsersMeCoverHandler: me.PutUsersMeCoverHandlerFunc(func(params me.PutUsersMeCoverParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutUsersMeCover has not yet been implemented")
+		}),
 		MePutUsersMeOnlineHandler: me.PutUsersMeOnlineHandlerFunc(func(params me.PutUsersMeOnlineParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutUsersMeOnline has not yet been implemented")
 		}),
@@ -425,6 +428,8 @@ type MindwellAPI struct {
 	MePutUsersMeHandler me.PutUsersMeHandler
 	// MePutUsersMeAvatarHandler sets the operation handler for the put users me avatar operation
 	MePutUsersMeAvatarHandler me.PutUsersMeAvatarHandler
+	// MePutUsersMeCoverHandler sets the operation handler for the put users me cover operation
+	MePutUsersMeCoverHandler me.PutUsersMeCoverHandler
 	// MePutUsersMeOnlineHandler sets the operation handler for the put users me online operation
 	MePutUsersMeOnlineHandler me.PutUsersMeOnlineHandler
 
@@ -760,6 +765,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePutUsersMeAvatarHandler == nil {
 		unregistered = append(unregistered, "me.PutUsersMeAvatarHandler")
+	}
+
+	if o.MePutUsersMeCoverHandler == nil {
+		unregistered = append(unregistered, "me.PutUsersMeCoverHandler")
 	}
 
 	if o.MePutUsersMeOnlineHandler == nil {
@@ -1198,6 +1207,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/users/me/avatar"] = me.NewPutUsersMeAvatar(o.context, o.MePutUsersMeAvatarHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/users/me/cover"] = me.NewPutUsersMeCover(o.context, o.MePutUsersMeCoverHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

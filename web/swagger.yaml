@@ -108,6 +108,8 @@ definitions:
             maxLength: 50
           design:
             $ref: '#/definitions/Design'
+          cover:
+            type: string
           counts:
             type: object
             properties:
@@ -943,6 +945,34 @@ paths:
           description: Avatar
           schema:
             $ref: '#/definitions/Avatar'
+        400:
+          description: bad request
+          schema:
+            $ref: '#/definitions/Error'
+  /users/me/cover:
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: file
+          type: file
+      responses:
+        200:
+          description: Cover
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+                minimum: 1
+              cover:
+                type: string
         400:
           description: bad request
           schema:

@@ -125,3 +125,12 @@ func ImagesFolder() string {
 
 	return folder
 }
+
+func DefaultCover() string {
+	cover, err := cfg.String("images.cover")
+	if err != nil {
+		log.Print(err)
+	}
+
+	return cover
+}

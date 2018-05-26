@@ -23,6 +23,7 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 	ignored_count, invited_count, comments_count, 
 	favorites_count, tags_count,
 	country, city,
+	cover,
 	css, background_color, text_color, 
 	font_family, font_size, text_alignment, 
 	birthday,
@@ -58,6 +59,7 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
+		&profile.Cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&bday,
@@ -79,6 +81,10 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
+	}
+
+	if len(profile.Cover) == 0 {
+		profile.Cover = utils.DefaultCover()
 	}
 
 	return &profile

@@ -51,6 +51,7 @@ entries_count, followings_count, followers_count,
 ignored_count, invited_count, comments_count, 
 favorites_count, tags_count,
 country, city,
+cover,
 css, background_color, text_color, 
 font_family, font_size, text_alignment, 
 invited_by_id, 
@@ -84,6 +85,7 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
+		&profile.Cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.InvitedBy.ID,
@@ -96,6 +98,10 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 
 	profile.Avatar = utils.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
+
+	if len(profile.Cover) == 0 {
+		profile.Cover = utils.DefaultCover()
+	}
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
