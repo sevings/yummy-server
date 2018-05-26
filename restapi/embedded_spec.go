@@ -2661,13 +2661,10 @@ func init() {
     "Avatar": {
       "type": "object",
       "properties": {
-        "x100": {
+        "x124": {
           "type": "string"
         },
-        "x400": {
-          "type": "string"
-        },
-        "x800": {
+        "x42": {
           "type": "string"
         }
       }

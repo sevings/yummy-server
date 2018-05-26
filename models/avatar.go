@@ -16,14 +16,11 @@ import (
 // swagger:model Avatar
 type Avatar struct {
 
-	// x100
-	X100 string `json:"x100,omitempty"`
+	// x124
+	X124 string `json:"x124,omitempty"`
 
-	// x400
-	X400 string `json:"x400,omitempty"`
-
-	// x800
-	X800 string `json:"x800,omitempty"`
+	// x42
+	X42 string `json:"x42,omitempty"`
 }
 
 // Validate validates this avatar
