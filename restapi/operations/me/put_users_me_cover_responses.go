@@ -25,7 +25,7 @@ type PutUsersMeCoverOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.PutUsersMeCoverOKBody `json:"body,omitempty"`
+	Payload *models.Cover `json:"body,omitempty"`
 }
 
 // NewPutUsersMeCoverOK creates PutUsersMeCoverOK with default headers values
@@ -34,13 +34,13 @@ func NewPutUsersMeCoverOK() *PutUsersMeCoverOK {
 }
 
 // WithPayload adds the payload to the put users me cover o k response
-func (o *PutUsersMeCoverOK) WithPayload(payload *models.PutUsersMeCoverOKBody) *PutUsersMeCoverOK {
+func (o *PutUsersMeCoverOK) WithPayload(payload *models.Cover) *PutUsersMeCoverOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the put users me cover o k response
-func (o *PutUsersMeCoverOK) SetPayload(payload *models.PutUsersMeCoverOKBody) {
+func (o *PutUsersMeCoverOK) SetPayload(payload *models.Cover) {
 	o.Payload = payload
 }
 

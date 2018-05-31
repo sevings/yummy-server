@@ -2282,17 +2282,7 @@ func init() {
           "200": {
             "description": "Cover",
             "schema": {
-              "type": "object",
-              "properties": {
-                "cover": {
-                  "type": "string"
-                },
-                "id": {
-                  "type": "integer",
-                  "format": "int64",
-                  "minimum": 1
-                }
-              }
+              "$ref": "#/definitions/Cover"
             }
           },
           "400": {
@@ -2785,6 +2775,19 @@ func init() {
         },
         "nextBefore": {
           "type": "string"
+        }
+      }
+    },
+    "Cover": {
+      "type": "object",
+      "properties": {
+        "cover": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
         }
       }
     },

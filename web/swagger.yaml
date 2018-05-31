@@ -31,6 +31,15 @@ definitions:
         type: string
       x42:
         type: string
+  Cover:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        minimum: 1
+      cover:
+        type: string
   User:
     type: object
     properties:
@@ -965,14 +974,7 @@ paths:
         200:
           description: Cover
           schema:
-            type: object
-            properties:
-              id:
-                type: integer
-                format: int64
-                minimum: 1
-              cover:
-                type: string
+            $ref: '#/definitions/Cover'
         400:
           description: bad request
           schema:
