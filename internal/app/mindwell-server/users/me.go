@@ -83,9 +83,7 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	if len(profile.Cover) == 0 {
-		profile.Cover = utils.DefaultCover()
-	}
+	profile.Cover = utils.CoverUrl(profile.Cover)
 
 	return &profile
 }

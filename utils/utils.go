@@ -134,3 +134,16 @@ func DefaultCover() string {
 
 	return cover
 }
+
+func CoverUrl(cover string) string {
+	if len(cover) == 0 {
+		cover = DefaultCover()
+	}
+
+	base, err := cfg.String("images.base_url")
+	if err != nil {
+		log.Print(err)
+	}
+
+	return base + "cover/" + cover
+}

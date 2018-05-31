@@ -99,9 +99,7 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 	profile.Avatar = utils.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
 
-	if len(profile.Cover) == 0 {
-		profile.Cover = utils.DefaultCover()
-	}
+	profile.Cover = utils.CoverUrl(profile.Cover)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
