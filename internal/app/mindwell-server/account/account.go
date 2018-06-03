@@ -123,7 +123,7 @@ func saveAvatar(img image.Image, size int, folder, name string) {
 		img = imaging.Resize(img, size, size, imaging.CatmullRom)
 	}
 
-	err = imaging.Save(img, path+name, imaging.JPEGQuality(90))
+	err = imaging.Save(img, path+name, imaging.JPEGQuality(85))
 	if err != nil {
 		log.Print(err)
 	}
@@ -149,9 +149,8 @@ func generateAvatar(name, gender string) string {
 	folder := name[:1] + "/"
 	fileName := utils.GenerateString(5) + ".jpg"
 
-	saveAvatar(img, 800, folder, fileName)
-	saveAvatar(img, 400, folder, fileName)
-	saveAvatar(img, 100, folder, fileName)
+	saveAvatar(img, 124, folder, fileName)
+	saveAvatar(img, 42, folder, fileName)
 
 	return folder + fileName
 }
