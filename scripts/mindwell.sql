@@ -742,8 +742,11 @@ CREATE TABLE "mindwell"."entries" (
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"author_id" Integer NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
+    "cut_title" TEXT DEFAULT '' NOT NULL;
 	"content" Text NOT NULL,
+    "cut_content" TEXT DEFAULT '' NOT NULL;
     "edit_content" Text NOT NULL,
+    "has_cut" BOOLEAN DEFAULT FALSE NOT NULL;
 	"word_count" Integer NOT NULL,
 	"visible_for" Integer NOT NULL,
 	"is_votable" Boolean NOT NULL,
@@ -826,7 +829,8 @@ CREATE TRIGGER cnt_tlog_entries_del
 
 CREATE VIEW mindwell.feed AS
 SELECT entries.id, entries.created_at, rating, votes,
-    entries.title, content, edit_content, word_count,
+    entries.title, cut_title, content, cut_content, edit_content, 
+    has_cut, word_count,
     entry_privacy.type AS entry_privacy,
     is_votable, entries.comments_count,
     long_users.id AS author_id,

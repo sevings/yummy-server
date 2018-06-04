@@ -13,8 +13,8 @@ import (
 
 const feedQueryStart = `
 SELECT entries.id, extract(epoch from entries.created_at), rating, entries.votes,
-entries.title, content, edit_content, word_count,
-entry_privacy.type,
+entries.title, cut_title, content, cut_content, edit_content, 
+has_cut, word_count, entry_privacy.type,
 is_votable, entries.comments_count,
 users.id, users.name, users.show_name,
 now() - users.last_seen_at < interval '15 minutes',
@@ -104,8 +104,8 @@ func loadFeed(tx *utils.AutoTx, userID int64) *models.Feed {
 		var vote sql.NullFloat64
 		var avatar string
 		ok := tx.Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
-			&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
-			&entry.Privacy,
+			&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
+			&entry.HasCut, &entry.WordCount, &entry.Privacy,
 			&entry.IsVotable, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,

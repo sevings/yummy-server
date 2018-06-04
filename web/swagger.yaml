@@ -232,10 +232,16 @@ definitions:
         format: float
       title:
         type: string
+      cutTitle: 
+        type: string
       content:
+        type: string
+      cutContent:
         type: string
       editContent:
         type: string
+      hasCut:
+        type: boolean
       wordCount:
         type: integer
       privacy:

@@ -55,9 +55,19 @@ WHERE users.invited_by = short_users.id
     AND users.font_family = font_family.id
     AND users.text_alignment = alignment.id;
 
+ALTER TABLE entries
+ADD COLUMN "cut_title" TEXT DEFAULT '' NOT NULL;
+
+ALTER TABLE entries
+ADD COLUMN "cut_content" TEXT DEFAULT '' NOT NULL;
+
+ALTER TABLE entries
+ADD COLUMN "has_cut" BOOLEAN DEFAULT FALSE NOT NULL;
+
 CREATE VIEW mindwell.feed AS
 SELECT entries.id, entries.created_at, rating, votes,
-    entries.title, content, edit_content, word_count,
+    entries.title, cut_title, content, cut_content, edit_content, 
+    has_cut, word_count,
     entry_privacy.type AS entry_privacy,
     is_votable, entries.comments_count,
     long_users.id AS author_id,
