@@ -130,8 +130,9 @@ func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string,
 	const q = `
 	INSERT INTO entries (author_id, title, cut_title, content, cut_content, edit_content, 
 		has_cut, word_count, visible_for, is_votable, category)
-	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), 
-		$7, (SELECT id from categories WHERE type = $8))
+	VALUES ($1, $2, $3, $4, $5, $6,$7, $8,
+		(SELECT id FROM entry_privacy WHERE type = $9), 
+		$10, (SELECT id from categories WHERE type = $11))
 	RETURNING id, extract(epoch from created_at)`
 
 	tx.Query(q, userID, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent,

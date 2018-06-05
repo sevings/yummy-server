@@ -2839,8 +2839,17 @@ func init() {
           "type": "number",
           "format": "double"
         },
+        "cutContent": {
+          "type": "string"
+        },
+        "cutTitle": {
+          "type": "string"
+        },
         "editContent": {
           "type": "string"
+        },
+        "hasCut": {
+          "type": "boolean"
         },
         "id": {
           "type": "integer",
