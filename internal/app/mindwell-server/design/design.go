@@ -1,21 +1,18 @@
 package design
 
 import (
-	"database/sql"
-
 	"github.com/sevings/mindwell-server/restapi/operations/design"
 
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.DesignGetDesignHandler = design.GetDesignHandlerFunc(newDesignGetter(db))
-	api.DesignPutDesignHandler = design.PutDesignHandlerFunc(newDesignEditor(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.DesignGetDesignHandler = design.GetDesignHandlerFunc(newDesignGetter(srv))
+	srv.API.DesignPutDesignHandler = design.PutDesignHandlerFunc(newDesignEditor(srv))
 }
 
 func loadDesign(tx *utils.AutoTx, id int64) models.Design {
@@ -38,9 +35,9 @@ func loadDesign(tx *utils.AutoTx, id int64) models.Design {
 	return design
 }
 
-func newDesignGetter(db *sql.DB) func(design.GetDesignParams, *models.UserID) middleware.Responder {
+func newDesignGetter(srv *utils.MindwellServer) func(design.GetDesignParams, *models.UserID) middleware.Responder {
 	return func(params design.GetDesignParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			id := int64(*uID)
 			des := loadDesign(tx, id)
 			return design.NewGetDesignOK().WithPayload(&des)
@@ -97,9 +94,9 @@ func editDesign(tx *utils.AutoTx, params design.PutDesignParams, id int64) model
 	return design
 }
 
-func newDesignEditor(db *sql.DB) func(design.PutDesignParams, *models.UserID) middleware.Responder {
+func newDesignEditor(srv *utils.MindwellServer) func(design.PutDesignParams, *models.UserID) middleware.Responder {
 	return func(params design.PutDesignParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			id := int64(*uID)
 			des := editDesign(tx, params, id)
 			return design.NewPutDesignOK().WithPayload(&des)

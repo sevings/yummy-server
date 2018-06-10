@@ -15,19 +15,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(db))
-	api.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(db))
-	api.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(newRegistrator(db))
-	api.AccountPostAccountLoginHandler = account.PostAccountLoginHandlerFunc(newLoginer(db))
-	api.AccountPostAccountPasswordHandler = account.PostAccountPasswordHandlerFunc(newPasswordUpdater(db))
-	api.AccountGetAccountInvitesHandler = account.GetAccountInvitesHandlerFunc(newInvitesLoader(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(srv))
+	srv.API.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(srv))
+	srv.API.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(newRegistrator(srv))
+	srv.API.AccountPostAccountLoginHandler = account.PostAccountLoginHandlerFunc(newLoginer(srv))
+	srv.API.AccountPostAccountPasswordHandler = account.PostAccountPasswordHandlerFunc(newPasswordUpdater(srv))
+	srv.API.AccountGetAccountInvitesHandler = account.GetAccountInvitesHandlerFunc(newInvitesLoader(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -43,9 +42,9 @@ func isEmailFree(tx *utils.AutoTx, email string) bool {
 	return tx.Error() == sql.ErrNoRows
 }
 
-func newEmailChecker(db *sql.DB) func(account.GetAccountEmailEmailParams) middleware.Responder {
+func newEmailChecker(srv *utils.MindwellServer) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isEmailFree(tx, params.Email)
 			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
@@ -65,9 +64,9 @@ func isNameFree(tx *utils.AutoTx, name string) bool {
 	return tx.Error() == sql.ErrNoRows
 }
 
-func newNameChecker(db *sql.DB) func(account.GetAccountNameNameParams) middleware.Responder {
+func newNameChecker(srv *utils.MindwellServer) func(account.GetAccountNameNameParams) middleware.Responder {
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isNameFree(tx, params.Name)
 			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
 			return account.NewGetAccountNameNameOK().WithPayload(&data)
@@ -111,8 +110,8 @@ func passwordHash(password string) []byte {
 	return sum[:]
 }
 
-func saveAvatar(img image.Image, size int, folder, name string) {
-	path := utils.ImagesFolder() + strconv.Itoa(size) + "/" + folder
+func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, name string) {
+	path := srv.ImagesFolder() + strconv.Itoa(size) + "/" + folder
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
 		log.Print(err)
@@ -129,7 +128,7 @@ func saveAvatar(img image.Image, size int, folder, name string) {
 	}
 }
 
-func generateAvatar(name, gender string) string {
+func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	var g govatar.Gender
 	if gender == models.ProfileAllOf1GenderMale {
 		g = govatar.MALE
@@ -149,14 +148,14 @@ func generateAvatar(name, gender string) string {
 	folder := name[:1] + "/"
 	fileName := utils.GenerateString(5) + ".jpg"
 
-	saveAvatar(img, 800, folder, fileName)
-	saveAvatar(img, 400, folder, fileName)
-	saveAvatar(img, 100, folder, fileName)
+	saveAvatar(srv, img, 800, folder, fileName)
+	saveAvatar(srv, img, 400, folder, fileName)
+	saveAvatar(srv, img, 100, folder, fileName)
 
 	return folder + fileName
 }
 
-func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
+func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
 	hash := passwordHash(params.Password)
 	apiKey := utils.GenerateString(32)
 
@@ -185,7 +184,7 @@ func createUser(tx *utils.AutoTx, params account.PostAccountRegisterParams, ref 
 		params.City = &str
 	}
 
-	avatar := generateAvatar(params.Name, *params.Gender)
+	avatar := generateAvatar(srv, params.Name, *params.Gender)
 
 	var user int64
 	tx.Query(q,
@@ -222,7 +221,7 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
-func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *models.AuthProfile {
+func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, args ...interface{}) *models.AuthProfile {
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
@@ -260,8 +259,8 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
-	profile.Avatar = utils.NewAvatar(avatar)
-	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
+	profile.Avatar = srv.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
 	if bday.Valid {
 		profile.Birthday = bday.String
@@ -277,9 +276,9 @@ func loadAuthProfile(tx *utils.AutoTx, query string, args ...interface{}) *model
 
 const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
-func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middleware.Responder {
+func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if ok := isEmailFree(tx, params.Email); !ok {
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("email_is_not_free"))
 			}
@@ -293,12 +292,12 @@ func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middlewa
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("invalid_invite"))
 			}
 
-			id := createUser(tx, params, ref)
+			id := createUser(srv, tx, params, ref)
 			if tx.Error() != nil {
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
-			user := loadAuthProfile(tx, authProfileQueryByID, id)
+			user := loadAuthProfile(srv, tx, authProfileQueryByID, id)
 			if tx.Error() != nil {
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
@@ -310,11 +309,11 @@ func newRegistrator(db *sql.DB) func(account.PostAccountRegisterParams) middlewa
 
 const authProfileQueryByPassword = authProfileQuery + "WHERE lower(long_users.name) = lower($1) and long_users.password_hash = $2"
 
-func newLoginer(db *sql.DB) func(account.PostAccountLoginParams) middleware.Responder {
+func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			hash := passwordHash(params.Password)
-			user := loadAuthProfile(tx, authProfileQueryByPassword, params.Name, hash)
+			user := loadAuthProfile(srv, tx, authProfileQueryByPassword, params.Name, hash)
 			if tx.Error() != nil {
 				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password"))
 			}
@@ -340,9 +339,9 @@ func setPassword(tx *utils.AutoTx, params account.PostAccountPasswordParams, use
 	return rows == 1
 }
 
-func newPasswordUpdater(db *sql.DB) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
+func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			ok := setPassword(tx, params, userID)
 			if tx.Error() != nil {
 				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error"))
@@ -378,9 +377,9 @@ func loadInvites(tx *utils.AutoTx, userID *models.UserID) []string {
 	return invites
 }
 
-func newInvitesLoader(db *sql.DB) func(account.GetAccountInvitesParams, *models.UserID) middleware.Responder {
+func newInvitesLoader(srv *utils.MindwellServer) func(account.GetAccountInvitesParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountInvitesParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			invites := loadInvites(tx, userID)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key"))

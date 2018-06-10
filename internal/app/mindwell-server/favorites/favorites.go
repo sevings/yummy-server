@@ -1,20 +1,17 @@
 package favorites
 
 import (
-	"database/sql"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/favorites"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(newStatusLoader(db))
-	api.FavoritesPutEntriesIDFavoriteHandler = favorites.PutEntriesIDFavoriteHandlerFunc(newFavoriteAdder(db))
-	api.FavoritesDeleteEntriesIDFavoriteHandler = favorites.DeleteEntriesIDFavoriteHandlerFunc(newFavoriteDeleter(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(newStatusLoader(srv))
+	srv.API.FavoritesPutEntriesIDFavoriteHandler = favorites.PutEntriesIDFavoriteHandlerFunc(newFavoriteAdder(srv))
+	srv.API.FavoritesDeleteEntriesIDFavoriteHandler = favorites.DeleteEntriesIDFavoriteHandlerFunc(newFavoriteDeleter(srv))
 }
 
 func favoriteStatus(tx *utils.AutoTx, userID, entryID int64) *models.FavoriteStatus {
@@ -30,9 +27,9 @@ func favoriteStatus(tx *utils.AutoTx, userID, entryID int64) *models.FavoriteSta
 	return &status
 }
 
-func newStatusLoader(db *sql.DB) func(favorites.GetEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
+func newStatusLoader(srv *utils.MindwellServer) func(favorites.GetEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
 	return func(params favorites.GetEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
@@ -62,9 +59,9 @@ func addToFavorites(tx *utils.AutoTx, userID, entryID int64) *models.FavoriteSta
 	return &status
 }
 
-func newFavoriteAdder(db *sql.DB) func(favorites.PutEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
+func newFavoriteAdder(srv *utils.MindwellServer) func(favorites.PutEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
 	return func(params favorites.PutEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
@@ -92,9 +89,9 @@ func removeFromFavorites(tx *utils.AutoTx, userID, entryID int64) *models.Favori
 	return &status
 }
 
-func newFavoriteDeleter(db *sql.DB) func(favorites.DeleteEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
+func newFavoriteDeleter(srv *utils.MindwellServer) func(favorites.DeleteEntriesIDFavoriteParams, *models.UserID) middleware.Responder {
 	return func(params favorites.DeleteEntriesIDFavoriteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {

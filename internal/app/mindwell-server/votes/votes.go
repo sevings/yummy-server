@@ -1,15 +1,13 @@
 package votes
 
 import (
-	"database/sql"
-
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(newEntryVoteLoader(db))
-	api.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(newEntryVoter(db))
-	api.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(newEntryUnvoter(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(newEntryVoteLoader(srv))
+	srv.API.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(newEntryVoter(srv))
+	srv.API.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(newEntryUnvoter(srv))
 }

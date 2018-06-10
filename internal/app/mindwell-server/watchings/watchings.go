@@ -1,20 +1,17 @@
 package watchings
 
 import (
-	"database/sql"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newWatchingStatusLoader(db))
-	api.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(newWatchingAdder(db))
-	api.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(newWatchingDeleter(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(newWatchingStatusLoader(srv))
+	srv.API.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(newWatchingAdder(srv))
+	srv.API.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(newWatchingDeleter(srv))
 }
 
 func watchingStatus(tx *utils.AutoTx, userID, entryID int64) *models.WatchingStatus {
@@ -30,9 +27,9 @@ func watchingStatus(tx *utils.AutoTx, userID, entryID int64) *models.WatchingSta
 	return &status
 }
 
-func newWatchingStatusLoader(db *sql.DB) func(watchings.GetEntriesIDWatchingParams, *models.UserID) middleware.Responder {
+func newWatchingStatusLoader(srv *utils.MindwellServer) func(watchings.GetEntriesIDWatchingParams, *models.UserID) middleware.Responder {
 	return func(params watchings.GetEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
@@ -62,9 +59,9 @@ func AddWatching(tx *utils.AutoTx, userID, entryID int64) *models.WatchingStatus
 	return &status
 }
 
-func newWatchingAdder(db *sql.DB) func(watchings.PutEntriesIDWatchingParams, *models.UserID) middleware.Responder {
+func newWatchingAdder(srv *utils.MindwellServer) func(watchings.PutEntriesIDWatchingParams, *models.UserID) middleware.Responder {
 	return func(params watchings.PutEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
@@ -92,9 +89,9 @@ func RemoveWatching(tx *utils.AutoTx, userID, entryID int64) *models.WatchingSta
 	return &status
 }
 
-func newWatchingDeleter(db *sql.DB) func(watchings.DeleteEntriesIDWatchingParams, *models.UserID) middleware.Responder {
+func newWatchingDeleter(srv *utils.MindwellServer) func(watchings.DeleteEntriesIDWatchingParams, *models.UserID) middleware.Responder {
 	return func(params watchings.DeleteEntriesIDWatchingParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {

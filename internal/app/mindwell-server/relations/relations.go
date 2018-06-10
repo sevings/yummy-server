@@ -5,26 +5,25 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/relations"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(newToRelationLoader(db))
-	api.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(newFromRelationLoader(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(newToRelationLoader(srv))
+	srv.API.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(newFromRelationLoader(srv))
 
-	api.RelationsPutRelationsToIDHandler = relations.PutRelationsToIDHandlerFunc(newToRelationSetter(db))
-	api.RelationsPutRelationsFromIDHandler = relations.PutRelationsFromIDHandlerFunc(newFromRelationSetter(db))
+	srv.API.RelationsPutRelationsToIDHandler = relations.PutRelationsToIDHandlerFunc(newToRelationSetter(srv))
+	srv.API.RelationsPutRelationsFromIDHandler = relations.PutRelationsFromIDHandlerFunc(newFromRelationSetter(srv))
 
-	api.RelationsDeleteRelationsToIDHandler = relations.DeleteRelationsToIDHandlerFunc(newToRelationDeleter(db))
-	api.RelationsDeleteRelationsFromIDHandler = relations.DeleteRelationsFromIDHandlerFunc(newFromRelationDeleter(db))
+	srv.API.RelationsDeleteRelationsToIDHandler = relations.DeleteRelationsToIDHandlerFunc(newToRelationDeleter(srv))
+	srv.API.RelationsDeleteRelationsFromIDHandler = relations.DeleteRelationsFromIDHandlerFunc(newFromRelationDeleter(srv))
 }
 
-func newToRelationLoader(db *sql.DB) func(relations.GetRelationsToIDParams, *models.UserID) middleware.Responder {
+func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.GetRelationsToIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			relation := relationship(tx, params.ID, userID)
 			return relations.NewGetRelationsToIDOK().WithPayload(relation)
@@ -32,9 +31,9 @@ func newToRelationLoader(db *sql.DB) func(relations.GetRelationsToIDParams, *mod
 	}
 }
 
-func newFromRelationLoader(db *sql.DB) func(relations.GetRelationsFromIDParams, *models.UserID) middleware.Responder {
+func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.GetRelationsFromIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			relation := relationship(tx, userID, params.ID)
 			return relations.NewGetRelationsFromIDOK().WithPayload(relation)
@@ -42,9 +41,9 @@ func newFromRelationLoader(db *sql.DB) func(relations.GetRelationsFromIDParams, 
 	}
 }
 
-func newToRelationSetter(db *sql.DB) func(relations.PutRelationsToIDParams, *models.UserID) middleware.Responder {
+func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.PutRelationsToIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 
 			if userID == params.ID {
@@ -68,9 +67,9 @@ func newToRelationSetter(db *sql.DB) func(relations.PutRelationsToIDParams, *mod
 	}
 }
 
-func newFromRelationSetter(db *sql.DB) func(relations.PutRelationsFromIDParams, *models.UserID) middleware.Responder {
+func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.PutRelationsFromIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {
@@ -87,9 +86,9 @@ func newFromRelationSetter(db *sql.DB) func(relations.PutRelationsFromIDParams, 
 	}
 }
 
-func newToRelationDeleter(db *sql.DB) func(relations.DeleteRelationsToIDParams, *models.UserID) middleware.Responder {
+func newToRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.DeleteRelationsToIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			relation := removeRelationship(tx, userID, params.ID)
 			return relations.NewDeleteRelationsToIDOK().WithPayload(relation)
@@ -97,9 +96,9 @@ func newToRelationDeleter(db *sql.DB) func(relations.DeleteRelationsToIDParams, 
 	}
 }
 
-func newFromRelationDeleter(db *sql.DB) func(relations.DeleteRelationsFromIDParams, *models.UserID) middleware.Responder {
+func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.DeleteRelationsFromIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {

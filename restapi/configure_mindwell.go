@@ -37,18 +37,17 @@ func configureFlags(api *operations.MindwellAPI) {
 func configureAPI(api *operations.MindwellAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	config := utils.LoadConfig("configs/server")
-	db := utils.OpenDatabase(config)
+	srv := utils.NewMindwellServer(api, "configs/server")
 
-	accountImpl.ConfigureAPI(db, api)
-	usersImpl.ConfigureAPI(db, api)
-	entriesImpl.ConfigureAPI(db, api)
-	votesImpl.ConfigureAPI(db, api)
-	favoritesImpl.ConfigureAPI(db, api)
-	watchingsImpl.ConfigureAPI(db, api)
-	commentsImpl.ConfigureAPI(db, api)
-	designImpl.ConfigureAPI(db, api)
-	relationsImpl.ConfigureAPI(db, api)
+	accountImpl.ConfigureAPI(srv)
+	usersImpl.ConfigureAPI(srv)
+	entriesImpl.ConfigureAPI(srv)
+	votesImpl.ConfigureAPI(srv)
+	favoritesImpl.ConfigureAPI(srv)
+	watchingsImpl.ConfigureAPI(srv)
+	commentsImpl.ConfigureAPI(srv)
+	designImpl.ConfigureAPI(srv)
+	relationsImpl.ConfigureAPI(srv)
 
 	// configure the api here
 	api.ServeError = errors.ServeError

@@ -13,24 +13,23 @@ import (
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(srv))
 
-	api.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(db))
-	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(db))
-	api.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(newEntryDeleter(db))
+	srv.API.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(srv))
+	srv.API.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(srv))
+	srv.API.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(newEntryDeleter(srv))
 
-	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(db))
-	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(db))
-	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(db))
-	api.EntriesGetEntriesUsersIDHandler = entries.GetEntriesUsersIDHandlerFunc(newTlogLoader(db))
-	api.EntriesGetEntriesUsersMeHandler = entries.GetEntriesUsersMeHandlerFunc(newMyTlogLoader(db))
-	api.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(newFriendsFeedLoader(db))
+	srv.API.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(srv))
+	srv.API.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(srv))
+	srv.API.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(srv))
+	srv.API.EntriesGetEntriesUsersIDHandler = entries.GetEntriesUsersIDHandlerFunc(newTlogLoader(srv))
+	srv.API.EntriesGetEntriesUsersMeHandler = entries.GetEntriesUsersMeHandlerFunc(newMyTlogLoader(srv))
+	srv.API.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(newFriendsFeedLoader(srv))
 }
 
 var wordRe *regexp.Regexp
@@ -61,7 +60,7 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
+func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -88,16 +87,16 @@ func createEntry(tx *utils.AutoTx, userID int64, title, content, privacy string,
 		privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
-	author := users.LoadUserByID(tx, userID)
+	author := users.LoadUserByID(srv, tx, userID)
 	entry.Author = author
 
 	return &entry
 }
 
-func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
+func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			entry := createEntry(tx, int64(*uID),
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			entry := createEntry(srv, tx, int64(*uID),
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
@@ -109,7 +108,7 @@ func newMyTlogPoster(db *sql.DB) func(entries.PostEntriesUsersMeParams, *models.
 	}
 }
 
-func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
+func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -142,16 +141,16 @@ func editEntry(tx *utils.AutoTx, entryID, userID int64, title, content, privacy 
 
 	watchings.AddWatching(tx, userID, entry.ID)
 
-	author := users.LoadUserByID(tx, userID)
+	author := users.LoadUserByID(srv, tx, userID)
 	entry.Author = author
 
 	return &entry
 }
 
-func newEntryEditor(db *sql.DB) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
+func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			entry := editEntry(tx, params.ID, int64(*uID),
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			entry := editEntry(srv, tx, params.ID, int64(*uID),
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
@@ -176,7 +175,7 @@ func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
 	}
 }
 
-func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
+func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 	const q = tlogFeedQueryStart + `
 		WHERE entries.id = $2
 			AND (entries.author_id = $1
@@ -204,19 +203,19 @@ func loadEntry(tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 
 	entry.Vote = entryVoteStatus(author.ID, userID, vote)
 
-	author.Avatar = utils.NewAvatar(avatar)
+	author.Avatar = srv.NewAvatar(avatar)
 	entry.Author = &author
 
-	cmt := comments.LoadEntryComments(tx, userID, entryID, 5, "", "")
+	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
 	entry.Comments = cmt
 
 	return &entry
 }
 
-func newEntryLoader(db *sql.DB) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
+func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			entry := loadEntry(tx, params.ID, int64(*uID))
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			entry := loadEntry(srv, tx, params.ID, int64(*uID))
 
 			if entry.ID == 0 {
 				return entries.NewGetEntriesIDNotFound()
@@ -238,9 +237,9 @@ func deleteEntry(tx *utils.AutoTx, entryID, userID int64) bool {
 	return true
 }
 
-func newEntryDeleter(db *sql.DB) func(entries.DeleteEntriesIDParams, *models.UserID) middleware.Responder {
+func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.DeleteEntriesIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			ok := deleteEntry(tx, params.ID, int64(*uID))
 			if ok {
 				return entries.NewDeleteEntriesIDOK()

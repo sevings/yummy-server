@@ -104,25 +104,3 @@ func GenerateString(length int) string {
 
 	return string(b)
 }
-
-func NewAvatar(avatar string) *models.Avatar {
-	base, err := cfg.String("images.base_url")
-	if err != nil {
-		log.Print(err)
-	}
-
-	return &models.Avatar{
-		X100: base + "100/" + avatar,
-		X400: base + "400/" + avatar,
-		X800: base + "800/" + avatar,
-	}
-}
-
-func ImagesFolder() string {
-	folder, err := cfg.String("images.folder")
-	if err != nil {
-		log.Print(err)
-	}
-
-	return folder
-}

@@ -17,7 +17,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 )
 
-func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile {
+func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile {
 	const q = `
 	SELECT id, name, show_name,
 	avatar,
@@ -76,8 +76,8 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
-	profile.Avatar = utils.NewAvatar(avatar)
-	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
+	profile.Avatar = srv.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
 	if bday.Valid {
 		profile.Birthday = bday.String
@@ -91,10 +91,10 @@ func loadMyProfile(tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile 
 	return &profile
 }
 
-func newMeLoader(db *sql.DB) func(me.GetUsersMeParams, *models.UserID) middleware.Responder {
+func newMeLoader(srv *utils.MindwellServer) func(me.GetUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			user := loadMyProfile(tx, userID)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			user := loadMyProfile(srv, tx, userID)
 
 			if tx.Error() != nil {
 				return me.NewGetUsersMeForbidden()
@@ -159,7 +159,7 @@ func storeAvatar(tx *utils.AutoTx, userID int64, avatar *runtime.File) error {
 	return nil
 }
 
-func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
+func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
 	id := int64(*userID)
 
 	if params.Birthday != nil && len(*params.Birthday) > 0 {
@@ -201,13 +201,13 @@ func editMyProfile(tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMe
 	}
 
 	const loadQuery = profileQuery + "WHERE long_users.id = $1"
-	return loadUserProfile(tx, loadQuery, userID, id)
+	return loadUserProfile(srv, tx, loadQuery, userID, id)
 }
 
-func newMeEditor(db *sql.DB) func(me.PutUsersMeParams, *models.UserID) middleware.Responder {
+func newMeEditor(srv *utils.MindwellServer) func(me.PutUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params me.PutUsersMeParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			user := editMyProfile(tx, userID, params)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			user := editMyProfile(srv, tx, userID, params)
 
 			if tx.Error() != nil {
 				return me.NewPutUsersMeForbidden()
@@ -218,10 +218,10 @@ func newMeEditor(db *sql.DB) func(me.PutUsersMeParams, *models.UserID) middlewar
 	}
 }
 
-func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query, relation string, args ...interface{}) middleware.Responder {
-	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+func loadRelatedToMeUsers(srv *utils.MindwellServer, userID *models.UserID, query, relation string, args ...interface{}) middleware.Responder {
+	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 		id := int64(*userID)
-		list := loadRelatedUsers(tx, query, loadUserQueryID, relation, append([]interface{}{id}, args...)...)
+		list := loadRelatedUsers(srv, tx, query, loadUserQueryID, relation, append([]interface{}{id}, args...)...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return me.NewGetUsersMeFollowersForbidden()
 		}
@@ -230,44 +230,44 @@ func loadRelatedToMeUsers(db *sql.DB, userID *models.UserID, query, relation str
 	})
 }
 
-func newMyFollowersLoader(db *sql.DB) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {
+func newMyFollowersLoader(srv *utils.MindwellServer) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowersParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryToID, models.UserListRelationFollowers,
+		return loadRelatedToMeUsers(srv, userID, usersQueryToID, models.UserListRelationFollowers,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
-func newMyFollowingsLoader(db *sql.DB) func(me.GetUsersMeFollowingsParams, *models.UserID) middleware.Responder {
+func newMyFollowingsLoader(srv *utils.MindwellServer) func(me.GetUsersMeFollowingsParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowingsParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationFollowings,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationFollowings,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
-func newMyInvitedLoader(db *sql.DB) func(me.GetUsersMeInvitedParams, *models.UserID) middleware.Responder {
+func newMyInvitedLoader(srv *utils.MindwellServer) func(me.GetUsersMeInvitedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, invitedUsersQuery, models.UserListRelationInvited,
+		return loadRelatedToMeUsers(srv, userID, invitedUsersQuery, models.UserListRelationInvited,
 			*params.Limit, *params.Skip)
 	}
 }
 
-func newMyIgnoredLoader(db *sql.DB) func(me.GetUsersMeIgnoredParams, *models.UserID) middleware.Responder {
+func newMyIgnoredLoader(srv *utils.MindwellServer) func(me.GetUsersMeIgnoredParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeIgnoredParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationIgnored,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationIgnored,
 			models.RelationshipRelationIgnored, *params.Limit, *params.Skip)
 	}
 }
 
-func newMyRequestedLoader(db *sql.DB) func(me.GetUsersMeRequestedParams, *models.UserID) middleware.Responder {
+func newMyRequestedLoader(srv *utils.MindwellServer) func(me.GetUsersMeRequestedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeRequestedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(db, userID, usersQueryFromID, models.UserListRelationRequested,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationRequested,
 			models.RelationshipRelationRequested, *params.Limit, *params.Skip)
 	}
 }
 
-func newMyOnlineSetter(db *sql.DB) func(me.PutUsersMeOnlineParams, *models.UserID) middleware.Responder {
+func newMyOnlineSetter(srv *utils.MindwellServer) func(me.PutUsersMeOnlineParams, *models.UserID) middleware.Responder {
 	return func(params me.PutUsersMeOnlineParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			id := int64(*userID)
 			const q = `UPDATE users SET last_seen_at = DEFAULT WHERE id = $1`
 			tx.Exec(q, id)

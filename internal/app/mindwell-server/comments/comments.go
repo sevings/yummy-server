@@ -10,18 +10,17 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(newCommentLoader(db))
-	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(newCommentEditor(db))
-	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(db))
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(newCommentLoader(srv))
+	srv.API.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(newCommentEditor(srv))
+	srv.API.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(newCommentDeleter(srv))
 
-	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(newEntryCommentsLoader(db))
-	api.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(newCommentPoster(db))
+	srv.API.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(newEntryCommentsLoader(srv))
+	srv.API.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(newCommentPoster(srv))
 }
 
 const commentQuery = `
@@ -50,7 +49,7 @@ func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	}
 }
 
-func loadComment(tx *utils.AutoTx, userID, commentID int64) *models.Comment {
+func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullBool
@@ -67,15 +66,15 @@ func loadComment(tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 		&avatar)
 
 	comment.Vote = commentVote(userID, comment.Author.ID, vote)
-	comment.Author.Avatar = utils.NewAvatar(avatar)
+	comment.Author.Avatar = srv.NewAvatar(avatar)
 	return &comment
 }
 
-func newCommentLoader(db *sql.DB) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
+func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			comment := loadComment(tx, userID, params.ID)
+			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				return comments.NewGetCommentsIDNotFound()
 			}
@@ -99,11 +98,11 @@ func editComment(tx *utils.AutoTx, commentID int64, content string) {
 	tx.Exec(q, commentID, content)
 }
 
-func newCommentEditor(db *sql.DB) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
+func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
-			comment := loadComment(tx, userID, params.ID)
+			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				return comments.NewGetCommentsIDNotFound()
 			}
@@ -143,9 +142,9 @@ func deleteComment(tx *utils.AutoTx, commentID int64) {
 	tx.Exec(q, commentID)
 }
 
-func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
+func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			authorID := commentAuthor(tx, params.ID)
 			if tx.Error() != nil {
@@ -166,7 +165,7 @@ func newCommentDeleter(db *sql.DB) func(comments.DeleteCommentsIDParams, *models
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
+func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
 	var list []*models.Comment
 
 	before, err := strconv.ParseInt(beforeS, 10, 64)
@@ -210,7 +209,7 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, b
 		}
 
 		comment.Vote = commentVote(userID, comment.Author.ID, vote)
-		comment.Author.Avatar = utils.NewAvatar(avatar)
+		comment.Author.Avatar = srv.NewAvatar(avatar)
 		list = append(list, &comment)
 	}
 
@@ -239,16 +238,16 @@ func LoadEntryComments(tx *utils.AutoTx, userID, entryID, limit int64, afterS, b
 	return comments
 }
 
-func newEntryCommentsLoader(db *sql.DB) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
+func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewGetEntriesIDCommentsNotFound()
 			}
 
-			data := LoadEntryComments(tx, userID, params.ID, *params.Limit, *params.After, *params.Before)
+			data := LoadEntryComments(srv, tx, userID, params.ID, *params.Limit, *params.After, *params.Before)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return comments.NewGetEntriesIDCommentsNotFound()
 			}
@@ -275,16 +274,16 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 	return &comment
 }
 
-func newCommentPoster(db *sql.DB) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
+func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				return comments.NewPostEntriesIDCommentsNotFound()
 			}
 
-			user := users.LoadUserByID(tx, userID)
+			user := users.LoadUserByID(srv, tx, userID)
 			comment := postComment(tx, user, params.ID, params.Content)
 			if tx.Error() != nil {
 				return comments.NewPostEntriesIDCommentsNotFound()

@@ -46,9 +46,9 @@ func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus
 	return &status
 }
 
-func newEntryVoteLoader(db *sql.DB) func(votes.GetEntriesIDVoteParams, *models.UserID) middleware.Responder {
+func newEntryVoteLoader(srv *utils.MindwellServer) func(votes.GetEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.GetEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
@@ -144,9 +144,9 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 	return &status
 }
 
-func newEntryVoter(db *sql.DB) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
+func newEntryVoter(srv *utils.MindwellServer) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.PutEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {
@@ -189,9 +189,9 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, b
 	return &status, true
 }
 
-func newEntryUnvoter(db *sql.DB) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
+func newEntryUnvoter(srv *utils.MindwellServer) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.DeleteEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := int64(*uID)
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {

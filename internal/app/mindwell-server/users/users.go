@@ -5,38 +5,37 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/utils"
 )
 
 // ConfigureAPI creates operations handlers
-func ConfigureAPI(db *sql.DB, api *operations.MindwellAPI) {
-	api.APIKeyHeaderAuth = utils.NewKeyAuth(db)
+func ConfigureAPI(srv *utils.MindwellServer) {
+	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB)
 
-	api.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(db))
-	api.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(db))
+	srv.API.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(srv))
+	srv.API.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(srv))
 
-	api.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(db))
-	api.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(db))
+	srv.API.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(srv))
+	srv.API.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(srv))
 
-	api.MeGetUsersMeFollowersHandler = me.GetUsersMeFollowersHandlerFunc(newMyFollowersLoader(db))
-	api.UsersGetUsersIDFollowersHandler = users.GetUsersIDFollowersHandlerFunc(newFollowersLoader(db))
-	api.UsersGetUsersByNameNameFollowersHandler = users.GetUsersByNameNameFollowersHandlerFunc(newFollowersLoaderByName(db))
+	srv.API.MeGetUsersMeFollowersHandler = me.GetUsersMeFollowersHandlerFunc(newMyFollowersLoader(srv))
+	srv.API.UsersGetUsersIDFollowersHandler = users.GetUsersIDFollowersHandlerFunc(newFollowersLoader(srv))
+	srv.API.UsersGetUsersByNameNameFollowersHandler = users.GetUsersByNameNameFollowersHandlerFunc(newFollowersLoaderByName(srv))
 
-	api.MeGetUsersMeFollowingsHandler = me.GetUsersMeFollowingsHandlerFunc(newMyFollowingsLoader(db))
-	api.UsersGetUsersIDFollowingsHandler = users.GetUsersIDFollowingsHandlerFunc(newFollowingsLoader(db))
-	api.UsersGetUsersByNameNameFollowingsHandler = users.GetUsersByNameNameFollowingsHandlerFunc(newFollowingsLoaderByName(db))
+	srv.API.MeGetUsersMeFollowingsHandler = me.GetUsersMeFollowingsHandlerFunc(newMyFollowingsLoader(srv))
+	srv.API.UsersGetUsersIDFollowingsHandler = users.GetUsersIDFollowingsHandlerFunc(newFollowingsLoader(srv))
+	srv.API.UsersGetUsersByNameNameFollowingsHandler = users.GetUsersByNameNameFollowingsHandlerFunc(newFollowingsLoaderByName(srv))
 
-	api.MeGetUsersMeInvitedHandler = me.GetUsersMeInvitedHandlerFunc(newMyInvitedLoader(db))
-	api.UsersGetUsersIDInvitedHandler = users.GetUsersIDInvitedHandlerFunc(newInvitedLoader(db))
-	api.UsersGetUsersByNameNameInvitedHandler = users.GetUsersByNameNameInvitedHandlerFunc(newInvitedLoaderByName(db))
+	srv.API.MeGetUsersMeInvitedHandler = me.GetUsersMeInvitedHandlerFunc(newMyInvitedLoader(srv))
+	srv.API.UsersGetUsersIDInvitedHandler = users.GetUsersIDInvitedHandlerFunc(newInvitedLoader(srv))
+	srv.API.UsersGetUsersByNameNameInvitedHandler = users.GetUsersByNameNameInvitedHandlerFunc(newInvitedLoaderByName(srv))
 
-	api.MeGetUsersMeIgnoredHandler = me.GetUsersMeIgnoredHandlerFunc(newMyIgnoredLoader(db))
-	api.MeGetUsersMeRequestedHandler = me.GetUsersMeRequestedHandlerFunc(newMyRequestedLoader(db))
+	srv.API.MeGetUsersMeIgnoredHandler = me.GetUsersMeIgnoredHandlerFunc(newMyIgnoredLoader(srv))
+	srv.API.MeGetUsersMeRequestedHandler = me.GetUsersMeRequestedHandlerFunc(newMyRequestedLoader(srv))
 
-	api.MePutUsersMeOnlineHandler = me.PutUsersMeOnlineHandlerFunc(newMyOnlineSetter(db))
+	srv.API.MePutUsersMeOnlineHandler = me.PutUsersMeOnlineHandlerFunc(newMyOnlineSetter(srv))
 }
 
 const profileQuery = `
@@ -59,7 +58,7 @@ invited_by_is_online,
 invited_by_avatar
 FROM long_users `
 
-func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg interface{}) *models.Profile {
+func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, userID *models.UserID, arg interface{}) *models.Profile {
 	var profile models.Profile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
@@ -94,8 +93,8 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
-	profile.Avatar = utils.NewAvatar(avatar)
-	profile.InvitedBy.Avatar = utils.NewAvatar(invitedAvatar)
+	profile.Avatar = srv.NewAvatar(avatar)
+	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
@@ -105,9 +104,9 @@ func loadUserProfile(tx *utils.AutoTx, query string, userID *models.UserID, arg 
 	return &profile
 }
 
-func loadProfile(db *sql.DB, query string, userID *models.UserID, arg interface{}) middleware.Responder {
-	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-		profile := loadUserProfile(tx, query, userID, arg)
+func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID, arg interface{}) middleware.Responder {
+	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+		profile := loadUserProfile(srv, tx, query, userID, arg)
 		if tx.Error() != nil {
 			return users.NewGetUsersIDNotFound()
 		}
@@ -210,7 +209,7 @@ WHERE invited_by = by.id
 ORDER BY long_users.id DESC
 LIMIT $2 OFFSET $3`
 
-func loadRelatedUsers(tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.UserList {
+func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.UserList {
 	var list models.UserList
 	tx.Query(usersQuery, args...)
 
@@ -224,19 +223,19 @@ func loadRelatedUsers(tx *utils.AutoTx, usersQuery, subjectQuery, relation strin
 			break
 		}
 
-		user.Avatar = utils.NewAvatar(avatar)
+		user.Avatar = srv.NewAvatar(avatar)
 		list.Users = append(list.Users, &user)
 	}
 
-	list.Subject = loadUser(tx, subjectQuery, args[0])
+	list.Subject = loadUser(srv, tx, subjectQuery, args[0])
 	list.Relation = relation
 
 	return &list
 }
 
-func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery, subjectQuery, relation string,
+func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuery, subjectQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
-	return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
 		if tx.Error() != nil {
 			return users.NewGetUsersIDFollowersNotFound()
@@ -246,7 +245,7 @@ func loadUsers(db *sql.DB, usersQuery, privacyQuery, relationQuery, subjectQuery
 			return users.NewGetUsersIDFollowersForbidden()
 		}
 
-		list := loadRelatedUsers(tx, usersQuery, subjectQuery, relation, args...)
+		list := loadRelatedUsers(srv, tx, usersQuery, subjectQuery, relation, args...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			return users.NewGetUsersIDFollowersNotFound()
 		}
@@ -265,7 +264,7 @@ WHERE `
 const loadUserQueryID = loadUserQuery + "id = $1"
 const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
 
-func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
+func loadUser(srv *utils.MindwellServer, tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
 	var avatar string
 
@@ -273,16 +272,16 @@ func loadUser(tx *utils.AutoTx, query string, arg interface{}) *models.User {
 		&user.IsOnline,
 		&avatar)
 
-	user.Avatar = utils.NewAvatar(avatar)
+	user.Avatar = srv.NewAvatar(avatar)
 	return &user
 }
 
 // LoadUserByID returns short user profile by its ID.
-func LoadUserByID(tx *utils.AutoTx, id int64) *models.User {
-	return loadUser(tx, loadUserQueryID, id)
+func LoadUserByID(srv *utils.MindwellServer, tx *utils.AutoTx, id int64) *models.User {
+	return loadUser(srv, tx, loadUserQueryID, id)
 }
 
 // LoadUserByName returns short user profile by its ID.
-func LoadUserByName(tx *utils.AutoTx, name string) *models.User {
-	return loadUser(tx, loadUserQueryName, name)
+func LoadUserByName(srv *utils.MindwellServer, tx *utils.AutoTx, name string) *models.User {
+	return loadUser(srv, tx, loadUserQueryName, name)
 }

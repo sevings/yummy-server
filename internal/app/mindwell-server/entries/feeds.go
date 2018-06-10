@@ -95,7 +95,7 @@ func formatFloat(val float64) string {
 	return strconv.FormatFloat(val, 'f', 6, 64)
 }
 
-func loadFeed(tx *utils.AutoTx, userID int64) *models.Feed {
+func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64) *models.Feed {
 	feed := models.Feed{}
 
 	for {
@@ -120,7 +120,7 @@ func loadFeed(tx *utils.AutoTx, userID int64) *models.Feed {
 		}
 
 		entry.Vote = entryVoteStatus(author.ID, userID, vote)
-		author.Avatar = utils.NewAvatar(avatar)
+		author.Avatar = srv.NewAvatar(avatar)
 		entry.Author = &author
 		feed.Entries = append(feed.Entries, &entry)
 	}
@@ -128,7 +128,7 @@ func loadFeed(tx *utils.AutoTx, userID int64) *models.Feed {
 	return &feed
 }
 
-func loadLiveFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
@@ -145,7 +145,7 @@ func loadLiveFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, 
 	userID := int64(*uID)
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(tx, userID)
+	feed := loadFeed(srv, tx, userID)
 
 	if len(feed.Entries) == 0 {
 		return feed
@@ -181,10 +181,10 @@ func loadLiveFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, 
 	return feed
 }
 
-func newLiveLoader(db *sql.DB) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
+func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesLiveParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadLiveFeed(tx, userID, *params.Before, *params.After, *params.Limit)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadLiveFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
 		})
 	}
@@ -195,9 +195,9 @@ func loadAnonymousFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS 
 	return &models.Feed{}
 }
 
-func newAnonymousLoader(db *sql.DB) func(entries.GetEntriesAnonymousParams, *models.UserID) middleware.Responder {
+func newAnonymousLoader(srv *utils.MindwellServer) func(entries.GetEntriesAnonymousParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesAnonymousParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadAnonymousFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesAnonymousOK().WithPayload(feed)
 		})
@@ -208,19 +208,19 @@ func loadBestFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS strin
 	return &models.Feed{}
 }
 
-func newBestLoader(db *sql.DB) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
+func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadBestFeed(tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit, tlog int64) *models.Feed {
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit, tlog int64) *models.Feed {
 	userID := int64(*uID)
 	if userID == tlog {
-		return loadMyTlogFeed(tx, uID, beforeS, afterS, limit)
+		return loadMyTlogFeed(srv, tx, uID, beforeS, afterS, limit)
 	}
 
 	before := parseFloat(beforeS)
@@ -238,7 +238,7 @@ func loadTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, 
 
 	tx.Query(q, userID, tlog, arg, limit)
 
-	feed := loadFeed(tx, userID)
+	feed := loadFeed(srv, tx, userID)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -287,16 +287,16 @@ func loadTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, 
 	return feed
 }
 
-func newTlogLoader(db *sql.DB) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
+func newTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadTlogFeed(tx, userID, *params.Before, *params.After, *params.Limit, params.ID)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit, params.ID)
 			return entries.NewGetEntriesUsersIDOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadMyTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
@@ -313,7 +313,7 @@ func loadMyTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string
 	userID := int64(*uID)
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(tx, userID)
+	feed := loadFeed(srv, tx, userID)
 
 	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
 
@@ -358,10 +358,10 @@ func loadMyTlogFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string
 	return feed
 }
 
-func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
+func newMyTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesUsersMeParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadMyTlogFeed(tx, userID, *params.Before, *params.After, *params.Limit)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				return entries.NewGetEntriesUsersMeForbidden()
@@ -372,7 +372,7 @@ func newMyTlogLoader(db *sql.DB) func(entries.GetEntriesUsersMeParams, *models.U
 	}
 }
 
-func loadFriendsFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
@@ -389,7 +389,7 @@ func loadFriendsFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS strin
 	userID := int64(*uID)
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(tx, userID)
+	feed := loadFeed(srv, tx, userID)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -437,10 +437,10 @@ func loadFriendsFeed(tx *utils.AutoTx, uID *models.UserID, beforeS, afterS strin
 	return feed
 }
 
-func newFriendsFeedLoader(db *sql.DB) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
+func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesFriendsParams, userID *models.UserID) middleware.Responder {
-		return utils.Transact(db, func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadFriendsFeed(tx, userID, *params.Before, *params.After, *params.Limit)
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
 		})
 	}
