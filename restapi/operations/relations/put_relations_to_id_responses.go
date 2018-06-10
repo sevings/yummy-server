@@ -56,6 +56,49 @@ func (o *PutRelationsToIDOK) WriteResponse(rw http.ResponseWriter, producer runt
 	}
 }
 
+// PutRelationsToIDForbiddenCode is the HTTP code returned for type PutRelationsToIDForbidden
+const PutRelationsToIDForbiddenCode int = 403
+
+/*PutRelationsToIDForbidden access denied
+
+swagger:response putRelationsToIdForbidden
+*/
+type PutRelationsToIDForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPutRelationsToIDForbidden creates PutRelationsToIDForbidden with default headers values
+func NewPutRelationsToIDForbidden() *PutRelationsToIDForbidden {
+	return &PutRelationsToIDForbidden{}
+}
+
+// WithPayload adds the payload to the put relations to Id forbidden response
+func (o *PutRelationsToIDForbidden) WithPayload(payload *models.Error) *PutRelationsToIDForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put relations to Id forbidden response
+func (o *PutRelationsToIDForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PutRelationsToIDForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PutRelationsToIDNotFoundCode is the HTTP code returned for type PutRelationsToIDNotFound
 const PutRelationsToIDNotFoundCode int = 404
 
