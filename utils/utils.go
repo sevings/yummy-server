@@ -14,8 +14,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var cfg *goconf.Config
-
 // LoadConfig creates app config from file
 func LoadConfig(fileName string) *goconf.Config {
 	toml := goconf.NewTOMLFile(fileName + ".toml")
@@ -24,7 +22,7 @@ func LoadConfig(fileName string) *goconf.Config {
 	if err := config.Load(); err != nil {
 		log.Fatal(err)
 	}
-	cfg = config
+
 	return config
 }
 
