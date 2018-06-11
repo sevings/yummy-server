@@ -60,7 +60,7 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	fmt.Printf("ID: %s Resp: %s\n", id, resp)
 }
 
-func (pm *Postman) SendGreeting(address, name, link string) {
+func (pm *Postman) SendGreeting(address, name, code string) {
 	email := hermes.Email{
 		Body: hermes.Body{
 			Title: "Привет, " + name,
@@ -74,7 +74,7 @@ func (pm *Postman) SendGreeting(address, name, link string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "Начать пользоваться Mindwell",
-						Link:  link,
+						Link:  "http://mindwell.win/account/verification/" + address + "?code=" + code,
 					},
 				},
 			},

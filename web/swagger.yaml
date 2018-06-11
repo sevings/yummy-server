@@ -592,8 +592,6 @@ paths:
           minLength: 20
           maxLength: 20
           required: true
-      security:
-        - ApiKeyHeader: []
       tags:
         - account
       responses:

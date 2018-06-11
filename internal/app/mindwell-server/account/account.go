@@ -1,7 +1,6 @@
 package account
 
 import (
-	"crypto/sha256"
 	"database/sql"
 	"image"
 	"log"
@@ -23,10 +22,14 @@ import (
 func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(srv))
 	srv.API.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(srv))
+
 	srv.API.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(newRegistrator(srv))
 	srv.API.AccountPostAccountLoginHandler = account.PostAccountLoginHandlerFunc(newLoginer(srv))
 	srv.API.AccountPostAccountPasswordHandler = account.PostAccountPasswordHandlerFunc(newPasswordUpdater(srv))
 	srv.API.AccountGetAccountInvitesHandler = account.GetAccountInvitesHandlerFunc(newInvitesLoader(srv))
+
+	srv.API.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(newVerificationSender(srv))
+	srv.API.AccountGetAccountVerificationEmailHandler = account.GetAccountVerificationEmailHandlerFunc(newEmailVerifier(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -104,12 +107,6 @@ func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
 	return userID, rows == 1
 }
 
-func passwordHash(password string) []byte {
-	const salt = "RZZer3fSMd1K0DZpYdJe"
-	sum := sha256.Sum256([]byte(password + salt))
-	return sum[:]
-}
-
 func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, name string) {
 	path := srv.ImagesFolder() + strconv.Itoa(size) + "/" + folder
 	err := os.MkdirAll(path, 0777)
@@ -156,7 +153,7 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 }
 
 func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
-	hash := passwordHash(params.Password)
+	hash := srv.PasswordHash(params.Password)
 	apiKey := utils.GenerateString(32)
 
 	const q = `
@@ -302,6 +299,9 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
+			link := srv.VerificationCode(user.Account.Email)
+			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, link)
+
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})
 	}
@@ -312,7 +312,7 @@ const authProfileQueryByPassword = authProfileQuery + "WHERE lower(long_users.na
 func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			hash := passwordHash(params.Password)
+			hash := srv.PasswordHash(params.Password)
 			user := loadAuthProfile(srv, tx, authProfileQueryByPassword, params.Name, hash)
 			if tx.Error() != nil {
 				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password"))
@@ -323,14 +323,14 @@ func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) 
 	}
 }
 
-func setPassword(tx *utils.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) bool {
+func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountPasswordParams, userID *models.UserID) bool {
 	const q = `
         update users
         set password_hash = $1
         where password_hash = $2 and id = $3`
 
-	oldHash := passwordHash(params.OldPassword)
-	newHash := passwordHash(params.NewPassword)
+	oldHash := srv.PasswordHash(params.OldPassword)
+	newHash := srv.PasswordHash(params.NewPassword)
 
 	tx.Exec(q, newHash, oldHash, int64(*userID))
 
@@ -342,7 +342,7 @@ func setPassword(tx *utils.AutoTx, params account.PostAccountPasswordParams, use
 func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			ok := setPassword(tx, params, userID)
+			ok := setPassword(srv, tx, params, userID)
 			if tx.Error() != nil {
 				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error"))
 			}
@@ -387,6 +387,47 @@ func newInvitesLoader(srv *utils.MindwellServer) func(account.GetAccountInvitesP
 
 			res := models.GetAccountInvitesOKBody{Invites: invites}
 			return account.NewGetAccountInvitesOK().WithPayload(&res)
+		})
+	}
+}
+
+func newVerificationSender(srv *utils.MindwellServer) func(account.PostAccountVerificationParams, *models.UserID) middleware.Responder {
+	return func(params account.PostAccountVerificationParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = "SELECT verified, email, show_name from users where id = $1"
+
+			var verified bool
+			var email string
+			var name string
+			tx.Query(q, int64(*userID)).Scan(&verified, &email, &name)
+			if tx.Error() != nil {
+				return account.NewPostAccountVerificationForbidden()
+			}
+
+			if verified {
+				return account.NewPostAccountVerificationForbidden()
+			}
+
+			code := srv.VerificationCode(email)
+			srv.Mail.SendGreeting(email, name, code)
+
+			return account.NewPostAccountVerificationOK()
+		})
+	}
+}
+
+func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerificationEmailParams) middleware.Responder {
+	return func(params account.GetAccountVerificationEmailParams) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			code := srv.VerificationCode(params.Email)
+			if params.Code != code {
+				return account.NewGetAccountVerificationEmailBadRequest()
+			}
+
+			const q = "UPDATE users SET verified = true WHERE email = $1"
+			tx.Exec(q, params.Email)
+
+			return account.NewGetAccountVerificationEmailOK()
 		})
 	}
 }

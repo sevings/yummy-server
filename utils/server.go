@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"crypto/sha256"
 	"database/sql"
+	"encoding/base64"
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -11,7 +13,7 @@ import (
 )
 
 type MailSender interface {
-	SendGreeting(address, name, link string)
+	SendGreeting(address, name, code string)
 }
 
 type MindwellServer struct {
@@ -57,4 +59,17 @@ func (srv *MindwellServer) ImagesFolder() string {
 
 func (srv *MindwellServer) Transact(txFunc func(*AutoTx) middleware.Responder) middleware.Responder {
 	return Transact(srv.DB, txFunc)
+}
+
+func (srv *MindwellServer) PasswordHash(password string) []byte {
+	salt := srv.ConfigString("server.pass_salt")
+	sum := sha256.Sum256([]byte(password + salt))
+	return sum[:]
+}
+
+func (srv *MindwellServer) VerificationCode(email string) string {
+	salt := srv.ConfigString("server.mail_salt")
+	sum := sha256.Sum256([]byte(email + salt))
+	sha := base64.URLEncoding.EncodeToString(sum[:])
+	return sha
 }

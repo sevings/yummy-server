@@ -79,7 +79,7 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountNameNameHandler: account.GetAccountNameNameHandlerFunc(func(params account.GetAccountNameNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountNameName has not yet been implemented")
 		}),
-		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams, principal *models.UserID) middleware.Responder {
+		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
 		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {

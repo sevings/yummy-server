@@ -394,11 +394,6 @@ func init() {
           "account"
         ],
         "summary": "verify account email",
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
         "parameters": [
           {
             "maxLength": 500,

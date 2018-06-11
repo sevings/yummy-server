@@ -2,7 +2,9 @@ package test
 
 import (
 	"database/sql"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -28,11 +30,29 @@ var api *operations.MindwellAPI
 var db *sql.DB
 var userIDs []*models.UserID
 var profiles []*models.AuthProfile
+var esm EmailSenderMock
+
+type EmailSenderMock struct {
+	Emails []string
+	Codes  []string
+}
+
+func (esm *EmailSenderMock) SendGreeting(address, name, code string) {
+	esm.Emails = append(esm.Emails, address)
+	esm.Codes = append(esm.Codes, code)
+}
+
+func (esm *EmailSenderMock) Clear() {
+	esm.Emails = nil
+	esm.Codes = nil
+}
 
 func TestMain(m *testing.M) {
 	api = &operations.MindwellAPI{}
 	srv = utils.NewMindwellServer(api, "../configs/server")
 	db = srv.DB
+
+	srv.Mail = &esm
 
 	utils.ClearDatabase(db)
 
@@ -47,6 +67,19 @@ func TestMain(m *testing.M) {
 	relationsImpl.ConfigureAPI(srv)
 
 	userIDs, profiles = registerTestUsers(db)
+
+	if len(esm.Emails) != 3 {
+		log.Fatal("Email count")
+	}
+
+	for i := 0; i < 3; i++ {
+		email := "test" + strconv.Itoa(i)
+		if esm.Emails[i] != email {
+			log.Fatal("Greeting has not sent to ", email)
+		}
+	}
+
+	esm.Emails = nil
 
 	os.Exit(m.Run())
 }
@@ -132,6 +165,35 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 	}
 }
 
+func checkVerify(t *testing.T, userID int64, email string) {
+	req := require.New(t)
+	req.Equal(1, len(esm.Emails))
+	req.Equal(email, esm.Emails[0])
+	esm.Clear()
+
+	request := api.AccountPostAccountVerificationHandler.Handle
+	id := models.UserID(userID)
+	resp := request(account.PostAccountVerificationParams{}, &id)
+	_, ok := resp.(*account.PostAccountVerificationOK)
+
+	req.True(ok, "user %d", userID)
+	req.Equal(1, len(esm.Emails))
+	req.Equal(email, esm.Emails[0])
+	req.Equal(1, len(esm.Codes))
+
+	verify := api.AccountGetAccountVerificationEmailHandler.Handle
+	params := account.GetAccountVerificationEmailParams{
+		Code:  esm.Codes[0],
+		Email: esm.Emails[0],
+	}
+	resp = verify(params)
+	_, ok = resp.(*account.GetAccountVerificationEmailOK)
+
+	req.True(ok)
+
+	esm.Clear()
+}
+
 func TestRegister(t *testing.T) {
 	{
 		const q = "INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)"
@@ -171,6 +233,10 @@ func TestRegister(t *testing.T) {
 	checkEmail(t, "testeMAil", false)
 	checkLogin(t, user, params.Name, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Name), params.Password)
+
+	checkVerify(t, user.ID, user.Account.Email)
+	user.Account.Verified = true
+	checkLogin(t, user, params.Name, params.Password)
 
 	changePassword(t, user.ID, "test123", "new123", true)
 	changePassword(t, user.ID, "test123", "new123", false)
@@ -213,7 +279,7 @@ func TestRegister(t *testing.T) {
 	acc := user.Account
 	req.Equal(32, len(acc.APIKey))
 	req.NotEmpty(acc.ValidThru)
-	req.False(acc.Verified)
+	req.True(acc.Verified)
 
 	resp = register(params)
 	_, ok = resp.(*account.PostAccountRegisterBadRequest)
@@ -246,6 +312,10 @@ func TestRegister(t *testing.T) {
 	checkInvites(t, 1, 1)
 	checkName(t, "testtEst2", false)
 	checkEmail(t, "testeMAil2", false)
+	checkLogin(t, user, params.Name, params.Password)
+
+	checkVerify(t, user.ID, user.Account.Email)
+	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
 	changePassword(t, user.ID, "test123", "new123", true)
