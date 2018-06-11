@@ -10,10 +10,15 @@ import (
 	goconf "github.com/zpatrick/go-config"
 )
 
+type MailSender interface {
+	SendGreeting(address, name, link string)
+}
+
 type MindwellServer struct {
-	DB  *sql.DB
-	API *operations.MindwellAPI
-	Cfg *goconf.Config
+	DB   *sql.DB
+	API  *operations.MindwellAPI
+	Mail MailSender
+	cfg  *goconf.Config
 }
 
 func NewMindwellServer(api *operations.MindwellAPI, configPath string) *MindwellServer {
@@ -23,12 +28,12 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	return &MindwellServer{
 		DB:  db,
 		API: api,
-		Cfg: config,
+		cfg: config,
 	}
 }
 
 func (srv *MindwellServer) ConfigString(field string) string {
-	value, err := srv.Cfg.String(field)
+	value, err := srv.cfg.String(field)
 	if err != nil {
 		log.Println(err)
 	}
