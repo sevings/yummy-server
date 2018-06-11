@@ -32,7 +32,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	country, city,
 	css, background_color, text_color, 
 	font_family, font_size, text_alignment, 
-	birthday,
+	birthday, email, verified,
 	invited_by_id, 
 	invited_by_name, invited_by_show_name,
 	invited_by_is_online, 
@@ -43,6 +43,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
+	profile.Account = &models.AuthProfileAllOf1Account{}
 	profile.Counts = &models.ProfileAllOf1Counts{}
 
 	var backColor string
@@ -67,7 +68,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		&profile.Country, &profile.City,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
-		&bday,
+		&bday, &profile.Account.Email, &profile.Account.Verified,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
