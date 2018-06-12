@@ -14,6 +14,7 @@ import (
 
 type MailSender interface {
 	SendGreeting(address, name, code string)
+	SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment)
 }
 
 type MindwellServer struct {

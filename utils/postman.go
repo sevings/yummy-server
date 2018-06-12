@@ -3,8 +3,10 @@ package utils
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/matcornic/hermes"
+	"github.com/sevings/mindwell-server/models"
 	"gopkg.in/mailgun/mailgun-go.v1"
 )
 
@@ -46,6 +48,7 @@ func NewPostman(domain, apiKey, pubKey string) *Postman {
 }
 
 func (pm *Postman) send(email hermes.Email, address, subj, name string) {
+	email.Body.Title = "Привет, " + name
 	email.Body.Signature = "С наилучшими пожеланиями"
 	email.Body.Outros = []string{
 		"Появились вопросы или какая-то проблема? " +
@@ -67,13 +70,15 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	// }
 	// msg.SetHtml(html)
 
+	// err = ioutil.WriteFile("preview.html", []byte(html), 0644)
+	// err = ioutil.WriteFile("preview.txt", []byte(text), 0644)
+
 	pm.ch <- msg
 }
 
 func (pm *Postman) SendGreeting(address, name, code string) {
 	email := hermes.Email{
 		Body: hermes.Body{
-			Title: "Привет, " + name,
 			Intros: []string{
 				"добро пожаловать на борт нашего корабля!",
 				"Располагайся, чувствуй себя как дома. Тебе у нас понравится. ",
@@ -92,5 +97,42 @@ func (pm *Postman) SendGreeting(address, name, code string) {
 	}
 
 	subj := "Приветствуем в Mindwell, " + name + "!"
+	pm.send(email, address, subj, name)
+}
+
+func (pm *Postman) SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment) {
+	var ending string
+	if gender == models.ProfileAllOf1GenderFemale {
+		ending = "а"
+	}
+
+	var entry string
+	if len(entryTitle) > 0 {
+		entry = " «" + entryTitle + "»"
+	} else {
+		entry = ", за которой ты следишь"
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				cmt.Author.ShowName + " оставил" + ending + " новый комментарий к записи" + entry + ".",
+				"Вот, что он" + ending + " пишет:",
+				"«" + cmt.Content + "».",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Узнать подробности и ответить можно по ссылке:",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Открыть запись",
+						Link:  "http://mindwell.win/entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments",
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Новый комментарий к записи" + entry
 	pm.send(email, address, subj, name)
 }

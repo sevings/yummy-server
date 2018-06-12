@@ -42,6 +42,10 @@ func (esm *EmailSenderMock) SendGreeting(address, name, code string) {
 	esm.Codes = append(esm.Codes, code)
 }
 
+func (esm *EmailSenderMock) SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment) {
+	esm.Emails = append(esm.Emails, address)
+}
+
 func (esm *EmailSenderMock) Clear() {
 	esm.Emails = nil
 	esm.Codes = nil

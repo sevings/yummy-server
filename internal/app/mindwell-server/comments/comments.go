@@ -274,6 +274,25 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 	return &comment
 }
 
+func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.Comment) {
+	const titleQ = "SELECT title FROM entries WHERE id = $1"
+	var title string
+	tx.Query(titleQ, cmt.EntryID).Scan(&title)
+
+	const usersQ = `
+		SELECT show_name, email, gender.type
+		FROM users, watching, gender
+		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
+			AND users.gender = gender.id AND users.id <> $2 AND users.verified`
+
+	tx.Query(usersQ, cmt.EntryID, cmt.Author.ID)
+
+	var name, email, gender string
+	for tx.Scan(&name, &email, &gender) {
+		srv.Mail.SendNewComment(email, name, gender, title, cmt)
+	}
+}
+
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -288,6 +307,8 @@ func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDComm
 			if tx.Error() != nil {
 				return comments.NewPostEntriesIDCommentsNotFound()
 			}
+
+			notifyNewComment(srv, tx, comment)
 
 			return comments.NewPostEntriesIDCommentsCreated().WithPayload(comment)
 		})
