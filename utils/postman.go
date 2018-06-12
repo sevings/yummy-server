@@ -11,10 +11,11 @@ import (
 type Postman struct {
 	mg mailgun.Mailgun
 	h  hermes.Hermes
+	ch chan *mailgun.Message
 }
 
 func NewPostman(domain, apiKey, pubKey string) *Postman {
-	return &Postman{
+	pm := &Postman{
 		mg: mailgun.NewMailgun(domain, apiKey, pubKey),
 		h: hermes.Hermes{
 			Theme: &hermes.Flat{},
@@ -27,7 +28,21 @@ func NewPostman(domain, apiKey, pubKey string) *Postman {
 					"скопируй и вставь в адреснуню строку браузера следующую ссылку: ",
 			},
 		},
+		ch: make(chan *mailgun.Message, 10),
 	}
+
+	go func() {
+		for msg := range pm.ch {
+			resp, id, err := pm.mg.Send(msg)
+			if err == nil {
+				fmt.Printf("ID: %s Resp: %s\n", id, resp)
+			} else {
+				log.Println(err)
+			}
+		}
+	}()
+
+	return pm
 }
 
 func (pm *Postman) send(email hermes.Email, address, subj, name string) {
@@ -52,12 +67,7 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	// }
 	// msg.SetHtml(html)
 
-	resp, id, err := pm.mg.Send(msg)
-	if err != nil {
-		log.Println(err)
-	}
-
-	fmt.Printf("ID: %s Resp: %s\n", id, resp)
+	pm.ch <- msg
 }
 
 func (pm *Postman) SendGreeting(address, name, code string) {
