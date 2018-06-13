@@ -136,3 +136,44 @@ func (pm *Postman) SendNewComment(address, name, gender, entryTitle string, cmt 
 	subj := "Новый комментарий к записи" + entry
 	pm.send(email, address, subj, name)
 }
+
+func (pm *Postman) SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string) {
+	var ending, pronoun string
+	if gender == models.ProfileAllOf1GenderFemale {
+		ending = "ась"
+		pronoun = "её"
+	} else {
+		ending = "ся"
+		pronoun = "его"
+	}
+
+	var intro, text string
+	if isPrivate {
+		intro = hisShowName + " запрашивает доступ к чтению твоего тлога."
+		text = "Принять или отклонить запрос можно на странице " + pronoun + " профиля: "
+	} else {
+		intro = hisShowName + " подписал" + ending + " на твой тлог."
+		text = "Ссылка на " + pronoun + " профиль: "
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				intro,
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: text,
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  hisName,
+						Link:  "http://mindwell.win/users/" + hisName,
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Новый подписчик"
+	pm.send(email, address, subj, name)
+}

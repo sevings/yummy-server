@@ -46,6 +46,18 @@ func (esm *EmailSenderMock) SendNewComment(address, name, gender, entryTitle str
 	esm.Emails = append(esm.Emails, address)
 }
 
+func (esm *EmailSenderMock) SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
+func (esm *EmailSenderMock) CheckEmail(t *testing.T, email string) {
+	req := require.New(t)
+	req.Equal(1, len(esm.Emails))
+	req.Equal(email, esm.Emails[0])
+
+	esm.Clear()
+}
+
 func (esm *EmailSenderMock) Clear() {
 	esm.Emails = nil
 	esm.Codes = nil

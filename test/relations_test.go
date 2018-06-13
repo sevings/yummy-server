@@ -45,10 +45,10 @@ func checkRelation(t *testing.T, from, to *models.UserID, relation string) {
 	checkToRelation(t, to, from, relation)
 }
 
-func checkFollow(t *testing.T, user, to *models.UserID, relation string) {
+func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, relation string) {
 	put := api.RelationsPutRelationsToIDHandler.Handle
 	params := relations.PutRelationsToIDParams{
-		ID: int64(*to),
+		ID: to.ID,
 		R:  relation,
 	}
 	resp := put(params, user)
@@ -60,6 +60,12 @@ func checkFollow(t *testing.T, user, to *models.UserID, relation string) {
 	req.Equal(params.ID, status.To)
 	req.Equal(int64(*user), status.From)
 	req.Equal(relation, status.Relation)
+
+	if relation == models.RelationshipRelationFollowed && to.Account.Verified {
+		esm.CheckEmail(t, to.Account.Email)
+	} else {
+		req.Empty(esm.Emails)
+	}
 }
 
 func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
@@ -117,11 +123,11 @@ func TestRelationship(t *testing.T) {
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkFollow(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkFollow(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
+	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 

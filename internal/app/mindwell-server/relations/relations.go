@@ -41,6 +41,28 @@ func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelation
 	}
 }
 
+func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, isPrivate bool, from, to int64) {
+	const toQ = `
+		SELECT show_name, name, gender.type, verified
+		FROM users, gender 
+		WHERE users.id = $1 AND users.gender = gender.id
+	`
+
+	var hisName, hisShowName, hisGender string
+	var verified bool
+	tx.Query(toQ, to).Scan(&hisShowName, &hisName, &hisGender, &verified)
+	if !verified {
+		return
+	}
+
+	const fromQ = "SELECT email, show_name FROM users WHERE id = $1"
+
+	var email, name string
+	tx.Query(fromQ, from).Scan(&email, &name)
+
+	srv.Mail.SendNewFollower(email, name, isPrivate, hisShowName, hisName, hisGender)
+}
+
 func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.PutRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -50,9 +72,10 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 				return relations.NewPutRelationsToIDForbidden()
 			}
 
+			isPrivate := isPrivateTlog(tx, params.ID)
 			var relation *models.Relationship
 			var ok bool
-			if params.R == models.RelationshipRelationIgnored || !isPrivateTlog(tx, params.ID) {
+			if params.R == models.RelationshipRelationIgnored || !isPrivate {
 				relation, ok = setRelationship(tx, userID, params.ID, params.R)
 			} else {
 				relation, ok = setRelationship(tx, userID, params.ID, models.RelationshipRelationRequested)
@@ -60,6 +83,10 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 
 			if !ok {
 				return relations.NewPutRelationsToIDNotFound()
+			}
+
+			if params.R == models.RelationshipRelationFollowed {
+				sendNewFollower(srv, tx, isPrivate, userID, params.ID)
 			}
 
 			return relations.NewPutRelationsToIDOK().WithPayload(relation)
