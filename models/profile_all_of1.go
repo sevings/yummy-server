@@ -36,6 +36,9 @@ type ProfileAllOf1 struct {
 	// counts
 	Counts *ProfileAllOf1Counts `json:"counts,omitempty"`
 
+	// cover
+	Cover string `json:"cover,omitempty"`
+
 	// created at
 	CreatedAt float64 `json:"createdAt,omitempty"`
 

@@ -49,14 +49,26 @@ func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
 	base := srv.ConfigString("images.base_url")
 
 	return &models.Avatar{
-		X100: base + "100/" + avatar,
-		X400: base + "400/" + avatar,
-		X800: base + "800/" + avatar,
+		X42:  base + "42/" + avatar,
+		X124: base + "124/" + avatar,
 	}
 }
 
 func (srv *MindwellServer) ImagesFolder() string {
 	return srv.ConfigString("images.folder")
+}
+
+func (srv *MindwellServer) DefaultCover() string {
+	return srv.ConfigString("images.cover")
+}
+
+func (srv *MindwellServer) CoverUrl(cover string) string {
+	if len(cover) == 0 {
+		cover = srv.DefaultCover()
+	}
+
+	base := srv.ConfigString("images.base_url")
+	return base + "cover/" + cover
 }
 
 func (srv *MindwellServer) Transact(txFunc func(*AutoTx) middleware.Responder) middleware.Responder {

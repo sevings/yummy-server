@@ -34,8 +34,17 @@ type Entry struct {
 	// created at
 	CreatedAt float64 `json:"createdAt,omitempty"`
 
+	// cut content
+	CutContent string `json:"cutContent,omitempty"`
+
+	// cut title
+	CutTitle string `json:"cutTitle,omitempty"`
+
 	// edit content
 	EditContent string `json:"editContent,omitempty"`
+
+	// has cut
+	HasCut bool `json:"hasCut,omitempty"`
 
 	// id
 	// Minimum: 1

@@ -119,7 +119,7 @@ func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, na
 		img = imaging.Resize(img, size, size, imaging.CatmullRom)
 	}
 
-	err = imaging.Save(img, path+name, imaging.JPEGQuality(90))
+	err = imaging.Save(img, path+name, imaging.JPEGQuality(85))
 	if err != nil {
 		log.Print(err)
 	}
@@ -145,9 +145,8 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	folder := name[:1] + "/"
 	fileName := utils.GenerateString(5) + ".jpg"
 
-	saveAvatar(srv, img, 800, folder, fileName)
-	saveAvatar(srv, img, 400, folder, fileName)
-	saveAvatar(srv, img, 100, folder, fileName)
+	saveAvatar(srv, img, 124, folder, fileName)
+	saveAvatar(srv, img, 42, folder, fileName)
 
 	return folder + fileName
 }
@@ -208,6 +207,7 @@ entries_count, followings_count, followers_count,
 ignored_count, invited_count, comments_count, 
 favorites_count, tags_count,
 country, city,
+cover,
 css, background_color, text_color, 
 font_family, font_size, text_alignment, 
 email, verified, birthday,
@@ -245,6 +245,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
+		&profile.Cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
@@ -267,6 +268,8 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 4
 	}
+
+	profile.Cover = srv.CoverUrl(profile.Cover)
 
 	return &profile
 }

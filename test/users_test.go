@@ -70,6 +70,8 @@ func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profil
 	req.Equal(user.AgeUpperBound, profile.AgeUpperBound)
 	req.Equal(user.Country, profile.Country)
 	req.Equal(user.City, profile.City)
+	req.Equal(user.Cover, profile.Cover)
+	req.NotEmpty(user.Cover)
 }
 
 func TestGetUserByID(t *testing.T) {

@@ -27,11 +27,18 @@ definitions:
   Avatar:
     type: object
     properties:
-      x800:
+      x124:
         type: string
-      x400:
+      x42:
         type: string
-      x100:
+  Cover:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        minimum: 1
+      cover:
         type: string
   User:
     type: object
@@ -110,6 +117,8 @@ definitions:
             maxLength: 50
           design:
             $ref: '#/definitions/Design'
+          cover:
+            type: string
           counts:
             type: object
             properties:
@@ -223,10 +232,16 @@ definitions:
         format: float
       title:
         type: string
+      cutTitle: 
+        type: string
       content:
+        type: string
+      cutContent:
         type: string
       editContent:
         type: string
+      hasCut:
+        type: boolean
       wordCount:
         type: integer
       privacy:
@@ -943,6 +958,27 @@ paths:
           description: Avatar
           schema:
             $ref: '#/definitions/Avatar'
+        400:
+          description: bad request
+          schema:
+            $ref: '#/definitions/Error'
+  /users/me/cover:
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: file
+          type: file
+      responses:
+        200:
+          description: Cover
+          schema:
+            $ref: '#/definitions/Cover'
         400:
           description: bad request
           schema:

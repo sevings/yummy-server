@@ -2259,6 +2259,42 @@ func init() {
         }
       }
     },
+    "/users/me/cover": {
+      "put": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "file",
+            "name": "file",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cover",
+            "schema": {
+              "$ref": "#/definitions/Cover"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/users/me/followers": {
       "get": {
         "tags": [
@@ -2662,13 +2698,10 @@ func init() {
     "Avatar": {
       "type": "object",
       "properties": {
-        "x100": {
+        "x124": {
           "type": "string"
         },
-        "x400": {
-          "type": "string"
-        },
-        "x800": {
+        "x42": {
           "type": "string"
         }
       }
@@ -2746,6 +2779,19 @@ func init() {
         }
       }
     },
+    "Cover": {
+      "type": "object",
+      "properties": {
+        "cover": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        }
+      }
+    },
     "Design": {
       "type": "object",
       "properties": {
@@ -2794,8 +2840,17 @@ func init() {
           "type": "number",
           "format": "double"
         },
+        "cutContent": {
+          "type": "string"
+        },
+        "cutTitle": {
+          "type": "string"
+        },
         "editContent": {
           "type": "string"
+        },
+        "hasCut": {
+          "type": "boolean"
         },
         "id": {
           "type": "integer",
@@ -2958,6 +3013,9 @@ func init() {
                   "type": "integer"
                 }
               }
+            },
+            "cover": {
+              "type": "string"
             },
             "createdAt": {
               "type": "number",

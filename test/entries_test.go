@@ -27,6 +27,9 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.False(entry.IsFavorited)
 	req.Equal(watching, entry.IsWatching)
 	req.Equal(title, entry.Title)
+	req.Empty(entry.CutTitle)
+	req.Empty(entry.CutContent)
+	req.False(entry.HasCut)
 
 	if canEdit {
 		req.Equal(content, entry.EditContent)

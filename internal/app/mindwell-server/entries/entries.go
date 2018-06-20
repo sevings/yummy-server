@@ -2,7 +2,10 @@ package entries
 
 import (
 	"database/sql"
+	"fmt"
 	"regexp"
+	"strings"
+	"unicode"
 
 	"github.com/golang-commonmark/markdown"
 
@@ -37,7 +40,7 @@ var md *markdown.Markdown
 
 func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
-	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true))
+	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Tables(false))
 }
 
 func wordCount(content, title string) int64 {
@@ -49,6 +52,47 @@ func wordCount(content, title string) int64 {
 	wc += int64(len(titleWords))
 
 	return wc
+}
+
+func cutText(text, format string, size int) (string, bool) {
+	if len(text) <= size {
+		return text, false
+	}
+
+	text = fmt.Sprintf(format, text)
+
+	var isSpace bool
+	trim := func(r rune) bool {
+		if isSpace {
+			return unicode.IsSpace(r)
+		}
+
+		isSpace = unicode.IsSpace(r)
+		return true
+	}
+	text = strings.TrimRightFunc(text, trim)
+
+	text += "&hellip;"
+
+	return text, true
+}
+
+func cutEntry(title, content string) (cutTitle string, cutContent string, hasCut bool) {
+	const titleLength = 60
+	const titleFormat = "%.60s"
+	cutTitle, isTitleCut := cutText(title, titleFormat, titleLength)
+
+	const contentLength = 500
+	const contentFormat = "%.500s"
+	cutContent, isContentCut := cutText(content, contentFormat, contentLength)
+
+	hasCut = isTitleCut || isContentCut
+	if !hasCut {
+		cutTitle = ""
+		cutContent = ""
+	}
+
+	return
 }
 
 func entryCategory(entry *models.Entry) string {
@@ -65,10 +109,15 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
+	cutTitle, cutContent, hasCut := cutEntry(title, content)
+
 	entry := models.Entry{
 		Title:       title,
+		CutTitle:    cutTitle,
 		Content:     md.RenderToString([]byte(content)),
+		CutContent:  md.RenderToString([]byte(cutContent)),
 		EditContent: content,
+		HasCut:      hasCut,
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
 		Vote:        models.EntryVoteBan,
@@ -78,13 +127,15 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	category := entryCategory(&entry)
 
 	const q = `
-	INSERT INTO entries (author_id, title, content, edit_content, word_count, visible_for, is_votable, category)
-	VALUES ($1, $2, $3, $4, $5, (SELECT id FROM entry_privacy WHERE type = $6), 
-		$7, (SELECT id from categories WHERE type = $8))
+	INSERT INTO entries (author_id, title, cut_title, content, cut_content, edit_content, 
+		has_cut, word_count, visible_for, is_votable, category)
+	VALUES ($1, $2, $3, $4, $5, $6,$7, $8,
+		(SELECT id FROM entry_privacy WHERE type = $9), 
+		$10, (SELECT id from categories WHERE type = $11))
 	RETURNING id, extract(epoch from created_at)`
 
-	tx.Query(q, userID, title, entry.Content, entry.EditContent, entry.WordCount,
-		privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
+	tx.Query(q, userID, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent,
+		hasCut, entry.WordCount, privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
 	author := users.LoadUserByID(srv, tx, userID)
@@ -113,11 +164,16 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
+	cutTitle, cutContent, hasCut := cutEntry(title, content)
+
 	entry := models.Entry{
 		ID:          entryID,
 		Title:       title,
+		CutTitle:    cutTitle,
 		Content:     md.RenderToString([]byte(content)),
+		CutContent:  md.RenderToString([]byte(cutContent)),
 		EditContent: content,
+		HasCut:      hasCut,
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
 		Vote:        models.EntryVoteBan,
@@ -129,15 +185,16 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 
 	const q = `
 	UPDATE entries
-	SET title = $1, content = $2, edit_content = $3, word_count = $4, 
-	visible_for = (SELECT id FROM entry_privacy WHERE type = $5), 
-	is_votable = $6,
-	category = (SELECT id from categories WHERE type = $7)
-	WHERE id = $8 AND author_id = $9
+	SET title = $1, cut_title = $2, content = $3, cut_content = $4, edit_content = $5, has_cut = $6, 
+	word_count = $7, 
+	visible_for = (SELECT id FROM entry_privacy WHERE type = $8), 
+	is_votable = $9,
+	category = (SELECT id from categories WHERE type = $10)
+	WHERE id = $11 AND author_id = $12
 	RETURNING extract(epoch from created_at)`
 
-	tx.Query(q, title, entry.Content, entry.EditContent, entry.WordCount,
-		privacy, isVotable, category, entryID, userID).Scan(&entry.CreatedAt)
+	tx.Query(q, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent, hasCut,
+		entry.WordCount, privacy, isVotable, category, entryID, userID).Scan(&entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
 
@@ -189,8 +246,8 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	var vote sql.NullFloat64
 	var avatar string
 	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
-		&entry.Title, &entry.Content, &entry.EditContent, &entry.WordCount,
-		&entry.Privacy,
+		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
+		&entry.HasCut, &entry.WordCount, &entry.Privacy,
 		&entry.IsVotable, &entry.CommentCount,
 		&author.ID, &author.Name, &author.ShowName,
 		&author.IsOnline,

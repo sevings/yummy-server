@@ -30,6 +30,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	ignored_count, invited_count, comments_count, 
 	favorites_count, tags_count,
 	country, city,
+	cover,
 	css, background_color, text_color, 
 	font_family, font_size, text_alignment, 
 	birthday, email, verified,
@@ -66,6 +67,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
+		&profile.Cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&bday, &profile.Account.Email, &profile.Account.Verified,
@@ -88,6 +90,8 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
+
+	profile.Cover = srv.CoverUrl(profile.Cover)
 
 	return &profile
 }
