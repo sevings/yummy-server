@@ -64,7 +64,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	esm.Emails = nil
+	esm.Clear()
 
 	os.Exit(m.Run())
 }
@@ -151,16 +151,14 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 }
 
 func checkVerify(t *testing.T, userID int64, email string) {
-	req := require.New(t)
-	req.Equal(1, len(esm.Emails))
-	req.Equal(email, esm.Emails[0])
-	esm.Clear()
+	esm.CheckEmail(t, email)
 
 	request := api.AccountPostAccountVerificationHandler.Handle
 	id := models.UserID(userID)
 	resp := request(account.PostAccountVerificationParams{}, &id)
 	_, ok := resp.(*account.PostAccountVerificationOK)
 
+	req := require.New(t)
 	req.True(ok, "user %d", userID)
 	req.Equal(1, len(esm.Emails))
 	req.Equal(email, esm.Emails[0])
