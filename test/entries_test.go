@@ -363,6 +363,7 @@ func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before
 func TestLoadFriendsFeed(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationFollowed)
 
