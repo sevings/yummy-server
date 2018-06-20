@@ -17,12 +17,15 @@ import (
 // swagger:model Cover
 type Cover struct {
 
-	// cover
-	Cover string `json:"cover,omitempty"`
-
-	// id
+	// user id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
+
+	// x1920
+	X1920 string `json:"x1920,omitempty"`
+
+	// x318
+	X318 string `json:"x318,omitempty"`
 }
 
 // Validate validates this cover

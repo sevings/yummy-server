@@ -37,7 +37,7 @@ type ProfileAllOf1 struct {
 	Counts *ProfileAllOf1Counts `json:"counts,omitempty"`
 
 	// cover
-	Cover string `json:"cover,omitempty"`
+	Cover *Cover `json:"cover,omitempty"`
 
 	// created at
 	CreatedAt float64 `json:"createdAt,omitempty"`
@@ -86,6 +86,11 @@ func (m *ProfileAllOf1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCounts(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateCover(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -163,6 +168,25 @@ func (m *ProfileAllOf1) validateCounts(formats strfmt.Registry) error {
 		if err := m.Counts.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("counts")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *ProfileAllOf1) validateCover(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Cover) { // not required
+		return nil
+	}
+
+	if m.Cover != nil {
+
+		if err := m.Cover.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cover")
 			}
 			return err
 		}

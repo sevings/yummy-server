@@ -230,7 +230,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 	var age sql.NullInt64
 	var bday sql.NullString
-	var avatar string
+	var avatar, cover string
 	var invitedAvatar string
 
 	tx.Query(query, args...)
@@ -245,7 +245,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
-		&profile.Cover,
+		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
@@ -269,7 +269,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		profile.AgeUpperBound = profile.AgeLowerBound + 4
 	}
 
-	profile.Cover = srv.CoverUrl(profile.Cover)
+	profile.Cover = srv.NewCover(profile.ID, cover)
 
 	return &profile
 }

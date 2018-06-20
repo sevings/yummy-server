@@ -38,7 +38,10 @@ definitions:
         type: integer
         format: int64
         minimum: 1
-      cover:
+        description: user id
+      x1920:
+        type: string
+      x318:
         type: string
   User:
     type: object
@@ -118,7 +121,7 @@ definitions:
           design:
             $ref: '#/definitions/Design'
           cover:
-            type: string
+            $ref: '#/definitions/Cover'
           counts:
             type: object
             properties:

@@ -2782,13 +2782,17 @@ func init() {
     "Cover": {
       "type": "object",
       "properties": {
-        "cover": {
-          "type": "string"
-        },
         "id": {
+          "description": "user id",
           "type": "integer",
           "format": "int64",
           "minimum": 1
+        },
+        "x1920": {
+          "type": "string"
+        },
+        "x318": {
+          "type": "string"
         }
       }
     },
@@ -3015,7 +3019,7 @@ func init() {
               }
             },
             "cover": {
-              "type": "string"
+              "$ref": "#/definitions/Cover"
             },
             "createdAt": {
               "type": "number",

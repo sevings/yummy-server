@@ -52,7 +52,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 
 	var age sql.NullInt64
 	var bday sql.NullString
-	var avatar string
+	var avatar, cover string
 	var invitedAvatar string
 
 	tx.Query(q, *userID)
@@ -67,7 +67,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
-		&profile.Cover,
+		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&bday, &profile.Account.Email, &profile.Account.Verified,
@@ -91,7 +91,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	profile.Cover = srv.CoverUrl(profile.Cover)
+	profile.Cover = srv.NewCover(profile.ID, cover)
 
 	return &profile
 }

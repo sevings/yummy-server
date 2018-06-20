@@ -69,7 +69,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var textColor string
 
 	var age sql.NullInt64
-	var avatar string
+	var avatar, cover string
 	var invitedAvatar string
 
 	tx.Query(query, arg)
@@ -84,7 +84,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
 		&profile.Counts.Favorites, &profile.Counts.Tags,
 		&profile.Country, &profile.City,
-		&profile.Cover,
+		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.InvitedBy.ID,
@@ -98,7 +98,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	profile.Avatar = srv.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
-	profile.Cover = srv.CoverUrl(profile.Cover)
+	profile.Cover = srv.NewCover(profile.ID, cover)
 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
