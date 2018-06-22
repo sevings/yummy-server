@@ -303,8 +303,8 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
 			}
 
-			link := srv.VerificationCode(user.Account.Email)
-			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, link)
+			code := srv.VerificationCode(user.Account.Email)
+			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, code)
 
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})

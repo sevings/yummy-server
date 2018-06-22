@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/sha256"
 	"database/sql"
-	"encoding/base64"
+	"encoding/hex"
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -86,6 +86,6 @@ func (srv *MindwellServer) PasswordHash(password string) []byte {
 func (srv *MindwellServer) VerificationCode(email string) string {
 	salt := srv.ConfigString("server.mail_salt")
 	sum := sha256.Sum256([]byte(email + salt))
-	sha := base64.URLEncoding.EncodeToString(sum[:])
+	sha := hex.EncodeToString(sum[:])
 	return sha
 }
