@@ -2703,6 +2703,9 @@ func init() {
         },
         "x42": {
           "type": "string"
+        },
+        "x92": {
+          "type": "string"
         }
       }
     },
@@ -2989,38 +2992,6 @@ func init() {
               "type": "string",
               "maxLength": 50
             },
-            "counts": {
-              "type": "object",
-              "properties": {
-                "comments": {
-                  "type": "integer"
-                },
-                "entries": {
-                  "type": "integer"
-                },
-                "favorites": {
-                  "type": "integer"
-                },
-                "followers": {
-                  "type": "integer"
-                },
-                "followings": {
-                  "type": "integer"
-                },
-                "ignored": {
-                  "type": "integer"
-                },
-                "invited": {
-                  "type": "integer"
-                },
-                "tags": {
-                  "type": "integer"
-                }
-              }
-            },
-            "cover": {
-              "$ref": "#/definitions/Cover"
-            },
             "createdAt": {
               "type": "number",
               "format": "double"
@@ -3041,14 +3012,6 @@ func init() {
             },
             "isDaylog": {
               "type": "boolean"
-            },
-            "karma": {
-              "type": "number",
-              "format": "float"
-            },
-            "lastSeenAt": {
-              "type": "number",
-              "format": "double"
             },
             "privacy": {
               "type": "string",
@@ -3079,10 +3042,6 @@ func init() {
                   ]
                 }
               }
-            },
-            "title": {
-              "type": "string",
-              "maxLength": 260
             }
           },
           "example": {
@@ -3143,6 +3102,38 @@ func init() {
         "avatar": {
           "$ref": "#/definitions/Avatar"
         },
+        "counts": {
+          "type": "object",
+          "properties": {
+            "comments": {
+              "type": "integer"
+            },
+            "entries": {
+              "type": "integer"
+            },
+            "favorites": {
+              "type": "integer"
+            },
+            "followers": {
+              "type": "integer"
+            },
+            "followings": {
+              "type": "integer"
+            },
+            "ignored": {
+              "type": "integer"
+            },
+            "invited": {
+              "type": "integer"
+            },
+            "tags": {
+              "type": "integer"
+            }
+          }
+        },
+        "cover": {
+          "$ref": "#/definitions/Cover"
+        },
         "id": {
           "type": "integer",
           "format": "int64",
@@ -3150,6 +3141,14 @@ func init() {
         },
         "isOnline": {
           "type": "boolean"
+        },
+        "karma": {
+          "type": "number",
+          "format": "float"
+        },
+        "lastSeenAt": {
+          "type": "number",
+          "format": "double"
         },
         "name": {
           "type": "string",
@@ -3160,6 +3159,10 @@ func init() {
           "type": "string",
           "maxLength": 20,
           "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 260
         }
       },
       "example": {

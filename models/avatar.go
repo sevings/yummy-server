@@ -21,6 +21,9 @@ type Avatar struct {
 
 	// x42
 	X42 string `json:"x42,omitempty"`
+
+	// x92
+	X92 string `json:"x92,omitempty"`
 }
 
 // Validate validates this avatar

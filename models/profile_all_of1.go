@@ -33,12 +33,6 @@ type ProfileAllOf1 struct {
 	// Max Length: 50
 	Country string `json:"country,omitempty"`
 
-	// counts
-	Counts *ProfileAllOf1Counts `json:"counts,omitempty"`
-
-	// cover
-	Cover *Cover `json:"cover,omitempty"`
-
 	// created at
 	CreatedAt float64 `json:"createdAt,omitempty"`
 
@@ -54,21 +48,11 @@ type ProfileAllOf1 struct {
 	// is daylog
 	IsDaylog bool `json:"isDaylog,omitempty"`
 
-	// karma
-	Karma float32 `json:"karma,omitempty"`
-
-	// last seen at
-	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
-
 	// privacy
 	Privacy string `json:"privacy,omitempty"`
 
 	// relations
 	Relations *ProfileAllOf1Relations `json:"relations,omitempty"`
-
-	// title
-	// Max Length: 260
-	Title string `json:"title,omitempty"`
 }
 
 // Validate validates this profile all of1
@@ -81,16 +65,6 @@ func (m *ProfileAllOf1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCountry(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateCounts(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateCover(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -116,11 +90,6 @@ func (m *ProfileAllOf1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRelations(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTitle(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -152,44 +121,6 @@ func (m *ProfileAllOf1) validateCountry(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("country", "body", string(m.Country), 50); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (m *ProfileAllOf1) validateCounts(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Counts) { // not required
-		return nil
-	}
-
-	if m.Counts != nil {
-
-		if err := m.Counts.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("counts")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *ProfileAllOf1) validateCover(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Cover) { // not required
-		return nil
-	}
-
-	if m.Cover != nil {
-
-		if err := m.Cover.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cover")
-			}
-			return err
-		}
 	}
 
 	return nil
@@ -331,19 +262,6 @@ func (m *ProfileAllOf1) validateRelations(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *ProfileAllOf1) validateTitle(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Title) { // not required
-		return nil
-	}
-
-	if err := validate.MaxLength("title", "body", string(m.Title), 260); err != nil {
-		return err
 	}
 
 	return nil

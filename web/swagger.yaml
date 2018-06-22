@@ -29,6 +29,8 @@ definitions:
     properties:
       x124:
         type: string
+      x92:
+        type: string
       x42:
         type: string
   Cover:
@@ -58,10 +60,40 @@ definitions:
         type: string
         minLength: 1
         maxLength: 20
+      title:
+        type: string
+        maxLength: 260
+      karma:
+        type: number
+        format: float
       isOnline:
         type: boolean
+      lastSeenAt:
+        type: number
+        format: double
       avatar:
         $ref: '#/definitions/Avatar'
+      cover:
+        $ref: '#/definitions/Cover'
+      counts:
+        type: object
+        properties:
+          entries:
+            type: integer
+          followings:
+            type: integer
+          followers:
+            type: integer
+          ignored:
+            type: integer
+          invited:
+            type: integer
+          comments:
+            type: integer
+          favorites:
+            type: integer
+          tags:
+            type: integer
     example:
       id: 1
       name: 'binque'
@@ -94,16 +126,7 @@ definitions:
           privacy:
             type: string
             enum: [all, followers]
-          title:
-            type: string
-            maxLength: 260
-          karma:
-            type: number
-            format: float
           createdAt:
-            type: number
-            format: double
-          lastSeenAt:
             type: number
             format: double
           invitedBy:
@@ -120,27 +143,6 @@ definitions:
             maxLength: 50
           design:
             $ref: '#/definitions/Design'
-          cover:
-            $ref: '#/definitions/Cover'
-          counts:
-            type: object
-            properties:
-              entries:
-                type: integer
-              followings:
-                type: integer
-              followers:
-                type: integer
-              ignored:
-                type: integer
-              invited:
-                type: integer
-              comments:
-                type: integer
-              favorites:
-                type: integer
-              tags:
-                type: integer
           relations:
             type: object
             properties:

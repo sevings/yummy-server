@@ -50,6 +50,7 @@ func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
 
 	return &models.Avatar{
 		X42:  base + "42/" + avatar,
+		X92:  base + "92/" + avatar,
 		X124: base + "124/" + avatar,
 	}
 }
