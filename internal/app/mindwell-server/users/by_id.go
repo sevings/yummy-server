@@ -26,7 +26,7 @@ func loadUsersRelatedToID(srv *utils.MindwellServer, usersQuery, relation string
 
 func newFollowersLoader(srv *utils.MindwellServer) func(users.GetUsersIDFollowersParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersIDFollowersParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToID(srv, usersQueryToID, models.UserListRelationFollowers,
+		return loadUsersRelatedToID(srv, usersQueryToID, models.FriendListRelationFollowers,
 			userID,
 			params.ID, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
@@ -34,7 +34,7 @@ func newFollowersLoader(srv *utils.MindwellServer) func(users.GetUsersIDFollower
 
 func newFollowingsLoader(srv *utils.MindwellServer) func(users.GetUsersIDFollowingsParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersIDFollowingsParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToID(srv, usersQueryFromID, models.UserListRelationFollowings,
+		return loadUsersRelatedToID(srv, usersQueryFromID, models.FriendListRelationFollowings,
 			userID,
 			params.ID, models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
@@ -42,7 +42,7 @@ func newFollowingsLoader(srv *utils.MindwellServer) func(users.GetUsersIDFollowi
 
 func newInvitedLoader(srv *utils.MindwellServer) func(users.GetUsersIDInvitedParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersIDInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadUsersRelatedToID(srv, invitedUsersQuery, models.UserListRelationInvited,
+		return loadUsersRelatedToID(srv, invitedUsersQuery, models.FriendListRelationInvited,
 			userID, params.ID, *params.Limit, *params.Skip)
 	}
 }

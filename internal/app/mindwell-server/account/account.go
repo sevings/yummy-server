@@ -223,7 +223,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.UserCounts{}
+	profile.Counts = &models.FriendAllOf1Counts{}
 	profile.Account = &models.AuthProfileAllOf1Account{}
 
 	var backColor string

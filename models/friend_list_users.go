@@ -14,12 +14,12 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// UserListUsers user list users
-// swagger:model userListUsers
-type UserListUsers []*User
+// FriendListUsers friend list users
+// swagger:model friendListUsers
+type FriendListUsers []*Friend
 
-// Validate validates this user list users
-func (m UserListUsers) Validate(formats strfmt.Registry) error {
+// Validate validates this friend list users
+func (m FriendListUsers) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	for i := 0; i < len(m); i++ {

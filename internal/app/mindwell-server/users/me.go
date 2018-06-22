@@ -45,7 +45,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
 	profile.Account = &models.AuthProfileAllOf1Account{}
-	profile.Counts = &models.UserCounts{}
+	profile.Counts = &models.FriendAllOf1Counts{}
 
 	var backColor string
 	var textColor string
@@ -237,35 +237,35 @@ func loadRelatedToMeUsers(srv *utils.MindwellServer, userID *models.UserID, quer
 
 func newMyFollowersLoader(srv *utils.MindwellServer) func(me.GetUsersMeFollowersParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowersParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(srv, userID, usersQueryToID, models.UserListRelationFollowers,
+		return loadRelatedToMeUsers(srv, userID, usersQueryToID, models.FriendListRelationFollowers,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyFollowingsLoader(srv *utils.MindwellServer) func(me.GetUsersMeFollowingsParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeFollowingsParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationFollowings,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.FriendListRelationFollowings,
 			models.RelationshipRelationFollowed, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyInvitedLoader(srv *utils.MindwellServer) func(me.GetUsersMeInvitedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeInvitedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(srv, userID, invitedUsersQuery, models.UserListRelationInvited,
+		return loadRelatedToMeUsers(srv, userID, invitedUsersQuery, models.FriendListRelationInvited,
 			*params.Limit, *params.Skip)
 	}
 }
 
 func newMyIgnoredLoader(srv *utils.MindwellServer) func(me.GetUsersMeIgnoredParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeIgnoredParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationIgnored,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.FriendListRelationIgnored,
 			models.RelationshipRelationIgnored, *params.Limit, *params.Skip)
 	}
 }
 
 func newMyRequestedLoader(srv *utils.MindwellServer) func(me.GetUsersMeRequestedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetUsersMeRequestedParams, userID *models.UserID) middleware.Responder {
-		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.UserListRelationRequested,
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromID, models.FriendListRelationRequested,
 			models.RelationshipRelationRequested, *params.Limit, *params.Skip)
 	}
 }

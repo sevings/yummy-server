@@ -12,43 +12,43 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// Profile profile
-// swagger:model Profile
-type Profile struct {
-	Friend
+// Friend friend
+// swagger:model Friend
+type Friend struct {
+	User
 
-	ProfileAllOf1
+	FriendAllOf1
 }
 
 // UnmarshalJSON unmarshals this object from a JSON structure
-func (m *Profile) UnmarshalJSON(raw []byte) error {
+func (m *Friend) UnmarshalJSON(raw []byte) error {
 
-	var aO0 Friend
+	var aO0 User
 	if err := swag.ReadJSON(raw, &aO0); err != nil {
 		return err
 	}
-	m.Friend = aO0
+	m.User = aO0
 
-	var aO1 ProfileAllOf1
+	var aO1 FriendAllOf1
 	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
 	}
-	m.ProfileAllOf1 = aO1
+	m.FriendAllOf1 = aO1
 
 	return nil
 }
 
 // MarshalJSON marshals this object to a JSON structure
-func (m Profile) MarshalJSON() ([]byte, error) {
+func (m Friend) MarshalJSON() ([]byte, error) {
 	var _parts [][]byte
 
-	aO0, err := swag.WriteJSON(m.Friend)
+	aO0, err := swag.WriteJSON(m.User)
 	if err != nil {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
 
-	aO1, err := swag.WriteJSON(m.ProfileAllOf1)
+	aO1, err := swag.WriteJSON(m.FriendAllOf1)
 	if err != nil {
 		return nil, err
 	}
@@ -57,15 +57,15 @@ func (m Profile) MarshalJSON() ([]byte, error) {
 	return swag.ConcatJSON(_parts...), nil
 }
 
-// Validate validates this profile
-func (m *Profile) Validate(formats strfmt.Registry) error {
+// Validate validates this friend
+func (m *Friend) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.Friend.Validate(formats); err != nil {
+	if err := m.User.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 
-	if err := m.ProfileAllOf1.Validate(formats); err != nil {
+	if err := m.FriendAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -76,7 +76,7 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *Profile) MarshalBinary() ([]byte, error) {
+func (m *Friend) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -84,8 +84,8 @@ func (m *Profile) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *Profile) UnmarshalBinary(b []byte) error {
-	var res Profile
+func (m *Friend) UnmarshalBinary(b []byte) error {
+	var res Friend
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

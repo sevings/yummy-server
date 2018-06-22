@@ -15,9 +15,9 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// UserList user list
-// swagger:model UserList
-type UserList struct {
+// FriendList friend list
+// swagger:model FriendList
+type FriendList struct {
 
 	// relation
 	Relation string `json:"relation,omitempty"`
@@ -27,11 +27,11 @@ type UserList struct {
 
 	// users
 	// Required: true
-	Users UserListUsers `json:"users"`
+	Users FriendListUsers `json:"users"`
 }
 
-// Validate validates this user list
-func (m *UserList) Validate(formats strfmt.Registry) error {
+// Validate validates this friend list
+func (m *FriendList) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateRelation(formats); err != nil {
@@ -55,7 +55,7 @@ func (m *UserList) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-var userListTypeRelationPropEnum []interface{}
+var friendListTypeRelationPropEnum []interface{}
 
 func init() {
 	var res []string
@@ -63,32 +63,32 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		userListTypeRelationPropEnum = append(userListTypeRelationPropEnum, v)
+		friendListTypeRelationPropEnum = append(friendListTypeRelationPropEnum, v)
 	}
 }
 
 const (
-	// UserListRelationFollowers captures enum value "followers"
-	UserListRelationFollowers string = "followers"
-	// UserListRelationFollowings captures enum value "followings"
-	UserListRelationFollowings string = "followings"
-	// UserListRelationRequested captures enum value "requested"
-	UserListRelationRequested string = "requested"
-	// UserListRelationIgnored captures enum value "ignored"
-	UserListRelationIgnored string = "ignored"
-	// UserListRelationInvited captures enum value "invited"
-	UserListRelationInvited string = "invited"
+	// FriendListRelationFollowers captures enum value "followers"
+	FriendListRelationFollowers string = "followers"
+	// FriendListRelationFollowings captures enum value "followings"
+	FriendListRelationFollowings string = "followings"
+	// FriendListRelationRequested captures enum value "requested"
+	FriendListRelationRequested string = "requested"
+	// FriendListRelationIgnored captures enum value "ignored"
+	FriendListRelationIgnored string = "ignored"
+	// FriendListRelationInvited captures enum value "invited"
+	FriendListRelationInvited string = "invited"
 )
 
 // prop value enum
-func (m *UserList) validateRelationEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, userListTypeRelationPropEnum); err != nil {
+func (m *FriendList) validateRelationEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, friendListTypeRelationPropEnum); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *UserList) validateRelation(formats strfmt.Registry) error {
+func (m *FriendList) validateRelation(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Relation) { // not required
 		return nil
@@ -102,7 +102,7 @@ func (m *UserList) validateRelation(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UserList) validateSubject(formats strfmt.Registry) error {
+func (m *FriendList) validateSubject(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Subject) { // not required
 		return nil
@@ -121,7 +121,7 @@ func (m *UserList) validateSubject(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *UserList) validateUsers(formats strfmt.Registry) error {
+func (m *FriendList) validateUsers(formats strfmt.Registry) error {
 
 	if err := validate.Required("users", "body", m.Users); err != nil {
 		return err
@@ -138,7 +138,7 @@ func (m *UserList) validateUsers(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *UserList) MarshalBinary() ([]byte, error) {
+func (m *FriendList) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -146,8 +146,8 @@ func (m *UserList) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *UserList) UnmarshalBinary(b []byte) error {
-	var res UserList
+func (m *FriendList) UnmarshalBinary(b []byte) error {
+	var res FriendList
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

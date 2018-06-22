@@ -12,9 +12,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ProfileAllOf1Counts profile all of1 counts
-// swagger:model profileAllOf1Counts
-type ProfileAllOf1Counts struct {
+// FriendAllOf1Counts friend all of1 counts
+// swagger:model friendAllOf1Counts
+type FriendAllOf1Counts struct {
 
 	// comments
 	Comments int64 `json:"comments,omitempty"`
@@ -41,8 +41,8 @@ type ProfileAllOf1Counts struct {
 	Tags int64 `json:"tags,omitempty"`
 }
 
-// Validate validates this profile all of1 counts
-func (m *ProfileAllOf1Counts) Validate(formats strfmt.Registry) error {
+// Validate validates this friend all of1 counts
+func (m *FriendAllOf1Counts) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if len(res) > 0 {
@@ -52,7 +52,7 @@ func (m *ProfileAllOf1Counts) Validate(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *ProfileAllOf1Counts) MarshalBinary() ([]byte, error) {
+func (m *FriendAllOf1Counts) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -60,8 +60,8 @@ func (m *ProfileAllOf1Counts) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *ProfileAllOf1Counts) UnmarshalBinary(b []byte) error {
-	var res ProfileAllOf1Counts
+func (m *FriendAllOf1Counts) UnmarshalBinary(b []byte) error {
+	var res FriendAllOf1Counts
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

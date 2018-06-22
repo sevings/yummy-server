@@ -20,24 +20,12 @@ type User struct {
 	// avatar
 	Avatar *Avatar `json:"avatar,omitempty"`
 
-	// counts
-	Counts *UserCounts `json:"counts,omitempty"`
-
-	// cover
-	Cover *Cover `json:"cover,omitempty"`
-
 	// id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
 	// is online
 	IsOnline bool `json:"isOnline,omitempty"`
-
-	// karma
-	Karma float32 `json:"karma,omitempty"`
-
-	// last seen at
-	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
 	// name
 	// Max Length: 20
@@ -48,10 +36,6 @@ type User struct {
 	// Max Length: 20
 	// Min Length: 1
 	ShowName string `json:"showName,omitempty"`
-
-	// title
-	// Max Length: 260
-	Title string `json:"title,omitempty"`
 }
 
 // Validate validates this user
@@ -59,16 +43,6 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAvatar(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateCounts(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateCover(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -84,11 +58,6 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateShowName(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTitle(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -110,44 +79,6 @@ func (m *User) validateAvatar(formats strfmt.Registry) error {
 		if err := m.Avatar.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("avatar")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *User) validateCounts(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Counts) { // not required
-		return nil
-	}
-
-	if m.Counts != nil {
-
-		if err := m.Counts.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("counts")
-			}
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *User) validateCover(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Cover) { // not required
-		return nil
-	}
-
-	if m.Cover != nil {
-
-		if err := m.Cover.Validate(formats); err != nil {
-			if ve, ok := err.(*errors.Validation); ok {
-				return ve.ValidateName("cover")
 			}
 			return err
 		}
@@ -197,19 +128,6 @@ func (m *User) validateShowName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("showName", "body", string(m.ShowName), 20); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *User) validateTitle(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Title) { // not required
-		return nil
-	}
-
-	if err := validate.MaxLength("title", "body", string(m.Title), 260); err != nil {
 		return err
 	}
 

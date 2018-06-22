@@ -60,46 +60,51 @@ definitions:
         type: string
         minLength: 1
         maxLength: 20
-      title:
-        type: string
-        maxLength: 260
-      karma:
-        type: number
-        format: float
       isOnline:
         type: boolean
-      lastSeenAt:
-        type: number
-        format: double
       avatar:
         $ref: '#/definitions/Avatar'
-      cover:
-        $ref: '#/definitions/Cover'
-      counts:
-        type: object
-        properties:
-          entries:
-            type: integer
-          followings:
-            type: integer
-          followers:
-            type: integer
-          ignored:
-            type: integer
-          invited:
-            type: integer
-          comments:
-            type: integer
-          favorites:
-            type: integer
-          tags:
-            type: integer
     example:
       id: 1
       name: 'binque'
       showName: 'Бинк'
       isOnline: false
-  UserList:
+  Friend: 
+    allOf:
+      - $ref: '#/definitions/User'
+      - type: object
+        properties:
+          title:
+            type: string
+            maxLength: 260
+          karma:
+            type: number
+            format: float
+          lastSeenAt:
+            type: number
+            format: double
+          cover:
+            $ref: '#/definitions/Cover'
+          counts:
+            type: object
+            properties:
+              entries:
+                type: integer
+              followings:
+                type: integer
+              followers:
+                type: integer
+              ignored:
+                type: integer
+              invited:
+                type: integer
+              comments:
+                type: integer
+              favorites:
+                type: integer
+              tags:
+                type: integer
+  FriendList:
     type: object
     properties:
       subject:
@@ -110,12 +115,12 @@ definitions:
       users:
         type: array
         items:
-          $ref: '#/definitions/User'
+          $ref: '#/definitions/Friend'
     required:
       - users
   Profile:
     allOf:
-      - $ref: '#/definitions/User'
+      - $ref: '#/definitions/Friend'
       - type: object
         properties:
           gender:
@@ -740,7 +745,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -764,7 +769,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -788,7 +793,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -812,7 +817,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -836,7 +841,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -860,7 +865,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -1001,7 +1006,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -1019,7 +1024,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -1037,7 +1042,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -1055,7 +1060,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:
@@ -1073,7 +1078,7 @@ paths:
         200:
           description: User list
           schema:
-            $ref: '#/definitions/UserList'
+            $ref: '#/definitions/FriendList'
         403:
           description: access denied
           schema:

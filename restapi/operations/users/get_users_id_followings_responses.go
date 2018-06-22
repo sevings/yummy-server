@@ -25,7 +25,7 @@ type GetUsersIDFollowingsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.UserList `json:"body,omitempty"`
+	Payload *models.FriendList `json:"body,omitempty"`
 }
 
 // NewGetUsersIDFollowingsOK creates GetUsersIDFollowingsOK with default headers values
@@ -34,13 +34,13 @@ func NewGetUsersIDFollowingsOK() *GetUsersIDFollowingsOK {
 }
 
 // WithPayload adds the payload to the get users Id followings o k response
-func (o *GetUsersIDFollowingsOK) WithPayload(payload *models.UserList) *GetUsersIDFollowingsOK {
+func (o *GetUsersIDFollowingsOK) WithPayload(payload *models.FriendList) *GetUsersIDFollowingsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get users Id followings o k response
-func (o *GetUsersIDFollowingsOK) SetPayload(payload *models.UserList) {
+func (o *GetUsersIDFollowingsOK) SetPayload(payload *models.FriendList) {
 	o.Payload = payload
 }
 

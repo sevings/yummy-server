@@ -63,7 +63,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var profile models.Profile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.UserCounts{}
+	profile.Counts = &models.FriendAllOf1Counts{}
 
 	var backColor string
 	var textColor string
@@ -222,13 +222,13 @@ WHERE invited_by = by.id
 ORDER BY long_users.id DESC
 LIMIT $2 OFFSET $3`
 
-func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.UserList {
-	var list models.UserList
+func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.FriendList {
+	var list models.FriendList
 	tx.Query(usersQuery, args...)
 
 	for {
-		var user models.User
-		user.Counts = &models.UserCounts{}
+		var user models.Friend
+		user.Counts = &models.FriendAllOf1Counts{}
 		var avatar, cover string
 
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
@@ -275,12 +275,8 @@ func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuer
 
 const loadUserQuery = `
 SELECT id, name, show_name,
-is_online, extract(epoch from last_seen_at), title, karma,
-avatar, cover,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count
-FROM long_users
+is_online, avatar
+FROM short_users
 WHERE `
 
 const loadUserQueryID = loadUserQuery + "id = $1"
@@ -288,18 +284,12 @@ const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
 
 func loadUser(srv *utils.MindwellServer, tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
-	user.Counts = &models.UserCounts{}
-	var avatar, cover string
+	var avatar string
 
 	tx.Query(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
-		&user.IsOnline, &user.LastSeenAt, &user.Title, &user.Karma,
-		&avatar, &cover,
-		&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,
-		&user.Counts.Ignored, &user.Counts.Invited, &user.Counts.Comments,
-		&user.Counts.Favorites, &user.Counts.Tags)
+		&user.IsOnline, &avatar)
 
 	user.Avatar = srv.NewAvatar(avatar)
-	user.Cover = srv.NewCover(user.ID, cover)
 	return &user
 }
 

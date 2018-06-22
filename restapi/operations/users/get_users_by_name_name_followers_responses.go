@@ -25,7 +25,7 @@ type GetUsersByNameNameFollowersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.UserList `json:"body,omitempty"`
+	Payload *models.FriendList `json:"body,omitempty"`
 }
 
 // NewGetUsersByNameNameFollowersOK creates GetUsersByNameNameFollowersOK with default headers values
@@ -34,13 +34,13 @@ func NewGetUsersByNameNameFollowersOK() *GetUsersByNameNameFollowersOK {
 }
 
 // WithPayload adds the payload to the get users by name name followers o k response
-func (o *GetUsersByNameNameFollowersOK) WithPayload(payload *models.UserList) *GetUsersByNameNameFollowersOK {
+func (o *GetUsersByNameNameFollowersOK) WithPayload(payload *models.FriendList) *GetUsersByNameNameFollowersOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get users by name name followers o k response
-func (o *GetUsersByNameNameFollowersOK) SetPayload(payload *models.UserList) {
+func (o *GetUsersByNameNameFollowersOK) SetPayload(payload *models.FriendList) {
 	o.Payload = payload
 }
 
