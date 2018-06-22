@@ -63,7 +63,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var profile models.Profile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.ProfileAllOf1Counts{}
+	profile.Counts = &models.UserCounts{}
 
 	var backColor string
 	var textColor string
@@ -179,10 +179,13 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 }
 
 const usersQueryStart = `
-SELECT short_users.id, name, show_name,
-is_online, 
-avatar
-FROM short_users, relation, relations
+SELECT long_users.id, name, show_name,
+is_online, extract(epoch from last_seen_at), title, karma,
+avatar, cover,
+entries_count, followings_count, followers_count, 
+ignored_count, invited_count, comments_count, 
+favorites_count, tags_count
+FROM long_users, relation, relations
 WHERE `
 
 const usersQueryEnd = `
@@ -192,8 +195,11 @@ LIMIT $3 OFFSET $4`
 
 const invitedUsersQuery = `
 SELECT id, name, show_name,
-is_online, 
-avatar
+is_online, extract(epoch from last_seen_at), title, karma,
+avatar, cover,
+entries_count, followings_count, followers_count, 
+ignored_count, invited_count, comments_count, 
+favorites_count, tags_count
 FROM long_users
 WHERE invited_by = $1
 ORDER BY id DESC
@@ -206,8 +212,11 @@ WITH by AS (
 	WHERE lower(name) = lower($1)
 )
 SELECT long_users.id, name, show_name,
-is_online, 
-avatar
+is_online, extract(epoch from last_seen_at), title, karma,
+avatar, cover,
+entries_count, followings_count, followers_count, 
+ignored_count, invited_count, comments_count, 
+favorites_count, tags_count
 FROM long_users, by
 WHERE invited_by = by.id
 ORDER BY long_users.id DESC
@@ -219,15 +228,21 @@ func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, s
 
 	for {
 		var user models.User
-		var avatar string
+		user.Counts = &models.UserCounts{}
+		var avatar, cover string
+
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
-			&user.IsOnline,
-			&avatar)
+			&user.IsOnline, &user.LastSeenAt, &user.Title, &user.Karma,
+			&avatar, &cover,
+			&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,
+			&user.Counts.Ignored, &user.Counts.Invited, &user.Counts.Comments,
+			&user.Counts.Favorites, &user.Counts.Tags)
 		if !ok {
 			break
 		}
 
 		user.Avatar = srv.NewAvatar(avatar)
+		user.Cover = srv.NewCover(user.ID, cover)
 		list.Users = append(list.Users, &user)
 	}
 
@@ -260,8 +275,11 @@ func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuer
 
 const loadUserQuery = `
 SELECT id, name, show_name,
-is_online, 
-avatar
+is_online, extract(epoch from last_seen_at), title, karma,
+avatar, cover,
+entries_count, followings_count, followers_count, 
+ignored_count, invited_count, comments_count, 
+favorites_count, tags_count
 FROM long_users
 WHERE `
 
@@ -270,13 +288,18 @@ const loadUserQueryName = loadUserQuery + "lower(name) = lower($1)"
 
 func loadUser(srv *utils.MindwellServer, tx *utils.AutoTx, query string, arg interface{}) *models.User {
 	var user models.User
-	var avatar string
+	user.Counts = &models.UserCounts{}
+	var avatar, cover string
 
 	tx.Query(query, arg).Scan(&user.ID, &user.Name, &user.ShowName,
-		&user.IsOnline,
-		&avatar)
+		&user.IsOnline, &user.LastSeenAt, &user.Title, &user.Karma,
+		&avatar, &cover,
+		&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,
+		&user.Counts.Ignored, &user.Counts.Invited, &user.Counts.Comments,
+		&user.Counts.Favorites, &user.Counts.Tags)
 
 	user.Avatar = srv.NewAvatar(avatar)
+	user.Cover = srv.NewCover(user.ID, cover)
 	return &user
 }
 

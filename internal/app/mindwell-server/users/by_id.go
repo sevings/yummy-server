@@ -15,8 +15,8 @@ func newUserLoader(srv *utils.MindwellServer) func(users.GetUsersIDParams, *mode
 }
 
 const privacyQueryID = privacyQueryStart + "users.id = $1"
-const usersQueryToID = usersQueryStart + "relations.to_id = $1 AND relations.from_id = short_users.id" + usersQueryEnd
-const usersQueryFromID = usersQueryStart + "relations.from_id = $1 AND relations.to_id = short_users.id" + usersQueryEnd
+const usersQueryToID = usersQueryStart + "relations.to_id = $1 AND relations.from_id = long_users.id" + usersQueryEnd
+const usersQueryFromID = usersQueryStart + "relations.from_id = $1 AND relations.to_id = long_users.id" + usersQueryEnd
 
 func loadUsersRelatedToID(srv *utils.MindwellServer, usersQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {

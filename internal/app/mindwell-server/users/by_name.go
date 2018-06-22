@@ -17,8 +17,8 @@ func newUserLoaderByName(srv *utils.MindwellServer) func(users.GetUsersByNameNam
 const privacyQueryName = privacyQueryStart + "lower(users.name) = lower($1)"
 
 const idFromName = "(SELECT id from users WHERE lower(name) = lower($1))"
-const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = short_users.id" + usersQueryEnd
-const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = short_users.id" + usersQueryEnd
+const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = long_users.id" + usersQueryEnd
+const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = long_users.id" + usersQueryEnd
 
 func loadUsersRelatedToName(srv *utils.MindwellServer, usersQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
