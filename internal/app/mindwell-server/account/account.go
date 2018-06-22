@@ -146,6 +146,7 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	fileName := utils.GenerateString(5) + ".jpg"
 
 	saveAvatar(srv, img, 124, folder, fileName)
+	saveAvatar(srv, img, 92, folder, fileName)
 	saveAvatar(srv, img, 42, folder, fileName)
 
 	return folder + fileName
