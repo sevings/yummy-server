@@ -178,13 +178,10 @@ func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.
 	if p != nil {
 		err = tx.Rollback()
 		log.Print("Recovered in Transact:", p)
-	} else if atx.Error() == nil {
+	} else if atx.Error() == nil || atx.Error() == sql.ErrNoRows {
 		err = tx.Commit()
 	} else {
-		if atx.Error() != sql.ErrNoRows {
-			log.Print(atx.Error())
-		}
-
+		log.Print(atx.Error())
 		err = tx.Rollback()
 	}
 

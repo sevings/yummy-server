@@ -7,6 +7,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/microcosm-cc/bluemonday"
+
 	"github.com/golang-commonmark/markdown"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -109,6 +111,8 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
+	title = bluemonday.StrictPolicy().Sanitize(title)
+
 	cutTitle, cutContent, hasCut := cutEntry(title, content)
 
 	entry := models.Entry{
@@ -163,6 +167,8 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
+
+	title = bluemonday.StrictPolicy().Sanitize(title)
 
 	cutTitle, cutContent, hasCut := cutEntry(title, content)
 

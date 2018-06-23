@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 
@@ -90,6 +91,8 @@ func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDPara
 }
 
 func editComment(tx *utils.AutoTx, commentID int64, content string) {
+	content = bluemonday.StrictPolicy().Sanitize(content)
+
 	const q = `
 		UPDATE comments
 		SET content = $2
@@ -258,6 +261,8 @@ func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesI
 }
 
 func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
+	content = bluemonday.StrictPolicy().Sanitize(content)
+
 	const q = `
 		INSERT INTO comments (author_id, entry_id, content)
 		VALUES ($1, $2, $3)
@@ -279,6 +284,10 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	var title string
 	tx.Query(titleQ, cmt.EntryID).Scan(&title)
 
+	if tx.Error() != nil {
+		log.Print("title:", tx.Error())
+	}
+
 	const usersQ = `
 		SELECT show_name, email, gender.type
 		FROM users, watching, gender
@@ -291,6 +300,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	for tx.Scan(&name, &email, &gender) {
 		srv.Mail.SendNewComment(email, name, gender, title, cmt)
 	}
+
 }
 
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
