@@ -614,8 +614,8 @@ paths:
         - in: query
           type: string
           name: code
-          minLength: 40
-          maxLength: 40
+          minLength: 64
+          maxLength: 64
           required: true
       tags:
         - account

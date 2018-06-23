@@ -403,8 +403,8 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 40,
-            "minLength": 40,
+            "maxLength": 64,
+            "minLength": 64,
             "type": "string",
             "name": "code",
             "in": "query",

@@ -34,8 +34,8 @@ type GetAccountVerificationEmailParams struct {
 
 	/*
 	  Required: true
-	  Max Length: 40
-	  Min Length: 40
+	  Max Length: 64
+	  Min Length: 64
 	  In: query
 	*/
 	Code string
@@ -94,11 +94,11 @@ func (o *GetAccountVerificationEmailParams) bindCode(rawData []string, hasKey bo
 
 func (o *GetAccountVerificationEmailParams) validateCode(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("code", "query", o.Code, 40); err != nil {
+	if err := validate.MinLength("code", "query", o.Code, 64); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("code", "query", o.Code, 40); err != nil {
+	if err := validate.MaxLength("code", "query", o.Code, 64); err != nil {
 		return err
 	}
 
