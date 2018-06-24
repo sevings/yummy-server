@@ -189,7 +189,7 @@ FROM long_users, relation, relations
 WHERE `
 
 const usersQueryEnd = `
- and relations.type = relation.id and relation.type = $2
+ AND relations.type = relation.id AND relation.type = $2
 ORDER BY relations.changed_at DESC
 LIMIT $3 OFFSET $4`
 

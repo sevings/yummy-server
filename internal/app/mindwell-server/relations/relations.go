@@ -106,7 +106,7 @@ func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelation
 				return relations.NewPutRelationsFromIDForbidden()
 			}
 
-			relation, _ = setRelationship(tx, userID, params.ID, models.RelationshipRelationFollowed)
+			relation, _ = setRelationship(tx, params.ID, userID, models.RelationshipRelationFollowed)
 
 			return relations.NewPutRelationsFromIDOK().WithPayload(relation)
 		})
