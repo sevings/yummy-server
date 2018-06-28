@@ -124,8 +124,10 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		HasCut:      hasCut,
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
-		Vote:        models.EntryVoteBan,
 		IsWatching:  true,
+		Rating: &models.Rating{
+			Vote: models.RatingVoteBan,
+		},
 	}
 
 	category := entryCategory(&entry)
@@ -141,6 +143,7 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	tx.Query(q, userID, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent,
 		hasCut, entry.WordCount, privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
 
+	entry.Rating.ID = entry.ID
 	watchings.AddWatching(tx, userID, entry.ID)
 	author := users.LoadUserByID(srv, tx, userID)
 	entry.Author = author
@@ -182,9 +185,11 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		HasCut:      hasCut,
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
-		Vote:        models.EntryVoteBan,
 		IsWatching:  true,
-		IsVotable:   isVotable,
+		Rating: &models.Rating{
+			IsVotable: isVotable,
+			Vote:      models.RatingVoteBan,
+		},
 	}
 
 	category := entryCategory(&entry)
@@ -206,6 +211,7 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 
 	author := users.LoadUserByID(srv, tx, userID)
 	entry.Author = author
+	entry.Rating.ID = entry.ID
 
 	return &entry
 }
@@ -228,13 +234,13 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
 	switch {
 	case authorID == userID:
-		return models.EntryVoteBan
+		return models.RatingVoteBan
 	case !vote.Valid:
-		return models.EntryVoteNot
+		return models.RatingVoteNot
 	case vote.Float64 > 0:
-		return models.EntryVotePos
+		return models.RatingVotePos
 	default:
-		return models.EntryVoteNeg
+		return models.RatingVoteNeg
 	}
 }
 
@@ -251,10 +257,11 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	var author models.User
 	var vote sql.NullFloat64
 	var avatar string
-	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &entry.Rating, &entry.Votes,
+	var rating models.Rating
+	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &rating.Rating, &rating.UpCount,
 		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 		&entry.HasCut, &entry.WordCount, &entry.Privacy,
-		&entry.IsVotable, &entry.CommentCount,
+		&rating.IsVotable, &entry.CommentCount,
 		&author.ID, &author.Name, &author.ShowName,
 		&author.IsOnline,
 		&avatar,
@@ -264,7 +271,9 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		entry.EditContent = ""
 	}
 
-	entry.Vote = entryVoteStatus(author.ID, userID, vote)
+	rating.Vote = entryVoteStatus(author.ID, userID, vote)
+	rating.ID = entry.ID
+	entry.Rating = &rating
 
 	author.Avatar = srv.NewAvatar(avatar)
 	entry.Author = &author

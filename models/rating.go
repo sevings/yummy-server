@@ -15,26 +15,32 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// VoteStatus vote status
-// swagger:model VoteStatus
-type VoteStatus struct {
+// Rating rating
+// swagger:model Rating
+type Rating struct {
+
+	// down count
+	DownCount int64 `json:"downCount,omitempty"`
 
 	// id
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
+	// is votable
+	IsVotable bool `json:"isVotable,omitempty"`
+
 	// rating
 	Rating float32 `json:"rating,omitempty"`
 
+	// up count
+	UpCount int64 `json:"upCount,omitempty"`
+
 	// vote
 	Vote string `json:"vote,omitempty"`
-
-	// votes
-	Votes int64 `json:"votes,omitempty"`
 }
 
-// Validate validates this vote status
-func (m *VoteStatus) Validate(formats strfmt.Registry) error {
+// Validate validates this rating
+func (m *Rating) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateID(formats); err != nil {
@@ -53,7 +59,7 @@ func (m *VoteStatus) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *VoteStatus) validateID(formats strfmt.Registry) error {
+func (m *Rating) validateID(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.ID) { // not required
 		return nil
@@ -66,7 +72,7 @@ func (m *VoteStatus) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-var voteStatusTypeVotePropEnum []interface{}
+var ratingTypeVotePropEnum []interface{}
 
 func init() {
 	var res []string
@@ -74,30 +80,30 @@ func init() {
 		panic(err)
 	}
 	for _, v := range res {
-		voteStatusTypeVotePropEnum = append(voteStatusTypeVotePropEnum, v)
+		ratingTypeVotePropEnum = append(ratingTypeVotePropEnum, v)
 	}
 }
 
 const (
-	// VoteStatusVoteNot captures enum value "not"
-	VoteStatusVoteNot string = "not"
-	// VoteStatusVotePos captures enum value "pos"
-	VoteStatusVotePos string = "pos"
-	// VoteStatusVoteNeg captures enum value "neg"
-	VoteStatusVoteNeg string = "neg"
-	// VoteStatusVoteBan captures enum value "ban"
-	VoteStatusVoteBan string = "ban"
+	// RatingVoteNot captures enum value "not"
+	RatingVoteNot string = "not"
+	// RatingVotePos captures enum value "pos"
+	RatingVotePos string = "pos"
+	// RatingVoteNeg captures enum value "neg"
+	RatingVoteNeg string = "neg"
+	// RatingVoteBan captures enum value "ban"
+	RatingVoteBan string = "ban"
 )
 
 // prop value enum
-func (m *VoteStatus) validateVoteEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, voteStatusTypeVotePropEnum); err != nil {
+func (m *Rating) validateVoteEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, ratingTypeVotePropEnum); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *VoteStatus) validateVote(formats strfmt.Registry) error {
+func (m *Rating) validateVote(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.Vote) { // not required
 		return nil
@@ -112,7 +118,7 @@ func (m *VoteStatus) validateVote(formats strfmt.Registry) error {
 }
 
 // MarshalBinary interface implementation
-func (m *VoteStatus) MarshalBinary() ([]byte, error) {
+func (m *Rating) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -120,8 +126,8 @@ func (m *VoteStatus) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *VoteStatus) UnmarshalBinary(b []byte) error {
-	var res VoteStatus
+func (m *Rating) UnmarshalBinary(b []byte) error {
+	var res Rating
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -16,14 +16,11 @@ func checkEntry(t *testing.T, entry *models.Entry,
 
 	req := require.New(t)
 	req.NotEmpty(entry.CreatedAt)
-	req.Zero(entry.Rating)
 	req.Equal("<p>"+content+"</p>\n", entry.Content)
 	req.Equal(wc, entry.WordCount)
 	req.Equal(privacy, entry.Privacy)
 	req.Empty(entry.VisibleFor)
-	req.Equal(votable, entry.IsVotable)
 	req.Zero(entry.CommentCount)
-	req.Equal(vote, entry.Vote)
 	req.False(entry.IsFavorited)
 	req.Equal(watching, entry.IsWatching)
 	req.Equal(title, entry.Title)
@@ -36,6 +33,12 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	} else {
 		req.Empty(entry.EditContent)
 	}
+
+	rating := entry.Rating
+	req.Equal(entry.ID, rating.ID)
+	req.Zero(rating.Rating)
+	req.Equal(votable, rating.IsVotable)
+	req.Equal(vote, rating.Vote)
 
 	cmts := entry.Comments
 	if cmts != nil {
@@ -67,7 +70,7 @@ func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success 
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, privacy, votable, title, content)
+	checkEntry(t, entry, user, true, models.RatingVoteBan, true, wc, privacy, votable, title, content)
 }
 
 func checkPostEntry(t *testing.T,
@@ -87,10 +90,10 @@ func checkPostEntry(t *testing.T,
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+	checkEntry(t, entry, user, true, models.RatingVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 
 	checkLoadEntry(t, entry.ID, id, true, user,
-		true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+		true, models.RatingVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 
 	return entry.ID
 }
@@ -112,10 +115,10 @@ func checkEditEntry(t *testing.T,
 	}
 
 	entry := body.Payload
-	checkEntry(t, entry, user, true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+	checkEntry(t, entry, user, true, models.RatingVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 
 	checkLoadEntry(t, entry.ID, id, true, user,
-		true, models.EntryVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
+		true, models.RatingVoteBan, true, wc, params.Privacy, *params.IsVotable, *params.Title, params.Content)
 }
 
 func checkDeleteEntry(t *testing.T, entryID int64, userID *models.UserID, success bool) {
@@ -204,21 +207,21 @@ func TestLoadLive(t *testing.T) {
 	postEntry(userIDs[2], models.EntryPrivacyAll)
 
 	feed := checkLoadLive(t, userIDs[0], 10, "", "", 2)
-	checkEntry(t, feed.Entries[0], profiles[2], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[2], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadLive(t, userIDs[0], 1, "", "", 1)
-	checkEntry(t, feed.Entries[0], profiles[2], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[2], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadLive(t, userIDs[0], 1, feed.NextBefore, "", 1)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
@@ -258,31 +261,31 @@ func TestLoadTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
 	feed := checkLoadTlog(t, userIDs[0], userIDs[1], 10, "", "", 2)
-	checkEntry(t, feed.Entries[0], profiles[0], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 10, "", "", 4)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[3], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	checkLoadTlog(t, userIDs[1], userIDs[0], 10, "", "", 0)
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, "", "", 3)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, feed.NextBefore, "", 1)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
@@ -318,10 +321,10 @@ func TestLoadMyTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 
 	feed := checkLoadMyTlog(t, userIDs[0], 10, "", "", 4)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[3], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
@@ -335,9 +338,9 @@ func TestLoadMyTlog(t *testing.T) {
 	req.False(feed.HasAfter)
 
 	feed = checkLoadMyTlog(t, userIDs[0], 4, feed.NextBefore, "", 3)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 }
 
 func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
@@ -381,18 +384,18 @@ func TestLoadFriendsFeed(t *testing.T) {
 	postEntry(userIDs[2], models.EntryPrivacyMe)
 
 	feed := checkLoadFriendsFeed(t, userIDs[0], 10, "", "", 4)
-	checkEntry(t, feed.Entries[0], profiles[1], false, models.EntryVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[3], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[1], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[3], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadFriendsFeed(t, userIDs[1], 10, "", "", 2)
-	checkEntry(t, feed.Entries[0], profiles[1], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[1], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[1], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -403,9 +406,9 @@ func TestLoadFriendsFeed(t *testing.T) {
 	req.False(feed.HasAfter)
 
 	feed = checkLoadFriendsFeed(t, userIDs[0], 4, feed.NextBefore, "", 3)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.EntryVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
 }

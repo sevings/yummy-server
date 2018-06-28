@@ -9,7 +9,7 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
-func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus {
+func entryRating(tx *utils.AutoTx, userID, entryID int64) *models.Rating {
 	const q = `
 		WITH votes AS (
 			SELECT entry_id, vote
@@ -23,24 +23,24 @@ func entryVoteStatus(tx *utils.AutoTx, userID, entryID int64) *models.VoteStatus
 		JOIN entry_privacy on entry_privacy.id = entries.visible_for
 		WHERE entries.id = $2`
 
-	var status = models.VoteStatus{ID: entryID}
+	var status = models.Rating{ID: entryID}
 
 	var authorID int64
 	var privacy string
 	var votable bool
 	var vote sql.NullFloat64
 	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable,
-		&status.Rating, &status.Votes, &vote)
+		&status.Rating, &status.UpCount, &vote)
 
 	switch {
 	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
-		status.Vote = models.VoteStatusVoteBan
+		status.Vote = models.RatingVoteBan
 	case !vote.Valid:
-		status.Vote = models.VoteStatusVoteNot
+		status.Vote = models.RatingVoteNot
 	case vote.Float64 > 0:
-		status.Vote = models.VoteStatusVotePos
+		status.Vote = models.RatingVotePos
 	default:
-		status.Vote = models.VoteStatusVoteNeg
+		status.Vote = models.RatingVoteNeg
 	}
 
 	return &status
@@ -55,7 +55,7 @@ func newEntryVoteLoader(srv *utils.MindwellServer) func(votes.GetEntriesIDVotePa
 				return votes.NewGetEntriesIDVoteNotFound()
 			}
 
-			status := entryVoteStatus(tx, userID, params.ID)
+			status := entryRating(tx, userID, params.ID)
 			if tx.Error() != nil {
 				return votes.NewGetEntriesIDVoteNotFound()
 			}
@@ -106,7 +106,7 @@ func loadEntryRating(tx *utils.AutoTx, entryID int64) (int64, float32) {
 	return votes, rating
 }
 
-func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.VoteStatus {
+func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.Rating {
 	const q = `
 		INSERT INTO entry_votes (user_id, entry_id, vote)
 		VALUES ($1, $2, (
@@ -128,17 +128,17 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 
 	votes, rating := loadEntryRating(tx, entryID)
 
-	var status = models.VoteStatus{
-		ID:     entryID,
-		Votes:  votes,
-		Rating: rating,
+	var status = models.Rating{
+		ID:      entryID,
+		UpCount: votes,
+		Rating:  rating,
 	}
 
 	switch {
 	case positive:
-		status.Vote = models.VoteStatusVotePos
+		status.Vote = models.RatingVotePos
 	default:
-		status.Vote = models.VoteStatusVoteNeg
+		status.Vote = models.RatingVoteNeg
 	}
 
 	return &status
@@ -167,7 +167,7 @@ func newEntryVoter(srv *utils.MindwellServer) func(votes.PutEntriesIDVoteParams,
 	}
 }
 
-func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, bool) {
+func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.Rating, bool) {
 	const q = `
 		DELETE FROM entry_votes
 		WHERE user_id = $1 AND entry_id = $2`
@@ -179,11 +179,11 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.VoteStatus, b
 
 	votes, rating := loadEntryRating(tx, entryID)
 
-	var status = models.VoteStatus{
-		ID:     entryID,
-		Rating: rating,
-		Votes:  votes,
-		Vote:   models.EntryVoteNot,
+	var status = models.Rating{
+		ID:      entryID,
+		Rating:  rating,
+		UpCount: votes,
+		Vote:    models.RatingVoteNot,
 	}
 
 	return &status, true

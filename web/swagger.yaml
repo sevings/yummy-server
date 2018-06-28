@@ -235,11 +235,8 @@ definitions:
       createdAt:
         type: number
         format: double
-      votes:
-        type: integer
       rating:
-        type: number
-        format: float
+        $ref: '#/definitions/Rating'
       title:
         type: string
       cutTitle: 
@@ -261,13 +258,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/User'
-      isVotable:
-        type: boolean
       commentCount:
         type: integer
-      vote:
-        type: string
-        enum: [not, pos, neg, ban]
       isFavorited:
         type: boolean
       isWatching:
@@ -299,14 +291,18 @@ definitions:
         type: string
       hasBefore:
         type: boolean
-  VoteStatus:
+  Rating:
     type: object
     properties:
       id:
         type: integer
         format: int64
         minimum: 1
-      votes:
+      isVotable:
+        type: boolean
+      upCount:
+        type: integer
+      downCount:
         type: integer
       rating:
         type: number
@@ -1662,7 +1658,7 @@ paths:
         200:
           description: vote status
           schema:
-            $ref: '#/definitions/VoteStatus'
+            $ref: '#/definitions/Rating'
         403:
           description: access denied
           schema:
@@ -1685,7 +1681,7 @@ paths:
         200:
           description: vote status
           schema:
-            $ref: '#/definitions/VoteStatus'
+            $ref: '#/definitions/Rating'
         403:
           description: access denied
           schema:
@@ -1703,7 +1699,7 @@ paths:
         200:
           description: vote status
           schema:
-            $ref: '#/definitions/VoteStatus'
+            $ref: '#/definitions/Rating'
         403:
           description: access denied
           schema:
@@ -1928,7 +1924,7 @@ paths:
         200:
           description: vote status
           schema:
-            $ref: '#/definitions/VoteStatus'
+            $ref: '#/definitions/Rating'
         403:
           description: access denied
           schema:

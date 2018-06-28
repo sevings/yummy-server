@@ -25,7 +25,7 @@ type DeleteEntriesIDVoteOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.VoteStatus `json:"body,omitempty"`
+	Payload *models.Rating `json:"body,omitempty"`
 }
 
 // NewDeleteEntriesIDVoteOK creates DeleteEntriesIDVoteOK with default headers values
@@ -34,13 +34,13 @@ func NewDeleteEntriesIDVoteOK() *DeleteEntriesIDVoteOK {
 }
 
 // WithPayload adds the payload to the delete entries Id vote o k response
-func (o *DeleteEntriesIDVoteOK) WithPayload(payload *models.VoteStatus) *DeleteEntriesIDVoteOK {
+func (o *DeleteEntriesIDVoteOK) WithPayload(payload *models.Rating) *DeleteEntriesIDVoteOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the delete entries Id vote o k response
-func (o *DeleteEntriesIDVoteOK) SetPayload(payload *models.VoteStatus) {
+func (o *DeleteEntriesIDVoteOK) SetPayload(payload *models.Rating) {
 	o.Payload = payload
 }
 

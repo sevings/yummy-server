@@ -546,7 +546,7 @@ func init() {
           "200": {
             "description": "vote status",
             "schema": {
-              "$ref": "#/definitions/VoteStatus"
+              "$ref": "#/definitions/Rating"
             }
           },
           "403": {
@@ -1572,7 +1572,7 @@ func init() {
           "200": {
             "description": "vote status",
             "schema": {
-              "$ref": "#/definitions/VoteStatus"
+              "$ref": "#/definitions/Rating"
             }
           },
           "403": {
@@ -1610,7 +1610,7 @@ func init() {
           "200": {
             "description": "vote status",
             "schema": {
-              "$ref": "#/definitions/VoteStatus"
+              "$ref": "#/definitions/Rating"
             }
           },
           "403": {
@@ -1640,7 +1640,7 @@ func init() {
           "200": {
             "description": "vote status",
             "schema": {
-              "$ref": "#/definitions/VoteStatus"
+              "$ref": "#/definitions/Rating"
             }
           },
           "403": {
@@ -2867,9 +2867,6 @@ func init() {
         "isFavorited": {
           "type": "boolean"
         },
-        "isVotable": {
-          "type": "boolean"
-        },
         "isWatching": {
           "type": "boolean"
         },
@@ -2883,8 +2880,7 @@ func init() {
           ]
         },
         "rating": {
-          "type": "number",
-          "format": "float"
+          "$ref": "#/definitions/Rating"
         },
         "title": {
           "type": "string"
@@ -2894,18 +2890,6 @@ func init() {
           "items": {
             "$ref": "#/definitions/User"
           }
-        },
-        "vote": {
-          "type": "string",
-          "enum": [
-            "not",
-            "pos",
-            "neg",
-            "ban"
-          ]
-        },
-        "votes": {
-          "type": "integer"
         },
         "wordCount": {
           "type": "integer"
@@ -3155,6 +3139,38 @@ func init() {
         }
       ]
     },
+    "Rating": {
+      "type": "object",
+      "properties": {
+        "downCount": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        },
+        "isVotable": {
+          "type": "boolean"
+        },
+        "rating": {
+          "type": "number",
+          "format": "float"
+        },
+        "upCount": {
+          "type": "integer"
+        },
+        "vote": {
+          "type": "string",
+          "enum": [
+            "not",
+            "pos",
+            "neg",
+            "ban"
+          ]
+        }
+      }
+    },
     "Relationship": {
       "type": "object",
       "properties": {
@@ -3214,32 +3230,6 @@ func init() {
     "UserID": {
       "type": "integer",
       "format": "int64"
-    },
-    "VoteStatus": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64",
-          "minimum": 1
-        },
-        "rating": {
-          "type": "number",
-          "format": "float"
-        },
-        "vote": {
-          "type": "string",
-          "enum": [
-            "not",
-            "pos",
-            "neg",
-            "ban"
-          ]
-        },
-        "votes": {
-          "type": "integer"
-        }
-      }
     },
     "WatchingStatus": {
       "type": "object",
