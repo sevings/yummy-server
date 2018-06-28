@@ -751,7 +751,8 @@ CREATE TABLE "mindwell"."entries" (
 	"visible_for" Integer NOT NULL,
 	"is_votable" Boolean NOT NULL,
 	"rating" Real DEFAULT 0 NOT NULL,
-    "votes" Integer DEFAULT 0 NOT NULL,
+    "up_votes" Integer DEFAULT 0 NOT NULL,
+    "down_votes" Integer DEFAULT 0 NOT NULL,
     "vote_sum" Real DEFAULT 0 NOT NULL,
     "weight_sum" Real DEFAULT 0 NOT NULL,
     "category" Integer NOT NULL,
@@ -828,7 +829,7 @@ CREATE TRIGGER cnt_tlog_entries_del
     EXECUTE PROCEDURE mindwell.dec_tlog_entries();
 
 CREATE VIEW mindwell.feed AS
-SELECT entries.id, entries.created_at, rating, votes,
+SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
     entries.title, cut_title, content, cut_content, edit_content, 
     has_cut, word_count,
     entry_privacy.type AS entry_privacy,
@@ -1004,7 +1005,8 @@ CREATE INDEX "index_voted_users" ON "mindwell"."entry_votes" USING btree( "user_
 CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET votes = votes + sign(NEW.vote), 
+        SET up_votes = up_votes + (NEW.vote > 0)::int,
+            down_votes = down_votes + (NEW.vote < 0)::int,
             vote_sum = vote_sum + NEW.vote,
             weight_sum = weight_sum + abs(NEW.vote),
             rating = atan(weight_sum + abs(NEW.vote))
@@ -1045,7 +1047,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET votes = votes - sign(OLD.vote) + sign(NEW.vote), 
+        SET up_votes = up_votes - (OLD.vote > 0)::int + (NEW.vote > 0)::int,
+            down_votes = down_votes - (OLD.vote < 0)::int + (NEW.vote < 0)::int,
             vote_sum = vote_sum - OLD.vote + NEW.vote,
             weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
             rating = atan(weight_sum - abs(OLD.vote) + abs(NEW.vote))
@@ -1097,7 +1100,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.entries
-        SET votes = votes - sign(OLD.vote), 
+        SET up_votes = up_votes - (OLD.vote > 0)::int,
+            down_votes = down_votes - (OLD.vote < 0)::int,
             vote_sum = vote_sum - OLD.vote,
             weight_sum = weight_sum - abs(OLD.vote),
             rating = CASE WHEN weight_sum = abs(OLD.vote) THEN 0
