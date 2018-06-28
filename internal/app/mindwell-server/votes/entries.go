@@ -17,7 +17,7 @@ func entryRating(tx *utils.AutoTx, userID, entryID int64) *models.Rating {
 			WHERE user_id = $1
 		)
 		SELECT entries.author_id, entry_privacy.type, is_votable, 
-			rating, votes, vote
+			rating, up_votes, down_votes, vote
 		FROM entries
 		LEFT JOIN votes on votes.entry_id = entries.id
 		JOIN entry_privacy on entry_privacy.id = entries.visible_for
@@ -30,7 +30,7 @@ func entryRating(tx *utils.AutoTx, userID, entryID int64) *models.Rating {
 	var votable bool
 	var vote sql.NullFloat64
 	tx.Query(q, userID, entryID).Scan(&authorID, &privacy, &votable,
-		&status.Rating, &status.UpCount, &vote)
+		&status.Rating, &status.UpCount, &status.DownCount, &vote)
 
 	switch {
 	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
@@ -94,16 +94,17 @@ func canVoteForEntry(tx *utils.AutoTx, userID, entryID int64) bool {
 	return allowed.Valid
 }
 
-func loadEntryRating(tx *utils.AutoTx, entryID int64) (int64, float32) {
+func loadEntryRating(tx *utils.AutoTx, entryID int64) *models.Rating {
 	const q = `
-		SELECT votes, rating
+		SELECT up_votes, down_votes, rating
 		FROM entries
 		WHERE id = $1`
 
-	var votes int64
-	var rating float32
-	tx.Query(q, entryID).Scan(&votes, &rating)
-	return votes, rating
+	rating := &models.Rating{
+		ID: entryID,
+	}
+	tx.Query(q, entryID).Scan(&rating.UpCount, &rating.DownCount, &rating.Rating)
+	return rating
 }
 
 func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *models.Rating {
@@ -126,22 +127,16 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 	}
 	tx.Exec(q, userID, entryID, vote)
 
-	votes, rating := loadEntryRating(tx, entryID)
-
-	var status = models.Rating{
-		ID:      entryID,
-		UpCount: votes,
-		Rating:  rating,
-	}
+	rating := loadEntryRating(tx, entryID)
 
 	switch {
 	case positive:
-		status.Vote = models.RatingVotePos
+		rating.Vote = models.RatingVotePos
 	default:
-		status.Vote = models.RatingVoteNeg
+		rating.Vote = models.RatingVoteNeg
 	}
 
-	return &status
+	return rating
 }
 
 func newEntryVoter(srv *utils.MindwellServer) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
@@ -177,16 +172,10 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.Rating, bool)
 		return nil, false
 	}
 
-	votes, rating := loadEntryRating(tx, entryID)
+	rating := loadEntryRating(tx, entryID)
+	rating.Vote = models.RatingVoteNot
 
-	var status = models.Rating{
-		ID:      entryID,
-		Rating:  rating,
-		UpCount: votes,
-		Vote:    models.RatingVoteNot,
-	}
-
-	return &status, true
+	return rating, true
 }
 
 func newEntryUnvoter(srv *utils.MindwellServer) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {

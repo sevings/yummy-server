@@ -258,7 +258,8 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	var vote sql.NullFloat64
 	var avatar string
 	var rating models.Rating
-	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt, &rating.Rating, &rating.UpCount,
+	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt,
+		&rating.Rating, &rating.UpCount, &rating.DownCount,
 		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 		&entry.HasCut, &entry.WordCount, &entry.Privacy,
 		&rating.IsVotable, &entry.CommentCount,
