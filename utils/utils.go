@@ -26,11 +26,6 @@ func LoadConfig(fileName string) *goconf.Config {
 	return config
 }
 
-// NewError returns error object with some message
-func NewError(msg string) *models.Error {
-	return &models.Error{Message: msg}
-}
-
 // CanViewEntry returns true if the user is allowed to read the entry.
 func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 	const q = `

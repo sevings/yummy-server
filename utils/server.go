@@ -6,10 +6,13 @@ import (
 	"encoding/hex"
 	"log"
 
+	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	goconf "github.com/zpatrick/go-config"
+	"golang.org/x/text/language"
 )
 
 type MailSender interface {
@@ -19,20 +22,31 @@ type MailSender interface {
 }
 
 type MindwellServer struct {
-	DB   *sql.DB
-	API  *operations.MindwellAPI
-	Mail MailSender
-	cfg  *goconf.Config
+	DB    *sql.DB
+	API   *operations.MindwellAPI
+	Mail  MailSender
+	cfg   *goconf.Config
+	local *i18n.Localizer
 }
 
 func NewMindwellServer(api *operations.MindwellAPI, configPath string) *MindwellServer {
 	config := LoadConfig(configPath)
 	db := OpenDatabase(config)
 
+	trFile, err := config.StringOr("tr_file", "active.ru.toml")
+	if err != nil {
+		log.Print(err)
+	}
+
+	bundle := &i18n.Bundle{DefaultLanguage: language.Russian}
+	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
+	bundle.MustLoadMessageFile(trFile)
+
 	return &MindwellServer{
-		DB:  db,
-		API: api,
-		cfg: config,
+		DB:    db,
+		API:   api,
+		cfg:   config,
+		local: i18n.NewLocalizer(bundle),
 	}
 }
 
@@ -88,4 +102,18 @@ func (srv *MindwellServer) VerificationCode(email string) string {
 	sum := sha256.Sum256([]byte(email + salt))
 	sha := hex.EncodeToString(sum[:])
 	return sha
+}
+
+// NewError returns error object with some message
+func (srv *MindwellServer) NewError(msg *i18n.Message) *models.Error {
+	if msg == nil {
+		msg = &i18n.Message{ID: "internal_error", Other: "Internal server error."}
+	}
+
+	message, err := srv.local.Localize(&i18n.LocalizeConfig{DefaultMessage: msg})
+	if err != nil {
+		log.Print(err)
+	}
+
+	return &models.Error{Message: message}
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/disintegration/imaging"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/o1egl/govatar"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -281,26 +282,31 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if ok := isEmailFree(tx, params.Email); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("email_is_not_free"))
+				err := srv.NewError(&i18n.Message{ID: "email_is_not_free", Other: "Email is not free."})
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
 			if ok := isNameFree(tx, params.Name); !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("name_is_not_free"))
+				err := srv.NewError(&i18n.Message{ID: "name_is_not_free", Other: "Name is not free."})
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
 			ref, ok := removeInvite(tx, params.Referrer, params.Invite)
 			if !ok {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("invalid_invite"))
+				err := srv.NewError(&i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."})
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
 			id := createUser(srv, tx, params, ref)
 			if tx.Error() != nil {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
+				err := srv.NewError(nil)
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
 			user := loadAuthProfile(srv, tx, authProfileQueryByID, id)
 			if tx.Error() != nil {
-				return account.NewPostAccountRegisterBadRequest().WithPayload(utils.NewError("internal_error"))
+				err := srv.NewError(nil)
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
 			code := srv.VerificationCode(user.Account.Email)
@@ -319,7 +325,8 @@ func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) 
 			hash := srv.PasswordHash(params.Password)
 			user := loadAuthProfile(srv, tx, authProfileQueryByPassword, params.Name, hash)
 			if tx.Error() != nil {
-				return account.NewPostAccountLoginBadRequest().WithPayload(utils.NewError("invalid_name_or_password"))
+				err := srv.NewError(&i18n.Message{ID: "invalid_name_or_password", Other: "Name or password is invalid."})
+				return account.NewPostAccountLoginBadRequest().WithPayload(err)
 			}
 
 			return account.NewPostAccountLoginOK().WithPayload(user)
@@ -348,11 +355,13 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			ok := setPassword(srv, tx, params, userID)
 			if tx.Error() != nil {
-				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("internal_error"))
+				err := srv.NewError(nil)
+				return account.NewPostAccountPasswordForbidden().WithPayload(err)
 			}
 
 			if !ok {
-				return account.NewPostAccountPasswordForbidden().WithPayload(utils.NewError("invalid_password_or_api_key"))
+				err := srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
+				return account.NewPostAccountPasswordForbidden().WithPayload(err)
 			}
 
 			return account.NewPostAccountPasswordOK()
@@ -386,7 +395,8 @@ func newInvitesLoader(srv *utils.MindwellServer) func(account.GetAccountInvitesP
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			invites := loadInvites(tx, userID)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return account.NewGetAccountInvitesForbidden().WithPayload(utils.NewError("invalid_api_key"))
+				err := srv.NewError(&i18n.Message{ID: "invalid_api_key", Other: "ApiKey is invalid."})
+				return account.NewGetAccountInvitesForbidden().WithPayload(err)
 			}
 
 			res := models.GetAccountInvitesOKBody{Invites: invites}
