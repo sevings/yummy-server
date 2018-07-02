@@ -1,0 +1,7 @@
+email_is_not_free = "Email is not free."
+internal_error = "Internal server error."
+invalid_api_key = "ApiKey is invalid."
+invalid_invite = "Invite is invalid."
+invalid_name_or_password = "Name or password is invalid."
+invalid_password_or_api_key = "Password or ApiKey is invalid."
+name_is_not_free = "Name is not free."

@@ -33,7 +33,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	config := LoadConfig(configPath)
 	db := OpenDatabase(config)
 
-	trFile, err := config.StringOr("tr_file", "active.ru.toml")
+	trFile, err := config.String("server.tr_file")
 	if err != nil {
 		log.Print(err)
 	}
