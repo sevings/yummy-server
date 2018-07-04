@@ -27,6 +27,7 @@ type MindwellServer struct {
 	Mail  MailSender
 	cfg   *goconf.Config
 	local *i18n.Localizer
+	errs  map[string]*i18n.Message
 }
 
 func NewMindwellServer(api *operations.MindwellAPI, configPath string) *MindwellServer {
@@ -47,6 +48,12 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		API:   api,
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
+		errs: map[string]*i18n.Message{
+			"no_entry":   &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
+			"no_comment": &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
+			"no_tlog":    &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
+			"no_request": &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
+		},
 	}
 }
 
@@ -116,4 +123,13 @@ func (srv *MindwellServer) NewError(msg *i18n.Message) *models.Error {
 	}
 
 	return &models.Error{Message: message}
+}
+
+func (srv *MindwellServer) StandardError(name string) *models.Error {
+	msg := srv.errs[name]
+	if msg == nil {
+		log.Printf("Standard error not found: %s\n", name)
+	}
+
+	return srv.NewError(msg)
 }

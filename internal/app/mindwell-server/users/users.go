@@ -257,16 +257,19 @@ func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuer
 	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
 		if tx.Error() != nil {
-			return users.NewGetUsersIDFollowersNotFound()
+			err := srv.NewError(nil)
+			return users.NewGetUsersIDFollowersNotFound().WithPayload(err)
 		}
 
 		if !open {
-			return users.NewGetUsersIDFollowersForbidden()
+			err := srv.StandardError("no_tlog")
+			return users.NewGetUsersIDFollowersForbidden().WithPayload(err)
 		}
 
 		list := loadRelatedUsers(srv, tx, usersQuery, subjectQuery, relation, args...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-			return users.NewGetUsersIDFollowersNotFound()
+			err := srv.StandardError("no_tlog")
+			return users.NewGetUsersIDFollowersNotFound().WithPayload(err)
 		}
 
 		return users.NewGetUsersIDFollowersOK().WithPayload(list)

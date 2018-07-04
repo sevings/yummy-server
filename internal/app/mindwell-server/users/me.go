@@ -102,7 +102,8 @@ func newMeLoader(srv *utils.MindwellServer) func(me.GetUsersMeParams, *models.Us
 			user := loadMyProfile(srv, tx, userID)
 
 			if tx.Error() != nil {
-				return me.NewGetUsersMeForbidden()
+				err := srv.NewError(nil)
+				return me.NewGetUsersMeForbidden().WithPayload(err)
 			}
 
 			return me.NewGetUsersMeOK().WithPayload(user)
@@ -215,7 +216,8 @@ func newMeEditor(srv *utils.MindwellServer) func(me.PutUsersMeParams, *models.Us
 			user := editMyProfile(srv, tx, userID, params)
 
 			if tx.Error() != nil {
-				return me.NewPutUsersMeForbidden()
+				err := srv.NewError(nil)
+				return me.NewPutUsersMeForbidden().WithPayload(err)
 			}
 
 			return me.NewPutUsersMeOK().WithPayload(user)
@@ -228,7 +230,8 @@ func loadRelatedToMeUsers(srv *utils.MindwellServer, userID *models.UserID, quer
 		id := int64(*userID)
 		list := loadRelatedUsers(srv, tx, query, loadUserQueryID, relation, append([]interface{}{id}, args...)...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-			return me.NewGetUsersMeFollowersForbidden()
+			err := srv.NewError(nil)
+			return me.NewGetUsersMeFollowersForbidden().WithPayload(err)
 		}
 
 		return me.NewGetUsersMeFollowersOK().WithPayload(list)

@@ -8,6 +8,7 @@ import (
 	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/golang-commonmark/markdown"
 
@@ -158,7 +159,8 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesUsersMeP
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
-				return entries.NewPostEntriesUsersMeForbidden()
+				err := srv.NewError(nil)
+				return entries.NewPostEntriesUsersMeForbidden().WithPayload(err)
 			}
 
 			return entries.NewPostEntriesUsersMeCreated().WithPayload(entry)
@@ -223,7 +225,8 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
-				return entries.NewPutEntriesIDForbidden()
+				err := srv.NewError(&i18n.Message{ID: "edit_not_your_entry", Other: "You can't edit someone else's entries."})
+				return entries.NewPutEntriesIDForbidden().WithPayload(err)
 			}
 
 			return entries.NewPutEntriesIDOK().WithPayload(entry)
@@ -291,7 +294,8 @@ func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, 
 			entry := loadEntry(srv, tx, params.ID, int64(*uID))
 
 			if entry.ID == 0 {
-				return entries.NewGetEntriesIDNotFound()
+				err := srv.StandardError("no_entry")
+				return entries.NewGetEntriesIDNotFound().WithPayload(err)
 			}
 
 			return entries.NewGetEntriesIDOK().WithPayload(entry)
@@ -319,10 +323,12 @@ func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDPara
 			}
 
 			if tx.Error() == sql.ErrNoRows {
-				return entries.NewDeleteEntriesIDNotFound()
+				err := srv.StandardError("no_entry")
+				return entries.NewDeleteEntriesIDNotFound().WithPayload(err)
 			}
 
-			return entries.NewDeleteEntriesIDForbidden()
+			err := srv.NewError(&i18n.Message{ID: "delete_not_your_entry", Other: "You can't delete someone else's entries."})
+			return entries.NewDeleteEntriesIDForbidden().WithPayload(err)
 		})
 	}
 }

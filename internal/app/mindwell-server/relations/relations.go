@@ -1,9 +1,8 @@
 package relations
 
 import (
-	"database/sql"
-
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/relations"
 	"github.com/sevings/mindwell-server/utils"
@@ -69,7 +68,8 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 			userID := int64(*uID)
 
 			if userID == params.ID {
-				return relations.NewPutRelationsToIDForbidden()
+				err := srv.NewError(&i18n.Message{ID: "self_relation", Other: "You can't have relationship with youself."})
+				return relations.NewPutRelationsToIDForbidden().WithPayload(err)
 			}
 
 			isPrivate := isPrivateTlog(tx, params.ID)
@@ -82,7 +82,8 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 			}
 
 			if !ok {
-				return relations.NewPutRelationsToIDNotFound()
+				err := srv.StandardError("no_tlog")
+				return relations.NewPutRelationsToIDNotFound().WithPayload(err)
 			}
 
 			if params.R == models.RelationshipRelationFollowed {
@@ -100,10 +101,8 @@ func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelation
 			userID := int64(*uID)
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {
-				if tx.Error() == sql.ErrNoRows {
-					return relations.NewPutRelationsFromIDNotFound()
-				}
-				return relations.NewPutRelationsFromIDForbidden()
+				err := srv.StandardError("no_request")
+				return relations.NewPutRelationsFromIDForbidden().WithPayload(err)
 			}
 
 			relation, _ = setRelationship(tx, params.ID, userID, models.RelationshipRelationFollowed)
@@ -129,10 +128,8 @@ func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRela
 			userID := int64(*uID)
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {
-				if tx.Error() == sql.ErrNoRows {
-					return relations.NewDeleteRelationsToIDNotFound()
-				}
-				return relations.NewDeleteRelationsFromIDForbidden()
+				err := srv.StandardError("no_request")
+				return relations.NewDeleteRelationsFromIDForbidden().WithPayload(err)
 			}
 
 			relation = removeRelationship(tx, params.ID, userID)

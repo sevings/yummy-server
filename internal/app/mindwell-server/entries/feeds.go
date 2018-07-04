@@ -369,7 +369,8 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesUsersMePa
 			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return entries.NewGetEntriesUsersMeForbidden()
+				err := srv.StandardError("no_tlog")
+				return entries.NewGetEntriesUsersMeForbidden().WithPayload(err)
 			}
 
 			return entries.NewGetEntriesUsersMeOK().WithPayload(feed)

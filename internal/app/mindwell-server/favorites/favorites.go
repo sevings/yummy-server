@@ -33,7 +33,8 @@ func newStatusLoader(srv *utils.MindwellServer) func(favorites.GetEntriesIDFavor
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return favorites.NewGetEntriesIDFavoriteNotFound()
+				err := srv.StandardError("no_entry")
+				return favorites.NewGetEntriesIDFavoriteNotFound().WithPayload(err)
 			}
 
 			status := favoriteStatus(tx, userID, params.ID)
@@ -65,7 +66,8 @@ func newFavoriteAdder(srv *utils.MindwellServer) func(favorites.PutEntriesIDFavo
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return favorites.NewPutEntriesIDFavoriteNotFound()
+				err := srv.StandardError("no_entry")
+				return favorites.NewPutEntriesIDFavoriteNotFound().WithPayload(err)
 			}
 
 			status := addToFavorites(tx, userID, params.ID)
@@ -95,7 +97,8 @@ func newFavoriteDeleter(srv *utils.MindwellServer) func(favorites.DeleteEntriesI
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return favorites.NewDeleteEntriesIDFavoriteNotFound()
+				err := srv.StandardError("no_entry")
+				return favorites.NewDeleteEntriesIDFavoriteNotFound().WithPayload(err)
 			}
 
 			status := removeFromFavorites(tx, userID, params.ID)

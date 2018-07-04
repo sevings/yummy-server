@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 
@@ -77,12 +78,14 @@ func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDPara
 			userID := int64(*uID)
 			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
-				return comments.NewGetCommentsIDNotFound()
+				err := srv.StandardError("no_comment")
+				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
 			canView := utils.CanViewEntry(tx, userID, comment.EntryID)
 			if !canView {
-				return comments.NewGetCommentsIDNotFound()
+				err := srv.StandardError("no_entry")
+				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
 			return comments.NewGetCommentsIDOK().WithPayload(comment)
@@ -107,16 +110,19 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 			userID := int64(*uID)
 			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
-				return comments.NewGetCommentsIDNotFound()
+				err := srv.StandardError("no_comment")
+				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
 			if comment.Author.ID != userID {
-				return comments.NewGetCommentsIDForbidden()
+				err := srv.NewError(&i18n.Message{ID: "edit_not_your_comment", Other: "You can't edit someone else's comments."})
+				return comments.NewGetCommentsIDForbidden().WithPayload(err)
 			}
 
 			editComment(tx, params.ID, params.Content)
 			if tx.Error() != nil {
-				return comments.NewGetCommentsIDNotFound()
+				err := srv.NewError(nil)
+				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
 			comment.Content = params.Content
@@ -151,15 +157,18 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 			userID := int64(*uID)
 			authorID := commentAuthor(tx, params.ID)
 			if tx.Error() != nil {
-				return comments.NewDeleteCommentsIDNotFound()
+				err := srv.NewError(nil)
+				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
 			if authorID != userID {
-				return comments.NewDeleteCommentsIDForbidden()
+				err := srv.NewError(&i18n.Message{ID: "delete_not_your_comment", Other: "You can't delete someone else's comments."})
+				return comments.NewDeleteCommentsIDForbidden().WithPayload(err)
 			}
 
 			deleteComment(tx, params.ID)
 			if tx.Error() != nil {
-				return comments.NewDeleteCommentsIDNotFound()
+				err := srv.NewError(nil)
+				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
 
 			return comments.NewDeleteCommentsIDOK()
@@ -247,12 +256,14 @@ func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesI
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return comments.NewGetEntriesIDCommentsNotFound()
+				err := srv.StandardError("no_entry")
+				return comments.NewGetEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
 			data := LoadEntryComments(srv, tx, userID, params.ID, *params.Limit, *params.After, *params.Before)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				return comments.NewGetEntriesIDCommentsNotFound()
+				err := srv.NewError(nil)
+				return comments.NewGetEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
 			return comments.NewGetEntriesIDCommentsOK().WithPayload(data)
@@ -309,13 +320,15 @@ func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDComm
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return comments.NewPostEntriesIDCommentsNotFound()
+				err := srv.StandardError("no_entry")
+				return comments.NewPostEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
 			user := users.LoadUserByID(srv, tx, userID)
 			comment := postComment(tx, user, params.ID, params.Content)
 			if tx.Error() != nil {
-				return comments.NewPostEntriesIDCommentsNotFound()
+				err := srv.NewError(nil)
+				return comments.NewPostEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
 			notifyNewComment(srv, tx, comment)

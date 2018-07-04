@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 	"github.com/sevings/mindwell-server/utils"
@@ -52,12 +53,14 @@ func newEntryVoteLoader(srv *utils.MindwellServer) func(votes.GetEntriesIDVotePa
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return votes.NewGetEntriesIDVoteNotFound()
+				err := srv.StandardError("no_entry")
+				return votes.NewGetEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			status := entryRating(tx, userID, params.ID)
 			if tx.Error() != nil {
-				return votes.NewGetEntriesIDVoteNotFound()
+				err := srv.StandardError("no_entry")
+				return votes.NewGetEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			return votes.NewGetEntriesIDVoteOK().WithPayload(status)
@@ -145,16 +148,19 @@ func newEntryVoter(srv *utils.MindwellServer) func(votes.PutEntriesIDVoteParams,
 			userID := int64(*uID)
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {
-				return votes.NewPutEntriesIDVoteNotFound()
+				err := srv.StandardError("no_entry")
+				return votes.NewPutEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			if !canVote {
-				return votes.NewPutEntriesIDVoteForbidden()
+				err := srv.NewError(&i18n.Message{ID: "cant_vote", Other: "You are not allowed to vote for this entry."})
+				return votes.NewPutEntriesIDVoteForbidden().WithPayload(err)
 			}
 
 			status := voteForEntry(tx, userID, params.ID, *params.Positive)
 			if tx.Error() != nil {
-				return votes.NewPutEntriesIDVoteNotFound()
+				err := srv.NewError(nil)
+				return votes.NewPutEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			return votes.NewPutEntriesIDVoteOK().WithPayload(status)
@@ -184,16 +190,19 @@ func newEntryUnvoter(srv *utils.MindwellServer) func(votes.DeleteEntriesIDVotePa
 			userID := int64(*uID)
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {
-				return votes.NewDeleteEntriesIDVoteNotFound()
+				err := srv.StandardError("no_entry")
+				return votes.NewDeleteEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			if !canVote {
-				return votes.NewDeleteEntriesIDVoteForbidden()
+				err := srv.NewError(&i18n.Message{ID: "cant_vote", Other: "You are not allowed to vote for this entry."})
+				return votes.NewDeleteEntriesIDVoteForbidden().WithPayload(err)
 			}
 
 			status, ok := unvoteEntry(tx, userID, params.ID)
 			if !ok || tx.Error() != nil {
-				return votes.NewDeleteEntriesIDVoteNotFound()
+				err := srv.NewError(nil)
+				return votes.NewDeleteEntriesIDVoteNotFound().WithPayload(err)
 			}
 
 			return votes.NewDeleteEntriesIDVoteOK().WithPayload(status)

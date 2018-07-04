@@ -33,7 +33,8 @@ func newWatchingStatusLoader(srv *utils.MindwellServer) func(watchings.GetEntrie
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return watchings.NewGetEntriesIDWatchingNotFound()
+				err := srv.StandardError("no_entry")
+				return watchings.NewGetEntriesIDWatchingNotFound().WithPayload(err)
 			}
 
 			status := watchingStatus(tx, userID, params.ID)
@@ -65,7 +66,8 @@ func newWatchingAdder(srv *utils.MindwellServer) func(watchings.PutEntriesIDWatc
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return watchings.NewPutEntriesIDWatchingNotFound()
+				err := srv.StandardError("no_entry")
+				return watchings.NewPutEntriesIDWatchingNotFound().WithPayload(err)
 			}
 
 			status := AddWatching(tx, userID, params.ID)
@@ -95,7 +97,8 @@ func newWatchingDeleter(srv *utils.MindwellServer) func(watchings.DeleteEntriesI
 			userID := int64(*uID)
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
-				return watchings.NewDeleteEntriesIDWatchingNotFound()
+				err := srv.StandardError("no_entry")
+				return watchings.NewDeleteEntriesIDWatchingNotFound().WithPayload(err)
 			}
 
 			status := RemoveWatching(tx, userID, params.ID)
