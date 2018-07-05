@@ -1,3 +1,67 @@
+[cant_vote]
+hash = "sha1-038aa354d298a0a8b74be514e411536ddbf4bd64"
+other = "Ты не сможешь проголосовать за данную запись."
+
+[delete_not_your_comment]
+hash = "sha1-e384ec5dcfdaf52b7f2cd59a11b1b1cf9f9c6744"
+other = " Чужие комментарии — это частная собственность. Ты не сможешь их удалить."
+
+[delete_not_your_entry]
+hash = "sha1-77b960e0a1d211033411c08e92f17304a738a678"
+other = "Удалять чужие записи плохо для кармы! Мы не дадим тебе совершить такую ужасную ошибку."
+
+[edit_not_your_comment]
+hash = "sha1-6de3f4dff53895158647b7d6c1972b9c47c91ef3"
+other = "А Баба Яга против того, чтобы ты редактировал чужие комментарии."
+
+[edit_not_your_entry]
+hash = "sha1-6ec96ea3334c0123fe31a6cfa5a8608b7859e0cb"
+other = "Редактировать чужие записи запрещено разработчиками этого ресурса."
+
+[email_is_not_free]
+hash = "sha1-35b08ebf996166e44b5d785d89b6269607ed74ef"
+other = "Упс, с этой почтой кто-то уже зарегистрировался. Проверь правильность ввода. :)"
+
+[internal_error]
+hash = "sha1-8e4bbc2f2ec0a6cf3da60edaacf7e4d61909c22b"
+other = "Произошла ошибка на сервере. Мы такого не ожидали. Сообщи об этом в поддержку (support@mindwell.win), чтобы мы постарались это исправить. :)"
+
+[invalid_api_key]
+hash = "sha1-4d8004ee56238d3175e24b9c75b03c15c1da0e92"
+other = "ApiKey какой-то неправильный."
+
+[invalid_invite]
+hash = "sha1-94d067b264f80b6acda171371ad1d0cb44e88b91"
+other = "Пригласительный недействителен."
+
+[invalid_name_or_password]
+hash = "sha1-596e18a70693384839208fed66056d6bcc141264"
+other = "Неправильно введены имя пользователя и/или пароль."
+
+[invalid_password_or_api_key]
+hash = "sha1-24cd325dd291cc579bb6b54494303cdac8b9a7a1"
+other = "Пароль или ApiKey неверен."
+
 [name_is_not_free]
 hash = "sha1-0594d01fa68b7b8ee2f159ddb10319961ed23c69"
-other = "Такой ник уже занят."
+other = "Данное имя уже занято. Заставь фантазию работать лучше. :)"
+
+[no_comment]
+hash = "sha1-de63c6e10e2eed3c902a1bbb5202707b7bc6b526"
+other = "Прости, но нам не удалось найти комментарий, или у тебя нет прав доступа к нему."
+
+[no_entry]
+hash = "sha1-984cc6cc0833ae3bb27978fe6e99a2d038a804bf"
+other = " Прости, но нам не удалось найти запись, или у тебя нет прав доступа к ней."
+
+[no_friend_request]
+hash = "sha1-6c4c2362a0b7d19c9687b488b308b047d95076ba"
+other = "Запроса на дружбу с тобой от этого пользователя нет. Возможно, он передумал."
+
+[no_tlog]
+hash = "sha1-4b0815cd7c3fb6572a22fa5c4914487323551a48"
+other = " Прости, но нам не удалось найти этот тлог, или у тебя нет прав доступа к нему."
+
+[self_relation]
+hash = "sha1-12f408a2d8dee1defb562eb969fe0b9f2a1ab572"
+other = "Нельзя совершать такие суровые действия с собой любимым."
