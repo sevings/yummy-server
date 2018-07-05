@@ -75,7 +75,7 @@ func cutText(text, format string, size int) (string, bool) {
 	}
 	text = strings.TrimRightFunc(text, trim)
 
-	text += "&hellip;"
+	text += "..."
 
 	return text, true
 }
