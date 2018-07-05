@@ -139,7 +139,7 @@ const relationToNameQuery = `
 SELECT relation.type
 FROM users, relations, relation
 WHERE lower(users.name) = lower($2)
-	relations.from_id = $1
+	AND relations.from_id = $1
 	AND relations.to_id = users.id
 	AND relations.type = relation.id`
 

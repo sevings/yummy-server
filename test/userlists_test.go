@@ -310,3 +310,31 @@ func TestOpenFriendLists(t *testing.T) {
 	req.Equal(profiles[0].ID, list[2].ID)
 	req.Equal(int64(1), list[3].ID)
 }
+
+func TestPrivateFriendLists(t *testing.T) {
+	checkFollow(t, userIDs[0], profiles[2], models.RelationshipRelationFollowed)
+	time.Sleep(10 * time.Millisecond)
+	checkFollow(t, userIDs[1], profiles[2], models.RelationshipRelationFollowed)
+
+	profiles[2].Privacy = models.ProfileAllOf1PrivacyFollowers
+
+	params := me.PutUsersMeParams{
+		Privacy:  profiles[2].Privacy,
+		ShowName: profiles[2].ShowName,
+	}
+	checkEditProfile(t, profiles[2], params)
+
+	req := require.New(t)
+	var list models.FriendListUsers
+
+	list = checkIDFollowers(t, userIDs[0], profiles[2].ID, 0, 100, 2)
+	req.Equal(profiles[1].ID, list[0].ID)
+	req.Equal(profiles[0].ID, list[1].ID)
+
+	list = checkNameFollowers(t, userIDs[0], profiles[2].Name, 0, 100, 2)
+	req.Equal(profiles[1].ID, list[0].ID)
+	req.Equal(profiles[0].ID, list[1].ID)
+
+	checkUnfollow(t, userIDs[0], userIDs[2])
+	checkUnfollow(t, userIDs[1], userIDs[2])
+}
