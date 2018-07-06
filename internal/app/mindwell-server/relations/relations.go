@@ -42,22 +42,22 @@ func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelation
 
 func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, isPrivate bool, from, to int64) {
 	const toQ = `
-		SELECT show_name, name, gender.type, verified
+		SELECT show_name, name, gender.type, email, verified
 		FROM users, gender 
 		WHERE users.id = $1 AND users.gender = gender.id
 	`
 
-	var hisName, hisShowName, hisGender string
+	var hisName, hisShowName, hisGender, email string
 	var verified bool
-	tx.Query(toQ, to).Scan(&hisShowName, &hisName, &hisGender, &verified)
+	tx.Query(toQ, to).Scan(&hisShowName, &hisName, &hisGender, &email, &verified)
 	if !verified {
 		return
 	}
 
-	const fromQ = "SELECT email, show_name FROM users WHERE id = $1"
+	const fromQ = "SELECT show_name FROM users WHERE id = $1"
 
-	var email, name string
-	tx.Query(fromQ, from).Scan(&email, &name)
+	var name string
+	tx.Query(fromQ, from).Scan(&name)
 
 	srv.Mail.SendNewFollower(email, name, isPrivate, hisShowName, hisName, hisGender)
 }
