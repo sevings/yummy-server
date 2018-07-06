@@ -335,6 +335,14 @@ func TestPrivateFriendLists(t *testing.T) {
 	req.Equal(profiles[1].ID, list[0].ID)
 	req.Equal(profiles[0].ID, list[1].ID)
 
+	list = checkIDFollowers(t, userIDs[2], profiles[2].ID, 0, 100, 2)
+	req.Equal(profiles[1].ID, list[0].ID)
+	req.Equal(profiles[0].ID, list[1].ID)
+
+	list = checkNameFollowers(t, userIDs[2], profiles[2].Name, 0, 100, 2)
+	req.Equal(profiles[1].ID, list[0].ID)
+	req.Equal(profiles[0].ID, list[1].ID)
+
 	checkUnfollow(t, userIDs[0], userIDs[2])
 	checkUnfollow(t, userIDs[1], userIDs[2])
 }

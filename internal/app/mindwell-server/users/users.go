@@ -154,23 +154,24 @@ func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) st
 }
 
 const privacyQueryStart = `
-SELECT user_privacy.type
+SELECT users.id, user_privacy.type
 FROM users, user_privacy
 WHERE users.privacy = user_privacy.id AND `
 
 func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 	userID *models.UserID, arg interface{}) bool {
+	var subjectID int64
 	var privacy string
-	tx.Query(privacyQuery, arg).Scan(&privacy)
+	tx.Query(privacyQuery, arg).Scan(&subjectID, &privacy)
 	if tx.Error() != nil {
 		return false
 	}
 
-	if privacy == "all" {
+	if subjectID == int64(*userID) {
 		return true
 	}
 
-	if privacy == "registered" {
+	if privacy == models.ProfileAllOf1PrivacyAll {
 		return true
 	}
 
