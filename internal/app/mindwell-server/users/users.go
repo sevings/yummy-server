@@ -14,28 +14,24 @@ import (
 func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB)
 
-	srv.API.MeGetUsersMeHandler = me.GetUsersMeHandlerFunc(newMeLoader(srv))
-	srv.API.MePutUsersMeHandler = me.PutUsersMeHandlerFunc(newMeEditor(srv))
+	srv.API.MeGetMeHandler = me.GetMeHandlerFunc(newMeLoader(srv))
+	srv.API.MePutMeHandler = me.PutMeHandlerFunc(newMeEditor(srv))
 
-	srv.API.UsersGetUsersIDHandler = users.GetUsersIDHandlerFunc(newUserLoader(srv))
-	srv.API.UsersGetUsersByNameNameHandler = users.GetUsersByNameNameHandlerFunc(newUserLoaderByName(srv))
+	srv.API.UsersGetUsersNameHandler = users.GetUsersNameHandlerFunc(newUserLoader(srv))
 
-	srv.API.MeGetUsersMeFollowersHandler = me.GetUsersMeFollowersHandlerFunc(newMyFollowersLoader(srv))
-	srv.API.UsersGetUsersIDFollowersHandler = users.GetUsersIDFollowersHandlerFunc(newFollowersLoader(srv))
-	srv.API.UsersGetUsersByNameNameFollowersHandler = users.GetUsersByNameNameFollowersHandlerFunc(newFollowersLoaderByName(srv))
+	srv.API.MeGetMeFollowersHandler = me.GetMeFollowersHandlerFunc(newMyFollowersLoader(srv))
+	srv.API.UsersGetUsersNameFollowersHandler = users.GetUsersNameFollowersHandlerFunc(newFollowersLoader(srv))
 
-	srv.API.MeGetUsersMeFollowingsHandler = me.GetUsersMeFollowingsHandlerFunc(newMyFollowingsLoader(srv))
-	srv.API.UsersGetUsersIDFollowingsHandler = users.GetUsersIDFollowingsHandlerFunc(newFollowingsLoader(srv))
-	srv.API.UsersGetUsersByNameNameFollowingsHandler = users.GetUsersByNameNameFollowingsHandlerFunc(newFollowingsLoaderByName(srv))
+	srv.API.MeGetMeFollowingsHandler = me.GetMeFollowingsHandlerFunc(newMyFollowingsLoader(srv))
+	srv.API.UsersGetUsersNameFollowingsHandler = users.GetUsersNameFollowingsHandlerFunc(newFollowingsLoader(srv))
 
-	srv.API.MeGetUsersMeInvitedHandler = me.GetUsersMeInvitedHandlerFunc(newMyInvitedLoader(srv))
-	srv.API.UsersGetUsersIDInvitedHandler = users.GetUsersIDInvitedHandlerFunc(newInvitedLoader(srv))
-	srv.API.UsersGetUsersByNameNameInvitedHandler = users.GetUsersByNameNameInvitedHandlerFunc(newInvitedLoaderByName(srv))
+	srv.API.MeGetMeInvitedHandler = me.GetMeInvitedHandlerFunc(newMyInvitedLoader(srv))
+	srv.API.UsersGetUsersNameInvitedHandler = users.GetUsersNameInvitedHandlerFunc(newInvitedLoader(srv))
 
-	srv.API.MeGetUsersMeIgnoredHandler = me.GetUsersMeIgnoredHandlerFunc(newMyIgnoredLoader(srv))
-	srv.API.MeGetUsersMeRequestedHandler = me.GetUsersMeRequestedHandlerFunc(newMyRequestedLoader(srv))
+	srv.API.MeGetMeIgnoredHandler = me.GetMeIgnoredHandlerFunc(newMyIgnoredLoader(srv))
+	srv.API.MeGetMeRequestedHandler = me.GetMeRequestedHandlerFunc(newMyRequestedLoader(srv))
 
-	srv.API.MePutUsersMeOnlineHandler = me.PutUsersMeOnlineHandlerFunc(newMyOnlineSetter(srv))
+	srv.API.MePutMeOnlineHandler = me.PutMeOnlineHandlerFunc(newMyOnlineSetter(srv))
 }
 
 const profileQuery = `
@@ -112,10 +108,10 @@ func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID,
 	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 		profile := loadUserProfile(srv, tx, query, userID, arg)
 		if tx.Error() != nil {
-			return users.NewGetUsersIDNotFound()
+			return users.NewGetUsersNameNotFound()
 		}
 
-		result := users.NewGetUsersIDOK().WithPayload(profile)
+		result := users.NewGetUsersNameOK().WithPayload(profile)
 		if userID.ID == profile.ID {
 			return result
 		}
@@ -195,18 +191,6 @@ ORDER BY relations.changed_at DESC
 LIMIT $3 OFFSET $4`
 
 const invitedUsersQuery = `
-SELECT id, name, show_name,
-is_online, extract(epoch from last_seen_at), title, karma,
-avatar, cover,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count
-FROM long_users
-WHERE invited_by = $1
-ORDER BY id DESC
-LIMIT $2 OFFSET $3`
-
-const invitedUsersByNameQuery = `
 WITH by AS (
 	SELECT id
 	FROM users
@@ -259,21 +243,21 @@ func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuer
 		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
 		if tx.Error() != nil {
 			err := srv.NewError(nil)
-			return users.NewGetUsersIDFollowersNotFound().WithPayload(err)
+			return users.NewGetUsersNameFollowersNotFound().WithPayload(err)
 		}
 
 		if !open {
 			err := srv.StandardError("no_tlog")
-			return users.NewGetUsersIDFollowersForbidden().WithPayload(err)
+			return users.NewGetUsersNameFollowersForbidden().WithPayload(err)
 		}
 
 		list := loadRelatedUsers(srv, tx, usersQuery, subjectQuery, relation, args...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			err := srv.StandardError("no_tlog")
-			return users.NewGetUsersIDFollowersNotFound().WithPayload(err)
+			return users.NewGetUsersNameFollowersNotFound().WithPayload(err)
 		}
 
-		return users.NewGetUsersIDFollowersOK().WithPayload(list)
+		return users.NewGetUsersNameFollowersOK().WithPayload(list)
 	})
 }
 

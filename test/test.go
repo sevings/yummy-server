@@ -89,15 +89,15 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 
 func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bool) *models.Entry {
 	title := ""
-	params := entries.PostEntriesUsersMeParams{
+	params := entries.PostEntriesMeParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   privacy,
 		IsVotable: &votable,
 	}
 
-	resp := api.EntriesPostEntriesUsersMeHandler.Handle(params, id)
-	body, ok := resp.(*entries.PostEntriesUsersMeCreated)
+	resp := api.EntriesPostEntriesMeHandler.Handle(params, id)
+	body, ok := resp.(*entries.PostEntriesMeCreated)
 	require.True(t, ok)
 
 	return body.Payload

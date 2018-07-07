@@ -24,7 +24,7 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
-	srv.API.EntriesPostEntriesUsersMeHandler = entries.PostEntriesUsersMeHandlerFunc(newMyTlogPoster(srv))
+	srv.API.EntriesPostEntriesMeHandler = entries.PostEntriesMeHandlerFunc(newMyTlogPoster(srv))
 
 	srv.API.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(srv))
 	srv.API.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(srv))
@@ -34,7 +34,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(srv))
 	srv.API.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(srv))
 	srv.API.EntriesGetEntriesUsersIDHandler = entries.GetEntriesUsersIDHandlerFunc(newTlogLoader(srv))
-	srv.API.EntriesGetEntriesUsersMeHandler = entries.GetEntriesUsersMeHandlerFunc(newMyTlogLoader(srv))
+	srv.API.EntriesGetEntriesMeHandler = entries.GetEntriesMeHandlerFunc(newMyTlogLoader(srv))
 	srv.API.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(newFriendsFeedLoader(srv))
 }
 
@@ -152,18 +152,18 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	return &entry
 }
 
-func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
-	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
+func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesMeParams, *models.UserID) middleware.Responder {
+	return func(params entries.PostEntriesMeParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			entry := createEntry(srv, tx, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
-				return entries.NewPostEntriesUsersMeForbidden().WithPayload(err)
+				return entries.NewPostEntriesMeForbidden().WithPayload(err)
 			}
 
-			return entries.NewPostEntriesUsersMeCreated().WithPayload(entry)
+			return entries.NewPostEntriesMeCreated().WithPayload(entry)
 		})
 	}
 }

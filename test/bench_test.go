@@ -9,10 +9,10 @@ import (
 )
 
 func BenchmarkLoadLive(b *testing.B) {
-	post := api.EntriesPostEntriesUsersMeHandler.Handle
+	post := api.EntriesPostEntriesMeHandler.Handle
 	var title string
 	votable := true
-	entryParams := entries.PostEntriesUsersMeParams{
+	entryParams := entries.PostEntriesMeParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   models.EntryPrivacyAll,

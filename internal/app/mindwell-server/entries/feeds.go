@@ -363,17 +363,17 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 	return feed
 }
 
-func newMyTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesUsersMeParams, *models.UserID) middleware.Responder {
-	return func(params entries.GetEntriesUsersMeParams, userID *models.UserID) middleware.Responder {
+func newMyTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesMeParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesMeParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.StandardError("no_tlog")
-				return entries.NewGetEntriesUsersMeForbidden().WithPayload(err)
+				return entries.NewGetEntriesMeForbidden().WithPayload(err)
 			}
 
-			return entries.NewGetEntriesUsersMeOK().WithPayload(feed)
+			return entries.NewGetEntriesMeOK().WithPayload(feed)
 		})
 	}
 }

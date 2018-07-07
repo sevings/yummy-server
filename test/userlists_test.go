@@ -12,13 +12,13 @@ import (
 )
 
 func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
-	get := api.MeGetUsersMeFollowersHandler.Handle
-	params := me.GetUsersMeFollowersParams{
+	get := api.MeGetMeFollowersHandler.Handle
+	params := me.GetMeFollowersParams{
 		Skip:  &skip,
 		Limit: &limit,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*me.GetUsersMeFollowersOK)
+	body, ok := resp.(*me.GetMeFollowersOK)
 
 	require.True(t, ok)
 
@@ -31,13 +31,13 @@ func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size
 }
 
 func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
-	get := api.MeGetUsersMeFollowingsHandler.Handle
-	params := me.GetUsersMeFollowingsParams{
+	get := api.MeGetMeFollowingsHandler.Handle
+	params := me.GetMeFollowingsParams{
 		Skip:  &skip,
 		Limit: &limit,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*me.GetUsersMeFollowersOK)
+	body, ok := resp.(*me.GetMeFollowersOK)
 
 	require.True(t, ok)
 
@@ -50,13 +50,13 @@ func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, siz
 }
 
 func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
-	get := api.MeGetUsersMeIgnoredHandler.Handle
-	params := me.GetUsersMeIgnoredParams{
+	get := api.MeGetMeIgnoredHandler.Handle
+	params := me.GetMeIgnoredParams{
 		Skip:  &skip,
 		Limit: &limit,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*me.GetUsersMeFollowersOK)
+	body, ok := resp.(*me.GetMeFollowersOK)
 
 	require.True(t, ok)
 
@@ -69,13 +69,13 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 }
 
 func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
-	get := api.MeGetUsersMeInvitedHandler.Handle
-	params := me.GetUsersMeInvitedParams{
+	get := api.MeGetMeInvitedHandler.Handle
+	params := me.GetMeInvitedParams{
 		Skip:  &skip,
 		Limit: &limit,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*me.GetUsersMeFollowersOK)
+	body, ok := resp.(*me.GetMeFollowersOK)
 
 	require.True(t, ok)
 
@@ -87,75 +87,15 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 	return list.Users
 }
 
-func checkIDFollowers(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersIDFollowersHandler.Handle
-	params := users.GetUsersIDFollowersParams{
-		Skip:  &skip,
-		Limit: &limit,
-		ID:    id,
-	}
-	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
-
-	require.True(t, ok)
-
-	list := body.Payload
-	require.Equal(t, size, len(list.Users))
-	require.Equal(t, id, list.Subject.ID)
-	require.Equal(t, models.FriendListRelationFollowers, list.Relation)
-
-	return list.Users
-}
-
-func checkIDFollowings(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersIDFollowingsHandler.Handle
-	params := users.GetUsersIDFollowingsParams{
-		Skip:  &skip,
-		Limit: &limit,
-		ID:    id,
-	}
-	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
-
-	require.True(t, ok)
-
-	list := body.Payload
-	require.Equal(t, size, len(list.Users))
-	require.Equal(t, id, list.Subject.ID)
-	require.Equal(t, models.FriendListRelationFollowings, list.Relation)
-
-	return list.Users
-}
-
-func checkIDInvited(t *testing.T, user *models.UserID, id, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersIDInvitedHandler.Handle
-	params := users.GetUsersIDInvitedParams{
-		Skip:  &skip,
-		Limit: &limit,
-		ID:    id,
-	}
-	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
-
-	require.True(t, ok)
-
-	list := body.Payload
-	require.Equal(t, size, len(list.Users))
-	require.Equal(t, id, list.Subject.ID)
-	require.Equal(t, models.FriendListRelationInvited, list.Relation)
-
-	return list.Users
-}
-
 func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersByNameNameFollowersHandler.Handle
-	params := users.GetUsersByNameNameFollowersParams{
+	get := api.UsersGetUsersNameFollowersHandler.Handle
+	params := users.GetUsersNameFollowersParams{
 		Skip:  &skip,
 		Limit: &limit,
 		Name:  name,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
+	body, ok := resp.(*users.GetUsersNameFollowersOK)
 
 	require.True(t, ok)
 
@@ -168,14 +108,14 @@ func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, li
 }
 
 func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersByNameNameFollowingsHandler.Handle
-	params := users.GetUsersByNameNameFollowingsParams{
+	get := api.UsersGetUsersNameFollowingsHandler.Handle
+	params := users.GetUsersNameFollowingsParams{
 		Skip:  &skip,
 		Limit: &limit,
 		Name:  name,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
+	body, ok := resp.(*users.GetUsersNameFollowersOK)
 
 	require.True(t, ok)
 
@@ -188,14 +128,14 @@ func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, l
 }
 
 func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
-	get := api.UsersGetUsersByNameNameInvitedHandler.Handle
-	params := users.GetUsersByNameNameInvitedParams{
+	get := api.UsersGetUsersNameInvitedHandler.Handle
+	params := users.GetUsersNameInvitedParams{
 		Skip:  &skip,
 		Limit: &limit,
 		Name:  name,
 	}
 	resp := get(params, user)
-	body, ok := resp.(*users.GetUsersIDFollowersOK)
+	body, ok := resp.(*users.GetUsersNameFollowersOK)
 
 	require.True(t, ok)
 
@@ -231,18 +171,6 @@ func TestOpenFriendLists(t *testing.T) {
 	list = checkMyFollowings(t, userIDs[0], 0, 1, 1)
 	req.Equal(profiles[2].ID, list[0].ID)
 	list = checkMyFollowings(t, userIDs[0], 1, 10, 1)
-	req.Equal(profiles[1].ID, list[0].ID)
-
-	checkIDFollowers(t, userIDs[0], profiles[0].ID, 0, 100, 0)
-
-	list = checkIDFollowers(t, userIDs[0], profiles[1].ID, 0, 100, 1)
-	req.Equal(profiles[0].ID, list[0].ID)
-
-	checkIDFollowings(t, userIDs[0], profiles[2].ID, 0, 100, 0)
-
-	list = checkIDFollowings(t, userIDs[0], profiles[0].ID, 0, 1, 1)
-	req.Equal(profiles[2].ID, list[0].ID)
-	list = checkIDFollowings(t, userIDs[0], profiles[0].ID, 1, 1, 1)
 	req.Equal(profiles[1].ID, list[0].ID)
 
 	checkNameFollowers(t, userIDs[0], profiles[0].Name, 0, 100, 0)
@@ -301,12 +229,6 @@ func TestOpenFriendLists(t *testing.T) {
 
 	list = checkMyInvited(t, &inviter, 4, 2, 0)
 
-	list = checkIDInvited(t, userIDs[0], 1, 0, 100, 4)
-	req.Equal(profiles[2].ID, list[0].ID)
-	req.Equal(profiles[1].ID, list[1].ID)
-	req.Equal(profiles[0].ID, list[2].ID)
-	req.Equal(int64(1), list[3].ID)
-
 	list = checkNameInvited(t, userIDs[0], "haveANiceday", 0, 100, 4)
 	req.Equal(profiles[2].ID, list[0].ID)
 	req.Equal(profiles[1].ID, list[1].ID)
@@ -321,7 +243,7 @@ func TestPrivateFriendLists(t *testing.T) {
 
 	profiles[2].Privacy = models.ProfileAllOf1PrivacyFollowers
 
-	params := me.PutUsersMeParams{
+	params := me.PutMeParams{
 		Privacy:  profiles[2].Privacy,
 		ShowName: profiles[2].ShowName,
 	}
@@ -330,15 +252,7 @@ func TestPrivateFriendLists(t *testing.T) {
 	req := require.New(t)
 	var list models.FriendListUsers
 
-	list = checkIDFollowers(t, userIDs[0], profiles[2].ID, 0, 100, 2)
-	req.Equal(profiles[1].ID, list[0].ID)
-	req.Equal(profiles[0].ID, list[1].ID)
-
 	list = checkNameFollowers(t, userIDs[0], profiles[2].Name, 0, 100, 2)
-	req.Equal(profiles[1].ID, list[0].ID)
-	req.Equal(profiles[0].ID, list[1].ID)
-
-	list = checkIDFollowers(t, userIDs[2], profiles[2].ID, 0, 100, 2)
 	req.Equal(profiles[1].ID, list[0].ID)
 	req.Equal(profiles[0].ID, list[1].ID)
 

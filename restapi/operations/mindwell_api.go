@@ -121,6 +121,15 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
 		}),
+		EntriesGetEntriesMeHandler: entries.GetEntriesMeHandlerFunc(func(params entries.GetEntriesMeParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesMe has not yet been implemented")
+		}),
+		EntriesGetEntriesMeFavoritesHandler: entries.GetEntriesMeFavoritesHandlerFunc(func(params entries.GetEntriesMeFavoritesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesMeFavorites has not yet been implemented")
+		}),
+		EntriesGetEntriesMeWatchingHandler: entries.GetEntriesMeWatchingHandlerFunc(func(params entries.GetEntriesMeWatchingParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesMeWatching has not yet been implemented")
+		}),
 		EntriesGetEntriesUsersByNameNameHandler: entries.GetEntriesUsersByNameNameHandlerFunc(func(params entries.GetEntriesUsersByNameNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesUsersByNameName has not yet been implemented")
 		}),
@@ -133,14 +142,23 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesUsersIDFavoritesHandler: entries.GetEntriesUsersIDFavoritesHandlerFunc(func(params entries.GetEntriesUsersIDFavoritesParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesUsersIDFavorites has not yet been implemented")
 		}),
-		EntriesGetEntriesUsersMeHandler: entries.GetEntriesUsersMeHandlerFunc(func(params entries.GetEntriesUsersMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersMe has not yet been implemented")
+		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
 		}),
-		EntriesGetEntriesUsersMeFavoritesHandler: entries.GetEntriesUsersMeFavoritesHandlerFunc(func(params entries.GetEntriesUsersMeFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersMeFavorites has not yet been implemented")
+		MeGetMeFollowersHandler: me.GetMeFollowersHandlerFunc(func(params me.GetMeFollowersParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeFollowers has not yet been implemented")
 		}),
-		EntriesGetEntriesUsersMeWatchingHandler: entries.GetEntriesUsersMeWatchingHandlerFunc(func(params entries.GetEntriesUsersMeWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersMeWatching has not yet been implemented")
+		MeGetMeFollowingsHandler: me.GetMeFollowingsHandlerFunc(func(params me.GetMeFollowingsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeFollowings has not yet been implemented")
+		}),
+		MeGetMeIgnoredHandler: me.GetMeIgnoredHandlerFunc(func(params me.GetMeIgnoredParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeIgnored has not yet been implemented")
+		}),
+		MeGetMeInvitedHandler: me.GetMeInvitedHandlerFunc(func(params me.GetMeInvitedParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeInvited has not yet been implemented")
+		}),
+		MeGetMeRequestedHandler: me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeRequested has not yet been implemented")
 		}),
 		RelationsGetRelationsFromIDHandler: relations.GetRelationsFromIDHandlerFunc(func(params relations.GetRelationsFromIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsFromID has not yet been implemented")
@@ -148,47 +166,17 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		RelationsGetRelationsToIDHandler: relations.GetRelationsToIDHandlerFunc(func(params relations.GetRelationsToIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsToID has not yet been implemented")
 		}),
-		UsersGetUsersByNameNameHandler: users.GetUsersByNameNameHandlerFunc(func(params users.GetUsersByNameNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersByNameName has not yet been implemented")
+		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
 		}),
-		UsersGetUsersByNameNameFollowersHandler: users.GetUsersByNameNameFollowersHandlerFunc(func(params users.GetUsersByNameNameFollowersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersByNameNameFollowers has not yet been implemented")
+		UsersGetUsersNameFollowersHandler: users.GetUsersNameFollowersHandlerFunc(func(params users.GetUsersNameFollowersParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameFollowers has not yet been implemented")
 		}),
-		UsersGetUsersByNameNameFollowingsHandler: users.GetUsersByNameNameFollowingsHandlerFunc(func(params users.GetUsersByNameNameFollowingsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersByNameNameFollowings has not yet been implemented")
+		UsersGetUsersNameFollowingsHandler: users.GetUsersNameFollowingsHandlerFunc(func(params users.GetUsersNameFollowingsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameFollowings has not yet been implemented")
 		}),
-		UsersGetUsersByNameNameInvitedHandler: users.GetUsersByNameNameInvitedHandlerFunc(func(params users.GetUsersByNameNameInvitedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersByNameNameInvited has not yet been implemented")
-		}),
-		UsersGetUsersIDHandler: users.GetUsersIDHandlerFunc(func(params users.GetUsersIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersID has not yet been implemented")
-		}),
-		UsersGetUsersIDFollowersHandler: users.GetUsersIDFollowersHandlerFunc(func(params users.GetUsersIDFollowersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersIDFollowers has not yet been implemented")
-		}),
-		UsersGetUsersIDFollowingsHandler: users.GetUsersIDFollowingsHandlerFunc(func(params users.GetUsersIDFollowingsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersIDFollowings has not yet been implemented")
-		}),
-		UsersGetUsersIDInvitedHandler: users.GetUsersIDInvitedHandlerFunc(func(params users.GetUsersIDInvitedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersIDInvited has not yet been implemented")
-		}),
-		MeGetUsersMeHandler: me.GetUsersMeHandlerFunc(func(params me.GetUsersMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMe has not yet been implemented")
-		}),
-		MeGetUsersMeFollowersHandler: me.GetUsersMeFollowersHandlerFunc(func(params me.GetUsersMeFollowersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeFollowers has not yet been implemented")
-		}),
-		MeGetUsersMeFollowingsHandler: me.GetUsersMeFollowingsHandlerFunc(func(params me.GetUsersMeFollowingsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeFollowings has not yet been implemented")
-		}),
-		MeGetUsersMeIgnoredHandler: me.GetUsersMeIgnoredHandlerFunc(func(params me.GetUsersMeIgnoredParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeIgnored has not yet been implemented")
-		}),
-		MeGetUsersMeInvitedHandler: me.GetUsersMeInvitedHandlerFunc(func(params me.GetUsersMeInvitedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeInvited has not yet been implemented")
-		}),
-		MeGetUsersMeRequestedHandler: me.GetUsersMeRequestedHandlerFunc(func(params me.GetUsersMeRequestedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetUsersMeRequested has not yet been implemented")
+		UsersGetUsersNameInvitedHandler: users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameInvited has not yet been implemented")
 		}),
 		AccountPostAccountLoginHandler: account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountLogin has not yet been implemented")
@@ -211,8 +199,8 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		CommentsPostEntriesIDCommentsHandler: comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPostEntriesIDComments has not yet been implemented")
 		}),
-		EntriesPostEntriesUsersMeHandler: entries.PostEntriesUsersMeHandlerFunc(func(params entries.PostEntriesUsersMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesPostEntriesUsersMe has not yet been implemented")
+		EntriesPostEntriesMeHandler: entries.PostEntriesMeHandlerFunc(func(params entries.PostEntriesMeParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesPostEntriesMe has not yet been implemented")
 		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
@@ -232,23 +220,23 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		WatchingsPutEntriesIDWatchingHandler: watchings.PutEntriesIDWatchingHandlerFunc(func(params watchings.PutEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation WatchingsPutEntriesIDWatching has not yet been implemented")
 		}),
+		MePutMeHandler: me.PutMeHandlerFunc(func(params me.PutMeParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutMe has not yet been implemented")
+		}),
+		MePutMeAvatarHandler: me.PutMeAvatarHandlerFunc(func(params me.PutMeAvatarParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutMeAvatar has not yet been implemented")
+		}),
+		MePutMeCoverHandler: me.PutMeCoverHandlerFunc(func(params me.PutMeCoverParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutMeCover has not yet been implemented")
+		}),
+		MePutMeOnlineHandler: me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePutMeOnline has not yet been implemented")
+		}),
 		RelationsPutRelationsFromIDHandler: relations.PutRelationsFromIDHandlerFunc(func(params relations.PutRelationsFromIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsPutRelationsFromID has not yet been implemented")
 		}),
 		RelationsPutRelationsToIDHandler: relations.PutRelationsToIDHandlerFunc(func(params relations.PutRelationsToIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsPutRelationsToID has not yet been implemented")
-		}),
-		MePutUsersMeHandler: me.PutUsersMeHandlerFunc(func(params me.PutUsersMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutUsersMe has not yet been implemented")
-		}),
-		MePutUsersMeAvatarHandler: me.PutUsersMeAvatarHandlerFunc(func(params me.PutUsersMeAvatarParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutUsersMeAvatar has not yet been implemented")
-		}),
-		MePutUsersMeCoverHandler: me.PutUsersMeCoverHandlerFunc(func(params me.PutUsersMeCoverParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutUsersMeCover has not yet been implemented")
-		}),
-		MePutUsersMeOnlineHandler: me.PutUsersMeOnlineHandlerFunc(func(params me.PutUsersMeOnlineParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutUsersMeOnline has not yet been implemented")
 		}),
 
 		// Applies when the "X-User-Key" header is set
@@ -346,6 +334,12 @@ type MindwellAPI struct {
 	WatchingsGetEntriesIDWatchingHandler watchings.GetEntriesIDWatchingHandler
 	// EntriesGetEntriesLiveHandler sets the operation handler for the get entries live operation
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
+	// EntriesGetEntriesMeHandler sets the operation handler for the get entries me operation
+	EntriesGetEntriesMeHandler entries.GetEntriesMeHandler
+	// EntriesGetEntriesMeFavoritesHandler sets the operation handler for the get entries me favorites operation
+	EntriesGetEntriesMeFavoritesHandler entries.GetEntriesMeFavoritesHandler
+	// EntriesGetEntriesMeWatchingHandler sets the operation handler for the get entries me watching operation
+	EntriesGetEntriesMeWatchingHandler entries.GetEntriesMeWatchingHandler
 	// EntriesGetEntriesUsersByNameNameHandler sets the operation handler for the get entries users by name name operation
 	EntriesGetEntriesUsersByNameNameHandler entries.GetEntriesUsersByNameNameHandler
 	// EntriesGetEntriesUsersByNameNameFavoritesHandler sets the operation handler for the get entries users by name name favorites operation
@@ -354,44 +348,30 @@ type MindwellAPI struct {
 	EntriesGetEntriesUsersIDHandler entries.GetEntriesUsersIDHandler
 	// EntriesGetEntriesUsersIDFavoritesHandler sets the operation handler for the get entries users ID favorites operation
 	EntriesGetEntriesUsersIDFavoritesHandler entries.GetEntriesUsersIDFavoritesHandler
-	// EntriesGetEntriesUsersMeHandler sets the operation handler for the get entries users me operation
-	EntriesGetEntriesUsersMeHandler entries.GetEntriesUsersMeHandler
-	// EntriesGetEntriesUsersMeFavoritesHandler sets the operation handler for the get entries users me favorites operation
-	EntriesGetEntriesUsersMeFavoritesHandler entries.GetEntriesUsersMeFavoritesHandler
-	// EntriesGetEntriesUsersMeWatchingHandler sets the operation handler for the get entries users me watching operation
-	EntriesGetEntriesUsersMeWatchingHandler entries.GetEntriesUsersMeWatchingHandler
+	// MeGetMeHandler sets the operation handler for the get me operation
+	MeGetMeHandler me.GetMeHandler
+	// MeGetMeFollowersHandler sets the operation handler for the get me followers operation
+	MeGetMeFollowersHandler me.GetMeFollowersHandler
+	// MeGetMeFollowingsHandler sets the operation handler for the get me followings operation
+	MeGetMeFollowingsHandler me.GetMeFollowingsHandler
+	// MeGetMeIgnoredHandler sets the operation handler for the get me ignored operation
+	MeGetMeIgnoredHandler me.GetMeIgnoredHandler
+	// MeGetMeInvitedHandler sets the operation handler for the get me invited operation
+	MeGetMeInvitedHandler me.GetMeInvitedHandler
+	// MeGetMeRequestedHandler sets the operation handler for the get me requested operation
+	MeGetMeRequestedHandler me.GetMeRequestedHandler
 	// RelationsGetRelationsFromIDHandler sets the operation handler for the get relations from ID operation
 	RelationsGetRelationsFromIDHandler relations.GetRelationsFromIDHandler
 	// RelationsGetRelationsToIDHandler sets the operation handler for the get relations to ID operation
 	RelationsGetRelationsToIDHandler relations.GetRelationsToIDHandler
-	// UsersGetUsersByNameNameHandler sets the operation handler for the get users by name name operation
-	UsersGetUsersByNameNameHandler users.GetUsersByNameNameHandler
-	// UsersGetUsersByNameNameFollowersHandler sets the operation handler for the get users by name name followers operation
-	UsersGetUsersByNameNameFollowersHandler users.GetUsersByNameNameFollowersHandler
-	// UsersGetUsersByNameNameFollowingsHandler sets the operation handler for the get users by name name followings operation
-	UsersGetUsersByNameNameFollowingsHandler users.GetUsersByNameNameFollowingsHandler
-	// UsersGetUsersByNameNameInvitedHandler sets the operation handler for the get users by name name invited operation
-	UsersGetUsersByNameNameInvitedHandler users.GetUsersByNameNameInvitedHandler
-	// UsersGetUsersIDHandler sets the operation handler for the get users ID operation
-	UsersGetUsersIDHandler users.GetUsersIDHandler
-	// UsersGetUsersIDFollowersHandler sets the operation handler for the get users ID followers operation
-	UsersGetUsersIDFollowersHandler users.GetUsersIDFollowersHandler
-	// UsersGetUsersIDFollowingsHandler sets the operation handler for the get users ID followings operation
-	UsersGetUsersIDFollowingsHandler users.GetUsersIDFollowingsHandler
-	// UsersGetUsersIDInvitedHandler sets the operation handler for the get users ID invited operation
-	UsersGetUsersIDInvitedHandler users.GetUsersIDInvitedHandler
-	// MeGetUsersMeHandler sets the operation handler for the get users me operation
-	MeGetUsersMeHandler me.GetUsersMeHandler
-	// MeGetUsersMeFollowersHandler sets the operation handler for the get users me followers operation
-	MeGetUsersMeFollowersHandler me.GetUsersMeFollowersHandler
-	// MeGetUsersMeFollowingsHandler sets the operation handler for the get users me followings operation
-	MeGetUsersMeFollowingsHandler me.GetUsersMeFollowingsHandler
-	// MeGetUsersMeIgnoredHandler sets the operation handler for the get users me ignored operation
-	MeGetUsersMeIgnoredHandler me.GetUsersMeIgnoredHandler
-	// MeGetUsersMeInvitedHandler sets the operation handler for the get users me invited operation
-	MeGetUsersMeInvitedHandler me.GetUsersMeInvitedHandler
-	// MeGetUsersMeRequestedHandler sets the operation handler for the get users me requested operation
-	MeGetUsersMeRequestedHandler me.GetUsersMeRequestedHandler
+	// UsersGetUsersNameHandler sets the operation handler for the get users name operation
+	UsersGetUsersNameHandler users.GetUsersNameHandler
+	// UsersGetUsersNameFollowersHandler sets the operation handler for the get users name followers operation
+	UsersGetUsersNameFollowersHandler users.GetUsersNameFollowersHandler
+	// UsersGetUsersNameFollowingsHandler sets the operation handler for the get users name followings operation
+	UsersGetUsersNameFollowingsHandler users.GetUsersNameFollowingsHandler
+	// UsersGetUsersNameInvitedHandler sets the operation handler for the get users name invited operation
+	UsersGetUsersNameInvitedHandler users.GetUsersNameInvitedHandler
 	// AccountPostAccountLoginHandler sets the operation handler for the post account login operation
 	AccountPostAccountLoginHandler account.PostAccountLoginHandler
 	// AccountPostAccountPasswordHandler sets the operation handler for the post account password operation
@@ -406,8 +386,8 @@ type MindwellAPI struct {
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
 	CommentsPostEntriesIDCommentsHandler comments.PostEntriesIDCommentsHandler
-	// EntriesPostEntriesUsersMeHandler sets the operation handler for the post entries users me operation
-	EntriesPostEntriesUsersMeHandler entries.PostEntriesUsersMeHandler
+	// EntriesPostEntriesMeHandler sets the operation handler for the post entries me operation
+	EntriesPostEntriesMeHandler entries.PostEntriesMeHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
 	// DesignPutDesignHandler sets the operation handler for the put design operation
@@ -420,18 +400,18 @@ type MindwellAPI struct {
 	VotesPutEntriesIDVoteHandler votes.PutEntriesIDVoteHandler
 	// WatchingsPutEntriesIDWatchingHandler sets the operation handler for the put entries ID watching operation
 	WatchingsPutEntriesIDWatchingHandler watchings.PutEntriesIDWatchingHandler
+	// MePutMeHandler sets the operation handler for the put me operation
+	MePutMeHandler me.PutMeHandler
+	// MePutMeAvatarHandler sets the operation handler for the put me avatar operation
+	MePutMeAvatarHandler me.PutMeAvatarHandler
+	// MePutMeCoverHandler sets the operation handler for the put me cover operation
+	MePutMeCoverHandler me.PutMeCoverHandler
+	// MePutMeOnlineHandler sets the operation handler for the put me online operation
+	MePutMeOnlineHandler me.PutMeOnlineHandler
 	// RelationsPutRelationsFromIDHandler sets the operation handler for the put relations from ID operation
 	RelationsPutRelationsFromIDHandler relations.PutRelationsFromIDHandler
 	// RelationsPutRelationsToIDHandler sets the operation handler for the put relations to ID operation
 	RelationsPutRelationsToIDHandler relations.PutRelationsToIDHandler
-	// MePutUsersMeHandler sets the operation handler for the put users me operation
-	MePutUsersMeHandler me.PutUsersMeHandler
-	// MePutUsersMeAvatarHandler sets the operation handler for the put users me avatar operation
-	MePutUsersMeAvatarHandler me.PutUsersMeAvatarHandler
-	// MePutUsersMeCoverHandler sets the operation handler for the put users me cover operation
-	MePutUsersMeCoverHandler me.PutUsersMeCoverHandler
-	// MePutUsersMeOnlineHandler sets the operation handler for the put users me online operation
-	MePutUsersMeOnlineHandler me.PutUsersMeOnlineHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -603,6 +583,18 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
 	}
 
+	if o.EntriesGetEntriesMeHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesMeHandler")
+	}
+
+	if o.EntriesGetEntriesMeFavoritesHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesMeFavoritesHandler")
+	}
+
+	if o.EntriesGetEntriesMeWatchingHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesMeWatchingHandler")
+	}
+
 	if o.EntriesGetEntriesUsersByNameNameHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesUsersByNameNameHandler")
 	}
@@ -619,16 +611,28 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "entries.GetEntriesUsersIDFavoritesHandler")
 	}
 
-	if o.EntriesGetEntriesUsersMeHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersMeHandler")
+	if o.MeGetMeHandler == nil {
+		unregistered = append(unregistered, "me.GetMeHandler")
 	}
 
-	if o.EntriesGetEntriesUsersMeFavoritesHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersMeFavoritesHandler")
+	if o.MeGetMeFollowersHandler == nil {
+		unregistered = append(unregistered, "me.GetMeFollowersHandler")
 	}
 
-	if o.EntriesGetEntriesUsersMeWatchingHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersMeWatchingHandler")
+	if o.MeGetMeFollowingsHandler == nil {
+		unregistered = append(unregistered, "me.GetMeFollowingsHandler")
+	}
+
+	if o.MeGetMeIgnoredHandler == nil {
+		unregistered = append(unregistered, "me.GetMeIgnoredHandler")
+	}
+
+	if o.MeGetMeInvitedHandler == nil {
+		unregistered = append(unregistered, "me.GetMeInvitedHandler")
+	}
+
+	if o.MeGetMeRequestedHandler == nil {
+		unregistered = append(unregistered, "me.GetMeRequestedHandler")
 	}
 
 	if o.RelationsGetRelationsFromIDHandler == nil {
@@ -639,60 +643,20 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "relations.GetRelationsToIDHandler")
 	}
 
-	if o.UsersGetUsersByNameNameHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersByNameNameHandler")
+	if o.UsersGetUsersNameHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameHandler")
 	}
 
-	if o.UsersGetUsersByNameNameFollowersHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersByNameNameFollowersHandler")
+	if o.UsersGetUsersNameFollowersHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameFollowersHandler")
 	}
 
-	if o.UsersGetUsersByNameNameFollowingsHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersByNameNameFollowingsHandler")
+	if o.UsersGetUsersNameFollowingsHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameFollowingsHandler")
 	}
 
-	if o.UsersGetUsersByNameNameInvitedHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersByNameNameInvitedHandler")
-	}
-
-	if o.UsersGetUsersIDHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersIDHandler")
-	}
-
-	if o.UsersGetUsersIDFollowersHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersIDFollowersHandler")
-	}
-
-	if o.UsersGetUsersIDFollowingsHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersIDFollowingsHandler")
-	}
-
-	if o.UsersGetUsersIDInvitedHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersIDInvitedHandler")
-	}
-
-	if o.MeGetUsersMeHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeHandler")
-	}
-
-	if o.MeGetUsersMeFollowersHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeFollowersHandler")
-	}
-
-	if o.MeGetUsersMeFollowingsHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeFollowingsHandler")
-	}
-
-	if o.MeGetUsersMeIgnoredHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeIgnoredHandler")
-	}
-
-	if o.MeGetUsersMeInvitedHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeInvitedHandler")
-	}
-
-	if o.MeGetUsersMeRequestedHandler == nil {
-		unregistered = append(unregistered, "me.GetUsersMeRequestedHandler")
+	if o.UsersGetUsersNameInvitedHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameInvitedHandler")
 	}
 
 	if o.AccountPostAccountLoginHandler == nil {
@@ -723,8 +687,8 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "comments.PostEntriesIDCommentsHandler")
 	}
 
-	if o.EntriesPostEntriesUsersMeHandler == nil {
-		unregistered = append(unregistered, "entries.PostEntriesUsersMeHandler")
+	if o.EntriesPostEntriesMeHandler == nil {
+		unregistered = append(unregistered, "entries.PostEntriesMeHandler")
 	}
 
 	if o.CommentsPutCommentsIDHandler == nil {
@@ -751,28 +715,28 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "watchings.PutEntriesIDWatchingHandler")
 	}
 
+	if o.MePutMeHandler == nil {
+		unregistered = append(unregistered, "me.PutMeHandler")
+	}
+
+	if o.MePutMeAvatarHandler == nil {
+		unregistered = append(unregistered, "me.PutMeAvatarHandler")
+	}
+
+	if o.MePutMeCoverHandler == nil {
+		unregistered = append(unregistered, "me.PutMeCoverHandler")
+	}
+
+	if o.MePutMeOnlineHandler == nil {
+		unregistered = append(unregistered, "me.PutMeOnlineHandler")
+	}
+
 	if o.RelationsPutRelationsFromIDHandler == nil {
 		unregistered = append(unregistered, "relations.PutRelationsFromIDHandler")
 	}
 
 	if o.RelationsPutRelationsToIDHandler == nil {
 		unregistered = append(unregistered, "relations.PutRelationsToIDHandler")
-	}
-
-	if o.MePutUsersMeHandler == nil {
-		unregistered = append(unregistered, "me.PutUsersMeHandler")
-	}
-
-	if o.MePutUsersMeAvatarHandler == nil {
-		unregistered = append(unregistered, "me.PutUsersMeAvatarHandler")
-	}
-
-	if o.MePutUsersMeCoverHandler == nil {
-		unregistered = append(unregistered, "me.PutUsersMeCoverHandler")
-	}
-
-	if o.MePutUsersMeOnlineHandler == nil {
-		unregistered = append(unregistered, "me.PutUsersMeOnlineHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -1006,6 +970,21 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/entries/me"] = entries.NewGetEntriesMe(o.context, o.EntriesGetEntriesMeHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/entries/me/favorites"] = entries.NewGetEntriesMeFavorites(o.context, o.EntriesGetEntriesMeFavoritesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/entries/me/watching"] = entries.NewGetEntriesMeWatching(o.context, o.EntriesGetEntriesMeWatchingHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/entries/users/byName/{name}"] = entries.NewGetEntriesUsersByNameName(o.context, o.EntriesGetEntriesUsersByNameNameHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1026,17 +1005,32 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/entries/users/me"] = entries.NewGetEntriesUsersMe(o.context, o.EntriesGetEntriesUsersMeHandler)
+	o.handlers["GET"]["/me"] = me.NewGetMe(o.context, o.MeGetMeHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/entries/users/me/favorites"] = entries.NewGetEntriesUsersMeFavorites(o.context, o.EntriesGetEntriesUsersMeFavoritesHandler)
+	o.handlers["GET"]["/me/followers"] = me.NewGetMeFollowers(o.context, o.MeGetMeFollowersHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/entries/users/me/watching"] = entries.NewGetEntriesUsersMeWatching(o.context, o.EntriesGetEntriesUsersMeWatchingHandler)
+	o.handlers["GET"]["/me/followings"] = me.NewGetMeFollowings(o.context, o.MeGetMeFollowingsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/ignored"] = me.NewGetMeIgnored(o.context, o.MeGetMeIgnoredHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/invited"] = me.NewGetMeInvited(o.context, o.MeGetMeInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/requested"] = me.NewGetMeRequested(o.context, o.MeGetMeRequestedHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1051,72 +1045,22 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users/byName/{name}"] = users.NewGetUsersByNameName(o.context, o.UsersGetUsersByNameNameHandler)
+	o.handlers["GET"]["/users/{name}"] = users.NewGetUsersName(o.context, o.UsersGetUsersNameHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users/byName/{name}/followers"] = users.NewGetUsersByNameNameFollowers(o.context, o.UsersGetUsersByNameNameFollowersHandler)
+	o.handlers["GET"]["/users/{name}/followers"] = users.NewGetUsersNameFollowers(o.context, o.UsersGetUsersNameFollowersHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users/byName/{name}/followings"] = users.NewGetUsersByNameNameFollowings(o.context, o.UsersGetUsersByNameNameFollowingsHandler)
+	o.handlers["GET"]["/users/{name}/followings"] = users.NewGetUsersNameFollowings(o.context, o.UsersGetUsersNameFollowingsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/users/byName/{name}/invited"] = users.NewGetUsersByNameNameInvited(o.context, o.UsersGetUsersByNameNameInvitedHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/{id}"] = users.NewGetUsersID(o.context, o.UsersGetUsersIDHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/{id}/followers"] = users.NewGetUsersIDFollowers(o.context, o.UsersGetUsersIDFollowersHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/{id}/followings"] = users.NewGetUsersIDFollowings(o.context, o.UsersGetUsersIDFollowingsHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/{id}/invited"] = users.NewGetUsersIDInvited(o.context, o.UsersGetUsersIDInvitedHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me"] = me.NewGetUsersMe(o.context, o.MeGetUsersMeHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me/followers"] = me.NewGetUsersMeFollowers(o.context, o.MeGetUsersMeFollowersHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me/followings"] = me.NewGetUsersMeFollowings(o.context, o.MeGetUsersMeFollowingsHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me/ignored"] = me.NewGetUsersMeIgnored(o.context, o.MeGetUsersMeIgnoredHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me/invited"] = me.NewGetUsersMeInvited(o.context, o.MeGetUsersMeInvitedHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/users/me/requested"] = me.NewGetUsersMeRequested(o.context, o.MeGetUsersMeRequestedHandler)
+	o.handlers["GET"]["/users/{name}/invited"] = users.NewGetUsersNameInvited(o.context, o.UsersGetUsersNameInvitedHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -1156,7 +1100,7 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/entries/users/me"] = entries.NewPostEntriesUsersMe(o.context, o.EntriesPostEntriesUsersMeHandler)
+	o.handlers["POST"]["/entries/me"] = entries.NewPostEntriesMe(o.context, o.EntriesPostEntriesMeHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
@@ -1191,32 +1135,32 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
+	o.handlers["PUT"]["/me"] = me.NewPutMe(o.context, o.MePutMeHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/me/avatar"] = me.NewPutMeAvatar(o.context, o.MePutMeAvatarHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/me/cover"] = me.NewPutMeCover(o.context, o.MePutMeCoverHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/me/online"] = me.NewPutMeOnline(o.context, o.MePutMeOnlineHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
 	o.handlers["PUT"]["/relations/from/{id}"] = relations.NewPutRelationsFromID(o.context, o.RelationsPutRelationsFromIDHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/relations/to/{id}"] = relations.NewPutRelationsToID(o.context, o.RelationsPutRelationsToIDHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/users/me"] = me.NewPutUsersMe(o.context, o.MePutUsersMeHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/users/me/avatar"] = me.NewPutUsersMeAvatar(o.context, o.MePutUsersMeAvatarHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/users/me/cover"] = me.NewPutUsersMeCover(o.context, o.MePutUsersMeCoverHandler)
-
-	if o.handlers["PUT"] == nil {
-		o.handlers["PUT"] = make(map[string]http.Handler)
-	}
-	o.handlers["PUT"]["/users/me/online"] = me.NewPutUsersMeOnline(o.context, o.MePutUsersMeOnlineHandler)
 
 }
 

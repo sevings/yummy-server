@@ -74,14 +74,14 @@ func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success 
 }
 
 func checkPostEntry(t *testing.T,
-	params entries.PostEntriesUsersMeParams,
+	params entries.PostEntriesMeParams,
 	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
 
-	post := api.EntriesPostEntriesUsersMeHandler.Handle
+	post := api.EntriesPostEntriesMeHandler.Handle
 	resp := post(params, id)
-	body, ok := resp.(*entries.PostEntriesUsersMeCreated)
+	body, ok := resp.(*entries.PostEntriesMeCreated)
 	if !ok {
-		badBody, ok := resp.(*entries.PostEntriesUsersMeForbidden)
+		badBody, ok := resp.(*entries.PostEntriesMeForbidden)
 		if ok {
 			t.Fatal(badBody.Payload.Message)
 		}
@@ -129,7 +129,7 @@ func checkDeleteEntry(t *testing.T, entryID int64, userID *models.UserID, succes
 }
 
 func TestPostMyTlog(t *testing.T) {
-	params := entries.PostEntriesUsersMeParams{
+	params := entries.PostEntriesMeParams{
 		Content: "test content",
 	}
 
@@ -163,10 +163,10 @@ func TestPostMyTlog(t *testing.T) {
 }
 
 func postEntry(id *models.UserID, privacy string) {
-	post := api.EntriesPostEntriesUsersMeHandler.Handle
+	post := api.EntriesPostEntriesMeHandler.Handle
 	votable := true
 	title := ""
-	params := entries.PostEntriesUsersMeParams{
+	params := entries.PostEntriesMeParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   privacy,
@@ -292,15 +292,15 @@ func TestLoadTlog(t *testing.T) {
 }
 
 func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
-	params := entries.GetEntriesUsersMeParams{
+	params := entries.GetEntriesMeParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 	}
 
-	load := api.EntriesGetEntriesUsersMeHandler.Handle
+	load := api.EntriesGetEntriesMeHandler.Handle
 	resp := load(params, user)
-	body, ok := resp.(*entries.GetEntriesUsersMeOK)
+	body, ok := resp.(*entries.GetEntriesMeOK)
 	if !ok {
 		t.Fatal("error load tlog")
 	}

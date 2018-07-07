@@ -27,14 +27,14 @@ func TestKeyAuth(t *testing.T) {
 }
 
 func TestGetMe(t *testing.T) {
-	load := api.MeGetUsersMeHandler.Handle
+	load := api.MeGetMeHandler.Handle
 	req := require.New(t)
 
 	for i, user := range profiles {
-		resp := load(me.GetUsersMeParams{}, userIDs[i])
-		body, ok := resp.(*me.GetUsersMeOK)
+		resp := load(me.GetMeParams{}, userIDs[i])
+		body, ok := resp.(*me.GetMeOK)
 		if !ok {
-			badBody, ok := resp.(*me.GetUsersMeForbidden)
+			badBody, ok := resp.(*me.GetMeForbidden)
 			if ok {
 				t.Fatal(badBody.Payload.Message)
 			}
@@ -74,35 +74,13 @@ func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profil
 	req.NotEmpty(user.Cover)
 }
 
-func TestGetUserByID(t *testing.T) {
-	get := api.UsersGetUsersIDHandler.Handle
+func TestGetUser(t *testing.T) {
+	get := api.UsersGetUsersNameHandler.Handle
 	for i, user := range profiles {
-		resp := get(users.GetUsersIDParams{ID: user.ID}, userIDs[i])
-		body, ok := resp.(*users.GetUsersIDOK)
+		resp := get(users.GetUsersNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
+		body, ok := resp.(*users.GetUsersNameOK) // not GetUsersNameOK
 		if !ok {
-			badBody, ok := resp.(*users.GetUsersIDNotFound)
-			if ok {
-				t.Fatal(badBody.Payload.Message)
-			}
-
-			t.Fatalf("error get user by id %d", user.ID)
-		}
-
-		compareUsers(t, user, body.Payload)
-	}
-
-	resp := get(users.GetUsersIDParams{ID: 1e9}, userIDs[0])
-	_, ok := resp.(*users.GetUsersIDNotFound)
-	require.True(t, ok)
-}
-
-func TestGetUserByName(t *testing.T) {
-	get := api.UsersGetUsersByNameNameHandler.Handle
-	for i, user := range profiles {
-		resp := get(users.GetUsersByNameNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
-		body, ok := resp.(*users.GetUsersIDOK) // not GetUsersByNameNameOK
-		if !ok {
-			badBody, ok := resp.(*users.GetUsersIDNotFound) // not GetUsersByNameNameNotFound
+			badBody, ok := resp.(*users.GetUsersNameNotFound) // not GetUsersNameNotFound
 			if ok {
 				t.Fatal(badBody.Payload.Message)
 			}
@@ -113,19 +91,19 @@ func TestGetUserByName(t *testing.T) {
 		compareUsers(t, user, body.Payload)
 	}
 
-	resp := get(users.GetUsersByNameNameParams{Name: "trolol not found"}, userIDs[0])
-	_, ok := resp.(*users.GetUsersIDNotFound)
+	resp := get(users.GetUsersNameParams{Name: "trolol not found"}, userIDs[0])
+	_, ok := resp.(*users.GetUsersNameNotFound)
 	require.True(t, ok)
 }
 
-func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutUsersMeParams) {
-	edit := api.MePutUsersMeHandler.Handle
+func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutMeParams) {
+	edit := api.MePutMeHandler.Handle
 	id := models.UserID{
 		ID:   user.ID,
 		Name: user.Name,
 	}
 	resp := edit(params, &id)
-	body, ok := resp.(*me.PutUsersMeOK)
+	body, ok := resp.(*me.PutMeOK)
 	require.True(t, ok)
 
 	profile := body.Payload
@@ -146,7 +124,7 @@ func TestEditProfile(t *testing.T) {
 	user.ShowInTops = false
 	user.ShowName = "showname edit"
 
-	params := me.PutUsersMeParams{
+	params := me.PutMeParams{
 		Birthday:   &user.Birthday,
 		City:       &user.City,
 		Country:    &user.Country,
