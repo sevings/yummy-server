@@ -339,13 +339,9 @@ definitions:
     type: object
     properties:
       from:
-        type: integer
-        format: int64
-        minimum: 1
+        type: string
       to:
-        type: integer
-        format: int64
-        minimum: 1
+        type: string
       relation:
         type: string
         enum: [followed, requested, ignored, none]
@@ -1073,9 +1069,9 @@ paths:
                 type: array
                 items:
                   type: string
-  /relations/to/{id}:
+  /relations/to/{name}:
     parameters:
-      - $ref: '#/parameters/pathId'
+      - $ref: '#/parameters/pathName'
     get:
       security:
         - ApiKeyHeader: []
@@ -1128,9 +1124,9 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
-  /relations/from/{id}:
+  /relations/from/{name}:
     parameters:
-      - $ref: '#/parameters/pathId'
+      - $ref: '#/parameters/pathName'
     get:
       security:
         - ApiKeyHeader: []

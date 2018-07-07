@@ -10,130 +10,101 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
-	srv.API.RelationsGetRelationsToIDHandler = relations.GetRelationsToIDHandlerFunc(newToRelationLoader(srv))
-	srv.API.RelationsGetRelationsFromIDHandler = relations.GetRelationsFromIDHandlerFunc(newFromRelationLoader(srv))
+	srv.API.RelationsGetRelationsToNameHandler = relations.GetRelationsToNameHandlerFunc(newToRelationLoader(srv))
+	srv.API.RelationsGetRelationsFromNameHandler = relations.GetRelationsFromNameHandlerFunc(newFromRelationLoader(srv))
 
-	srv.API.RelationsPutRelationsToIDHandler = relations.PutRelationsToIDHandlerFunc(newToRelationSetter(srv))
-	srv.API.RelationsPutRelationsFromIDHandler = relations.PutRelationsFromIDHandlerFunc(newFromRelationSetter(srv))
+	srv.API.RelationsPutRelationsToNameHandler = relations.PutRelationsToNameHandlerFunc(newToRelationSetter(srv))
+	srv.API.RelationsPutRelationsFromNameHandler = relations.PutRelationsFromNameHandlerFunc(newFromRelationSetter(srv))
 
-	srv.API.RelationsDeleteRelationsToIDHandler = relations.DeleteRelationsToIDHandlerFunc(newToRelationDeleter(srv))
-	srv.API.RelationsDeleteRelationsFromIDHandler = relations.DeleteRelationsFromIDHandlerFunc(newFromRelationDeleter(srv))
+	srv.API.RelationsDeleteRelationsToNameHandler = relations.DeleteRelationsToNameHandlerFunc(newToRelationDeleter(srv))
+	srv.API.RelationsDeleteRelationsFromNameHandler = relations.DeleteRelationsFromNameHandlerFunc(newFromRelationDeleter(srv))
 }
 
-func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsToIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.GetRelationsToIDParams, uID *models.UserID) middleware.Responder {
+func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsToNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.GetRelationsToNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			relation := relationship(tx, params.ID, userID)
-			return relations.NewGetRelationsToIDOK().WithPayload(relation)
+			relation := relationship(tx, params.Name, uID.Name)
+			return relations.NewGetRelationsToNameOK().WithPayload(relation)
 		})
 	}
 }
 
-func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsFromIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.GetRelationsFromIDParams, uID *models.UserID) middleware.Responder {
+func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsFromNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.GetRelationsFromNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			relation := relationship(tx, userID, params.ID)
-			return relations.NewGetRelationsFromIDOK().WithPayload(relation)
+			relation := relationship(tx, uID.Name, params.Name)
+			return relations.NewGetRelationsFromNameOK().WithPayload(relation)
 		})
 	}
 }
 
-func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, isPrivate bool, from, to int64) {
-	const toQ = `
-		SELECT show_name, name, gender.type, email, verified
-		FROM users, gender 
-		WHERE users.id = $1 AND users.gender = gender.id
-	`
-
-	var hisName, hisShowName, hisGender, email string
-	var verified bool
-	tx.Query(toQ, to).Scan(&hisShowName, &hisName, &hisGender, &email, &verified)
-	if !verified {
-		return
-	}
-
-	const fromQ = "SELECT show_name FROM users WHERE id = $1"
-
-	var name string
-	tx.Query(fromQ, from).Scan(&name)
-
-	srv.Mail.SendNewFollower(email, name, isPrivate, hisShowName, hisName, hisGender)
-}
-
-func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsToIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.PutRelationsToIDParams, uID *models.UserID) middleware.Responder {
+func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsToNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.PutRelationsToNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-
-			if userID == params.ID {
+			if uID.Name == params.Name {
 				err := srv.NewError(&i18n.Message{ID: "self_relation", Other: "You can't have relationship with youself."})
-				return relations.NewPutRelationsToIDForbidden().WithPayload(err)
+				return relations.NewPutRelationsToNameForbidden().WithPayload(err)
 			}
 
-			isPrivate := isPrivateTlog(tx, params.ID)
+			isPrivate := isPrivateTlog(tx, params.Name)
 			var relation *models.Relationship
 			var ok bool
 			if params.R == models.RelationshipRelationIgnored || !isPrivate {
-				relation, ok = setRelationship(tx, userID, params.ID, params.R)
+				relation, ok = setRelationship(tx, uID.Name, params.Name, params.R)
 			} else {
-				relation, ok = setRelationship(tx, userID, params.ID, models.RelationshipRelationRequested)
+				relation, ok = setRelationship(tx, uID.Name, params.Name, models.RelationshipRelationRequested)
 			}
 
 			if !ok {
 				err := srv.StandardError("no_tlog")
-				return relations.NewPutRelationsToIDNotFound().WithPayload(err)
+				return relations.NewPutRelationsToNameNotFound().WithPayload(err)
 			}
 
 			if params.R == models.RelationshipRelationFollowed {
-				sendNewFollower(srv, tx, isPrivate, userID, params.ID)
+				sendNewFollower(srv, tx, isPrivate, uID.Name, params.Name)
 			}
 
-			return relations.NewPutRelationsToIDOK().WithPayload(relation)
+			return relations.NewPutRelationsToNameOK().WithPayload(relation)
 		})
 	}
 }
 
-func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsFromIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.PutRelationsFromIDParams, uID *models.UserID) middleware.Responder {
+func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsFromNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.PutRelationsFromNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			relation := relationship(tx, params.ID, userID)
+			relation := relationship(tx, params.Name, uID.Name)
 			if relation.Relation != models.RelationshipRelationRequested {
 				err := srv.StandardError("no_request")
-				return relations.NewPutRelationsFromIDForbidden().WithPayload(err)
+				return relations.NewPutRelationsFromNameForbidden().WithPayload(err)
 			}
 
-			relation, _ = setRelationship(tx, params.ID, userID, models.RelationshipRelationFollowed)
+			relation, _ = setRelationship(tx, params.Name, uID.Name, models.RelationshipRelationFollowed)
 
-			return relations.NewPutRelationsFromIDOK().WithPayload(relation)
+			return relations.NewPutRelationsFromNameOK().WithPayload(relation)
 		})
 	}
 }
 
-func newToRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsToIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.DeleteRelationsToIDParams, uID *models.UserID) middleware.Responder {
+func newToRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsToNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.DeleteRelationsToNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			relation := removeRelationship(tx, userID, params.ID)
-			return relations.NewDeleteRelationsToIDOK().WithPayload(relation)
+			relation := removeRelationship(tx, uID.Name, params.Name)
+			return relations.NewDeleteRelationsToNameOK().WithPayload(relation)
 		})
 	}
 }
 
-func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsFromIDParams, *models.UserID) middleware.Responder {
-	return func(params relations.DeleteRelationsFromIDParams, uID *models.UserID) middleware.Responder {
+func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsFromNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.DeleteRelationsFromNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			relation := relationship(tx, params.ID, userID)
+			relation := relationship(tx, params.Name, uID.Name)
 			if relation.Relation != models.RelationshipRelationRequested {
 				err := srv.StandardError("no_request")
-				return relations.NewDeleteRelationsFromIDForbidden().WithPayload(err)
+				return relations.NewDeleteRelationsFromNameForbidden().WithPayload(err)
 			}
 
-			relation = removeRelationship(tx, params.ID, userID)
-			return relations.NewDeleteRelationsFromIDOK().WithPayload(relation)
+			relation = removeRelationship(tx, params.Name, uID.Name)
+			return relations.NewDeleteRelationsFromNameOK().WithPayload(relation)
 		})
 	}
 }

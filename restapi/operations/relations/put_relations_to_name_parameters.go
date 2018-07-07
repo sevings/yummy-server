@@ -11,34 +11,34 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 
 	strfmt "github.com/go-openapi/strfmt"
 )
 
-// NewPutRelationsToIDParams creates a new PutRelationsToIDParams object
+// NewPutRelationsToNameParams creates a new PutRelationsToNameParams object
 // with the default values initialized.
-func NewPutRelationsToIDParams() PutRelationsToIDParams {
+func NewPutRelationsToNameParams() PutRelationsToNameParams {
 	var ()
-	return PutRelationsToIDParams{}
+	return PutRelationsToNameParams{}
 }
 
-// PutRelationsToIDParams contains all the bound params for the put relations to ID operation
+// PutRelationsToNameParams contains all the bound params for the put relations to name operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PutRelationsToID
-type PutRelationsToIDParams struct {
+// swagger:parameters PutRelationsToName
+type PutRelationsToNameParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
 	  Required: true
-	  Minimum: 1
+	  Max Length: 20
+	  Min Length: 1
 	  In: path
 	*/
-	ID int64
+	Name string
 	/*
 	  Required: true
 	  In: query
@@ -48,14 +48,14 @@ type PutRelationsToIDParams struct {
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls
-func (o *PutRelationsToIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+func (o *PutRelationsToNameParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
 
-	rID, rhkID, _ := route.Params.GetOK("id")
-	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
+	rName, rhkName, _ := route.Params.GetOK("name")
+	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -70,35 +70,35 @@ func (o *PutRelationsToIDParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
-func (o *PutRelationsToIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PutRelationsToNameParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("id", "path", "int64", raw)
-	}
-	o.ID = value
+	o.Name = raw
 
-	if err := o.validateID(formats); err != nil {
+	if err := o.validateName(formats); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (o *PutRelationsToIDParams) validateID(formats strfmt.Registry) error {
+func (o *PutRelationsToNameParams) validateName(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "path", o.Name, 20); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (o *PutRelationsToIDParams) bindR(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("r", "query")
 	}
@@ -119,7 +119,7 @@ func (o *PutRelationsToIDParams) bindR(rawData []string, hasKey bool, formats st
 	return nil
 }
 
-func (o *PutRelationsToIDParams) validateR(formats strfmt.Registry) error {
+func (o *PutRelationsToNameParams) validateR(formats strfmt.Registry) error {
 
 	if err := validate.Enum("r", "query", o.R, []interface{}{"followed", "ignored"}); err != nil {
 		return err

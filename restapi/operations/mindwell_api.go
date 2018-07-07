@@ -64,11 +64,11 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		WatchingsDeleteEntriesIDWatchingHandler: watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation WatchingsDeleteEntriesIDWatching has not yet been implemented")
 		}),
-		RelationsDeleteRelationsFromIDHandler: relations.DeleteRelationsFromIDHandlerFunc(func(params relations.DeleteRelationsFromIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsDeleteRelationsFromID has not yet been implemented")
+		RelationsDeleteRelationsFromNameHandler: relations.DeleteRelationsFromNameHandlerFunc(func(params relations.DeleteRelationsFromNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsDeleteRelationsFromName has not yet been implemented")
 		}),
-		RelationsDeleteRelationsToIDHandler: relations.DeleteRelationsToIDHandlerFunc(func(params relations.DeleteRelationsToIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsDeleteRelationsToID has not yet been implemented")
+		RelationsDeleteRelationsToNameHandler: relations.DeleteRelationsToNameHandlerFunc(func(params relations.DeleteRelationsToNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsDeleteRelationsToName has not yet been implemented")
 		}),
 		AccountGetAccountEmailEmailHandler: account.GetAccountEmailEmailHandlerFunc(func(params account.GetAccountEmailEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountEmailEmail has not yet been implemented")
@@ -160,11 +160,11 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeRequestedHandler: me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeRequested has not yet been implemented")
 		}),
-		RelationsGetRelationsFromIDHandler: relations.GetRelationsFromIDHandlerFunc(func(params relations.GetRelationsFromIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsGetRelationsFromID has not yet been implemented")
+		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
 		}),
-		RelationsGetRelationsToIDHandler: relations.GetRelationsToIDHandlerFunc(func(params relations.GetRelationsToIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsGetRelationsToID has not yet been implemented")
+		RelationsGetRelationsToNameHandler: relations.GetRelationsToNameHandlerFunc(func(params relations.GetRelationsToNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsGetRelationsToName has not yet been implemented")
 		}),
 		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
@@ -232,11 +232,11 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePutMeOnlineHandler: me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutMeOnline has not yet been implemented")
 		}),
-		RelationsPutRelationsFromIDHandler: relations.PutRelationsFromIDHandlerFunc(func(params relations.PutRelationsFromIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsPutRelationsFromID has not yet been implemented")
+		RelationsPutRelationsFromNameHandler: relations.PutRelationsFromNameHandlerFunc(func(params relations.PutRelationsFromNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsPutRelationsFromName has not yet been implemented")
 		}),
-		RelationsPutRelationsToIDHandler: relations.PutRelationsToIDHandlerFunc(func(params relations.PutRelationsToIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsPutRelationsToID has not yet been implemented")
+		RelationsPutRelationsToNameHandler: relations.PutRelationsToNameHandlerFunc(func(params relations.PutRelationsToNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsPutRelationsToName has not yet been implemented")
 		}),
 
 		// Applies when the "X-User-Key" header is set
@@ -296,10 +296,10 @@ type MindwellAPI struct {
 	VotesDeleteEntriesIDVoteHandler votes.DeleteEntriesIDVoteHandler
 	// WatchingsDeleteEntriesIDWatchingHandler sets the operation handler for the delete entries ID watching operation
 	WatchingsDeleteEntriesIDWatchingHandler watchings.DeleteEntriesIDWatchingHandler
-	// RelationsDeleteRelationsFromIDHandler sets the operation handler for the delete relations from ID operation
-	RelationsDeleteRelationsFromIDHandler relations.DeleteRelationsFromIDHandler
-	// RelationsDeleteRelationsToIDHandler sets the operation handler for the delete relations to ID operation
-	RelationsDeleteRelationsToIDHandler relations.DeleteRelationsToIDHandler
+	// RelationsDeleteRelationsFromNameHandler sets the operation handler for the delete relations from name operation
+	RelationsDeleteRelationsFromNameHandler relations.DeleteRelationsFromNameHandler
+	// RelationsDeleteRelationsToNameHandler sets the operation handler for the delete relations to name operation
+	RelationsDeleteRelationsToNameHandler relations.DeleteRelationsToNameHandler
 	// AccountGetAccountEmailEmailHandler sets the operation handler for the get account email email operation
 	AccountGetAccountEmailEmailHandler account.GetAccountEmailEmailHandler
 	// AccountGetAccountInvitesHandler sets the operation handler for the get account invites operation
@@ -360,10 +360,10 @@ type MindwellAPI struct {
 	MeGetMeInvitedHandler me.GetMeInvitedHandler
 	// MeGetMeRequestedHandler sets the operation handler for the get me requested operation
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
-	// RelationsGetRelationsFromIDHandler sets the operation handler for the get relations from ID operation
-	RelationsGetRelationsFromIDHandler relations.GetRelationsFromIDHandler
-	// RelationsGetRelationsToIDHandler sets the operation handler for the get relations to ID operation
-	RelationsGetRelationsToIDHandler relations.GetRelationsToIDHandler
+	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
+	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
+	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
+	RelationsGetRelationsToNameHandler relations.GetRelationsToNameHandler
 	// UsersGetUsersNameHandler sets the operation handler for the get users name operation
 	UsersGetUsersNameHandler users.GetUsersNameHandler
 	// UsersGetUsersNameFollowersHandler sets the operation handler for the get users name followers operation
@@ -408,10 +408,10 @@ type MindwellAPI struct {
 	MePutMeCoverHandler me.PutMeCoverHandler
 	// MePutMeOnlineHandler sets the operation handler for the put me online operation
 	MePutMeOnlineHandler me.PutMeOnlineHandler
-	// RelationsPutRelationsFromIDHandler sets the operation handler for the put relations from ID operation
-	RelationsPutRelationsFromIDHandler relations.PutRelationsFromIDHandler
-	// RelationsPutRelationsToIDHandler sets the operation handler for the put relations to ID operation
-	RelationsPutRelationsToIDHandler relations.PutRelationsToIDHandler
+	// RelationsPutRelationsFromNameHandler sets the operation handler for the put relations from name operation
+	RelationsPutRelationsFromNameHandler relations.PutRelationsFromNameHandler
+	// RelationsPutRelationsToNameHandler sets the operation handler for the put relations to name operation
+	RelationsPutRelationsToNameHandler relations.PutRelationsToNameHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -507,12 +507,12 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "watchings.DeleteEntriesIDWatchingHandler")
 	}
 
-	if o.RelationsDeleteRelationsFromIDHandler == nil {
-		unregistered = append(unregistered, "relations.DeleteRelationsFromIDHandler")
+	if o.RelationsDeleteRelationsFromNameHandler == nil {
+		unregistered = append(unregistered, "relations.DeleteRelationsFromNameHandler")
 	}
 
-	if o.RelationsDeleteRelationsToIDHandler == nil {
-		unregistered = append(unregistered, "relations.DeleteRelationsToIDHandler")
+	if o.RelationsDeleteRelationsToNameHandler == nil {
+		unregistered = append(unregistered, "relations.DeleteRelationsToNameHandler")
 	}
 
 	if o.AccountGetAccountEmailEmailHandler == nil {
@@ -635,12 +635,12 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeRequestedHandler")
 	}
 
-	if o.RelationsGetRelationsFromIDHandler == nil {
-		unregistered = append(unregistered, "relations.GetRelationsFromIDHandler")
+	if o.RelationsGetRelationsFromNameHandler == nil {
+		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
 
-	if o.RelationsGetRelationsToIDHandler == nil {
-		unregistered = append(unregistered, "relations.GetRelationsToIDHandler")
+	if o.RelationsGetRelationsToNameHandler == nil {
+		unregistered = append(unregistered, "relations.GetRelationsToNameHandler")
 	}
 
 	if o.UsersGetUsersNameHandler == nil {
@@ -731,12 +731,12 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.PutMeOnlineHandler")
 	}
 
-	if o.RelationsPutRelationsFromIDHandler == nil {
-		unregistered = append(unregistered, "relations.PutRelationsFromIDHandler")
+	if o.RelationsPutRelationsFromNameHandler == nil {
+		unregistered = append(unregistered, "relations.PutRelationsFromNameHandler")
 	}
 
-	if o.RelationsPutRelationsToIDHandler == nil {
-		unregistered = append(unregistered, "relations.PutRelationsToIDHandler")
+	if o.RelationsPutRelationsToNameHandler == nil {
+		unregistered = append(unregistered, "relations.PutRelationsToNameHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -875,12 +875,12 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/relations/from/{id}"] = relations.NewDeleteRelationsFromID(o.context, o.RelationsDeleteRelationsFromIDHandler)
+	o.handlers["DELETE"]["/relations/from/{name}"] = relations.NewDeleteRelationsFromName(o.context, o.RelationsDeleteRelationsFromNameHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
-	o.handlers["DELETE"]["/relations/to/{id}"] = relations.NewDeleteRelationsToID(o.context, o.RelationsDeleteRelationsToIDHandler)
+	o.handlers["DELETE"]["/relations/to/{name}"] = relations.NewDeleteRelationsToName(o.context, o.RelationsDeleteRelationsToNameHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1035,12 +1035,12 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/relations/from/{id}"] = relations.NewGetRelationsFromID(o.context, o.RelationsGetRelationsFromIDHandler)
+	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/relations/to/{id}"] = relations.NewGetRelationsToID(o.context, o.RelationsGetRelationsToIDHandler)
+	o.handlers["GET"]["/relations/to/{name}"] = relations.NewGetRelationsToName(o.context, o.RelationsGetRelationsToNameHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1155,12 +1155,12 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
-	o.handlers["PUT"]["/relations/from/{id}"] = relations.NewPutRelationsFromID(o.context, o.RelationsPutRelationsFromIDHandler)
+	o.handlers["PUT"]["/relations/from/{name}"] = relations.NewPutRelationsFromName(o.context, o.RelationsPutRelationsFromNameHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
-	o.handlers["PUT"]["/relations/to/{id}"] = relations.NewPutRelationsToID(o.context, o.RelationsPutRelationsToIDHandler)
+	o.handlers["PUT"]["/relations/to/{name}"] = relations.NewPutRelationsToName(o.context, o.RelationsPutRelationsToNameHandler)
 
 }
 

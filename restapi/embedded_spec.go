@@ -2126,7 +2126,7 @@ func init() {
         }
       }
     },
-    "/relations/from/{id}": {
+    "/relations/from/{name}": {
       "get": {
         "tags": [
           "relations"
@@ -2215,11 +2215,11 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/pathId"
+          "$ref": "#/parameters/pathName"
         }
       ]
     },
-    "/relations/to/{id}": {
+    "/relations/to/{name}": {
       "get": {
         "tags": [
           "relations"
@@ -2312,7 +2312,7 @@ func init() {
       },
       "parameters": [
         {
-          "$ref": "#/parameters/pathId"
+          "$ref": "#/parameters/pathName"
         }
       ]
     },
@@ -3009,9 +3009,7 @@ func init() {
       "type": "object",
       "properties": {
         "from": {
-          "type": "integer",
-          "format": "int64",
-          "minimum": 1
+          "type": "string"
         },
         "relation": {
           "type": "string",
@@ -3023,9 +3021,7 @@ func init() {
           ]
         },
         "to": {
-          "type": "integer",
-          "format": "int64",
-          "minimum": 1
+          "type": "string"
         }
       }
     },

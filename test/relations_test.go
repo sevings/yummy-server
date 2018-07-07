@@ -9,34 +9,34 @@ import (
 )
 
 func checkFromRelation(t *testing.T, user, to *models.UserID, relation string) {
-	load := api.RelationsGetRelationsFromIDHandler.Handle
-	params := relations.GetRelationsFromIDParams{
-		ID: to.ID,
+	load := api.RelationsGetRelationsFromNameHandler.Handle
+	params := relations.GetRelationsFromNameParams{
+		Name: to.Name,
 	}
 	resp := load(params, user)
-	body, ok := resp.(*relations.GetRelationsFromIDOK)
+	body, ok := resp.(*relations.GetRelationsFromNameOK)
 	req := require.New(t)
 	req.True(ok)
 
 	status := body.Payload
-	req.Equal(params.ID, status.To)
-	req.Equal(user.ID, status.From)
+	req.Equal(params.Name, status.To)
+	req.Equal(user.Name, status.From)
 	req.Equal(relation, status.Relation)
 }
 
 func checkToRelation(t *testing.T, user, from *models.UserID, relation string) {
-	load := api.RelationsGetRelationsToIDHandler.Handle
-	params := relations.GetRelationsToIDParams{
-		ID: from.ID,
+	load := api.RelationsGetRelationsToNameHandler.Handle
+	params := relations.GetRelationsToNameParams{
+		Name: from.Name,
 	}
 	resp := load(params, user)
-	body, ok := resp.(*relations.GetRelationsToIDOK)
+	body, ok := resp.(*relations.GetRelationsToNameOK)
 	req := require.New(t)
 	req.True(ok)
 
 	status := body.Payload
-	req.Equal(params.ID, status.From)
-	req.Equal(user.ID, status.To)
+	req.Equal(params.Name, status.From)
+	req.Equal(user.Name, status.To)
 	req.Equal(relation, status.Relation)
 }
 
@@ -46,19 +46,19 @@ func checkRelation(t *testing.T, from, to *models.UserID, relation string) {
 }
 
 func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, relation string) {
-	put := api.RelationsPutRelationsToIDHandler.Handle
-	params := relations.PutRelationsToIDParams{
-		ID: to.ID,
-		R:  relation,
+	put := api.RelationsPutRelationsToNameHandler.Handle
+	params := relations.PutRelationsToNameParams{
+		Name: to.Name,
+		R:    relation,
 	}
 	resp := put(params, user)
-	body, ok := resp.(*relations.PutRelationsToIDOK)
+	body, ok := resp.(*relations.PutRelationsToNameOK)
 	req := require.New(t)
 	req.True(ok)
 
 	status := body.Payload
-	req.Equal(params.ID, status.To)
-	req.Equal(user.ID, status.From)
+	req.Equal(params.Name, status.To)
+	req.Equal(user.Name, status.From)
 	req.Equal(relation, status.Relation)
 
 	if relation == models.RelationshipRelationFollowed && to.Account.Verified {
@@ -69,12 +69,12 @@ func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, rela
 }
 
 func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
-	put := api.RelationsPutRelationsFromIDHandler.Handle
-	params := relations.PutRelationsFromIDParams{
-		ID: from.ID,
+	put := api.RelationsPutRelationsFromNameHandler.Handle
+	params := relations.PutRelationsFromNameParams{
+		Name: from.Name,
 	}
 	resp := put(params, user)
-	body, ok := resp.(*relations.PutRelationsFromIDOK)
+	body, ok := resp.(*relations.PutRelationsFromNameOK)
 	req := require.New(t)
 	req.Equal(success, ok)
 	if !success {
@@ -83,39 +83,39 @@ func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 
 	status := body.Payload
 	req.Equal(user.ID, status.To)
-	req.Equal(params.ID, status.From)
+	req.Equal(params.Name, status.From)
 	req.Equal(models.RelationshipRelationFollowed, status.Relation)
 }
 
 func checkUnfollow(t *testing.T, user, to *models.UserID) {
-	del := api.RelationsDeleteRelationsToIDHandler.Handle
-	params := relations.DeleteRelationsToIDParams{
-		ID: to.ID,
+	del := api.RelationsDeleteRelationsToNameHandler.Handle
+	params := relations.DeleteRelationsToNameParams{
+		Name: to.Name,
 	}
 	resp := del(params, user)
-	body, ok := resp.(*relations.DeleteRelationsToIDOK)
+	body, ok := resp.(*relations.DeleteRelationsToNameOK)
 	req := require.New(t)
 	req.True(ok)
 
 	status := body.Payload
-	req.Equal(params.ID, status.To)
-	req.Equal(user.ID, status.From)
+	req.Equal(params.Name, status.To)
+	req.Equal(user.Name, status.From)
 	req.Equal(models.RelationshipRelationNone, status.Relation)
 }
 
 func checkCancelFollow(t *testing.T, user, from *models.UserID, success bool) {
-	del := api.RelationsDeleteRelationsFromIDHandler.Handle
-	params := relations.DeleteRelationsFromIDParams{
-		ID: from.ID,
+	del := api.RelationsDeleteRelationsFromNameHandler.Handle
+	params := relations.DeleteRelationsFromNameParams{
+		Name: from.Name,
 	}
 	resp := del(params, user)
-	body, ok := resp.(*relations.DeleteRelationsToIDOK)
+	body, ok := resp.(*relations.DeleteRelationsToNameOK)
 	req := require.New(t)
 	req.True(ok)
 
 	status := body.Payload
 	req.Equal(user.ID, status.To)
-	req.Equal(params.ID, status.From)
+	req.Equal(params.Name, status.From)
 	req.Equal(models.RelationshipRelationNone, status.Relation)
 }
 

@@ -10,13 +10,11 @@ import (
 	"net/url"
 	golangswaggerpaths "path"
 	"strings"
-
-	"github.com/go-openapi/swag"
 )
 
-// DeleteRelationsToIDURL generates an URL for the delete relations to ID operation
-type DeleteRelationsToIDURL struct {
-	ID int64
+// DeleteRelationsToNameURL generates an URL for the delete relations to name operation
+type DeleteRelationsToNameURL struct {
+	Name string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -26,7 +24,7 @@ type DeleteRelationsToIDURL struct {
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteRelationsToIDURL) WithBasePath(bp string) *DeleteRelationsToIDURL {
+func (o *DeleteRelationsToNameURL) WithBasePath(bp string) *DeleteRelationsToNameURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -34,21 +32,21 @@ func (o *DeleteRelationsToIDURL) WithBasePath(bp string) *DeleteRelationsToIDURL
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *DeleteRelationsToIDURL) SetBasePath(bp string) {
+func (o *DeleteRelationsToNameURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *DeleteRelationsToIDURL) Build() (*url.URL, error) {
+func (o *DeleteRelationsToNameURL) Build() (*url.URL, error) {
 	var result url.URL
 
-	var _path = "/relations/to/{id}"
+	var _path = "/relations/to/{name}"
 
-	id := swag.FormatInt64(o.ID)
-	if id != "" {
-		_path = strings.Replace(_path, "{id}", id, -1)
+	name := o.Name
+	if name != "" {
+		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("ID is required on DeleteRelationsToIDURL")
+		return nil, errors.New("Name is required on DeleteRelationsToNameURL")
 	}
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -60,7 +58,7 @@ func (o *DeleteRelationsToIDURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *DeleteRelationsToIDURL) Must(u *url.URL, err error) *url.URL {
+func (o *DeleteRelationsToNameURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -71,17 +69,17 @@ func (o *DeleteRelationsToIDURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *DeleteRelationsToIDURL) String() string {
+func (o *DeleteRelationsToNameURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *DeleteRelationsToIDURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *DeleteRelationsToNameURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on DeleteRelationsToIDURL")
+		return nil, errors.New("scheme is required for a full url on DeleteRelationsToNameURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on DeleteRelationsToIDURL")
+		return nil, errors.New("host is required for a full url on DeleteRelationsToNameURL")
 	}
 
 	base, err := o.Build()
@@ -95,6 +93,6 @@ func (o *DeleteRelationsToIDURL) BuildFull(scheme, host string) (*url.URL, error
 }
 
 // StringFull returns the string representation of a complete url
-func (o *DeleteRelationsToIDURL) StringFull(scheme, host string) string {
+func (o *DeleteRelationsToNameURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

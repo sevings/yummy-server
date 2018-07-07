@@ -20,32 +20,20 @@ import (
 type Relationship struct {
 
 	// from
-	// Minimum: 1
-	From int64 `json:"from,omitempty"`
+	From string `json:"from,omitempty"`
 
 	// relation
 	Relation string `json:"relation,omitempty"`
 
 	// to
-	// Minimum: 1
-	To int64 `json:"to,omitempty"`
+	To string `json:"to,omitempty"`
 }
 
 // Validate validates this relationship
 func (m *Relationship) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateFrom(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
 	if err := m.validateRelation(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if err := m.validateTo(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -53,19 +41,6 @@ func (m *Relationship) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
-	return nil
-}
-
-func (m *Relationship) validateFrom(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.From) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("from", "body", int64(m.From), 1, false); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -108,19 +83,6 @@ func (m *Relationship) validateRelation(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateRelationEnum("relation", "body", m.Relation); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m *Relationship) validateTo(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.To) { // not required
-		return nil
-	}
-
-	if err := validate.MinimumInt("to", "body", int64(m.To), 1, false); err != nil {
 		return err
 	}
 

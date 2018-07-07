@@ -13,40 +13,40 @@ import (
 	"github.com/sevings/mindwell-server/models"
 )
 
-// PutRelationsFromIDHandlerFunc turns a function with the right signature into a put relations from ID handler
-type PutRelationsFromIDHandlerFunc func(PutRelationsFromIDParams, *models.UserID) middleware.Responder
+// PutRelationsFromNameHandlerFunc turns a function with the right signature into a put relations from name handler
+type PutRelationsFromNameHandlerFunc func(PutRelationsFromNameParams, *models.UserID) middleware.Responder
 
 // Handle executing the request and returning a response
-func (fn PutRelationsFromIDHandlerFunc) Handle(params PutRelationsFromIDParams, principal *models.UserID) middleware.Responder {
+func (fn PutRelationsFromNameHandlerFunc) Handle(params PutRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 	return fn(params, principal)
 }
 
-// PutRelationsFromIDHandler interface for that can handle valid put relations from ID params
-type PutRelationsFromIDHandler interface {
-	Handle(PutRelationsFromIDParams, *models.UserID) middleware.Responder
+// PutRelationsFromNameHandler interface for that can handle valid put relations from name params
+type PutRelationsFromNameHandler interface {
+	Handle(PutRelationsFromNameParams, *models.UserID) middleware.Responder
 }
 
-// NewPutRelationsFromID creates a new http.Handler for the put relations from ID operation
-func NewPutRelationsFromID(ctx *middleware.Context, handler PutRelationsFromIDHandler) *PutRelationsFromID {
-	return &PutRelationsFromID{Context: ctx, Handler: handler}
+// NewPutRelationsFromName creates a new http.Handler for the put relations from name operation
+func NewPutRelationsFromName(ctx *middleware.Context, handler PutRelationsFromNameHandler) *PutRelationsFromName {
+	return &PutRelationsFromName{Context: ctx, Handler: handler}
 }
 
-/*PutRelationsFromID swagger:route PUT /relations/from/{id} relations putRelationsFromId
+/*PutRelationsFromName swagger:route PUT /relations/from/{name} relations putRelationsFromName
 
 permit the user to follow you
 
 */
-type PutRelationsFromID struct {
+type PutRelationsFromName struct {
 	Context *middleware.Context
-	Handler PutRelationsFromIDHandler
+	Handler PutRelationsFromNameHandler
 }
 
-func (o *PutRelationsFromID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+func (o *PutRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	route, rCtx, _ := o.Context.RouteInfo(r)
 	if rCtx != nil {
 		r = rCtx
 	}
-	var Params = NewPutRelationsFromIDParams()
+	var Params = NewPutRelationsFromNameParams()
 
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
