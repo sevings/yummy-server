@@ -75,7 +75,7 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
@@ -107,7 +107,7 @@ func editComment(tx *utils.AutoTx, commentID int64, content string) {
 func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			comment := loadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
@@ -154,7 +154,7 @@ func deleteComment(tx *utils.AutoTx, commentID int64) {
 func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
 	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			authorID := commentAuthor(tx, params.ID)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
@@ -253,7 +253,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				err := srv.StandardError("no_entry")
@@ -317,7 +317,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				err := srv.StandardError("no_entry")

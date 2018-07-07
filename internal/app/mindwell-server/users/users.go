@@ -116,13 +116,13 @@ func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID,
 		}
 
 		result := users.NewGetUsersIDOK().WithPayload(profile)
-		if int64(*userID) == profile.ID {
+		if userID.ID == profile.ID {
 			return result
 		}
 
 		profile.Relations = &models.ProfileAllOf1Relations{}
-		profile.Relations.FromMe = relationship(tx, relationToIDQuery, int64(*userID), profile.ID)
-		profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, int64(*userID))
+		profile.Relations.FromMe = relationship(tx, relationToIDQuery, userID.ID, profile.ID)
+		profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, userID.ID)
 
 		return result
 	})
@@ -167,7 +167,7 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 		return false
 	}
 
-	if subjectID == int64(*userID) {
+	if subjectID == userID.ID {
 		return true
 	}
 
@@ -175,7 +175,7 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 		return true
 	}
 
-	relation := relationship(tx, relationQuery, int64(*userID), arg)
+	relation := relationship(tx, relationQuery, userID.ID, arg)
 	return relation == models.RelationshipRelationFollowed
 }
 

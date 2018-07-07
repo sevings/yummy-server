@@ -98,14 +98,13 @@ func TestCheckName(t *testing.T) {
 	checkName(t, "nAMe", true)
 }
 
-func checkInvites(t *testing.T, userID int64, size int) {
+func checkInvites(t *testing.T, userID *models.UserID, size int) {
 	load := api.AccountGetAccountInvitesHandler.Handle
-	id := models.UserID(userID)
-	resp := load(account.GetAccountInvitesParams{}, &id)
+	resp := load(account.GetAccountInvitesParams{}, userID)
 	body, ok := resp.(*account.GetAccountInvitesOK)
 
-	require.True(t, ok, "user %d", userID)
-	require.Equal(t, size, len(body.Payload.Invites), "user %d", userID)
+	require.True(t, ok, "user %d", userID.ID)
+	require.Equal(t, size, len(body.Payload.Invites), "user %d", userID.ID)
 }
 
 func checkLogin(t *testing.T, user *models.AuthProfile, name, password string) {
@@ -129,15 +128,14 @@ func checkLogin(t *testing.T, user *models.AuthProfile, name, password string) {
 	require.Equal(t, user, body.Payload)
 }
 
-func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
-	id := models.UserID(userID)
+func changePassword(t *testing.T, userID *models.UserID, old, upd string, ok bool) {
 	params := account.PostAccountPasswordParams{
 		OldPassword: old,
 		NewPassword: upd,
 	}
 
 	update := api.AccountPostAccountPasswordHandler.Handle
-	resp := update(params, &id)
+	resp := update(params, userID)
 	switch resp.(type) {
 	case *account.PostAccountPasswordOK:
 		require.True(t, ok)
@@ -146,20 +144,19 @@ func changePassword(t *testing.T, userID int64, old, upd string, ok bool) {
 		body := resp.(*account.PostAccountPasswordForbidden)
 		require.False(t, ok, body.Payload.Message)
 	default:
-		t.Fatalf("set password user %d", userID)
+		t.Fatalf("set password user %d", userID.ID)
 	}
 }
 
-func checkVerify(t *testing.T, userID int64, email string) {
+func checkVerify(t *testing.T, userID *models.UserID, email string) {
 	esm.CheckEmail(t, email)
 
 	request := api.AccountPostAccountVerificationHandler.Handle
-	id := models.UserID(userID)
-	resp := request(account.PostAccountVerificationParams{}, &id)
+	resp := request(account.PostAccountVerificationParams{}, userID)
 	_, ok := resp.(*account.PostAccountVerificationOK)
 
 	req := require.New(t)
-	req.True(ok, "user %d", userID)
+	req.True(ok, "user %d", userID.ID)
 	req.Equal(1, len(esm.Emails))
 	req.Equal(email, esm.Emails[0])
 	req.Equal(1, len(esm.Codes))
@@ -185,7 +182,12 @@ func TestRegister(t *testing.T) {
 		}
 	}
 
-	checkInvites(t, 1, 3)
+	inviter := &models.UserID{
+		ID:   1,
+		Name: "haveniceday",
+	}
+
+	checkInvites(t, inviter, 3)
 	checkName(t, "testtEst", true)
 	checkEmail(t, "testeMAil", true)
 
@@ -210,19 +212,23 @@ func TestRegister(t *testing.T) {
 	}
 
 	user := body.Payload
+	userID := &models.UserID{
+		ID:   user.ID,
+		Name: user.Name,
+	}
 
-	checkInvites(t, 1, 2)
+	checkInvites(t, inviter, 2)
 	checkName(t, "testtEst", false)
 	checkEmail(t, "testeMAil", false)
 	checkLogin(t, user, params.Name, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Name), params.Password)
 
-	checkVerify(t, user.ID, user.Account.Email)
+	checkVerify(t, userID, user.Account.Email)
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, user.ID, "test123", "new123", true)
-	changePassword(t, user.ID, "test123", "new123", false)
+	changePassword(t, userID, "test123", "new123", true)
+	changePassword(t, userID, "test123", "new123", false)
 	checkLogin(t, user, params.Name, "new123")
 
 	req := require.New(t)
@@ -267,7 +273,7 @@ func TestRegister(t *testing.T) {
 	resp = register(params)
 	_, ok = resp.(*account.PostAccountRegisterBadRequest)
 	req.True(ok)
-	checkInvites(t, 1, 2)
+	checkInvites(t, inviter, 2)
 
 	gender := "female"
 	city := "Moscow"
@@ -291,18 +297,22 @@ func TestRegister(t *testing.T) {
 	req.True(ok)
 
 	user = body.Payload
+	userID = &models.UserID{
+		ID:   user.ID,
+		Name: user.Name,
+	}
 
-	checkInvites(t, 1, 1)
+	checkInvites(t, inviter, 1)
 	checkName(t, "testtEst2", false)
 	checkEmail(t, "testeMAil2", false)
 	checkLogin(t, user, params.Name, params.Password)
 
-	checkVerify(t, user.ID, user.Account.Email)
+	checkVerify(t, userID, user.Account.Email)
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, user.ID, "test123", "new123", true)
-	changePassword(t, user.ID, "test123", "new123", false)
+	changePassword(t, userID, "test123", "new123", true)
+	changePassword(t, userID, "test123", "new123", false)
 	checkLogin(t, user, params.Name, "new123")
 
 	req.Equal(gender, user.Gender)

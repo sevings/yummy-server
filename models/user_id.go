@@ -7,13 +7,71 @@ package models
 
 import (
 	strfmt "github.com/go-openapi/strfmt"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // UserID user ID
 // swagger:model UserID
-type UserID int64
+type UserID struct {
+
+	// id
+	ID int64 `json:"id,omitempty"`
+
+	// name
+	// Max Length: 20
+	// Min Length: 1
+	Name string `json:"name,omitempty"`
+}
 
 // Validate validates this user ID
-func (m UserID) Validate(formats strfmt.Registry) error {
+func (m *UserID) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateName(formats); err != nil {
+		// prop
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UserID) validateName(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Name) { // not required
+		return nil
+	}
+
+	if err := validate.MinLength("name", "body", string(m.Name), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *UserID) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *UserID) UnmarshalBinary(b []byte) error {
+	var res UserID
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
 	return nil
 }

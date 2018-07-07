@@ -65,7 +65,10 @@ func register(name string) (*models.UserID, *models.AuthProfile) {
 		log.Fatal("reg error")
 	}
 
-	userID := models.UserID(body.Payload.ID)
+	userID := models.UserID{
+		ID:   body.Payload.ID,
+		Name: body.Payload.Name,
+	}
 	return &userID, body.Payload
 }
 

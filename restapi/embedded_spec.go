@@ -3228,8 +3228,18 @@ func init() {
       }
     },
     "UserID": {
-      "type": "integer",
-      "format": "int64"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 20,
+          "minLength": 1
+        }
+      }
     },
     "WatchingStatus": {
       "type": "object",

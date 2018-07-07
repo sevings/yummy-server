@@ -23,7 +23,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.GetRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			relation := relationship(tx, params.ID, userID)
 			return relations.NewGetRelationsToIDOK().WithPayload(relation)
 		})
@@ -33,7 +33,7 @@ func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsT
 func newFromRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.GetRelationsFromIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			relation := relationship(tx, userID, params.ID)
 			return relations.NewGetRelationsFromIDOK().WithPayload(relation)
 		})
@@ -65,7 +65,7 @@ func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, isPrivate bool
 func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.PutRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 
 			if userID == params.ID {
 				err := srv.NewError(&i18n.Message{ID: "self_relation", Other: "You can't have relationship with youself."})
@@ -98,7 +98,7 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.PutRelationsFromIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {
 				err := srv.StandardError("no_request")
@@ -115,7 +115,7 @@ func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelation
 func newToRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsToIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.DeleteRelationsToIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			relation := removeRelationship(tx, userID, params.ID)
 			return relations.NewDeleteRelationsToIDOK().WithPayload(relation)
 		})
@@ -125,7 +125,7 @@ func newToRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelati
 func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRelationsFromIDParams, *models.UserID) middleware.Responder {
 	return func(params relations.DeleteRelationsFromIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			relation := relationship(tx, params.ID, userID)
 			if relation.Relation != models.RelationshipRelationRequested {
 				err := srv.StandardError("no_request")

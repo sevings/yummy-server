@@ -11,7 +11,7 @@ import (
 func checkFromRelation(t *testing.T, user, to *models.UserID, relation string) {
 	load := api.RelationsGetRelationsFromIDHandler.Handle
 	params := relations.GetRelationsFromIDParams{
-		ID: int64(*to),
+		ID: to.ID,
 	}
 	resp := load(params, user)
 	body, ok := resp.(*relations.GetRelationsFromIDOK)
@@ -20,14 +20,14 @@ func checkFromRelation(t *testing.T, user, to *models.UserID, relation string) {
 
 	status := body.Payload
 	req.Equal(params.ID, status.To)
-	req.Equal(int64(*user), status.From)
+	req.Equal(user.ID, status.From)
 	req.Equal(relation, status.Relation)
 }
 
 func checkToRelation(t *testing.T, user, from *models.UserID, relation string) {
 	load := api.RelationsGetRelationsToIDHandler.Handle
 	params := relations.GetRelationsToIDParams{
-		ID: int64(*from),
+		ID: from.ID,
 	}
 	resp := load(params, user)
 	body, ok := resp.(*relations.GetRelationsToIDOK)
@@ -36,7 +36,7 @@ func checkToRelation(t *testing.T, user, from *models.UserID, relation string) {
 
 	status := body.Payload
 	req.Equal(params.ID, status.From)
-	req.Equal(int64(*user), status.To)
+	req.Equal(user.ID, status.To)
 	req.Equal(relation, status.Relation)
 }
 
@@ -58,7 +58,7 @@ func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, rela
 
 	status := body.Payload
 	req.Equal(params.ID, status.To)
-	req.Equal(int64(*user), status.From)
+	req.Equal(user.ID, status.From)
 	req.Equal(relation, status.Relation)
 
 	if relation == models.RelationshipRelationFollowed && to.Account.Verified {
@@ -71,7 +71,7 @@ func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, rela
 func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 	put := api.RelationsPutRelationsFromIDHandler.Handle
 	params := relations.PutRelationsFromIDParams{
-		ID: int64(*from),
+		ID: from.ID,
 	}
 	resp := put(params, user)
 	body, ok := resp.(*relations.PutRelationsFromIDOK)
@@ -82,7 +82,7 @@ func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 	}
 
 	status := body.Payload
-	req.Equal(int64(*user), status.To)
+	req.Equal(user.ID, status.To)
 	req.Equal(params.ID, status.From)
 	req.Equal(models.RelationshipRelationFollowed, status.Relation)
 }
@@ -90,7 +90,7 @@ func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 func checkUnfollow(t *testing.T, user, to *models.UserID) {
 	del := api.RelationsDeleteRelationsToIDHandler.Handle
 	params := relations.DeleteRelationsToIDParams{
-		ID: int64(*to),
+		ID: to.ID,
 	}
 	resp := del(params, user)
 	body, ok := resp.(*relations.DeleteRelationsToIDOK)
@@ -99,14 +99,14 @@ func checkUnfollow(t *testing.T, user, to *models.UserID) {
 
 	status := body.Payload
 	req.Equal(params.ID, status.To)
-	req.Equal(int64(*user), status.From)
+	req.Equal(user.ID, status.From)
 	req.Equal(models.RelationshipRelationNone, status.Relation)
 }
 
 func checkCancelFollow(t *testing.T, user, from *models.UserID, success bool) {
 	del := api.RelationsDeleteRelationsFromIDHandler.Handle
 	params := relations.DeleteRelationsFromIDParams{
-		ID: int64(*from),
+		ID: from.ID,
 	}
 	resp := del(params, user)
 	body, ok := resp.(*relations.DeleteRelationsToIDOK)
@@ -114,7 +114,7 @@ func checkCancelFollow(t *testing.T, user, from *models.UserID, success bool) {
 	req.True(ok)
 
 	status := body.Payload
-	req.Equal(int64(*user), status.To)
+	req.Equal(user.ID, status.To)
 	req.Equal(params.ID, status.From)
 	req.Equal(models.RelationshipRelationNone, status.Relation)
 }

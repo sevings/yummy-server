@@ -51,14 +51,14 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 }
 
 func NewKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
-	const q = `
-		SELECT id
-		FROM users
-		WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
-
 	return func(apiKey string) (*models.UserID, error) {
-		var id int64
-		err := db.QueryRow(q, apiKey).Scan(&id)
+		const q = `
+			SELECT id, name
+			FROM users
+			WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
+
+		var user models.UserID
+		err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name)
 		if err != nil {
 			if err != sql.ErrNoRows {
 				log.Print(err)
@@ -67,8 +67,7 @@ func NewKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
 			return nil, errors.New(401, "Unauthorized")
 		}
 
-		userID := models.UserID(id)
-		return &userID, nil
+		return &user, nil
 	}
 }
 

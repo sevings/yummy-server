@@ -10,8 +10,15 @@ securityDefinitions:
     name: X-User-Key
 definitions:
   UserID:
-    type: integer
-    format: int64
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+        minLength: 1
+        maxLength: 20
   Error:
     type: object
     properties:

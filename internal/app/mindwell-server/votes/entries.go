@@ -50,7 +50,7 @@ func entryRating(tx *utils.AutoTx, userID, entryID int64) *models.Rating {
 func newEntryVoteLoader(srv *utils.MindwellServer) func(votes.GetEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.GetEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			canView := utils.CanViewEntry(tx, userID, params.ID)
 			if !canView {
 				err := srv.StandardError("no_entry")
@@ -145,7 +145,7 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 func newEntryVoter(srv *utils.MindwellServer) func(votes.PutEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.PutEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_entry")
@@ -187,7 +187,7 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.Rating, bool)
 func newEntryUnvoter(srv *utils.MindwellServer) func(votes.DeleteEntriesIDVoteParams, *models.UserID) middleware.Responder {
 	return func(params votes.DeleteEntriesIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := int64(*uID)
+			userID := uID.ID
 			canVote := canVoteForEntry(tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_entry")

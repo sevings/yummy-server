@@ -232,7 +232,7 @@ func TestLoadLive(t *testing.T) {
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
 	params := entries.GetEntriesUsersIDParams{
-		ID:     int64(*tlog),
+		ID:     tlog.ID,
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,

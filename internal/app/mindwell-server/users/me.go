@@ -55,7 +55,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	var avatar, cover string
 	var invitedAvatar string
 
-	tx.Query(q, *userID)
+	tx.Query(q, userID.ID)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
 		&avatar,
 		&profile.Gender, &profile.IsDaylog,
@@ -166,7 +166,7 @@ func storeAvatar(tx *utils.AutoTx, userID int64, avatar *runtime.File) error {
 }
 
 func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, params me.PutUsersMeParams) *models.Profile {
-	id := int64(*userID)
+	id := userID.ID
 
 	if params.Birthday != nil && len(*params.Birthday) > 0 {
 		const q = "update users set birthday = $2 where id = $1"
@@ -227,7 +227,7 @@ func newMeEditor(srv *utils.MindwellServer) func(me.PutUsersMeParams, *models.Us
 
 func loadRelatedToMeUsers(srv *utils.MindwellServer, userID *models.UserID, query, relation string, args ...interface{}) middleware.Responder {
 	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-		id := int64(*userID)
+		id := userID.ID
 		list := loadRelatedUsers(srv, tx, query, loadUserQueryID, relation, append([]interface{}{id}, args...)...)
 		if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 			err := srv.NewError(nil)
@@ -276,7 +276,7 @@ func newMyRequestedLoader(srv *utils.MindwellServer) func(me.GetUsersMeRequested
 func newMyOnlineSetter(srv *utils.MindwellServer) func(me.PutUsersMeOnlineParams, *models.UserID) middleware.Responder {
 	return func(params me.PutUsersMeOnlineParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			id := int64(*userID)
+			id := userID.ID
 			const q = `UPDATE users SET last_seen_at = DEFAULT WHERE id = $1`
 			tx.Exec(q, id)
 			return me.NewPutUsersMeOnlineOK()

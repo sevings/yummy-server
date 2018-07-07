@@ -38,7 +38,7 @@ func loadDesign(tx *utils.AutoTx, id int64) models.Design {
 func newDesignGetter(srv *utils.MindwellServer) func(design.GetDesignParams, *models.UserID) middleware.Responder {
 	return func(params design.GetDesignParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			id := int64(*uID)
+			id := uID.ID
 			des := loadDesign(tx, id)
 			return design.NewGetDesignOK().WithPayload(&des)
 		})
@@ -97,7 +97,7 @@ func editDesign(tx *utils.AutoTx, params design.PutDesignParams, id int64) model
 func newDesignEditor(srv *utils.MindwellServer) func(design.PutDesignParams, *models.UserID) middleware.Responder {
 	return func(params design.PutDesignParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			id := int64(*uID)
+			id := uID.ID
 			des := editDesign(tx, params, id)
 			return design.NewPutDesignOK().WithPayload(&des)
 		})

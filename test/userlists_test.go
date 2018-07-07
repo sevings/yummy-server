@@ -24,7 +24,7 @@ func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size
 
 	list := body.Payload
 	require.Equal(t, size, len(list.Users))
-	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, user.ID, list.Subject.ID)
 	require.Equal(t, models.FriendListRelationFollowers, list.Relation)
 
 	return list.Users
@@ -43,7 +43,7 @@ func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, siz
 
 	list := body.Payload
 	require.Equal(t, size, len(list.Users))
-	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, user.ID, list.Subject.ID)
 	require.Equal(t, models.FriendListRelationFollowings, list.Relation)
 
 	return list.Users
@@ -62,7 +62,7 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 
 	list := body.Payload
 	require.Equal(t, size, len(list.Users))
-	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, user.ID, list.Subject.ID)
 	require.Equal(t, models.FriendListRelationIgnored, list.Relation)
 
 	return list.Users
@@ -81,7 +81,7 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 
 	list := body.Payload
 	require.Equal(t, size, len(list.Users))
-	require.Equal(t, int64(*user), list.Subject.ID)
+	require.Equal(t, user.ID, list.Subject.ID)
 	require.Equal(t, models.FriendListRelationInvited, list.Relation)
 
 	return list.Users
@@ -281,7 +281,10 @@ func TestOpenFriendLists(t *testing.T) {
 
 	checkMyInvited(t, userIDs[2], 0, 100, 0)
 
-	inviter := models.UserID(1)
+	inviter := models.UserID{
+		ID:   1,
+		Name: "haveaniceday",
+	}
 	list = checkMyInvited(t, &inviter, 0, 100, 4)
 	req.Equal(profiles[2].ID, list[0].ID)
 	req.Equal(profiles[1].ID, list[1].ID)

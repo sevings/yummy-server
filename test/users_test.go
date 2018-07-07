@@ -19,7 +19,7 @@ func TestKeyAuth(t *testing.T) {
 	for _, user := range profiles {
 		id, err := auth(user.Account.APIKey)
 		req.Nil(err)
-		req.Equal(int64(*id), int64(user.ID))
+		req.Equal(id.ID, int64(user.ID))
 	}
 
 	_, err := auth("12345678901234567890123456789012")
@@ -120,7 +120,10 @@ func TestGetUserByName(t *testing.T) {
 
 func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutUsersMeParams) {
 	edit := api.MePutUsersMeHandler.Handle
-	id := models.UserID(user.ID)
+	id := models.UserID{
+		ID:   user.ID,
+		Name: user.Name,
+	}
 	resp := edit(params, &id)
 	body, ok := resp.(*me.PutUsersMeOK)
 	require.True(t, ok)

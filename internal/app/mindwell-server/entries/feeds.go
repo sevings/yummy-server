@@ -147,7 +147,7 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserI
 		arg = after
 	}
 
-	userID := int64(*uID)
+	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
 	feed := loadFeed(srv, tx, userID)
@@ -223,7 +223,7 @@ func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams,
 }
 
 func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit, tlog int64) *models.Feed {
-	userID := int64(*uID)
+	userID := uID.ID
 	if userID == tlog {
 		return loadMyTlogFeed(srv, tx, uID, beforeS, afterS, limit)
 	}
@@ -315,7 +315,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 		arg = after
 	}
 
-	userID := int64(*uID)
+	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
 	feed := loadFeed(srv, tx, userID)
@@ -392,7 +392,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Us
 		arg = after
 	}
 
-	userID := int64(*uID)
+	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
 	feed := loadFeed(srv, tx, userID)

@@ -343,7 +343,7 @@ func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Pos
 	oldHash := srv.PasswordHash(params.OldPassword)
 	newHash := srv.PasswordHash(params.NewPassword)
 
-	tx.Exec(q, newHash, oldHash, int64(*userID))
+	tx.Exec(q, newHash, oldHash, userID.ID)
 
 	rows := tx.RowsAffected()
 
@@ -375,7 +375,7 @@ func loadInvites(tx *utils.AutoTx, userID *models.UserID) []string {
         from unwrapped_invites
         where user_id = $1`
 
-	tx.Query(q, int64(*userID))
+	tx.Query(q, userID.ID)
 
 	var invites []string
 	for {
@@ -413,7 +413,7 @@ func newVerificationSender(srv *utils.MindwellServer) func(account.PostAccountVe
 			var verified bool
 			var email string
 			var name string
-			tx.Query(q, int64(*userID)).Scan(&verified, &email, &name)
+			tx.Query(q, userID.ID).Scan(&verified, &email, &name)
 			if tx.Error() != nil {
 				return account.NewPostAccountVerificationForbidden()
 			}

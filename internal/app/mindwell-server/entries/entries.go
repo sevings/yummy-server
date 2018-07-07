@@ -155,7 +155,7 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesUsersMeParams, *models.UserID) middleware.Responder {
 	return func(params entries.PostEntriesUsersMeParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entry := createEntry(srv, tx, int64(*uID),
+			entry := createEntry(srv, tx, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
@@ -221,7 +221,7 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entry := editEntry(srv, tx, params.ID, int64(*uID),
+			entry := editEntry(srv, tx, params.ID, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
@@ -291,7 +291,7 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entry := loadEntry(srv, tx, params.ID, int64(*uID))
+			entry := loadEntry(srv, tx, params.ID, uID.ID)
 
 			if entry.ID == 0 {
 				err := srv.StandardError("no_entry")
@@ -317,7 +317,7 @@ func deleteEntry(tx *utils.AutoTx, entryID, userID int64) bool {
 func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.DeleteEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			ok := deleteEntry(tx, params.ID, int64(*uID))
+			ok := deleteEntry(tx, params.ID, uID.ID)
 			if ok {
 				return entries.NewDeleteEntriesIDOK()
 			}
