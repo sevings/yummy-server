@@ -728,7 +728,7 @@ CREATE TABLE "mindwell"."entries" (
 	"content" Text NOT NULL,
     "cut_content" TEXT DEFAULT '' NOT NULL,
     "edit_content" Text NOT NULL,
-    "has_cut" BOOLEAN DEFAULT FALSE NOT NULL;
+    "has_cut" BOOLEAN DEFAULT FALSE NOT NULL,
 	"word_count" Integer NOT NULL,
 	"visible_for" Integer NOT NULL,
 	"is_votable" Boolean NOT NULL,
