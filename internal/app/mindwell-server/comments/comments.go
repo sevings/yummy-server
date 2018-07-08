@@ -64,7 +64,7 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 	}
 
 	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
-		&comment.CreatedAt, &comment.Content, &comment.Rating,
+		&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
 		&vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
@@ -220,7 +220,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		var vote sql.NullBool
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
-			&comment.CreatedAt, &comment.Content, &comment.Rating,
+			&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
 			&vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
