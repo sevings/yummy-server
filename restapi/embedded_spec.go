@@ -549,14 +549,64 @@ func init() {
               "$ref": "#/definitions/Rating"
             }
           },
-          "403": {
-            "description": "access denied",
+          "404": {
+            "description": "Comment not found",
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "votes"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": true,
+            "name": "positive",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "vote status",
+            "schema": {
+              "$ref": "#/definitions/Rating"
+            }
           },
           "404": {
-            "description": "Entry not found",
+            "description": "Comment not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "votes"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "vote status",
+            "schema": {
+              "$ref": "#/definitions/Rating"
+            }
+          },
+          "404": {
+            "description": "Comment not found",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -2497,8 +2547,8 @@ func init() {
         }
       },
       "example": {
-        "content": "\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e",
-        "createdAt": "1985-04-12T23:20:50.52Z",
+        "content": "some multiline text \\n without html",
+        "createdAt": 1531029717.333,
         "entryId": 152,
         "id": 999
       }
@@ -2642,7 +2692,8 @@ func init() {
       "example": {
         "commentCount": 0,
         "content": "\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e",
-        "createdAt": "1985-04-12T23:20:50.52Z",
+        "createdAt": 1531029717.333,
+        "editContent": "some text with *html* tags",
         "id": 152,
         "isVotable": true,
         "privacy": "all",
@@ -2868,12 +2919,12 @@ func init() {
               "invited": 0,
               "tags": 0
             },
-            "createdAt": "1985-04-12T23:20:50.52Z",
+            "createdAt": 1531029717.333,
             "gender": "male",
             "isDaylog": false,
             "karma": 100,
-            "lastSeenAt": "1985-04-12T23:20:50.52Z",
-            "privacy": "registered",
+            "lastSeenAt": 1531029717.333,
+            "privacy": "all",
             "relations": {
               "fromMe": "followed",
               "toMe": "none"

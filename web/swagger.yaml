@@ -167,11 +167,11 @@ definitions:
         example:
           gender: male
           isDaylog: false
-          privacy: registered
+          privacy: all
           title: 'some tlog title'
           karma: 100.0
-          createdAt: '1985-04-12T23:20:50.52Z'
-          lastSeenAt: '1985-04-12T23:20:50.52Z'
+          createdAt: 1531029717.333
+          lastSeenAt: 1531029717.333
           country: Россия
           city: Казань
           counts:
@@ -275,10 +275,11 @@ definitions:
           $ref: '#/definitions/CommentList'
     example:
       id: 152
-      createdAt: '1985-04-12T23:20:50.52Z'
+      createdAt: 1531029717.333
       rating: -3
       title: 'example title'
       content: '<p>some text with <b>html</b> tags</p>'
+      editContent: 'some text with *html* tags'
       wordCount: 5
       privacy: 'all'
       isVotable: true
@@ -372,8 +373,8 @@ definitions:
     example:
       id: 999
       entryId: 152
-      createdAt: '1985-04-12T23:20:50.52Z'
-      content: '<p>some text with <b>html</b> tags</p>'
+      createdAt: 1531029717.333
+      content: 'some multiline text \n without html'
   CommentList:
     type: object
     properties:
@@ -947,6 +948,15 @@ paths:
           description: bad request
           schema:
             $ref: '#/definitions/Error'
+  /me/online:
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: OK
   /me/followers:
     get:
       parameters:
@@ -1037,15 +1047,6 @@ paths:
           description: access denied
           schema:
             $ref: '#/definitions/Error'
-  /me/online:
-    put:
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - me
-      responses:
-        200:
-          description: OK
   /me/tlog:
     get:
       parameters:
@@ -1795,12 +1796,41 @@ paths:
           description: vote status
           schema:
             $ref: '#/definitions/Rating'
-        403:
-          description: access denied
+        404:
+          description: Comment not found
           schema:
             $ref: '#/definitions/Error'
+    put:
+      parameters:
+        - in: query
+          name: positive
+          type: boolean
+          default: true
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - votes
+      responses:
+        200:
+          description: vote status
+          schema:
+            $ref: '#/definitions/Rating'
         404:
-          description: Entry not found
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - votes
+      responses:
+        200:
+          description: vote status
+          schema:
+            $ref: '#/definitions/Rating'
+        404:
+          description: Comment not found
           schema:
             $ref: '#/definitions/Error'
 produces:

@@ -52,6 +52,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		CommentsDeleteCommentsIDHandler: comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsDeleteCommentsID has not yet been implemented")
 		}),
+		VotesDeleteCommentsIDVoteHandler: votes.DeleteCommentsIDVoteHandlerFunc(func(params votes.DeleteCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation VotesDeleteCommentsIDVote has not yet been implemented")
+		}),
 		EntriesDeleteEntriesIDHandler: entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesDeleteEntriesID has not yet been implemented")
 		}),
@@ -199,6 +202,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
 		}),
+		VotesPutCommentsIDVoteHandler: votes.PutCommentsIDVoteHandlerFunc(func(params votes.PutCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation VotesPutCommentsIDVote has not yet been implemented")
+		}),
 		DesignPutDesignHandler: design.PutDesignHandlerFunc(func(params design.PutDesignParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation DesignPutDesign has not yet been implemented")
 		}),
@@ -282,6 +288,8 @@ type MindwellAPI struct {
 
 	// CommentsDeleteCommentsIDHandler sets the operation handler for the delete comments ID operation
 	CommentsDeleteCommentsIDHandler comments.DeleteCommentsIDHandler
+	// VotesDeleteCommentsIDVoteHandler sets the operation handler for the delete comments ID vote operation
+	VotesDeleteCommentsIDVoteHandler votes.DeleteCommentsIDVoteHandler
 	// EntriesDeleteEntriesIDHandler sets the operation handler for the delete entries ID operation
 	EntriesDeleteEntriesIDHandler entries.DeleteEntriesIDHandler
 	// FavoritesDeleteEntriesIDFavoriteHandler sets the operation handler for the delete entries ID favorite operation
@@ -380,6 +388,8 @@ type MindwellAPI struct {
 	MePostMeTlogHandler me.PostMeTlogHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
+	// VotesPutCommentsIDVoteHandler sets the operation handler for the put comments ID vote operation
+	VotesPutCommentsIDVoteHandler votes.PutCommentsIDVoteHandler
 	// DesignPutDesignHandler sets the operation handler for the put design operation
 	DesignPutDesignHandler design.PutDesignHandler
 	// EntriesPutEntriesIDHandler sets the operation handler for the put entries ID operation
@@ -479,6 +489,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.CommentsDeleteCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.DeleteCommentsIDHandler")
+	}
+
+	if o.VotesDeleteCommentsIDVoteHandler == nil {
+		unregistered = append(unregistered, "votes.DeleteCommentsIDVoteHandler")
 	}
 
 	if o.EntriesDeleteEntriesIDHandler == nil {
@@ -677,6 +691,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "comments.PutCommentsIDHandler")
 	}
 
+	if o.VotesPutCommentsIDVoteHandler == nil {
+		unregistered = append(unregistered, "votes.PutCommentsIDVoteHandler")
+	}
+
 	if o.DesignPutDesignHandler == nil {
 		unregistered = append(unregistered, "design.PutDesignHandler")
 	}
@@ -833,6 +851,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/comments/{id}"] = comments.NewDeleteCommentsID(o.context, o.CommentsDeleteCommentsIDHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/comments/{id}/vote"] = votes.NewDeleteCommentsIDVote(o.context, o.VotesDeleteCommentsIDVoteHandler)
 
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
@@ -1078,6 +1101,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/comments/{id}"] = comments.NewPutCommentsID(o.context, o.CommentsPutCommentsIDHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/comments/{id}/vote"] = votes.NewPutCommentsIDVote(o.context, o.VotesPutCommentsIDVoteHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

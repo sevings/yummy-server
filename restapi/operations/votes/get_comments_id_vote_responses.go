@@ -56,53 +56,10 @@ func (o *GetCommentsIDVoteOK) WriteResponse(rw http.ResponseWriter, producer run
 	}
 }
 
-// GetCommentsIDVoteForbiddenCode is the HTTP code returned for type GetCommentsIDVoteForbidden
-const GetCommentsIDVoteForbiddenCode int = 403
-
-/*GetCommentsIDVoteForbidden access denied
-
-swagger:response getCommentsIdVoteForbidden
-*/
-type GetCommentsIDVoteForbidden struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Error `json:"body,omitempty"`
-}
-
-// NewGetCommentsIDVoteForbidden creates GetCommentsIDVoteForbidden with default headers values
-func NewGetCommentsIDVoteForbidden() *GetCommentsIDVoteForbidden {
-	return &GetCommentsIDVoteForbidden{}
-}
-
-// WithPayload adds the payload to the get comments Id vote forbidden response
-func (o *GetCommentsIDVoteForbidden) WithPayload(payload *models.Error) *GetCommentsIDVoteForbidden {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the get comments Id vote forbidden response
-func (o *GetCommentsIDVoteForbidden) SetPayload(payload *models.Error) {
-	o.Payload = payload
-}
-
-// WriteResponse to the client
-func (o *GetCommentsIDVoteForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-	rw.WriteHeader(403)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
-}
-
 // GetCommentsIDVoteNotFoundCode is the HTTP code returned for type GetCommentsIDVoteNotFound
 const GetCommentsIDVoteNotFoundCode int = 404
 
-/*GetCommentsIDVoteNotFound Entry not found
+/*GetCommentsIDVoteNotFound Comment not found
 
 swagger:response getCommentsIdVoteNotFound
 */
