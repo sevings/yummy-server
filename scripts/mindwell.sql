@@ -80,6 +80,7 @@ CREATE TABLE "mindwell"."users" (
     "api_key" Text NOT NULL,
     "valid_thru" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP + interval '6 months' NOT NULL,
 	"avatar" Text DEFAULT '' NOT NULL,
+	"cover" Text DEFAULT '' NOT NULL,
 	"font_family" Integer DEFAULT 0 NOT NULL,
 	"font_size" SmallInt DEFAULT 100 NOT NULL,
 	"text_alignment" Integer DEFAULT 0 NOT NULL,
@@ -126,25 +127,6 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
-
-CREATE OR REPLACE FUNCTION mindwell.create_vote_weights() RETURNS TRIGGER AS $$
-    BEGIN
-        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 0);
-        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 1);
-        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 2);
-        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 3);
-
-        RETURN NULL;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER crt_vote_weights
-    AFTER INSERT ON mindwell.users
-    FOR EACH ROW EXECUTE PROCEDURE mindwell.create_vote_weights();
-
-INSERT INTO mindwell.users
-    (name, show_name, email, password_hash, api_key, invited_by)
-    VALUES('Mindwell', 'Mindwell', '', '', '', 1);
 
 
 
@@ -742,9 +724,9 @@ CREATE TABLE "mindwell"."entries" (
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"author_id" Integer NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
-    "cut_title" TEXT DEFAULT '' NOT NULL;
+    "cut_title" TEXT DEFAULT '' NOT NULL,
 	"content" Text NOT NULL,
-    "cut_content" TEXT DEFAULT '' NOT NULL;
+    "cut_content" TEXT DEFAULT '' NOT NULL,
     "edit_content" Text NOT NULL,
     "has_cut" BOOLEAN DEFAULT FALSE NOT NULL;
 	"word_count" Integer NOT NULL,
@@ -1178,6 +1160,21 @@ CREATE TABLE "mindwell"."vote_weights" (
 CREATE INDEX "index_vote_weights" ON "mindwell"."vote_weights" USING btree( "user_id" );
 -- -------------------------------------------------------------
 
+CREATE OR REPLACE FUNCTION mindwell.create_vote_weights() RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 0);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 1);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 2);
+        INSERT INTO mindwell.vote_weights(user_id, category) VALUES(NEW.id, 3);
+
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER crt_vote_weights
+    AFTER INSERT ON mindwell.users
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.create_vote_weights();
+
 
 
 -- CREATE TABLE "entries_privacy" ------------------------------
@@ -1353,6 +1350,10 @@ CREATE TRIGGER cnt_comment_votes_del_inc
     EXECUTE PROCEDURE mindwell.inc_comment_votes();
 
     
+
+INSERT INTO mindwell.users
+    (name, show_name, email, password_hash, api_key, invited_by)
+    VALUES('Mindwell', 'Mindwell', '', '', '', 1);
 
 -- -- CREATE TABLE "images" ---------------------------------------
 -- CREATE TABLE "mindwell"."images" (
