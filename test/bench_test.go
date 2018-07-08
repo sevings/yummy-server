@@ -6,13 +6,14 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
 )
 
 func BenchmarkLoadLive(b *testing.B) {
-	post := api.EntriesPostEntriesMeHandler.Handle
+	post := api.MePostMeTlogHandler.Handle
 	var title string
 	votable := true
-	entryParams := entries.PostEntriesMeParams{
+	entryParams := me.PostMeTlogParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   models.EntryPrivacyAll,

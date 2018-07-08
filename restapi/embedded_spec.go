@@ -876,373 +876,6 @@ func init() {
         }
       }
     },
-    "/entries/me": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          },
-          {
-            "$ref": "#/parameters/tag"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "post": {
-        "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
-        ],
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "maxLength": 500,
-            "type": "string",
-            "default": "",
-            "name": "title",
-            "in": "formData"
-          },
-          {
-            "maxLength": 30000,
-            "minLength": 1,
-            "type": "string",
-            "name": "content",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "enum": [
-              "all",
-              "followers",
-              "some",
-              "me"
-            ],
-            "type": "string",
-            "name": "privacy",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "array",
-            "items": {
-              "minimum": 1,
-              "type": "integer",
-              "format": "int64"
-            },
-            "name": "visibleFor",
-            "in": "formData"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "name": "isVotable",
-            "in": "formData"
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Entry data",
-            "schema": {
-              "$ref": "#/definitions/Entry"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/entries/me/favorites": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/entries/me/watching": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/entries/users/byName/{name}": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          },
-          {
-            "$ref": "#/parameters/tag"
-          },
-          {
-            "$ref": "#/parameters/sort"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pathName"
-        }
-      ]
-    },
-    "/entries/users/byName/{name}/favorites": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pathName"
-        }
-      ]
-    },
-    "/entries/users/{id}": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          },
-          {
-            "$ref": "#/parameters/tag"
-          },
-          {
-            "$ref": "#/parameters/sort"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pathId"
-        }
-      ]
-    },
-    "/entries/users/{id}/favorites": {
-      "get": {
-        "tags": [
-          "entries"
-        ],
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
-            }
-          },
-          "404": {
-            "description": "User not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pathId"
-        }
-      ]
-    },
     "/entries/{id}": {
       "get": {
         "tags": [
@@ -1939,6 +1572,43 @@ func init() {
         }
       }
     },
+    "/me/favorites": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/me/followers": {
       "get": {
         "tags": [
@@ -2115,6 +1785,156 @@ func init() {
             "description": "User list",
             "schema": {
               "$ref": "#/definitions/FriendList"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/me/tlog": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          },
+          {
+            "$ref": "#/parameters/tag"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "maxLength": 500,
+            "type": "string",
+            "default": "",
+            "name": "title",
+            "in": "formData"
+          },
+          {
+            "maxLength": 30000,
+            "minLength": 1,
+            "type": "string",
+            "name": "content",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "enum": [
+              "all",
+              "followers",
+              "some",
+              "me"
+            ],
+            "type": "string",
+            "name": "privacy",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "visibleFor",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "isVotable",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Entry data",
+            "schema": {
+              "$ref": "#/definitions/Entry"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/me/watching": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
             }
           },
           "403": {
@@ -2347,6 +2167,48 @@ func init() {
         }
       ]
     },
+    "/users/{name}/favorites": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
     "/users/{name}/followers": {
       "get": {
         "tags": [
@@ -2466,6 +2328,54 @@ func init() {
             "description": "access denied",
             "schema": {
               "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
+    "/users/{name}/tlog": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          },
+          {
+            "$ref": "#/parameters/tag"
+          },
+          {
+            "$ref": "#/parameters/sort"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
             }
           },
           "404": {

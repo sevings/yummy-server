@@ -8,6 +8,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/utils"
 )
 
@@ -56,7 +58,7 @@ const bestFeedQueryWhere = liveFeedQueryWhere + " AND entries.rating > 5 "
 
 const bestFeedQuery = tlogFeedQueryStart + bestFeedQueryWhere
 
-const tlogFeedQueryWhere = liveFeedQueryWhere + " AND entries.author_id = $2 "
+const tlogFeedQueryWhere = liveFeedQueryWhere + " AND lower(users.name) = lower($2) "
 
 const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere
 
@@ -222,9 +224,8 @@ func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams,
 	}
 }
 
-func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit, tlog int64) *models.Feed {
-	userID := uID.ID
-	if userID == tlog {
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
+	if uID.Name == tlog {
 		return loadMyTlogFeed(srv, tx, uID, beforeS, afterS, limit)
 	}
 
@@ -241,9 +242,9 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserI
 		arg = after
 	}
 
-	tx.Query(q, userID, tlog, arg, limit)
+	tx.Query(q, uID.ID, tlog, arg, limit)
 
-	feed := loadFeed(srv, tx, userID)
+	feed := loadFeed(srv, tx, uID.ID)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -292,11 +293,11 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserI
 	return feed
 }
 
-func newTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesUsersIDParams, *models.UserID) middleware.Responder {
-	return func(params entries.GetEntriesUsersIDParams, userID *models.UserID) middleware.Responder {
+func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersNameTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit, params.ID)
-			return entries.NewGetEntriesUsersIDOK().WithPayload(feed)
+			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
+			return users.NewGetUsersNameTlogOK().WithPayload(feed)
 		})
 	}
 }
@@ -363,17 +364,17 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 	return feed
 }
 
-func newMyTlogLoader(srv *utils.MindwellServer) func(entries.GetEntriesMeParams, *models.UserID) middleware.Responder {
-	return func(params entries.GetEntriesMeParams, userID *models.UserID) middleware.Responder {
+func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models.UserID) middleware.Responder {
+	return func(params me.GetMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.StandardError("no_tlog")
-				return entries.NewGetEntriesMeForbidden().WithPayload(err)
+				return me.NewGetMeTlogForbidden().WithPayload(err)
 			}
 
-			return entries.NewGetEntriesMeOK().WithPayload(feed)
+			return me.NewGetMeTlogOK().WithPayload(feed)
 		})
 	}
 }

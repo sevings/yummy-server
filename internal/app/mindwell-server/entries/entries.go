@@ -14,6 +14,8 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	usersAPI "github.com/sevings/mindwell-server/restapi/operations/users"
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
@@ -24,7 +26,9 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
-	srv.API.EntriesPostEntriesMeHandler = entries.PostEntriesMeHandlerFunc(newMyTlogPoster(srv))
+	srv.API.MePostMeTlogHandler = me.PostMeTlogHandlerFunc(newMyTlogPoster(srv))
+	srv.API.MeGetMeTlogHandler = me.GetMeTlogHandlerFunc(newMyTlogLoader(srv))
+	srv.API.UsersGetUsersNameTlogHandler = usersAPI.GetUsersNameTlogHandlerFunc(newTlogLoader(srv))
 
 	srv.API.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(srv))
 	srv.API.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(srv))
@@ -33,8 +37,6 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(srv))
 	srv.API.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(srv))
 	srv.API.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(srv))
-	srv.API.EntriesGetEntriesUsersIDHandler = entries.GetEntriesUsersIDHandlerFunc(newTlogLoader(srv))
-	srv.API.EntriesGetEntriesMeHandler = entries.GetEntriesMeHandlerFunc(newMyTlogLoader(srv))
 	srv.API.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(newFriendsFeedLoader(srv))
 }
 
@@ -152,18 +154,18 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	return &entry
 }
 
-func newMyTlogPoster(srv *utils.MindwellServer) func(entries.PostEntriesMeParams, *models.UserID) middleware.Responder {
-	return func(params entries.PostEntriesMeParams, uID *models.UserID) middleware.Responder {
+func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
+	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			entry := createEntry(srv, tx, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable)
 
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
-				return entries.NewPostEntriesMeForbidden().WithPayload(err)
+				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
 
-			return entries.NewPostEntriesMeCreated().WithPayload(entry)
+			return me.NewPostMeTlogCreated().WithPayload(entry)
 		})
 	}
 }

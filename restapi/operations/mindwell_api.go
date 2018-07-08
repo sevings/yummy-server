@@ -121,29 +121,11 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
 		}),
-		EntriesGetEntriesMeHandler: entries.GetEntriesMeHandlerFunc(func(params entries.GetEntriesMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesMe has not yet been implemented")
-		}),
-		EntriesGetEntriesMeFavoritesHandler: entries.GetEntriesMeFavoritesHandlerFunc(func(params entries.GetEntriesMeFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesMeFavorites has not yet been implemented")
-		}),
-		EntriesGetEntriesMeWatchingHandler: entries.GetEntriesMeWatchingHandlerFunc(func(params entries.GetEntriesMeWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesMeWatching has not yet been implemented")
-		}),
-		EntriesGetEntriesUsersByNameNameHandler: entries.GetEntriesUsersByNameNameHandlerFunc(func(params entries.GetEntriesUsersByNameNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersByNameName has not yet been implemented")
-		}),
-		EntriesGetEntriesUsersByNameNameFavoritesHandler: entries.GetEntriesUsersByNameNameFavoritesHandlerFunc(func(params entries.GetEntriesUsersByNameNameFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersByNameNameFavorites has not yet been implemented")
-		}),
-		EntriesGetEntriesUsersIDHandler: entries.GetEntriesUsersIDHandlerFunc(func(params entries.GetEntriesUsersIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersID has not yet been implemented")
-		}),
-		EntriesGetEntriesUsersIDFavoritesHandler: entries.GetEntriesUsersIDFavoritesHandlerFunc(func(params entries.GetEntriesUsersIDFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesUsersIDFavorites has not yet been implemented")
-		}),
 		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
+		}),
+		MeGetMeFavoritesHandler: me.GetMeFavoritesHandlerFunc(func(params me.GetMeFavoritesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeFavorites has not yet been implemented")
 		}),
 		MeGetMeFollowersHandler: me.GetMeFollowersHandlerFunc(func(params me.GetMeFollowersParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeFollowers has not yet been implemented")
@@ -160,6 +142,12 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeRequestedHandler: me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeRequested has not yet been implemented")
 		}),
+		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
+		}),
+		MeGetMeWatchingHandler: me.GetMeWatchingHandlerFunc(func(params me.GetMeWatchingParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeWatching has not yet been implemented")
+		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
 		}),
@@ -169,6 +157,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
 		}),
+		UsersGetUsersNameFavoritesHandler: users.GetUsersNameFavoritesHandlerFunc(func(params users.GetUsersNameFavoritesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameFavorites has not yet been implemented")
+		}),
 		UsersGetUsersNameFollowersHandler: users.GetUsersNameFollowersHandlerFunc(func(params users.GetUsersNameFollowersParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameFollowers has not yet been implemented")
 		}),
@@ -177,6 +168,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		UsersGetUsersNameInvitedHandler: users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameInvited has not yet been implemented")
+		}),
+		UsersGetUsersNameTlogHandler: users.GetUsersNameTlogHandlerFunc(func(params users.GetUsersNameTlogParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameTlog has not yet been implemented")
 		}),
 		AccountPostAccountLoginHandler: account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountLogin has not yet been implemented")
@@ -199,8 +193,8 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		CommentsPostEntriesIDCommentsHandler: comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPostEntriesIDComments has not yet been implemented")
 		}),
-		EntriesPostEntriesMeHandler: entries.PostEntriesMeHandlerFunc(func(params entries.PostEntriesMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesPostEntriesMe has not yet been implemented")
+		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MePostMeTlog has not yet been implemented")
 		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
@@ -334,22 +328,10 @@ type MindwellAPI struct {
 	WatchingsGetEntriesIDWatchingHandler watchings.GetEntriesIDWatchingHandler
 	// EntriesGetEntriesLiveHandler sets the operation handler for the get entries live operation
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
-	// EntriesGetEntriesMeHandler sets the operation handler for the get entries me operation
-	EntriesGetEntriesMeHandler entries.GetEntriesMeHandler
-	// EntriesGetEntriesMeFavoritesHandler sets the operation handler for the get entries me favorites operation
-	EntriesGetEntriesMeFavoritesHandler entries.GetEntriesMeFavoritesHandler
-	// EntriesGetEntriesMeWatchingHandler sets the operation handler for the get entries me watching operation
-	EntriesGetEntriesMeWatchingHandler entries.GetEntriesMeWatchingHandler
-	// EntriesGetEntriesUsersByNameNameHandler sets the operation handler for the get entries users by name name operation
-	EntriesGetEntriesUsersByNameNameHandler entries.GetEntriesUsersByNameNameHandler
-	// EntriesGetEntriesUsersByNameNameFavoritesHandler sets the operation handler for the get entries users by name name favorites operation
-	EntriesGetEntriesUsersByNameNameFavoritesHandler entries.GetEntriesUsersByNameNameFavoritesHandler
-	// EntriesGetEntriesUsersIDHandler sets the operation handler for the get entries users ID operation
-	EntriesGetEntriesUsersIDHandler entries.GetEntriesUsersIDHandler
-	// EntriesGetEntriesUsersIDFavoritesHandler sets the operation handler for the get entries users ID favorites operation
-	EntriesGetEntriesUsersIDFavoritesHandler entries.GetEntriesUsersIDFavoritesHandler
 	// MeGetMeHandler sets the operation handler for the get me operation
 	MeGetMeHandler me.GetMeHandler
+	// MeGetMeFavoritesHandler sets the operation handler for the get me favorites operation
+	MeGetMeFavoritesHandler me.GetMeFavoritesHandler
 	// MeGetMeFollowersHandler sets the operation handler for the get me followers operation
 	MeGetMeFollowersHandler me.GetMeFollowersHandler
 	// MeGetMeFollowingsHandler sets the operation handler for the get me followings operation
@@ -360,18 +342,26 @@ type MindwellAPI struct {
 	MeGetMeInvitedHandler me.GetMeInvitedHandler
 	// MeGetMeRequestedHandler sets the operation handler for the get me requested operation
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
+	// MeGetMeTlogHandler sets the operation handler for the get me tlog operation
+	MeGetMeTlogHandler me.GetMeTlogHandler
+	// MeGetMeWatchingHandler sets the operation handler for the get me watching operation
+	MeGetMeWatchingHandler me.GetMeWatchingHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
 	RelationsGetRelationsToNameHandler relations.GetRelationsToNameHandler
 	// UsersGetUsersNameHandler sets the operation handler for the get users name operation
 	UsersGetUsersNameHandler users.GetUsersNameHandler
+	// UsersGetUsersNameFavoritesHandler sets the operation handler for the get users name favorites operation
+	UsersGetUsersNameFavoritesHandler users.GetUsersNameFavoritesHandler
 	// UsersGetUsersNameFollowersHandler sets the operation handler for the get users name followers operation
 	UsersGetUsersNameFollowersHandler users.GetUsersNameFollowersHandler
 	// UsersGetUsersNameFollowingsHandler sets the operation handler for the get users name followings operation
 	UsersGetUsersNameFollowingsHandler users.GetUsersNameFollowingsHandler
 	// UsersGetUsersNameInvitedHandler sets the operation handler for the get users name invited operation
 	UsersGetUsersNameInvitedHandler users.GetUsersNameInvitedHandler
+	// UsersGetUsersNameTlogHandler sets the operation handler for the get users name tlog operation
+	UsersGetUsersNameTlogHandler users.GetUsersNameTlogHandler
 	// AccountPostAccountLoginHandler sets the operation handler for the post account login operation
 	AccountPostAccountLoginHandler account.PostAccountLoginHandler
 	// AccountPostAccountPasswordHandler sets the operation handler for the post account password operation
@@ -386,8 +376,8 @@ type MindwellAPI struct {
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
 	CommentsPostEntriesIDCommentsHandler comments.PostEntriesIDCommentsHandler
-	// EntriesPostEntriesMeHandler sets the operation handler for the post entries me operation
-	EntriesPostEntriesMeHandler entries.PostEntriesMeHandler
+	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
+	MePostMeTlogHandler me.PostMeTlogHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
 	// DesignPutDesignHandler sets the operation handler for the put design operation
@@ -583,36 +573,12 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
 	}
 
-	if o.EntriesGetEntriesMeHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesMeHandler")
-	}
-
-	if o.EntriesGetEntriesMeFavoritesHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesMeFavoritesHandler")
-	}
-
-	if o.EntriesGetEntriesMeWatchingHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesMeWatchingHandler")
-	}
-
-	if o.EntriesGetEntriesUsersByNameNameHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersByNameNameHandler")
-	}
-
-	if o.EntriesGetEntriesUsersByNameNameFavoritesHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersByNameNameFavoritesHandler")
-	}
-
-	if o.EntriesGetEntriesUsersIDHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersIDHandler")
-	}
-
-	if o.EntriesGetEntriesUsersIDFavoritesHandler == nil {
-		unregistered = append(unregistered, "entries.GetEntriesUsersIDFavoritesHandler")
-	}
-
 	if o.MeGetMeHandler == nil {
 		unregistered = append(unregistered, "me.GetMeHandler")
+	}
+
+	if o.MeGetMeFavoritesHandler == nil {
+		unregistered = append(unregistered, "me.GetMeFavoritesHandler")
 	}
 
 	if o.MeGetMeFollowersHandler == nil {
@@ -635,6 +601,14 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeRequestedHandler")
 	}
 
+	if o.MeGetMeTlogHandler == nil {
+		unregistered = append(unregistered, "me.GetMeTlogHandler")
+	}
+
+	if o.MeGetMeWatchingHandler == nil {
+		unregistered = append(unregistered, "me.GetMeWatchingHandler")
+	}
+
 	if o.RelationsGetRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
@@ -647,6 +621,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "users.GetUsersNameHandler")
 	}
 
+	if o.UsersGetUsersNameFavoritesHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameFavoritesHandler")
+	}
+
 	if o.UsersGetUsersNameFollowersHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameFollowersHandler")
 	}
@@ -657,6 +635,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.UsersGetUsersNameInvitedHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameInvitedHandler")
+	}
+
+	if o.UsersGetUsersNameTlogHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameTlogHandler")
 	}
 
 	if o.AccountPostAccountLoginHandler == nil {
@@ -687,8 +669,8 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "comments.PostEntriesIDCommentsHandler")
 	}
 
-	if o.EntriesPostEntriesMeHandler == nil {
-		unregistered = append(unregistered, "entries.PostEntriesMeHandler")
+	if o.MePostMeTlogHandler == nil {
+		unregistered = append(unregistered, "me.PostMeTlogHandler")
 	}
 
 	if o.CommentsPutCommentsIDHandler == nil {
@@ -970,42 +952,12 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/entries/me"] = entries.NewGetEntriesMe(o.context, o.EntriesGetEntriesMeHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/me/favorites"] = entries.NewGetEntriesMeFavorites(o.context, o.EntriesGetEntriesMeFavoritesHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/me/watching"] = entries.NewGetEntriesMeWatching(o.context, o.EntriesGetEntriesMeWatchingHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/users/byName/{name}"] = entries.NewGetEntriesUsersByNameName(o.context, o.EntriesGetEntriesUsersByNameNameHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/users/byName/{name}/favorites"] = entries.NewGetEntriesUsersByNameNameFavorites(o.context, o.EntriesGetEntriesUsersByNameNameFavoritesHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/users/{id}"] = entries.NewGetEntriesUsersID(o.context, o.EntriesGetEntriesUsersIDHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/entries/users/{id}/favorites"] = entries.NewGetEntriesUsersIDFavorites(o.context, o.EntriesGetEntriesUsersIDFavoritesHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
 	o.handlers["GET"]["/me"] = me.NewGetMe(o.context, o.MeGetMeHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/favorites"] = me.NewGetMeFavorites(o.context, o.MeGetMeFavoritesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1035,6 +987,16 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/me/tlog"] = me.NewGetMeTlog(o.context, o.MeGetMeTlogHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/watching"] = me.NewGetMeWatching(o.context, o.MeGetMeWatchingHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1050,6 +1012,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/users/{name}/favorites"] = users.NewGetUsersNameFavorites(o.context, o.UsersGetUsersNameFavoritesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/users/{name}/followers"] = users.NewGetUsersNameFollowers(o.context, o.UsersGetUsersNameFollowersHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1061,6 +1028,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/invited"] = users.NewGetUsersNameInvited(o.context, o.UsersGetUsersNameInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/{name}/tlog"] = users.NewGetUsersNameTlog(o.context, o.UsersGetUsersNameTlogHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
@@ -1100,7 +1072,7 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/entries/me"] = entries.NewPostEntriesMe(o.context, o.EntriesPostEntriesMeHandler)
+	o.handlers["POST"]["/me/tlog"] = me.NewPostMeTlog(o.context, o.MePostMeTlogHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

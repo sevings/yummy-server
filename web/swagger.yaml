@@ -784,6 +784,50 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /users/{name}/tlog:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+        - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/sort'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Feed'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
+  /users/{name}/favorites:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Feed'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /me:
     get:
       security:
@@ -1002,6 +1046,109 @@ paths:
       responses:
         200:
           description: OK
+  /me/tlog:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+        - $ref: '#/parameters/tag'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Feed'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: title
+          type: string
+          maxLength: 500
+          default: ''
+        - in: formData
+          name: content
+          type: string
+          required: true
+          minLength: 1
+          maxLength: 30000
+        - in: formData
+          name: privacy
+          type: string
+          enum: [all, followers, some, me]
+          required: true
+        - in: formData
+          name: visibleFor
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 1
+        - in: formData
+          name: isVotable
+          type: boolean
+          default: false
+      responses:
+        201:
+          description: Entry data
+          schema:
+            $ref: '#/definitions/Entry'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+  /me/favorites:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Feed'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+  /me/watching:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Feed'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
   /design:
     get:
       security:
@@ -1275,197 +1422,6 @@ paths:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/users/{id}:
-    parameters:
-      - $ref: '#/parameters/pathId'
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-        - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/sort'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        404:
-          description: User not found
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/users/byName/{name}:
-    parameters:
-      - $ref: '#/parameters/pathName'
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-        - $ref: '#/parameters/tag'
-        - $ref: '#/parameters/sort'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        404:
-          description: User not found
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/users/{id}/favorites:
-    parameters:
-      - $ref: '#/parameters/pathId'
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        404:
-          description: User not found
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/users/byName/{name}/favorites:
-    parameters:
-      - $ref: '#/parameters/pathName'
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        404:
-          description: User not found
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/me:
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-        - $ref: '#/parameters/tag'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
-    post:
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      consumes:
-        - multipart/form-data
-        - application/x-www-form-urlencoded
-      parameters:
-        - in: formData
-          name: title
-          type: string
-          maxLength: 500
-          default: ''
-        - in: formData
-          name: content
-          type: string
-          required: true
-          minLength: 1
-          maxLength: 30000
-        - in: formData
-          name: privacy
-          type: string
-          enum: [all, followers, some, me]
-          required: true
-        - in: formData
-          name: visibleFor
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 1
-        - in: formData
-          name: isVotable
-          type: boolean
-          default: false
-      responses:
-        201:
-          description: Entry data
-          schema:
-            $ref: '#/definitions/Entry'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/me/favorites:
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
-  /entries/me/watching:
-    get:
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
-      security:
-        - ApiKeyHeader: []
-      tags:
-        - entries
-      responses:
-        200:
-          description: Entry list
-          schema:
-            $ref: '#/definitions/Feed'
         403:
           description: access denied
           schema:

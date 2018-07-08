@@ -6,6 +6,8 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
 )
@@ -74,14 +76,14 @@ func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success 
 }
 
 func checkPostEntry(t *testing.T,
-	params entries.PostEntriesMeParams,
+	params me.PostMeTlogParams,
 	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
 
-	post := api.EntriesPostEntriesMeHandler.Handle
+	post := api.MePostMeTlogHandler.Handle
 	resp := post(params, id)
-	body, ok := resp.(*entries.PostEntriesMeCreated)
+	body, ok := resp.(*me.PostMeTlogCreated)
 	if !ok {
-		badBody, ok := resp.(*entries.PostEntriesMeForbidden)
+		badBody, ok := resp.(*me.PostMeTlogForbidden)
 		if ok {
 			t.Fatal(badBody.Payload.Message)
 		}
@@ -129,7 +131,7 @@ func checkDeleteEntry(t *testing.T, entryID int64, userID *models.UserID, succes
 }
 
 func TestPostMyTlog(t *testing.T) {
-	params := entries.PostEntriesMeParams{
+	params := me.PostMeTlogParams{
 		Content: "test content",
 	}
 
@@ -163,10 +165,10 @@ func TestPostMyTlog(t *testing.T) {
 }
 
 func postEntry(id *models.UserID, privacy string) {
-	post := api.EntriesPostEntriesMeHandler.Handle
+	post := api.MePostMeTlogHandler.Handle
 	votable := true
 	title := ""
-	params := entries.PostEntriesMeParams{
+	params := me.PostMeTlogParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   privacy,
@@ -231,16 +233,16 @@ func TestLoadLive(t *testing.T) {
 }
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
-	params := entries.GetEntriesUsersIDParams{
-		ID:     tlog.ID,
+	params := users.GetUsersNameTlogParams{
+		Name:   tlog.Name,
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 	}
 
-	load := api.EntriesGetEntriesUsersIDHandler.Handle
+	load := api.UsersGetUsersNameTlogHandler.Handle
 	resp := load(params, user)
-	body, ok := resp.(*entries.GetEntriesUsersIDOK)
+	body, ok := resp.(*users.GetUsersNameTlogOK)
 	if !ok {
 		t.Fatal("error load tlog")
 	}
@@ -292,15 +294,15 @@ func TestLoadTlog(t *testing.T) {
 }
 
 func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
-	params := entries.GetEntriesMeParams{
+	params := me.GetMeTlogParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 	}
 
-	load := api.EntriesGetEntriesMeHandler.Handle
+	load := api.MeGetMeTlogHandler.Handle
 	resp := load(params, user)
-	body, ok := resp.(*entries.GetEntriesMeOK)
+	body, ok := resp.(*me.GetMeTlogOK)
 	if !ok {
 		t.Fatal("error load tlog")
 	}

@@ -11,7 +11,7 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
-	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/me"
 )
 
 type EmailSenderMock struct {
@@ -89,15 +89,15 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 
 func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bool) *models.Entry {
 	title := ""
-	params := entries.PostEntriesMeParams{
+	params := me.PostMeTlogParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   privacy,
 		IsVotable: &votable,
 	}
 
-	resp := api.EntriesPostEntriesMeHandler.Handle(params, id)
-	body, ok := resp.(*entries.PostEntriesMeCreated)
+	resp := api.MePostMeTlogHandler.Handle(params, id)
+	body, ok := resp.(*me.PostMeTlogCreated)
 	require.True(t, ok)
 
 	return body.Payload
