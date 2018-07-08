@@ -4,25 +4,26 @@ package restapi
 
 import (
 	"crypto/tls"
+	"math/rand"
 	"net/http"
+	"time"
+
+	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
+	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
+	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
+	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
+	relationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/relations"
+	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
+	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
+	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
 	graceful "github.com/tylerb/graceful"
 
-	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
-	"github.com/sevings/mindwell-server/restapi/operations/account"
-	"github.com/sevings/mindwell-server/restapi/operations/comments"
-	"github.com/sevings/mindwell-server/restapi/operations/design"
-	"github.com/sevings/mindwell-server/restapi/operations/entries"
-	"github.com/sevings/mindwell-server/restapi/operations/favorites"
-	"github.com/sevings/mindwell-server/restapi/operations/me"
-	"github.com/sevings/mindwell-server/restapi/operations/relations"
-	"github.com/sevings/mindwell-server/restapi/operations/users"
-	"github.com/sevings/mindwell-server/restapi/operations/votes"
-	"github.com/sevings/mindwell-server/restapi/operations/watchings"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 // This file is safe to edit. Once it exists it will not be overwritten
@@ -34,6 +35,26 @@ func configureFlags(api *operations.MindwellAPI) {
 }
 
 func configureAPI(api *operations.MindwellAPI) http.Handler {
+	rand.Seed(time.Now().UTC().UnixNano())
+
+	srv := utils.NewMindwellServer(api, "configs/server")
+
+	domain := srv.ConfigString("mailgun.domain")
+	apiKey := srv.ConfigString("mailgun.api_key")
+	pubKey := srv.ConfigString("mailgun.pub_key")
+
+	srv.Mail = utils.NewPostman(domain, apiKey, pubKey)
+
+	accountImpl.ConfigureAPI(srv)
+	usersImpl.ConfigureAPI(srv)
+	entriesImpl.ConfigureAPI(srv)
+	votesImpl.ConfigureAPI(srv)
+	favoritesImpl.ConfigureAPI(srv)
+	watchingsImpl.ConfigureAPI(srv)
+	commentsImpl.ConfigureAPI(srv)
+	designImpl.ConfigureAPI(srv)
+	relationsImpl.ConfigureAPI(srv)
+
 	// configure the api here
 	api.ServeError = errors.ServeError
 
@@ -44,214 +65,9 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	// api.Logger = log.Printf
 
 	api.JSONConsumer = runtime.JSONConsumer()
-
 	api.UrlformConsumer = runtime.DiscardConsumer
-
 	api.MultipartformConsumer = runtime.DiscardConsumer
-
 	api.JSONProducer = runtime.JSONProducer()
-
-	// Applies when the "X-User-Key" header is set
-	api.APIKeyHeaderAuth = func(token string) (*models.UserID, error) {
-		return nil, errors.NotImplemented("api key auth (ApiKeyHeader) X-User-Key from header param [X-User-Key] has not yet been implemented")
-	}
-
-	// Set your custom authorizer if needed. Default one is security.Authorized()
-	// Expected interface runtime.Authorizer
-	//
-	// Example:
-	// api.APIAuthorizer = security.Authorized()
-
-	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation comments.DeleteCommentsID has not yet been implemented")
-	})
-	api.VotesDeleteCommentsIDVoteHandler = votes.DeleteCommentsIDVoteHandlerFunc(func(params votes.DeleteCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.DeleteCommentsIDVote has not yet been implemented")
-	})
-	api.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.DeleteEntriesID has not yet been implemented")
-	})
-	api.FavoritesDeleteEntriesIDFavoriteHandler = favorites.DeleteEntriesIDFavoriteHandlerFunc(func(params favorites.DeleteEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.DeleteEntriesIDFavorite has not yet been implemented")
-	})
-	api.VotesDeleteEntriesIDVoteHandler = votes.DeleteEntriesIDVoteHandlerFunc(func(params votes.DeleteEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.DeleteEntriesIDVote has not yet been implemented")
-	})
-	api.WatchingsDeleteEntriesIDWatchingHandler = watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.DeleteEntriesIDWatching has not yet been implemented")
-	})
-	api.RelationsDeleteRelationsFromNameHandler = relations.DeleteRelationsFromNameHandlerFunc(func(params relations.DeleteRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.DeleteRelationsFromName has not yet been implemented")
-	})
-	api.RelationsDeleteRelationsToNameHandler = relations.DeleteRelationsToNameHandlerFunc(func(params relations.DeleteRelationsToNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.DeleteRelationsToName has not yet been implemented")
-	})
-	api.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(func(params account.GetAccountEmailEmailParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.GetAccountEmailEmail has not yet been implemented")
-	})
-	api.AccountGetAccountInvitesHandler = account.GetAccountInvitesHandlerFunc(func(params account.GetAccountInvitesParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation account.GetAccountInvites has not yet been implemented")
-	})
-	api.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(func(params account.GetAccountNameNameParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.GetAccountNameName has not yet been implemented")
-	})
-	api.AccountGetAccountVerificationEmailHandler = account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.GetAccountVerificationEmail has not yet been implemented")
-	})
-	api.CommentsGetCommentsIDHandler = comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation comments.GetCommentsID has not yet been implemented")
-	})
-	api.VotesGetCommentsIDVoteHandler = votes.GetCommentsIDVoteHandlerFunc(func(params votes.GetCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.GetCommentsIDVote has not yet been implemented")
-	})
-	api.DesignGetDesignHandler = design.GetDesignHandlerFunc(func(params design.GetDesignParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation design.GetDesign has not yet been implemented")
-	})
-	api.DesignGetDesignFontsHandler = design.GetDesignFontsHandlerFunc(func(params design.GetDesignFontsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation design.GetDesignFonts has not yet been implemented")
-	})
-	api.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(func(params entries.GetEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesAnonymous has not yet been implemented")
-	})
-	api.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(func(params entries.GetEntriesBestParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesBest has not yet been implemented")
-	})
-	api.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(func(params entries.GetEntriesFriendsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesFriends has not yet been implemented")
-	})
-	api.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(func(params entries.GetEntriesIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesID has not yet been implemented")
-	})
-	api.CommentsGetEntriesIDCommentsHandler = comments.GetEntriesIDCommentsHandlerFunc(func(params comments.GetEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation comments.GetEntriesIDComments has not yet been implemented")
-	})
-	api.FavoritesGetEntriesIDFavoriteHandler = favorites.GetEntriesIDFavoriteHandlerFunc(func(params favorites.GetEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.GetEntriesIDFavorite has not yet been implemented")
-	})
-	api.VotesGetEntriesIDVoteHandler = votes.GetEntriesIDVoteHandlerFunc(func(params votes.GetEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.GetEntriesIDVote has not yet been implemented")
-	})
-	api.WatchingsGetEntriesIDWatchingHandler = watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.GetEntriesIDWatching has not yet been implemented")
-	})
-	api.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.GetEntriesLive has not yet been implemented")
-	})
-	api.MeGetMeHandler = me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMe has not yet been implemented")
-	})
-	api.MeGetMeFavoritesHandler = me.GetMeFavoritesHandlerFunc(func(params me.GetMeFavoritesParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeFavorites has not yet been implemented")
-	})
-	api.MeGetMeFollowersHandler = me.GetMeFollowersHandlerFunc(func(params me.GetMeFollowersParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeFollowers has not yet been implemented")
-	})
-	api.MeGetMeFollowingsHandler = me.GetMeFollowingsHandlerFunc(func(params me.GetMeFollowingsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeFollowings has not yet been implemented")
-	})
-	api.MeGetMeIgnoredHandler = me.GetMeIgnoredHandlerFunc(func(params me.GetMeIgnoredParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeIgnored has not yet been implemented")
-	})
-	api.MeGetMeInvitedHandler = me.GetMeInvitedHandlerFunc(func(params me.GetMeInvitedParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeInvited has not yet been implemented")
-	})
-	api.MeGetMeRequestedHandler = me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeRequested has not yet been implemented")
-	})
-	api.MeGetMeTlogHandler = me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeTlog has not yet been implemented")
-	})
-	api.MeGetMeWatchingHandler = me.GetMeWatchingHandlerFunc(func(params me.GetMeWatchingParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.GetMeWatching has not yet been implemented")
-	})
-	api.RelationsGetRelationsFromNameHandler = relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.GetRelationsFromName has not yet been implemented")
-	})
-	api.RelationsGetRelationsToNameHandler = relations.GetRelationsToNameHandlerFunc(func(params relations.GetRelationsToNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.GetRelationsToName has not yet been implemented")
-	})
-	api.UsersGetUsersNameHandler = users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersName has not yet been implemented")
-	})
-	api.UsersGetUsersNameFavoritesHandler = users.GetUsersNameFavoritesHandlerFunc(func(params users.GetUsersNameFavoritesParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersNameFavorites has not yet been implemented")
-	})
-	api.UsersGetUsersNameFollowersHandler = users.GetUsersNameFollowersHandlerFunc(func(params users.GetUsersNameFollowersParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersNameFollowers has not yet been implemented")
-	})
-	api.UsersGetUsersNameFollowingsHandler = users.GetUsersNameFollowingsHandlerFunc(func(params users.GetUsersNameFollowingsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersNameFollowings has not yet been implemented")
-	})
-	api.UsersGetUsersNameInvitedHandler = users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersNameInvited has not yet been implemented")
-	})
-	api.UsersGetUsersNameTlogHandler = users.GetUsersNameTlogHandlerFunc(func(params users.GetUsersNameTlogParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation users.GetUsersNameTlog has not yet been implemented")
-	})
-	api.AccountPostAccountLoginHandler = account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountLogin has not yet been implemented")
-	})
-	api.AccountPostAccountPasswordHandler = account.PostAccountPasswordHandlerFunc(func(params account.PostAccountPasswordParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountPassword has not yet been implemented")
-	})
-	api.AccountPostAccountRecoverHandler = account.PostAccountRecoverHandlerFunc(func(params account.PostAccountRecoverParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountRecover has not yet been implemented")
-	})
-	api.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(func(params account.PostAccountRegisterParams) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountRegister has not yet been implemented")
-	})
-	api.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(func(params account.PostAccountVerificationParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation account.PostAccountVerification has not yet been implemented")
-	})
-	api.EntriesPostEntriesAnonymousHandler = entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.PostEntriesAnonymous has not yet been implemented")
-	})
-	api.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation comments.PostEntriesIDComments has not yet been implemented")
-	})
-	api.MePostMeTlogHandler = me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.PostMeTlog has not yet been implemented")
-	})
-	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation comments.PutCommentsID has not yet been implemented")
-	})
-	api.VotesPutCommentsIDVoteHandler = votes.PutCommentsIDVoteHandlerFunc(func(params votes.PutCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.PutCommentsIDVote has not yet been implemented")
-	})
-	api.DesignPutDesignHandler = design.PutDesignHandlerFunc(func(params design.PutDesignParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation design.PutDesign has not yet been implemented")
-	})
-	api.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(func(params entries.PutEntriesIDParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation entries.PutEntriesID has not yet been implemented")
-	})
-	api.FavoritesPutEntriesIDFavoriteHandler = favorites.PutEntriesIDFavoriteHandlerFunc(func(params favorites.PutEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation favorites.PutEntriesIDFavorite has not yet been implemented")
-	})
-	api.VotesPutEntriesIDVoteHandler = votes.PutEntriesIDVoteHandlerFunc(func(params votes.PutEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation votes.PutEntriesIDVote has not yet been implemented")
-	})
-	api.WatchingsPutEntriesIDWatchingHandler = watchings.PutEntriesIDWatchingHandlerFunc(func(params watchings.PutEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation watchings.PutEntriesIDWatching has not yet been implemented")
-	})
-	api.MePutMeHandler = me.PutMeHandlerFunc(func(params me.PutMeParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.PutMe has not yet been implemented")
-	})
-	api.MePutMeAvatarHandler = me.PutMeAvatarHandlerFunc(func(params me.PutMeAvatarParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.PutMeAvatar has not yet been implemented")
-	})
-	api.MePutMeCoverHandler = me.PutMeCoverHandlerFunc(func(params me.PutMeCoverParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.PutMeCover has not yet been implemented")
-	})
-	api.MePutMeOnlineHandler = me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation me.PutMeOnline has not yet been implemented")
-	})
-	api.RelationsPutRelationsFromNameHandler = relations.PutRelationsFromNameHandlerFunc(func(params relations.PutRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.PutRelationsFromName has not yet been implemented")
-	})
-	api.RelationsPutRelationsToNameHandler = relations.PutRelationsToNameHandlerFunc(func(params relations.PutRelationsToNameParams, principal *models.UserID) middleware.Responder {
-		return middleware.NotImplemented("operation relations.PutRelationsToName has not yet been implemented")
-	})
-
 	api.ServerShutdown = func() {}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
