@@ -67,7 +67,7 @@ func (srv *MindwellServer) ConfigString(field string) string {
 }
 
 func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
-	base := srv.ConfigString("images.base_url")
+	base := srv.ConfigString("images.base_url") + "avatars/"
 
 	return &models.Avatar{
 		X42:  base + "42/" + avatar,

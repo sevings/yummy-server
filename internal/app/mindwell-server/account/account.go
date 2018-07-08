@@ -109,7 +109,7 @@ func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
 }
 
 func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, name string) {
-	path := srv.ImagesFolder() + strconv.Itoa(size) + "/" + folder
+	path := srv.ImagesFolder() + "avatars/" + strconv.Itoa(size) + "/" + folder
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
 		log.Print(err)
