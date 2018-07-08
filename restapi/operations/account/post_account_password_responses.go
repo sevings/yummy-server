@@ -39,7 +39,7 @@ func (o *PostAccountPasswordOK) WriteResponse(rw http.ResponseWriter, producer r
 // PostAccountPasswordForbiddenCode is the HTTP code returned for type PostAccountPasswordForbidden
 const PostAccountPasswordForbiddenCode int = 403
 
-/*PostAccountPasswordForbidden access denied or old password
+/*PostAccountPasswordForbidden old password is invalid
 
 swagger:response postAccountPasswordForbidden
 */

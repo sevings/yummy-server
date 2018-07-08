@@ -650,7 +650,7 @@ paths:
         200:
           description: password has been set
         403:
-          description: access denied or old password
+          description: old password is invalid
           schema:
             $ref: '#/definitions/Error'
   /account/recover:
@@ -680,10 +680,6 @@ paths:
       tags:
         - account
       responses:
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
         200:
           description: invite list
           schema:
@@ -837,10 +833,6 @@ paths:
           description: your data
           schema:
             $ref: '#/definitions/AuthProfile'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
     put:
       security:
         - ApiKeyHeader: []
@@ -899,10 +891,6 @@ paths:
           description: your data
           schema:
             $ref: '#/definitions/Profile'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/avatar:
     put:
       security:
@@ -968,10 +956,6 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/followings:
     get:
       parameters:
@@ -986,10 +970,6 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/invited:
     get:
       parameters:
@@ -1004,10 +984,6 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/ignored:
     get:
       parameters:
@@ -1022,10 +998,6 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/requested:
     get:
       parameters:
@@ -1040,10 +1012,6 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/tlog:
     get:
       parameters:
@@ -1060,10 +1028,6 @@ paths:
           description: Entry list
           schema:
             $ref: '#/definitions/Feed'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
     post:
       security:
         - ApiKeyHeader: []
@@ -1105,10 +1069,6 @@ paths:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/favorites:
     get:
       parameters:
@@ -1124,10 +1084,6 @@ paths:
           description: Entry list
           schema:
             $ref: '#/definitions/Feed'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /me/watching:
     get:
       parameters:
@@ -1143,10 +1099,6 @@ paths:
           description: Entry list
           schema:
             $ref: '#/definitions/Feed'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /design:
     get:
       security:
@@ -1420,10 +1372,6 @@ paths:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
-        403:
-          description: access denied
-          schema:
-            $ref: '#/definitions/Error'
   /entries/{id}:
     parameters:
       - $ref: '#/parameters/pathId'

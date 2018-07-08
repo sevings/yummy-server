@@ -95,12 +95,6 @@ func init() {
                 }
               }
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -228,7 +222,7 @@ func init() {
             "description": "password has been set"
           },
           "403": {
-            "description": "access denied or old password",
+            "description": "old password is invalid",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -808,12 +802,6 @@ func init() {
             "description": "Entry data",
             "schema": {
               "$ref": "#/definitions/Entry"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1441,12 +1429,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/AuthProfile"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       },
@@ -1539,12 +1521,6 @@ func init() {
             "description": "your data",
             "schema": {
               "$ref": "#/definitions/Profile"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1649,12 +1625,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Feed"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -1682,12 +1652,6 @@ func init() {
             "description": "User list",
             "schema": {
               "$ref": "#/definitions/FriendList"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1717,12 +1681,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/FriendList"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -1751,12 +1709,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/FriendList"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -1784,12 +1736,6 @@ func init() {
             "description": "User list",
             "schema": {
               "$ref": "#/definitions/FriendList"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1836,12 +1782,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/FriendList"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -1875,12 +1815,6 @@ func init() {
             "description": "Entry list",
             "schema": {
               "$ref": "#/definitions/Feed"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -1949,12 +1883,6 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Entry"
             }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
           }
         }
       }
@@ -1985,12 +1913,6 @@ func init() {
             "description": "Entry list",
             "schema": {
               "$ref": "#/definitions/Feed"
-            }
-          },
-          "403": {
-            "description": "access denied",
-            "schema": {
-              "$ref": "#/definitions/Error"
             }
           }
         }

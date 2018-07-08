@@ -34,11 +34,6 @@ func TestGetMe(t *testing.T) {
 		resp := load(me.GetMeParams{}, userIDs[i])
 		body, ok := resp.(*me.GetMeOK)
 		if !ok {
-			badBody, ok := resp.(*me.GetMeForbidden)
-			if ok {
-				t.Fatal(badBody.Payload.Message)
-			}
-
 			t.Fatal("error get me")
 		}
 

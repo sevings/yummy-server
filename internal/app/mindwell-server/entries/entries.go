@@ -162,7 +162,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
-				return me.NewPostMeTlogForbidden().WithPayload(err)
+				return me.NewPutMeCoverBadRequest().WithPayload(err)
 			}
 
 			return me.NewPostMeTlogCreated().WithPayload(entry)

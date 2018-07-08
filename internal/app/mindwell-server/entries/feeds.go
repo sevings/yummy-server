@@ -370,8 +370,8 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models
 			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				err := srv.StandardError("no_tlog")
-				return me.NewGetMeTlogForbidden().WithPayload(err)
+				err := srv.NewError(nil)
+				return me.NewPutMeCoverBadRequest().WithPayload(err)
 			}
 
 			return me.NewGetMeTlogOK().WithPayload(feed)

@@ -83,11 +83,6 @@ func checkPostEntry(t *testing.T,
 	resp := post(params, id)
 	body, ok := resp.(*me.PostMeTlogCreated)
 	if !ok {
-		badBody, ok := resp.(*me.PostMeTlogForbidden)
-		if ok {
-			t.Fatal(badBody.Payload.Message)
-		}
-
 		t.Fatal("error post entry")
 	}
 

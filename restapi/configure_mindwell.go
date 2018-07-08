@@ -65,6 +65,9 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	api.CommentsDeleteCommentsIDHandler = comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams, principal *models.UserID) middleware.Responder {
 		return middleware.NotImplemented("operation comments.DeleteCommentsID has not yet been implemented")
 	})
+	api.VotesDeleteCommentsIDVoteHandler = votes.DeleteCommentsIDVoteHandlerFunc(func(params votes.DeleteCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
+		return middleware.NotImplemented("operation votes.DeleteCommentsIDVote has not yet been implemented")
+	})
 	api.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams, principal *models.UserID) middleware.Responder {
 		return middleware.NotImplemented("operation entries.DeleteEntriesID has not yet been implemented")
 	})
@@ -211,6 +214,9 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	})
 	api.CommentsPutCommentsIDHandler = comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 		return middleware.NotImplemented("operation comments.PutCommentsID has not yet been implemented")
+	})
+	api.VotesPutCommentsIDVoteHandler = votes.PutCommentsIDVoteHandlerFunc(func(params votes.PutCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
+		return middleware.NotImplemented("operation votes.PutCommentsIDVote has not yet been implemented")
 	})
 	api.DesignPutDesignHandler = design.PutDesignHandlerFunc(func(params design.PutDesignParams, principal *models.UserID) middleware.Responder {
 		return middleware.NotImplemented("operation design.PutDesign has not yet been implemented")

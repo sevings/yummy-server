@@ -395,8 +395,8 @@ func newInvitesLoader(srv *utils.MindwellServer) func(account.GetAccountInvitesP
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			invites := loadInvites(tx, userID)
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
-				err := srv.NewError(&i18n.Message{ID: "invalid_api_key", Other: "ApiKey is invalid."})
-				return account.NewGetAccountInvitesForbidden().WithPayload(err)
+				err := srv.NewError(nil)
+				return account.NewPostAccountLoginBadRequest().WithPayload(err)
 			}
 
 			res := models.GetAccountInvitesOKBody{Invites: invites}
@@ -415,11 +415,13 @@ func newVerificationSender(srv *utils.MindwellServer) func(account.PostAccountVe
 			var name string
 			tx.Query(q, userID.ID).Scan(&verified, &email, &name)
 			if tx.Error() != nil {
-				return account.NewPostAccountVerificationForbidden()
+				err := srv.NewError(nil)
+				return account.NewPostAccountLoginBadRequest().WithPayload(err)
 			}
 
 			if verified {
-				return account.NewPostAccountVerificationForbidden()
+				err := srv.NewError(&i18n.Message{ID: "already_verified", Other: "Your email had been verified earlier."})
+				return account.NewPostAccountVerificationForbidden().WithPayload(err)
 			}
 
 			code := srv.VerificationCode(email)
