@@ -2534,16 +2534,7 @@ func init() {
           "minimum": 1
         },
         "rating": {
-          "type": "integer"
-        },
-        "vote": {
-          "type": "string",
-          "enum": [
-            "not",
-            "pos",
-            "neg",
-            "ban"
-          ]
+          "$ref": "#/definitions/Rating"
         }
       },
       "example": {

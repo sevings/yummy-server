@@ -41,13 +41,13 @@ const commentQuery = `
 func commentVote(userID, authorID int64, vote sql.NullBool) string {
 	switch {
 	case userID == authorID:
-		return models.CommentVoteBan
+		return models.RatingVoteBan
 	case !vote.Valid:
-		return models.CommentVoteNot
+		return models.RatingVoteNot
 	case vote.Bool:
-		return models.CommentVotePos
+		return models.RatingVotePos
 	default:
-		return models.CommentVoteNeg
+		return models.RatingVoteNeg
 	}
 }
 
@@ -58,6 +58,9 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 	var avatar string
 	comment := models.Comment{
 		Author: &models.User{},
+		Rating: &models.Rating{
+			IsVotable: true,
+		},
 	}
 
 	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
@@ -67,7 +70,8 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 		&comment.Author.IsOnline,
 		&avatar)
 
-	comment.Vote = commentVote(userID, comment.Author.ID, vote)
+	comment.Rating.ID = comment.ID
+	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 	comment.Author.Avatar = srv.NewAvatar(avatar)
 	return &comment
 }
@@ -207,7 +211,12 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 	}
 
 	for {
-		comment := models.Comment{Author: &models.User{}}
+		comment := models.Comment{
+			Author: &models.User{},
+			Rating: &models.Rating{
+				IsVotable: true,
+			},
+		}
 		var vote sql.NullBool
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
@@ -220,7 +229,8 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 			break
 		}
 
-		comment.Vote = commentVote(userID, comment.Author.ID, vote)
+		comment.Rating.ID = comment.ID
+		comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 		comment.Author.Avatar = srv.NewAvatar(avatar)
 		list = append(list, &comment)
 	}

@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -38,10 +36,7 @@ type Comment struct {
 	ID int64 `json:"id,omitempty"`
 
 	// rating
-	Rating int64 `json:"rating,omitempty"`
-
-	// vote
-	Vote string `json:"vote,omitempty"`
+	Rating *Rating `json:"rating,omitempty"`
 }
 
 // Validate validates this comment
@@ -68,7 +63,7 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
-	if err := m.validateVote(formats); err != nil {
+	if err := m.validateRating(formats); err != nil {
 		// prop
 		res = append(res, err)
 	}
@@ -137,46 +132,20 @@ func (m *Comment) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
-var commentTypeVotePropEnum []interface{}
+func (m *Comment) validateRating(formats strfmt.Registry) error {
 
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["not","pos","neg","ban"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		commentTypeVotePropEnum = append(commentTypeVotePropEnum, v)
-	}
-}
-
-const (
-	// CommentVoteNot captures enum value "not"
-	CommentVoteNot string = "not"
-	// CommentVotePos captures enum value "pos"
-	CommentVotePos string = "pos"
-	// CommentVoteNeg captures enum value "neg"
-	CommentVoteNeg string = "neg"
-	// CommentVoteBan captures enum value "ban"
-	CommentVoteBan string = "ban"
-)
-
-// prop value enum
-func (m *Comment) validateVoteEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, commentTypeVotePropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Comment) validateVote(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Vote) { // not required
+	if swag.IsZero(m.Rating) { // not required
 		return nil
 	}
 
-	// value enum
-	if err := m.validateVoteEnum("vote", "body", m.Vote); err != nil {
-		return err
+	if m.Rating != nil {
+
+		if err := m.Rating.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rating")
+			}
+			return err
+		}
 	}
 
 	return nil

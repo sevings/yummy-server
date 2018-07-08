@@ -366,10 +366,7 @@ definitions:
         type: string
         minLength: 1
       rating:
-        type: integer
-      vote:
-        type: string
-        enum: [not, pos, neg, ban]
+        $ref: '#/definitions/Rating'
     example:
       id: 999
       entryId: 152
