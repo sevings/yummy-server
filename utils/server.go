@@ -85,8 +85,8 @@ func (srv *MindwellServer) NewCover(id int64, cover string) *models.Cover {
 
 	return &models.Cover{
 		ID:    id,
-		X1920: base + "cover/1920/" + cover,
-		X318:  base + "cover/318/" + cover,
+		X1920: base + "covers/1920/" + cover,
+		X318:  base + "covers/318/" + cover,
 	}
 }
 
