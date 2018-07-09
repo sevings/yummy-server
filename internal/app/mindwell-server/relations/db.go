@@ -73,24 +73,27 @@ func isPrivateTlog(tx *utils.AutoTx, name string) bool {
 	return private
 }
 
-func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, isPrivate bool, from, to string) {
+func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, toPrivate bool, from, to string) {
 	const toQ = `
-		SELECT show_name, name, gender.type, email, verified
-		FROM users, gender 
-		WHERE lower(users.name) = lower($1) AND users.gender = gender.id
+		SELECT show_name, email, verified
+		FROM users 
+		WHERE lower(name) = lower($1)
 	`
 
-	var hisName, hisShowName, hisGender, email string
+	var toShowName, email string
 	var verified bool
-	tx.Query(toQ, to).Scan(&hisShowName, &hisName, &hisGender, &email, &verified)
+	tx.Query(toQ, to).Scan(&toShowName, &email, &verified)
 	if !verified {
 		return
 	}
 
-	const fromQ = "SELECT show_name FROM users WHERE lower(name) = lower($1)"
+	const fromQ = `
+		SELECT show_name, gender.type 
+		FROM users, gender 
+		WHERE lower(users.name) = lower($1) AND users.gender = gender.id`
 
-	var name string
-	tx.Query(fromQ, from).Scan(&name)
+	var fromShowName, fromGender string
+	tx.Query(fromQ, from).Scan(&fromShowName, &fromGender)
 
-	srv.Mail.SendNewFollower(email, name, isPrivate, hisShowName, hisName, hisGender)
+	srv.Mail.SendNewFollower(email, from, fromShowName, fromGender, toPrivate, toShowName)
 }

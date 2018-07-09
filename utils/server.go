@@ -18,7 +18,7 @@ import (
 type MailSender interface {
 	SendGreeting(address, name, code string)
 	SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment)
-	SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string)
+	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
 }
 
 type MindwellServer struct {

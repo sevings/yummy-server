@@ -28,7 +28,7 @@ func (esm *EmailSenderMock) SendNewComment(address, name, gender, entryTitle str
 	esm.Emails = append(esm.Emails, address)
 }
 
-func (esm *EmailSenderMock) SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string) {
+func (esm *EmailSenderMock) SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string) {
 	esm.Emails = append(esm.Emails, address)
 }
 
