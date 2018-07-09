@@ -592,6 +592,22 @@ INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 
 INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);
 INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);
 
+CREATE OR REPLACE FUNCTION give_invite(userName TEXT) RETURNS VOID AS $$
+    DECLARE
+        wordCount INTEGER;
+        userId INTEGER;
+    BEGIN
+        wordCount = (SELECT COUNT(*) FROM invite_words);
+        userId = (SELECT id FROM users WHERE lower(name) = lower(userName));
+
+        INSERT INTO invites(referrer_id, word1, word2, word3)
+            VALUES(userId, 
+                trunc(random() * wordCount),
+                trunc(random() * wordCount),
+                trunc(random() * wordCount));
+    END;
+$$ LANGUAGE plpgsql;
+
 CREATE VIEW mindwell.unwrapped_invites AS
 SELECT invites.id AS id, 
     users.id AS user_id,
