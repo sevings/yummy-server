@@ -279,6 +279,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9]*",
             "type": "string",
             "name": "name",
             "in": "formData",
@@ -3254,6 +3255,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9]*",
             "type": "string",
             "name": "name",
             "in": "formData",

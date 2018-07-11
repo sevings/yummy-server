@@ -84,6 +84,7 @@ type PostAccountRegisterParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
+	  Pattern: [a-zA-Z][a-zA-Z0-9]*
 	  In: formData
 	*/
 	Name string
@@ -379,6 +380,10 @@ func (o *PostAccountRegisterParams) validateName(formats strfmt.Registry) error 
 	}
 
 	if err := validate.MaxLength("name", "formData", o.Name, 20); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "formData", o.Name, `[a-zA-Z][a-zA-Z0-9]*`); err != nil {
 		return err
 	}
 
