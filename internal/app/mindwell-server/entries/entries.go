@@ -2,10 +2,7 @@ package entries
 
 import (
 	"database/sql"
-	"fmt"
 	"regexp"
-	"strings"
-	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -59,37 +56,14 @@ func wordCount(content, title string) int64 {
 	return wc
 }
 
-func cutText(text, format string, size int) (string, bool) {
-	if len(text) <= size {
-		return text, false
-	}
-
-	text = fmt.Sprintf(format, text)
-
-	var isSpace bool
-	trim := func(r rune) bool {
-		if isSpace {
-			return unicode.IsSpace(r)
-		}
-
-		isSpace = unicode.IsSpace(r)
-		return true
-	}
-	text = strings.TrimRightFunc(text, trim)
-
-	text += "..."
-
-	return text, true
-}
-
 func cutEntry(title, content string) (cutTitle string, cutContent string, hasCut bool) {
 	const titleLength = 60
 	const titleFormat = "%.60s"
-	cutTitle, isTitleCut := cutText(title, titleFormat, titleLength)
+	cutTitle, isTitleCut := utils.CutText(title, titleFormat, titleLength)
 
 	const contentLength = 500
 	const contentFormat = "%.500s"
-	cutContent, isContentCut := cutText(content, contentFormat, contentLength)
+	cutContent, isContentCut := utils.CutText(content, contentFormat, contentLength)
 
 	hasCut = isTitleCut || isContentCut
 	if !hasCut {

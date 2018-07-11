@@ -17,7 +17,7 @@ import (
 
 type MailSender interface {
 	SendGreeting(address, name, code string)
-	SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment)
+	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
 }
 

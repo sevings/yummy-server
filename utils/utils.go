@@ -2,8 +2,11 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"math/rand"
+	"strings"
+	"unicode"
 
 	goconf "github.com/zpatrick/go-config"
 
@@ -95,4 +98,27 @@ func GenerateString(length int) string {
 	}
 
 	return string(b)
+}
+
+func CutText(text, format string, size int) (string, bool) {
+	if len(text) <= size {
+		return text, false
+	}
+
+	text = fmt.Sprintf(format, text)
+
+	var isSpace bool
+	trim := func(r rune) bool {
+		if isSpace {
+			return unicode.IsSpace(r)
+		}
+
+		isSpace = unicode.IsSpace(r)
+		return true
+	}
+	text = strings.TrimRightFunc(text, trim)
+
+	text += "..."
+
+	return text, true
 }
