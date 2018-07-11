@@ -40,6 +40,7 @@ type ProfileAllOf1 struct {
 	Design *Design `json:"design,omitempty"`
 
 	// gender
+	// Enum: [male female not set]
 	Gender string `json:"gender,omitempty"`
 
 	// invited by
@@ -49,6 +50,7 @@ type ProfileAllOf1 struct {
 	IsDaylog bool `json:"isDaylog,omitempty"`
 
 	// privacy
+	// Enum: [all followers]
 	Privacy string `json:"privacy,omitempty"`
 
 	// relations
@@ -60,37 +62,30 @@ func (m *ProfileAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCity(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateCountry(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateDesign(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateGender(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateInvitedBy(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePrivacy(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateRelations(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -133,7 +128,6 @@ func (m *ProfileAllOf1) validateDesign(formats strfmt.Registry) error {
 	}
 
 	if m.Design != nil {
-
 		if err := m.Design.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("design")
@@ -158,10 +152,13 @@ func init() {
 }
 
 const (
+
 	// ProfileAllOf1GenderMale captures enum value "male"
 	ProfileAllOf1GenderMale string = "male"
+
 	// ProfileAllOf1GenderFemale captures enum value "female"
 	ProfileAllOf1GenderFemale string = "female"
+
 	// ProfileAllOf1GenderNotSet captures enum value "not set"
 	ProfileAllOf1GenderNotSet string = "not set"
 )
@@ -195,7 +192,6 @@ func (m *ProfileAllOf1) validateInvitedBy(formats strfmt.Registry) error {
 	}
 
 	if m.InvitedBy != nil {
-
 		if err := m.InvitedBy.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("invitedBy")
@@ -220,8 +216,10 @@ func init() {
 }
 
 const (
+
 	// ProfileAllOf1PrivacyAll captures enum value "all"
 	ProfileAllOf1PrivacyAll string = "all"
+
 	// ProfileAllOf1PrivacyFollowers captures enum value "followers"
 	ProfileAllOf1PrivacyFollowers string = "followers"
 )
@@ -255,7 +253,6 @@ func (m *ProfileAllOf1) validateRelations(formats strfmt.Registry) error {
 	}
 
 	if m.Relations != nil {
-
 		if err := m.Relations.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("relations")

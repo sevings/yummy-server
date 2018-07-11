@@ -19,11 +19,16 @@ import (
 // NewPostAccountRegisterParams creates a new PostAccountRegisterParams object
 // with the default values initialized.
 func NewPostAccountRegisterParams() PostAccountRegisterParams {
+
 	var (
+		// initialize parameters with default values
+
 		cityDefault    = string("")
 		countryDefault = string("")
-		genderDefault  = string("not set")
+
+		genderDefault = string("not set")
 	)
+
 	return PostAccountRegisterParams{
 		City: &cityDefault,
 
@@ -99,16 +104,19 @@ type PostAccountRegisterParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPostAccountRegisterParams() beforehand.
 func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -169,6 +177,9 @@ func (o *PostAccountRegisterParams) bindBirthday(rawData []string, hasKey bool, 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -183,9 +194,11 @@ func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var cityDefault string = string("")
-		o.City = &cityDefault
+		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
 
@@ -212,9 +225,11 @@ func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, f
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var countryDefault string = string("")
-		o.Country = &countryDefault
+		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
 
@@ -244,6 +259,9 @@ func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, for
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("email", "formData", raw); err != nil {
 		return err
 	}
@@ -271,9 +289,11 @@ func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var genderDefault string = string("not set")
-		o.Gender = &genderDefault
+		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
 
@@ -303,6 +323,9 @@ func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("invite", "formData", raw); err != nil {
 		return err
 	}
@@ -333,6 +356,9 @@ func (o *PostAccountRegisterParams) bindName(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("name", "formData", raw); err != nil {
 		return err
 	}
@@ -367,6 +393,9 @@ func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("password", "formData", raw); err != nil {
 		return err
 	}
@@ -401,6 +430,9 @@ func (o *PostAccountRegisterParams) bindReferrer(rawData []string, hasKey bool, 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("referrer", "formData", raw); err != nil {
 		return err
 	}

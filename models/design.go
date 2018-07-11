@@ -32,6 +32,7 @@ type Design struct {
 	FontSize int64 `json:"fontSize,omitempty"`
 
 	// text alignment
+	// Enum: [left right center justify]
 	TextAlignment string `json:"textAlignment,omitempty"`
 
 	// text color
@@ -43,17 +44,14 @@ func (m *Design) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateBackgroundColor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTextAlignment(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTextColor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -92,12 +90,16 @@ func init() {
 }
 
 const (
+
 	// DesignTextAlignmentLeft captures enum value "left"
 	DesignTextAlignmentLeft string = "left"
+
 	// DesignTextAlignmentRight captures enum value "right"
 	DesignTextAlignmentRight string = "right"
+
 	// DesignTextAlignmentCenter captures enum value "center"
 	DesignTextAlignmentCenter string = "center"
+
 	// DesignTextAlignmentJustify captures enum value "justify"
 	DesignTextAlignmentJustify string = "justify"
 )

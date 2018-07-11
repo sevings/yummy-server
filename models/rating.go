@@ -36,6 +36,7 @@ type Rating struct {
 	UpCount int64 `json:"upCount,omitempty"`
 
 	// vote
+	// Enum: [not pos neg ban]
 	Vote string `json:"vote,omitempty"`
 }
 
@@ -44,12 +45,10 @@ func (m *Rating) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateVote(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -85,12 +84,16 @@ func init() {
 }
 
 const (
+
 	// RatingVoteNot captures enum value "not"
 	RatingVoteNot string = "not"
+
 	// RatingVotePos captures enum value "pos"
 	RatingVotePos string = "pos"
+
 	// RatingVoteNeg captures enum value "neg"
 	RatingVoteNeg string = "neg"
+
 	// RatingVoteBan captures enum value "ban"
 	RatingVoteBan string = "ban"
 )

@@ -20,11 +20,15 @@ import (
 // NewGetEntriesFriendsParams creates a new GetEntriesFriendsParams object
 // with the default values initialized.
 func NewGetEntriesFriendsParams() GetEntriesFriendsParams {
+
 	var (
+		// initialize parameters with default values
+
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(50)
 	)
+
 	return GetEntriesFriendsParams{
 		After: &afterDefault,
 
@@ -68,9 +72,12 @@ type GetEntriesFriendsParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetEntriesFriendsParams() beforehand.
 func (o *GetEntriesFriendsParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -106,9 +113,11 @@ func (o *GetEntriesFriendsParams) bindAfter(rawData []string, hasKey bool, forma
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var afterDefault string = string("")
-		o.After = &afterDefault
+		// Default values have been previously initialized by NewGetEntriesFriendsParams()
 		return nil
 	}
 
@@ -122,9 +131,11 @@ func (o *GetEntriesFriendsParams) bindBefore(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var beforeDefault string = string("")
-		o.Before = &beforeDefault
+		// Default values have been previously initialized by NewGetEntriesFriendsParams()
 		return nil
 	}
 
@@ -138,9 +149,11 @@ func (o *GetEntriesFriendsParams) bindLimit(rawData []string, hasKey bool, forma
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var limitDefault int64 = int64(50)
-		o.Limit = &limitDefault
+		// Default values have been previously initialized by NewGetEntriesFriendsParams()
 		return nil
 	}
 
@@ -175,6 +188,9 @@ func (o *GetEntriesFriendsParams) bindTag(rawData []string, hasKey bool, formats
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}

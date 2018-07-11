@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesFriendsOKCode is the HTTP code returned for type GetEntriesFriendsOK
@@ -30,6 +30,7 @@ type GetEntriesFriendsOK struct {
 
 // NewGetEntriesFriendsOK creates GetEntriesFriendsOK with default headers values
 func NewGetEntriesFriendsOK() *GetEntriesFriendsOK {
+
 	return &GetEntriesFriendsOK{}
 }
 

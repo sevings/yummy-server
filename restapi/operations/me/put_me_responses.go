@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PutMeOKCode is the HTTP code returned for type PutMeOK
@@ -30,6 +30,7 @@ type PutMeOK struct {
 
 // NewPutMeOK creates PutMeOK with default headers values
 func NewPutMeOK() *PutMeOK {
+
 	return &PutMeOK{}
 }
 

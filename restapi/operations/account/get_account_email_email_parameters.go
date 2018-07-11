@@ -16,9 +16,9 @@ import (
 )
 
 // NewGetAccountEmailEmailParams creates a new GetAccountEmailEmailParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewGetAccountEmailEmailParams() GetAccountEmailEmailParams {
-	var ()
+
 	return GetAccountEmailEmailParams{}
 }
 
@@ -40,9 +40,12 @@ type GetAccountEmailEmailParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetAccountEmailEmailParams() beforehand.
 func (o *GetAccountEmailEmailParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	rEmail, rhkEmail, _ := route.Params.GetOK("email")
@@ -61,6 +64,9 @@ func (o *GetAccountEmailEmailParams) bindEmail(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	o.Email = raw
 

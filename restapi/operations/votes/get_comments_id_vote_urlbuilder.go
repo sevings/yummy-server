@@ -50,6 +50,7 @@ func (o *GetCommentsIDVoteURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on GetCommentsIDVoteURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

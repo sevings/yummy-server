@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountVerificationEmailOKCode is the HTTP code returned for type GetAccountVerificationEmailOK
@@ -25,6 +25,7 @@ type GetAccountVerificationEmailOK struct {
 
 // NewGetAccountVerificationEmailOK creates GetAccountVerificationEmailOK with default headers values
 func NewGetAccountVerificationEmailOK() *GetAccountVerificationEmailOK {
+
 	return &GetAccountVerificationEmailOK{}
 }
 
@@ -53,6 +54,7 @@ type GetAccountVerificationEmailBadRequest struct {
 
 // NewGetAccountVerificationEmailBadRequest creates GetAccountVerificationEmailBadRequest with default headers values
 func NewGetAccountVerificationEmailBadRequest() *GetAccountVerificationEmailBadRequest {
+
 	return &GetAccountVerificationEmailBadRequest{}
 }
 

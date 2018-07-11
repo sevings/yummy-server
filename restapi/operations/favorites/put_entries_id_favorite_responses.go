@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PutEntriesIDFavoriteOKCode is the HTTP code returned for type PutEntriesIDFavoriteOK
@@ -30,6 +30,7 @@ type PutEntriesIDFavoriteOK struct {
 
 // NewPutEntriesIDFavoriteOK creates PutEntriesIDFavoriteOK with default headers values
 func NewPutEntriesIDFavoriteOK() *PutEntriesIDFavoriteOK {
+
 	return &PutEntriesIDFavoriteOK{}
 }
 
@@ -73,6 +74,7 @@ type PutEntriesIDFavoriteNotFound struct {
 
 // NewPutEntriesIDFavoriteNotFound creates PutEntriesIDFavoriteNotFound with default headers values
 func NewPutEntriesIDFavoriteNotFound() *PutEntriesIDFavoriteNotFound {
+
 	return &PutEntriesIDFavoriteNotFound{}
 }
 

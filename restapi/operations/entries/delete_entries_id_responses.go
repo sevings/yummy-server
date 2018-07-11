@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // DeleteEntriesIDOKCode is the HTTP code returned for type DeleteEntriesIDOK
@@ -25,6 +25,7 @@ type DeleteEntriesIDOK struct {
 
 // NewDeleteEntriesIDOK creates DeleteEntriesIDOK with default headers values
 func NewDeleteEntriesIDOK() *DeleteEntriesIDOK {
+
 	return &DeleteEntriesIDOK{}
 }
 
@@ -53,6 +54,7 @@ type DeleteEntriesIDForbidden struct {
 
 // NewDeleteEntriesIDForbidden creates DeleteEntriesIDForbidden with default headers values
 func NewDeleteEntriesIDForbidden() *DeleteEntriesIDForbidden {
+
 	return &DeleteEntriesIDForbidden{}
 }
 
@@ -96,6 +98,7 @@ type DeleteEntriesIDNotFound struct {
 
 // NewDeleteEntriesIDNotFound creates DeleteEntriesIDNotFound with default headers values
 func NewDeleteEntriesIDNotFound() *DeleteEntriesIDNotFound {
+
 	return &DeleteEntriesIDNotFound{}
 }
 

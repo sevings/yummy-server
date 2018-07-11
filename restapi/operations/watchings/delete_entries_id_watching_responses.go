@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // DeleteEntriesIDWatchingOKCode is the HTTP code returned for type DeleteEntriesIDWatchingOK
@@ -30,6 +30,7 @@ type DeleteEntriesIDWatchingOK struct {
 
 // NewDeleteEntriesIDWatchingOK creates DeleteEntriesIDWatchingOK with default headers values
 func NewDeleteEntriesIDWatchingOK() *DeleteEntriesIDWatchingOK {
+
 	return &DeleteEntriesIDWatchingOK{}
 }
 
@@ -73,6 +74,7 @@ type DeleteEntriesIDWatchingNotFound struct {
 
 // NewDeleteEntriesIDWatchingNotFound creates DeleteEntriesIDWatchingNotFound with default headers values
 func NewDeleteEntriesIDWatchingNotFound() *DeleteEntriesIDWatchingNotFound {
+
 	return &DeleteEntriesIDWatchingNotFound{}
 }
 

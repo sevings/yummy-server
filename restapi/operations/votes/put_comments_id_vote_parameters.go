@@ -20,9 +20,13 @@ import (
 // NewPutCommentsIDVoteParams creates a new PutCommentsIDVoteParams object
 // with the default values initialized.
 func NewPutCommentsIDVoteParams() PutCommentsIDVoteParams {
+
 	var (
+		// initialize parameters with default values
+
 		positiveDefault = bool(true)
 	)
+
 	return PutCommentsIDVoteParams{
 		Positive: &positiveDefault,
 	}
@@ -51,9 +55,12 @@ type PutCommentsIDVoteParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutCommentsIDVoteParams() beforehand.
 func (o *PutCommentsIDVoteParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -79,6 +86,9 @@ func (o *PutCommentsIDVoteParams) bindID(rawData []string, hasKey bool, formats 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
@@ -107,9 +117,11 @@ func (o *PutCommentsIDVoteParams) bindPositive(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var positiveDefault bool = bool(true)
-		o.Positive = &positiveDefault
+		// Default values have been previously initialized by NewPutCommentsIDVoteParams()
 		return nil
 	}
 

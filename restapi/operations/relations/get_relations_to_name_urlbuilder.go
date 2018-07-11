@@ -48,6 +48,7 @@ func (o *GetRelationsToNameURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on GetRelationsToNameURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

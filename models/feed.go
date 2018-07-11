@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -17,7 +19,7 @@ import (
 type Feed struct {
 
 	// entries
-	Entries FeedEntries `json:"entries"`
+	Entries []*Entry `json:"entries"`
 
 	// has after
 	HasAfter bool `json:"hasAfter,omitempty"`
@@ -36,9 +38,38 @@ type Feed struct {
 func (m *Feed) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateEntries(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Feed) validateEntries(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Entries) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Entries); i++ {
+		if swag.IsZero(m.Entries[i]) { // not required
+			continue
+		}
+
+		if m.Entries[i] != nil {
+			if err := m.Entries[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("entries" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
 	return nil
 }
 

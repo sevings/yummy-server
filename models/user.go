@@ -43,22 +43,18 @@ func (m *User) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAvatar(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateShowName(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -75,7 +71,6 @@ func (m *User) validateAvatar(formats strfmt.Registry) error {
 	}
 
 	if m.Avatar != nil {
-
 		if err := m.Avatar.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("avatar")

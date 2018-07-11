@@ -6,6 +6,7 @@ package me
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"io"
 	"mime/multipart"
 	"net/http"
 
@@ -15,9 +16,9 @@ import (
 )
 
 // NewPutMeAvatarParams creates a new PutMeAvatarParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewPutMeAvatarParams() PutMeAvatarParams {
-	var ()
+
 	return PutMeAvatarParams{}
 }
 
@@ -33,20 +34,23 @@ type PutMeAvatarParams struct {
 	/*
 	  In: formData
 	*/
-	File *runtime.File
+	File io.ReadCloser
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutMeAvatarParams() beforehand.
 func (o *PutMeAvatarParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 

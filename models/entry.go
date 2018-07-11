@@ -7,6 +7,7 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -57,6 +58,7 @@ type Entry struct {
 	IsWatching bool `json:"isWatching,omitempty"`
 
 	// privacy
+	// Enum: [all some me anonymous]
 	Privacy string `json:"privacy,omitempty"`
 
 	// rating
@@ -66,7 +68,7 @@ type Entry struct {
 	Title string `json:"title,omitempty"`
 
 	// visible for
-	VisibleFor EntryVisibleFor `json:"visibleFor"`
+	VisibleFor []*User `json:"visibleFor"`
 
 	// word count
 	WordCount int64 `json:"wordCount,omitempty"`
@@ -77,27 +79,26 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAuthor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateComments(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validatePrivacy(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateRating(formats); err != nil {
-		// prop
+		res = append(res, err)
+	}
+
+	if err := m.validateVisibleFor(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -114,7 +115,6 @@ func (m *Entry) validateAuthor(formats strfmt.Registry) error {
 	}
 
 	if m.Author != nil {
-
 		if err := m.Author.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("author")
@@ -133,7 +133,6 @@ func (m *Entry) validateComments(formats strfmt.Registry) error {
 	}
 
 	if m.Comments != nil {
-
 		if err := m.Comments.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("comments")
@@ -171,12 +170,16 @@ func init() {
 }
 
 const (
+
 	// EntryPrivacyAll captures enum value "all"
 	EntryPrivacyAll string = "all"
+
 	// EntryPrivacySome captures enum value "some"
 	EntryPrivacySome string = "some"
+
 	// EntryPrivacyMe captures enum value "me"
 	EntryPrivacyMe string = "me"
+
 	// EntryPrivacyAnonymous captures enum value "anonymous"
 	EntryPrivacyAnonymous string = "anonymous"
 )
@@ -210,13 +213,37 @@ func (m *Entry) validateRating(formats strfmt.Registry) error {
 	}
 
 	if m.Rating != nil {
-
 		if err := m.Rating.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rating")
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.VisibleFor) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.VisibleFor); i++ {
+		if swag.IsZero(m.VisibleFor[i]) { // not required
+			continue
+		}
+
+		if m.VisibleFor[i] != nil {
+			if err := m.VisibleFor[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("visibleFor" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

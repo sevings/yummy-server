@@ -44,27 +44,22 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAuthor(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateContent(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateEntryID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateID(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateRating(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -81,7 +76,6 @@ func (m *Comment) validateAuthor(formats strfmt.Registry) error {
 	}
 
 	if m.Author != nil {
-
 		if err := m.Author.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("author")
@@ -139,7 +133,6 @@ func (m *Comment) validateRating(formats strfmt.Registry) error {
 	}
 
 	if m.Rating != nil {
-
 		if err := m.Rating.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rating")

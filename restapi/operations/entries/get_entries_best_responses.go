@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesBestOKCode is the HTTP code returned for type GetEntriesBestOK
@@ -30,6 +30,7 @@ type GetEntriesBestOK struct {
 
 // NewGetEntriesBestOK creates GetEntriesBestOK with default headers values
 func NewGetEntriesBestOK() *GetEntriesBestOK {
+
 	return &GetEntriesBestOK{}
 }
 

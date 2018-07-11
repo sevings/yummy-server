@@ -16,9 +16,9 @@ import (
 )
 
 // NewGetUsersNameParams creates a new GetUsersNameParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewGetUsersNameParams() GetUsersNameParams {
-	var ()
+
 	return GetUsersNameParams{}
 }
 
@@ -41,9 +41,12 @@ type GetUsersNameParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetUsersNameParams() beforehand.
 func (o *GetUsersNameParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	rName, rhkName, _ := route.Params.GetOK("name")
@@ -62,6 +65,9 @@ func (o *GetUsersNameParams) bindName(rawData []string, hasKey bool, formats str
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	o.Name = raw
 

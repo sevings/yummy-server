@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostEntriesAnonymousCreatedCode is the HTTP code returned for type PostEntriesAnonymousCreated
@@ -30,6 +30,7 @@ type PostEntriesAnonymousCreated struct {
 
 // NewPostEntriesAnonymousCreated creates PostEntriesAnonymousCreated with default headers values
 func NewPostEntriesAnonymousCreated() *PostEntriesAnonymousCreated {
+
 	return &PostEntriesAnonymousCreated{}
 }
 

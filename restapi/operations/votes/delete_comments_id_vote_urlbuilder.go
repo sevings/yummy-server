@@ -50,6 +50,7 @@ func (o *DeleteCommentsIDVoteURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on DeleteCommentsIDVoteURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

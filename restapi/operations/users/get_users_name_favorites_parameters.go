@@ -20,11 +20,15 @@ import (
 // NewGetUsersNameFavoritesParams creates a new GetUsersNameFavoritesParams object
 // with the default values initialized.
 func NewGetUsersNameFavoritesParams() GetUsersNameFavoritesParams {
+
 	var (
+		// initialize parameters with default values
+
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(50)
 	)
+
 	return GetUsersNameFavoritesParams{
 		After: &afterDefault,
 
@@ -70,9 +74,12 @@ type GetUsersNameFavoritesParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetUsersNameFavoritesParams() beforehand.
 func (o *GetUsersNameFavoritesParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -108,9 +115,11 @@ func (o *GetUsersNameFavoritesParams) bindAfter(rawData []string, hasKey bool, f
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var afterDefault string = string("")
-		o.After = &afterDefault
+		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
 
@@ -124,9 +133,11 @@ func (o *GetUsersNameFavoritesParams) bindBefore(rawData []string, hasKey bool, 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var beforeDefault string = string("")
-		o.Before = &beforeDefault
+		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
 
@@ -140,9 +151,11 @@ func (o *GetUsersNameFavoritesParams) bindLimit(rawData []string, hasKey bool, f
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var limitDefault int64 = int64(50)
-		o.Limit = &limitDefault
+		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
 
@@ -177,6 +190,9 @@ func (o *GetUsersNameFavoritesParams) bindName(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	o.Name = raw
 

@@ -50,6 +50,7 @@ func (o *PutRelationsToNameURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on PutRelationsToNameURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

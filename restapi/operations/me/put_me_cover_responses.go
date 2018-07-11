@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PutMeCoverOKCode is the HTTP code returned for type PutMeCoverOK
@@ -30,6 +30,7 @@ type PutMeCoverOK struct {
 
 // NewPutMeCoverOK creates PutMeCoverOK with default headers values
 func NewPutMeCoverOK() *PutMeCoverOK {
+
 	return &PutMeCoverOK{}
 }
 
@@ -73,6 +74,7 @@ type PutMeCoverBadRequest struct {
 
 // NewPutMeCoverBadRequest creates PutMeCoverBadRequest with default headers values
 func NewPutMeCoverBadRequest() *PutMeCoverBadRequest {
+
 	return &PutMeCoverBadRequest{}
 }
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesAnonymousOKCode is the HTTP code returned for type GetEntriesAnonymousOK
@@ -30,6 +30,7 @@ type GetEntriesAnonymousOK struct {
 
 // NewGetEntriesAnonymousOK creates GetEntriesAnonymousOK with default headers values
 func NewGetEntriesAnonymousOK() *GetEntriesAnonymousOK {
+
 	return &GetEntriesAnonymousOK{}
 }
 

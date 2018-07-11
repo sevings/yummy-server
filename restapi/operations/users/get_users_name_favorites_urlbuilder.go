@@ -54,6 +54,7 @@ func (o *GetUsersNameFavoritesURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on GetUsersNameFavoritesURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

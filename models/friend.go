@@ -22,13 +22,14 @@ type Friend struct {
 
 // UnmarshalJSON unmarshals this object from a JSON structure
 func (m *Friend) UnmarshalJSON(raw []byte) error {
-
+	// AO0
 	var aO0 User
 	if err := swag.ReadJSON(raw, &aO0); err != nil {
 		return err
 	}
 	m.User = aO0
 
+	// AO1
 	var aO1 FriendAllOf1
 	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
@@ -40,7 +41,7 @@ func (m *Friend) UnmarshalJSON(raw []byte) error {
 
 // MarshalJSON marshals this object to a JSON structure
 func (m Friend) MarshalJSON() ([]byte, error) {
-	var _parts [][]byte
+	_parts := make([][]byte, 0, 2)
 
 	aO0, err := swag.WriteJSON(m.User)
 	if err != nil {
@@ -61,10 +62,11 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 func (m *Friend) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	// validation for a type composition with User
 	if err := m.User.Validate(formats); err != nil {
 		res = append(res, err)
 	}
-
+	// validation for a type composition with FriendAllOf1
 	if err := m.FriendAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}

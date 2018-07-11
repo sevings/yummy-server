@@ -48,6 +48,7 @@ func (o *GetAccountEmailEmailURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Email is required on GetAccountEmailEmailURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

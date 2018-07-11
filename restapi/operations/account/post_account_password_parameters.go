@@ -17,9 +17,9 @@ import (
 )
 
 // NewPostAccountPasswordParams creates a new PostAccountPasswordParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewPostAccountPasswordParams() PostAccountPasswordParams {
-	var ()
+
 	return PostAccountPasswordParams{}
 }
 
@@ -49,16 +49,19 @@ type PostAccountPasswordParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPostAccountPasswordParams() beforehand.
 func (o *PostAccountPasswordParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -87,6 +90,9 @@ func (o *PostAccountPasswordParams) bindNewPassword(rawData []string, hasKey boo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("new_password", "formData", raw); err != nil {
 		return err
 	}
@@ -121,6 +127,9 @@ func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey boo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("old_password", "formData", raw); err != nil {
 		return err
 	}

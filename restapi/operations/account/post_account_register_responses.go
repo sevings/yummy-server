@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostAccountRegisterCreatedCode is the HTTP code returned for type PostAccountRegisterCreated
@@ -30,6 +30,7 @@ type PostAccountRegisterCreated struct {
 
 // NewPostAccountRegisterCreated creates PostAccountRegisterCreated with default headers values
 func NewPostAccountRegisterCreated() *PostAccountRegisterCreated {
+
 	return &PostAccountRegisterCreated{}
 }
 
@@ -73,6 +74,7 @@ type PostAccountRegisterBadRequest struct {
 
 // NewPostAccountRegisterBadRequest creates PostAccountRegisterBadRequest with default headers values
 func NewPostAccountRegisterBadRequest() *PostAccountRegisterBadRequest {
+
 	return &PostAccountRegisterBadRequest{}
 }
 

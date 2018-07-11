@@ -31,7 +31,6 @@ func (m *AuthProfileAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAccount(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -48,7 +47,6 @@ func (m *AuthProfileAllOf1) validateAccount(formats strfmt.Registry) error {
 	}
 
 	if m.Account != nil {
-
 		if err := m.Account.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("account")

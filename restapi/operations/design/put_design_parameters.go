@@ -20,11 +20,16 @@ import (
 // NewPutDesignParams creates a new PutDesignParams object
 // with the default values initialized.
 func NewPutDesignParams() PutDesignParams {
+
 	var (
+		// initialize parameters with default values
+
 		backgroundColorDefault = string("#ffffff")
 		cssDefault             = string("")
-		textColorDefault       = string("#000000")
+
+		textColorDefault = string("#000000")
 	)
+
 	return PutDesignParams{
 		BackgroundColor: &backgroundColorDefault,
 
@@ -77,16 +82,19 @@ type PutDesignParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutDesignParams() beforehand.
 func (o *PutDesignParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -132,9 +140,11 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var backgroundColorDefault string = string("#ffffff")
-		o.BackgroundColor = &backgroundColorDefault
+		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
 
@@ -161,9 +171,11 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var cssDefault string = string("")
-		o.CSS = &cssDefault
+		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
 
@@ -190,6 +202,9 @@ func (o *PutDesignParams) bindFontFamily(rawData []string, hasKey bool, formats 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -204,6 +219,9 @@ func (o *PutDesignParams) bindFontSize(rawData []string, hasKey bool, formats st
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -225,6 +243,9 @@ func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, forma
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("textAlignment", "formData", raw); err != nil {
 		return err
 	}
@@ -252,9 +273,11 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var textColorDefault string = string("#000000")
-		o.TextColor = &textColorDefault
+		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
 

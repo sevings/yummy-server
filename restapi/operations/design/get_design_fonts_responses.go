@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetDesignFontsOKCode is the HTTP code returned for type GetDesignFontsOK
@@ -30,6 +30,7 @@ type GetDesignFontsOK struct {
 
 // NewGetDesignFontsOK creates GetDesignFontsOK with default headers values
 func NewGetDesignFontsOK() *GetDesignFontsOK {
+
 	return &GetDesignFontsOK{}
 }
 

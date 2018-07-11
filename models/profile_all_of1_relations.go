@@ -20,9 +20,11 @@ import (
 type ProfileAllOf1Relations struct {
 
 	// from me
+	// Enum: [followed requested ignored none]
 	FromMe string `json:"fromMe,omitempty"`
 
 	// to me
+	// Enum: [followed requested ignored none]
 	ToMe string `json:"toMe,omitempty"`
 }
 
@@ -31,12 +33,10 @@ func (m *ProfileAllOf1Relations) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateFromMe(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateToMe(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -59,12 +59,16 @@ func init() {
 }
 
 const (
+
 	// ProfileAllOf1RelationsFromMeFollowed captures enum value "followed"
 	ProfileAllOf1RelationsFromMeFollowed string = "followed"
+
 	// ProfileAllOf1RelationsFromMeRequested captures enum value "requested"
 	ProfileAllOf1RelationsFromMeRequested string = "requested"
+
 	// ProfileAllOf1RelationsFromMeIgnored captures enum value "ignored"
 	ProfileAllOf1RelationsFromMeIgnored string = "ignored"
+
 	// ProfileAllOf1RelationsFromMeNone captures enum value "none"
 	ProfileAllOf1RelationsFromMeNone string = "none"
 )
@@ -104,12 +108,16 @@ func init() {
 }
 
 const (
+
 	// ProfileAllOf1RelationsToMeFollowed captures enum value "followed"
 	ProfileAllOf1RelationsToMeFollowed string = "followed"
+
 	// ProfileAllOf1RelationsToMeRequested captures enum value "requested"
 	ProfileAllOf1RelationsToMeRequested string = "requested"
+
 	// ProfileAllOf1RelationsToMeIgnored captures enum value "ignored"
 	ProfileAllOf1RelationsToMeIgnored string = "ignored"
+
 	// ProfileAllOf1RelationsToMeNone captures enum value "none"
 	ProfileAllOf1RelationsToMeNone string = "none"
 )

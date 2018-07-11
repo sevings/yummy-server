@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PutRelationsFromNameOKCode is the HTTP code returned for type PutRelationsFromNameOK
@@ -30,6 +30,7 @@ type PutRelationsFromNameOK struct {
 
 // NewPutRelationsFromNameOK creates PutRelationsFromNameOK with default headers values
 func NewPutRelationsFromNameOK() *PutRelationsFromNameOK {
+
 	return &PutRelationsFromNameOK{}
 }
 
@@ -73,6 +74,7 @@ type PutRelationsFromNameForbidden struct {
 
 // NewPutRelationsFromNameForbidden creates PutRelationsFromNameForbidden with default headers values
 func NewPutRelationsFromNameForbidden() *PutRelationsFromNameForbidden {
+
 	return &PutRelationsFromNameForbidden{}
 }
 
@@ -116,6 +118,7 @@ type PutRelationsFromNameNotFound struct {
 
 // NewPutRelationsFromNameNotFound creates PutRelationsFromNameNotFound with default headers values
 func NewPutRelationsFromNameNotFound() *PutRelationsFromNameNotFound {
+
 	return &PutRelationsFromNameNotFound{}
 }
 

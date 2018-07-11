@@ -23,6 +23,7 @@ type Relationship struct {
 	From string `json:"from,omitempty"`
 
 	// relation
+	// Enum: [followed requested ignored none]
 	Relation string `json:"relation,omitempty"`
 
 	// to
@@ -34,7 +35,6 @@ func (m *Relationship) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateRelation(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -57,12 +57,16 @@ func init() {
 }
 
 const (
+
 	// RelationshipRelationFollowed captures enum value "followed"
 	RelationshipRelationFollowed string = "followed"
+
 	// RelationshipRelationRequested captures enum value "requested"
 	RelationshipRelationRequested string = "requested"
+
 	// RelationshipRelationIgnored captures enum value "ignored"
 	RelationshipRelationIgnored string = "ignored"
+
 	// RelationshipRelationNone captures enum value "none"
 	RelationshipRelationNone string = "none"
 )

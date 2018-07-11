@@ -17,9 +17,9 @@ import (
 )
 
 // NewDeleteEntriesIDVoteParams creates a new DeleteEntriesIDVoteParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewDeleteEntriesIDVoteParams() DeleteEntriesIDVoteParams {
-	var ()
+
 	return DeleteEntriesIDVoteParams{}
 }
 
@@ -41,9 +41,12 @@ type DeleteEntriesIDVoteParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewDeleteEntriesIDVoteParams() beforehand.
 func (o *DeleteEntriesIDVoteParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	rID, rhkID, _ := route.Params.GetOK("id")
@@ -62,6 +65,9 @@ func (o *DeleteEntriesIDVoteParams) bindID(rawData []string, hasKey bool, format
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

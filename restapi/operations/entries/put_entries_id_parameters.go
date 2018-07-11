@@ -21,11 +21,17 @@ import (
 // NewPutEntriesIDParams creates a new PutEntriesIDParams object
 // with the default values initialized.
 func NewPutEntriesIDParams() PutEntriesIDParams {
+
 	var (
+		// initialize parameters with default values
+
 		anonymousCommentsDefault = bool(false)
-		isVotableDefault         = bool(false)
-		titleDefault             = string("")
+
+		isVotableDefault = bool(false)
+
+		titleDefault = string("")
 	)
+
 	return PutEntriesIDParams{
 		AnonymousComments: &anonymousCommentsDefault,
 
@@ -85,16 +91,19 @@ type PutEntriesIDParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutEntriesIDParams() beforehand.
 func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -145,9 +154,11 @@ func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var anonymousCommentsDefault bool = bool(false)
-		o.AnonymousComments = &anonymousCommentsDefault
+		// Default values have been previously initialized by NewPutEntriesIDParams()
 		return nil
 	}
 
@@ -168,6 +179,9 @@ func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
@@ -200,6 +214,9 @@ func (o *PutEntriesIDParams) bindID(rawData []string, hasKey bool, formats strfm
 		raw = rawData[len(rawData)-1]
 	}
 
+	// Required: true
+	// Parameter is provided by construction from the route
+
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
 		return errors.InvalidType("id", "path", "int64", raw)
@@ -227,9 +244,11 @@ func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, format
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var isVotableDefault bool = bool(false)
-		o.IsVotable = &isVotableDefault
+		// Default values have been previously initialized by NewPutEntriesIDParams()
 		return nil
 	}
 
@@ -250,6 +269,9 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
 		return err
 	}
@@ -277,9 +299,11 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var titleDefault string = string("")
-		o.Title = &titleDefault
+		// Default values have been previously initialized by NewPutEntriesIDParams()
 		return nil
 	}
 
@@ -308,14 +332,15 @@ func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, forma
 		qvVisibleFor = rawData[len(rawData)-1]
 	}
 
+	// CollectionFormat:
 	visibleForIC := swag.SplitByFormat(qvVisibleFor, "")
-
 	if len(visibleForIC) == 0 {
 		return nil
 	}
 
 	var visibleForIR []int64
 	for i, visibleForIV := range visibleForIC {
+		// items.Format: "int64"
 		visibleForI, err := swag.ConvertInt64(visibleForIV)
 		if err != nil {
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", "int64", visibleForI)
@@ -329,6 +354,11 @@ func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, forma
 	}
 
 	o.VisibleFor = visibleForIR
+
+	return nil
+}
+
+func (o *PutEntriesIDParams) validateVisibleFor(formats strfmt.Registry) error {
 
 	return nil
 }
