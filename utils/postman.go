@@ -36,9 +36,8 @@ func NewPostman(domain, apiKey, pubKey string) *Postman {
 	go func() {
 		for msg := range pm.ch {
 			resp, id, err := pm.mg.Send(msg)
-			if err == nil {
+			if err != nil {
 				fmt.Printf("ID: %s Resp: %s\n", id, resp)
-			} else {
 				log.Println(err)
 			}
 		}
