@@ -10,7 +10,7 @@ import (
 
 	middleware "github.com/go-openapi/runtime/middleware"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetMeFollowingsHandlerFunc turns a function with the right signature into a get me followings handler

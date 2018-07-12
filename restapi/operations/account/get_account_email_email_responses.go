@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountEmailEmailOKCode is the HTTP code returned for type GetAccountEmailEmailOK
@@ -30,6 +30,7 @@ type GetAccountEmailEmailOK struct {
 
 // NewGetAccountEmailEmailOK creates GetAccountEmailEmailOK with default headers values
 func NewGetAccountEmailEmailOK() *GetAccountEmailEmailOK {
+
 	return &GetAccountEmailEmailOK{}
 }
 

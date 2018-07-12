@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostMeTlogCreatedCode is the HTTP code returned for type PostMeTlogCreated
@@ -30,6 +30,7 @@ type PostMeTlogCreated struct {
 
 // NewPostMeTlogCreated creates PostMeTlogCreated with default headers values
 func NewPostMeTlogCreated() *PostMeTlogCreated {
+
 	return &PostMeTlogCreated{}
 }
 

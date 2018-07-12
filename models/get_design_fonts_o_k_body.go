@@ -8,7 +8,6 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -22,25 +21,6 @@ type GetDesignFontsOKBody struct {
 
 // Validate validates this get design fonts o k body
 func (m *GetDesignFontsOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateFonts(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *GetDesignFontsOKBody) validateFonts(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Fonts) { // not required
-		return nil
-	}
-
 	return nil
 }
 

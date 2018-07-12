@@ -8,7 +8,6 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -22,25 +21,6 @@ type GetAccountInvitesOKBody struct {
 
 // Validate validates this get account invites o k body
 func (m *GetAccountInvitesOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := m.validateInvites(formats); err != nil {
-		// prop
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (m *GetAccountInvitesOKBody) validateInvites(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Invites) { // not required
-		return nil
-	}
-
 	return nil
 }
 

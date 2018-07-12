@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // DeleteCommentsIDOKCode is the HTTP code returned for type DeleteCommentsIDOK
@@ -25,6 +25,7 @@ type DeleteCommentsIDOK struct {
 
 // NewDeleteCommentsIDOK creates DeleteCommentsIDOK with default headers values
 func NewDeleteCommentsIDOK() *DeleteCommentsIDOK {
+
 	return &DeleteCommentsIDOK{}
 }
 
@@ -53,6 +54,7 @@ type DeleteCommentsIDForbidden struct {
 
 // NewDeleteCommentsIDForbidden creates DeleteCommentsIDForbidden with default headers values
 func NewDeleteCommentsIDForbidden() *DeleteCommentsIDForbidden {
+
 	return &DeleteCommentsIDForbidden{}
 }
 
@@ -96,6 +98,7 @@ type DeleteCommentsIDNotFound struct {
 
 // NewDeleteCommentsIDNotFound creates DeleteCommentsIDNotFound with default headers values
 func NewDeleteCommentsIDNotFound() *DeleteCommentsIDNotFound {
+
 	return &DeleteCommentsIDNotFound{}
 }
 

@@ -18,9 +18,9 @@ import (
 )
 
 // NewPutCommentsIDParams creates a new PutCommentsIDParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewPutCommentsIDParams() PutCommentsIDParams {
-	var ()
+
 	return PutCommentsIDParams{}
 }
 
@@ -49,16 +49,19 @@ type PutCommentsIDParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutCommentsIDParams() beforehand.
 func (o *PutCommentsIDParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -87,6 +90,9 @@ func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
@@ -118,6 +124,9 @@ func (o *PutCommentsIDParams) bindID(rawData []string, hasKey bool, formats strf
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

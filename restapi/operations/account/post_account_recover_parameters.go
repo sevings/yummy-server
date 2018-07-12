@@ -17,9 +17,9 @@ import (
 )
 
 // NewPostAccountRecoverParams creates a new PostAccountRecoverParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewPostAccountRecoverParams() PostAccountRecoverParams {
-	var ()
+
 	return PostAccountRecoverParams{}
 }
 
@@ -41,16 +41,19 @@ type PostAccountRecoverParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPostAccountRecoverParams() beforehand.
 func (o *PostAccountRecoverParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -74,6 +77,9 @@ func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("email", "formData", raw); err != nil {
 		return err
 	}

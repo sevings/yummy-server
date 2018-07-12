@@ -22,13 +22,14 @@ type AuthProfile struct {
 
 // UnmarshalJSON unmarshals this object from a JSON structure
 func (m *AuthProfile) UnmarshalJSON(raw []byte) error {
-
+	// AO0
 	var aO0 Profile
 	if err := swag.ReadJSON(raw, &aO0); err != nil {
 		return err
 	}
 	m.Profile = aO0
 
+	// AO1
 	var aO1 AuthProfileAllOf1
 	if err := swag.ReadJSON(raw, &aO1); err != nil {
 		return err
@@ -40,7 +41,7 @@ func (m *AuthProfile) UnmarshalJSON(raw []byte) error {
 
 // MarshalJSON marshals this object to a JSON structure
 func (m AuthProfile) MarshalJSON() ([]byte, error) {
-	var _parts [][]byte
+	_parts := make([][]byte, 0, 2)
 
 	aO0, err := swag.WriteJSON(m.Profile)
 	if err != nil {
@@ -61,10 +62,11 @@ func (m AuthProfile) MarshalJSON() ([]byte, error) {
 func (m *AuthProfile) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	// validation for a type composition with Profile
 	if err := m.Profile.Validate(formats); err != nil {
 		res = append(res, err)
 	}
-
+	// validation for a type composition with AuthProfileAllOf1
 	if err := m.AuthProfileAllOf1.Validate(formats); err != nil {
 		res = append(res, err)
 	}

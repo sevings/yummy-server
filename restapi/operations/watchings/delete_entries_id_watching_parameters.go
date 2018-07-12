@@ -17,9 +17,9 @@ import (
 )
 
 // NewDeleteEntriesIDWatchingParams creates a new DeleteEntriesIDWatchingParams object
-// with the default values initialized.
+// no default values defined in spec.
 func NewDeleteEntriesIDWatchingParams() DeleteEntriesIDWatchingParams {
-	var ()
+
 	return DeleteEntriesIDWatchingParams{}
 }
 
@@ -41,9 +41,12 @@ type DeleteEntriesIDWatchingParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewDeleteEntriesIDWatchingParams() beforehand.
 func (o *DeleteEntriesIDWatchingParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	rID, rhkID, _ := route.Params.GetOK("id")
@@ -62,6 +65,9 @@ func (o *DeleteEntriesIDWatchingParams) bindID(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+	// Parameter is provided by construction from the route
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {

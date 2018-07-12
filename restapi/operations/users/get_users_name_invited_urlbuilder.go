@@ -53,6 +53,7 @@ func (o *GetUsersNameInvitedURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on GetUsersNameInvitedURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

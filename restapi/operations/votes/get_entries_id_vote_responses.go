@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesIDVoteOKCode is the HTTP code returned for type GetEntriesIDVoteOK
@@ -30,6 +30,7 @@ type GetEntriesIDVoteOK struct {
 
 // NewGetEntriesIDVoteOK creates GetEntriesIDVoteOK with default headers values
 func NewGetEntriesIDVoteOK() *GetEntriesIDVoteOK {
+
 	return &GetEntriesIDVoteOK{}
 }
 
@@ -73,6 +74,7 @@ type GetEntriesIDVoteForbidden struct {
 
 // NewGetEntriesIDVoteForbidden creates GetEntriesIDVoteForbidden with default headers values
 func NewGetEntriesIDVoteForbidden() *GetEntriesIDVoteForbidden {
+
 	return &GetEntriesIDVoteForbidden{}
 }
 
@@ -116,6 +118,7 @@ type GetEntriesIDVoteNotFound struct {
 
 // NewGetEntriesIDVoteNotFound creates GetEntriesIDVoteNotFound with default headers values
 func NewGetEntriesIDVoteNotFound() *GetEntriesIDVoteNotFound {
+
 	return &GetEntriesIDVoteNotFound{}
 }
 

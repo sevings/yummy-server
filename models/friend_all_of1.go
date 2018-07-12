@@ -39,17 +39,14 @@ func (m *FriendAllOf1) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateCounts(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateCover(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateTitle(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -66,7 +63,6 @@ func (m *FriendAllOf1) validateCounts(formats strfmt.Registry) error {
 	}
 
 	if m.Counts != nil {
-
 		if err := m.Counts.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("counts")
@@ -85,7 +81,6 @@ func (m *FriendAllOf1) validateCover(formats strfmt.Registry) error {
 	}
 
 	if m.Cover != nil {
-
 		if err := m.Cover.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("cover")

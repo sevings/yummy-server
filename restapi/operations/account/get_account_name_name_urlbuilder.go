@@ -48,6 +48,7 @@ func (o *GetAccountNameNameURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on GetAccountNameNameURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

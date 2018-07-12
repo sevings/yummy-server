@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetCommentsIDOKCode is the HTTP code returned for type GetCommentsIDOK
@@ -30,6 +30,7 @@ type GetCommentsIDOK struct {
 
 // NewGetCommentsIDOK creates GetCommentsIDOK with default headers values
 func NewGetCommentsIDOK() *GetCommentsIDOK {
+
 	return &GetCommentsIDOK{}
 }
 
@@ -73,6 +74,7 @@ type GetCommentsIDForbidden struct {
 
 // NewGetCommentsIDForbidden creates GetCommentsIDForbidden with default headers values
 func NewGetCommentsIDForbidden() *GetCommentsIDForbidden {
+
 	return &GetCommentsIDForbidden{}
 }
 
@@ -116,6 +118,7 @@ type GetCommentsIDNotFound struct {
 
 // NewGetCommentsIDNotFound creates GetCommentsIDNotFound with default headers values
 func NewGetCommentsIDNotFound() *GetCommentsIDNotFound {
+
 	return &GetCommentsIDNotFound{}
 }
 

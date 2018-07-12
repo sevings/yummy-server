@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // DeleteRelationsFromNameOKCode is the HTTP code returned for type DeleteRelationsFromNameOK
@@ -30,6 +30,7 @@ type DeleteRelationsFromNameOK struct {
 
 // NewDeleteRelationsFromNameOK creates DeleteRelationsFromNameOK with default headers values
 func NewDeleteRelationsFromNameOK() *DeleteRelationsFromNameOK {
+
 	return &DeleteRelationsFromNameOK{}
 }
 
@@ -73,6 +74,7 @@ type DeleteRelationsFromNameForbidden struct {
 
 // NewDeleteRelationsFromNameForbidden creates DeleteRelationsFromNameForbidden with default headers values
 func NewDeleteRelationsFromNameForbidden() *DeleteRelationsFromNameForbidden {
+
 	return &DeleteRelationsFromNameForbidden{}
 }
 
@@ -116,6 +118,7 @@ type DeleteRelationsFromNameNotFound struct {
 
 // NewDeleteRelationsFromNameNotFound creates DeleteRelationsFromNameNotFound with default headers values
 func NewDeleteRelationsFromNameNotFound() *DeleteRelationsFromNameNotFound {
+
 	return &DeleteRelationsFromNameNotFound{}
 }
 

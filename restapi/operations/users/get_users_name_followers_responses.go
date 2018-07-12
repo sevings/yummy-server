@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersNameFollowersOKCode is the HTTP code returned for type GetUsersNameFollowersOK
@@ -30,6 +30,7 @@ type GetUsersNameFollowersOK struct {
 
 // NewGetUsersNameFollowersOK creates GetUsersNameFollowersOK with default headers values
 func NewGetUsersNameFollowersOK() *GetUsersNameFollowersOK {
+
 	return &GetUsersNameFollowersOK{}
 }
 
@@ -73,6 +74,7 @@ type GetUsersNameFollowersForbidden struct {
 
 // NewGetUsersNameFollowersForbidden creates GetUsersNameFollowersForbidden with default headers values
 func NewGetUsersNameFollowersForbidden() *GetUsersNameFollowersForbidden {
+
 	return &GetUsersNameFollowersForbidden{}
 }
 
@@ -116,6 +118,7 @@ type GetUsersNameFollowersNotFound struct {
 
 // NewGetUsersNameFollowersNotFound creates GetUsersNameFollowersNotFound with default headers values
 func NewGetUsersNameFollowersNotFound() *GetUsersNameFollowersNotFound {
+
 	return &GetUsersNameFollowersNotFound{}
 }
 

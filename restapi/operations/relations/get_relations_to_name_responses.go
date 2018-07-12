@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetRelationsToNameOKCode is the HTTP code returned for type GetRelationsToNameOK
@@ -30,6 +30,7 @@ type GetRelationsToNameOK struct {
 
 // NewGetRelationsToNameOK creates GetRelationsToNameOK with default headers values
 func NewGetRelationsToNameOK() *GetRelationsToNameOK {
+
 	return &GetRelationsToNameOK{}
 }
 
@@ -73,6 +74,7 @@ type GetRelationsToNameNotFound struct {
 
 // NewGetRelationsToNameNotFound creates GetRelationsToNameNotFound with default headers values
 func NewGetRelationsToNameNotFound() *GetRelationsToNameNotFound {
+
 	return &GetRelationsToNameNotFound{}
 }
 

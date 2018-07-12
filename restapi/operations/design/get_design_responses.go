@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetDesignOKCode is the HTTP code returned for type GetDesignOK
@@ -30,6 +30,7 @@ type GetDesignOK struct {
 
 // NewGetDesignOK creates GetDesignOK with default headers values
 func NewGetDesignOK() *GetDesignOK {
+
 	return &GetDesignOK{}
 }
 

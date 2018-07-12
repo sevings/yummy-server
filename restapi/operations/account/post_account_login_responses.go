@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostAccountLoginOKCode is the HTTP code returned for type PostAccountLoginOK
@@ -30,6 +30,7 @@ type PostAccountLoginOK struct {
 
 // NewPostAccountLoginOK creates PostAccountLoginOK with default headers values
 func NewPostAccountLoginOK() *PostAccountLoginOK {
+
 	return &PostAccountLoginOK{}
 }
 
@@ -73,6 +74,7 @@ type PostAccountLoginBadRequest struct {
 
 // NewPostAccountLoginBadRequest creates PostAccountLoginBadRequest with default headers values
 func NewPostAccountLoginBadRequest() *PostAccountLoginBadRequest {
+
 	return &PostAccountLoginBadRequest{}
 }
 

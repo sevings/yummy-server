@@ -23,6 +23,7 @@ type PutMeOnlineOK struct {
 
 // NewPutMeOnlineOK creates PutMeOnlineOK with default headers values
 func NewPutMeOnlineOK() *PutMeOnlineOK {
+
 	return &PutMeOnlineOK{}
 }
 

@@ -19,7 +19,6 @@ import (
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
-	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 	"github.com/sevings/mindwell-server/restapi/operations/design"
@@ -30,6 +29,8 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 	"github.com/sevings/mindwell-server/restapi/operations/watchings"
+
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // NewMindwellAPI creates a new Mindwell instance
@@ -39,6 +40,8 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		formats:               strfmt.Default,
 		defaultConsumes:       "application/json",
 		defaultProduces:       "application/json",
+		customConsumers:       make(map[string]runtime.Consumer),
+		customProducers:       make(map[string]runtime.Producer),
 		ServerShutdown:        func() {},
 		spec:                  spec,
 		ServeError:            errors.ServeError,
@@ -255,6 +258,8 @@ type MindwellAPI struct {
 	context         *middleware.Context
 	handlers        map[string]map[string]http.Handler
 	formats         strfmt.Registry
+	customConsumers map[string]runtime.Consumer
+	customProducers map[string]runtime.Producer
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
@@ -794,6 +799,10 @@ func (o *MindwellAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 			result["multipart/form-data"] = o.MultipartformConsumer
 
 		}
+
+		if c, ok := o.customConsumers[mt]; ok {
+			result[mt] = c
+		}
 	}
 	return result
 
@@ -809,6 +818,10 @@ func (o *MindwellAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		case "application/json":
 			result["application/json"] = o.JSONProducer
 
+		}
+
+		if p, ok := o.customProducers[mt]; ok {
+			result[mt] = p
 		}
 	}
 	return result
@@ -1175,9 +1188,19 @@ func (o *MindwellAPI) Serve(builder middleware.Builder) http.Handler {
 	return o.context.APIHandler(builder)
 }
 
-// Init allows you to just initialize the handler cache, you can then recompose the middelware as you see fit
+// Init allows you to just initialize the handler cache, you can then recompose the middleware as you see fit
 func (o *MindwellAPI) Init() {
 	if len(o.handlers) == 0 {
 		o.initHandlerCache()
 	}
+}
+
+// RegisterConsumer allows you to add (or override) a consumer for a media type.
+func (o *MindwellAPI) RegisterConsumer(mediaType string, consumer runtime.Consumer) {
+	o.customConsumers[mediaType] = consumer
+}
+
+// RegisterProducer allows you to add (or override) a producer for a media type.
+func (o *MindwellAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
+	o.customProducers[mediaType] = producer
 }

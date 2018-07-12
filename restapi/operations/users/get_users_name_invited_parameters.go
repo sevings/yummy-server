@@ -20,10 +20,15 @@ import (
 // NewGetUsersNameInvitedParams creates a new GetUsersNameInvitedParams object
 // with the default values initialized.
 func NewGetUsersNameInvitedParams() GetUsersNameInvitedParams {
+
 	var (
+		// initialize parameters with default values
+
 		limitDefault = int64(50)
-		skipDefault  = int64(0)
+
+		skipDefault = int64(0)
 	)
+
 	return GetUsersNameInvitedParams{
 		Limit: &limitDefault,
 
@@ -62,9 +67,12 @@ type GetUsersNameInvitedParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetUsersNameInvitedParams() beforehand.
 func (o *GetUsersNameInvitedParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -95,9 +103,11 @@ func (o *GetUsersNameInvitedParams) bindLimit(rawData []string, hasKey bool, for
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var limitDefault int64 = int64(50)
-		o.Limit = &limitDefault
+		// Default values have been previously initialized by NewGetUsersNameInvitedParams()
 		return nil
 	}
 
@@ -133,6 +143,9 @@ func (o *GetUsersNameInvitedParams) bindName(rawData []string, hasKey bool, form
 		raw = rawData[len(rawData)-1]
 	}
 
+	// Required: true
+	// Parameter is provided by construction from the route
+
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -160,9 +173,11 @@ func (o *GetUsersNameInvitedParams) bindSkip(rawData []string, hasKey bool, form
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var skipDefault int64 = int64(0)
-		o.Skip = &skipDefault
+		// Default values have been previously initialized by NewGetUsersNameInvitedParams()
 		return nil
 	}
 

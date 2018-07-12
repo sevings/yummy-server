@@ -7,6 +7,7 @@ package models
 
 import (
 	"encoding/json"
+	"strconv"
 
 	strfmt "github.com/go-openapi/strfmt"
 
@@ -20,6 +21,7 @@ import (
 type FriendList struct {
 
 	// relation
+	// Enum: [followers followings requested ignored invited]
 	Relation string `json:"relation,omitempty"`
 
 	// subject
@@ -27,7 +29,7 @@ type FriendList struct {
 
 	// users
 	// Required: true
-	Users FriendListUsers `json:"users"`
+	Users []*Friend `json:"users"`
 }
 
 // Validate validates this friend list
@@ -35,17 +37,14 @@ func (m *FriendList) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateRelation(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateSubject(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
 	if err := m.validateUsers(formats); err != nil {
-		// prop
 		res = append(res, err)
 	}
 
@@ -68,14 +67,19 @@ func init() {
 }
 
 const (
+
 	// FriendListRelationFollowers captures enum value "followers"
 	FriendListRelationFollowers string = "followers"
+
 	// FriendListRelationFollowings captures enum value "followings"
 	FriendListRelationFollowings string = "followings"
+
 	// FriendListRelationRequested captures enum value "requested"
 	FriendListRelationRequested string = "requested"
+
 	// FriendListRelationIgnored captures enum value "ignored"
 	FriendListRelationIgnored string = "ignored"
+
 	// FriendListRelationInvited captures enum value "invited"
 	FriendListRelationInvited string = "invited"
 )
@@ -109,7 +113,6 @@ func (m *FriendList) validateSubject(formats strfmt.Registry) error {
 	}
 
 	if m.Subject != nil {
-
 		if err := m.Subject.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("subject")
@@ -127,11 +130,20 @@ func (m *FriendList) validateUsers(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := m.Users.Validate(formats); err != nil {
-		if ve, ok := err.(*errors.Validation); ok {
-			return ve.ValidateName("users")
+	for i := 0; i < len(m.Users); i++ {
+		if swag.IsZero(m.Users[i]) { // not required
+			continue
 		}
-		return err
+
+		if m.Users[i] != nil {
+			if err := m.Users[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostEntriesIDCommentsCreatedCode is the HTTP code returned for type PostEntriesIDCommentsCreated
@@ -30,6 +30,7 @@ type PostEntriesIDCommentsCreated struct {
 
 // NewPostEntriesIDCommentsCreated creates PostEntriesIDCommentsCreated with default headers values
 func NewPostEntriesIDCommentsCreated() *PostEntriesIDCommentsCreated {
+
 	return &PostEntriesIDCommentsCreated{}
 }
 
@@ -73,6 +74,7 @@ type PostEntriesIDCommentsForbidden struct {
 
 // NewPostEntriesIDCommentsForbidden creates PostEntriesIDCommentsForbidden with default headers values
 func NewPostEntriesIDCommentsForbidden() *PostEntriesIDCommentsForbidden {
+
 	return &PostEntriesIDCommentsForbidden{}
 }
 
@@ -116,6 +118,7 @@ type PostEntriesIDCommentsNotFound struct {
 
 // NewPostEntriesIDCommentsNotFound creates PostEntriesIDCommentsNotFound with default headers values
 func NewPostEntriesIDCommentsNotFound() *PostEntriesIDCommentsNotFound {
+
 	return &PostEntriesIDCommentsNotFound{}
 }
 

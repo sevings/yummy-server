@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
+func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
 	get := api.MeGetMeFollowersHandler.Handle
 	params := me.GetMeFollowersParams{
 		Skip:  &skip,
@@ -30,7 +30,7 @@ func checkMyFollowers(t *testing.T, user *models.UserID, skip, limit int64, size
 	return list.Users
 }
 
-func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
+func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
 	get := api.MeGetMeFollowingsHandler.Handle
 	params := me.GetMeFollowingsParams{
 		Skip:  &skip,
@@ -49,7 +49,7 @@ func checkMyFollowings(t *testing.T, user *models.UserID, skip, limit int64, siz
 	return list.Users
 }
 
-func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
+func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
 	get := api.MeGetMeIgnoredHandler.Handle
 	params := me.GetMeIgnoredParams{
 		Skip:  &skip,
@@ -68,7 +68,7 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 	return list.Users
 }
 
-func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) models.FriendListUsers {
+func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
 	get := api.MeGetMeInvitedHandler.Handle
 	params := me.GetMeInvitedParams{
 		Skip:  &skip,
@@ -87,7 +87,7 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 	return list.Users
 }
 
-func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
+func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) []*models.Friend {
 	get := api.UsersGetUsersNameFollowersHandler.Handle
 	params := users.GetUsersNameFollowersParams{
 		Skip:  &skip,
@@ -107,7 +107,7 @@ func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, li
 	return list.Users
 }
 
-func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
+func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) []*models.Friend {
 	get := api.UsersGetUsersNameFollowingsHandler.Handle
 	params := users.GetUsersNameFollowingsParams{
 		Skip:  &skip,
@@ -127,7 +127,7 @@ func checkNameFollowings(t *testing.T, user *models.UserID, name string, skip, l
 	return list.Users
 }
 
-func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) models.FriendListUsers {
+func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) []*models.Friend {
 	get := api.UsersGetUsersNameInvitedHandler.Handle
 	params := users.GetUsersNameInvitedParams{
 		Skip:  &skip,
@@ -155,7 +155,7 @@ func TestOpenFriendLists(t *testing.T) {
 	checkFollow(t, userIDs[1], profiles[2], models.RelationshipRelationFollowed)
 
 	req := require.New(t)
-	var list models.FriendListUsers
+	var list []*models.Friend
 
 	checkMyFollowers(t, userIDs[0], 0, 100, 0)
 
@@ -250,7 +250,7 @@ func TestPrivateFriendLists(t *testing.T) {
 	checkEditProfile(t, profiles[2], params)
 
 	req := require.New(t)
-	var list models.FriendListUsers
+	var list []*models.Friend
 
 	list = checkNameFollowers(t, userIDs[0], profiles[2].Name, 0, 100, 2)
 	req.Equal(profiles[1].ID, list[0].ID)

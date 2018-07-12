@@ -52,6 +52,7 @@ func (o *PutEntriesIDVoteURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("ID is required on PutEntriesIDVoteURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

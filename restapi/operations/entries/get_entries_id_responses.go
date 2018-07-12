@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesIDOKCode is the HTTP code returned for type GetEntriesIDOK
@@ -30,6 +30,7 @@ type GetEntriesIDOK struct {
 
 // NewGetEntriesIDOK creates GetEntriesIDOK with default headers values
 func NewGetEntriesIDOK() *GetEntriesIDOK {
+
 	return &GetEntriesIDOK{}
 }
 
@@ -73,6 +74,7 @@ type GetEntriesIDForbidden struct {
 
 // NewGetEntriesIDForbidden creates GetEntriesIDForbidden with default headers values
 func NewGetEntriesIDForbidden() *GetEntriesIDForbidden {
+
 	return &GetEntriesIDForbidden{}
 }
 
@@ -116,6 +118,7 @@ type GetEntriesIDNotFound struct {
 
 // NewGetEntriesIDNotFound creates GetEntriesIDNotFound with default headers values
 func NewGetEntriesIDNotFound() *GetEntriesIDNotFound {
+
 	return &GetEntriesIDNotFound{}
 }
 

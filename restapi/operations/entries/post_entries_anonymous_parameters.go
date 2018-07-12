@@ -20,10 +20,15 @@ import (
 // NewPostEntriesAnonymousParams creates a new PostEntriesAnonymousParams object
 // with the default values initialized.
 func NewPostEntriesAnonymousParams() PostEntriesAnonymousParams {
+
 	var (
+		// initialize parameters with default values
+
 		anonymousCommentsDefault = bool(false)
-		titleDefault             = string("")
+
+		titleDefault = string("")
 	)
+
 	return PostEntriesAnonymousParams{
 		AnonymousComments: &anonymousCommentsDefault,
 
@@ -61,16 +66,19 @@ type PostEntriesAnonymousParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPostEntriesAnonymousParams() beforehand.
 func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -101,9 +109,11 @@ func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, has
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var anonymousCommentsDefault bool = bool(false)
-		o.AnonymousComments = &anonymousCommentsDefault
+		// Default values have been previously initialized by NewPostEntriesAnonymousParams()
 		return nil
 	}
 
@@ -124,6 +134,9 @@ func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, 
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
@@ -155,9 +168,11 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var titleDefault string = string("")
-		o.Title = &titleDefault
+		// Default values have been previously initialized by NewPostEntriesAnonymousParams()
 		return nil
 	}
 

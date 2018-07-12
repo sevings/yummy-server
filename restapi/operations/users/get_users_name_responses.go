@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersNameOKCode is the HTTP code returned for type GetUsersNameOK
@@ -30,6 +30,7 @@ type GetUsersNameOK struct {
 
 // NewGetUsersNameOK creates GetUsersNameOK with default headers values
 func NewGetUsersNameOK() *GetUsersNameOK {
+
 	return &GetUsersNameOK{}
 }
 
@@ -73,6 +74,7 @@ type GetUsersNameNotFound struct {
 
 // NewGetUsersNameNotFound creates GetUsersNameNotFound with default headers values
 func NewGetUsersNameNotFound() *GetUsersNameNotFound {
+
 	return &GetUsersNameNotFound{}
 }
 

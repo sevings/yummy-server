@@ -53,6 +53,7 @@ func (o *GetUsersNameFollowersURL) Build() (*url.URL, error) {
 	} else {
 		return nil, errors.New("Name is required on GetUsersNameFollowersURL")
 	}
+
 	_basePath := o._basePath
 	if _basePath == "" {
 		_basePath = "/api/v1"

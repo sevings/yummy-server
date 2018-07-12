@@ -20,15 +20,21 @@ import (
 // NewPutMeParams creates a new PutMeParams object
 // with the default values initialized.
 func NewPutMeParams() PutMeParams {
+
 	var (
-		birthdayDefault   = string("")
-		cityDefault       = string("")
-		countryDefault    = string("")
-		genderDefault     = string("not set")
-		isDaylogDefault   = bool(false)
+		// initialize parameters with default values
+
+		birthdayDefault = string("")
+		cityDefault     = string("")
+		countryDefault  = string("")
+		genderDefault   = string("not set")
+		isDaylogDefault = bool(false)
+
 		showInTopsDefault = bool(false)
-		titleDefault      = string("")
+
+		titleDefault = string("")
 	)
+
 	return PutMeParams{
 		Birthday: &birthdayDefault,
 
@@ -108,16 +114,19 @@ type PutMeParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewPutMeParams() beforehand.
 func (o *PutMeParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	if err := r.ParseMultipartForm(32 << 20); err != nil {
 		if err != http.ErrNotMultipart {
-			return err
+			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
-			return err
+			return errors.New(400, "%v", err)
 		}
 	}
 	fds := runtime.Values(r.Form)
@@ -178,9 +187,11 @@ func (o *PutMeParams) bindBirthday(rawData []string, hasKey bool, formats strfmt
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var birthdayDefault string = string("")
-		o.Birthday = &birthdayDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -194,9 +205,11 @@ func (o *PutMeParams) bindCity(rawData []string, hasKey bool, formats strfmt.Reg
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var cityDefault string = string("")
-		o.City = &cityDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -223,9 +236,11 @@ func (o *PutMeParams) bindCountry(rawData []string, hasKey bool, formats strfmt.
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var countryDefault string = string("")
-		o.Country = &countryDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -252,9 +267,11 @@ func (o *PutMeParams) bindGender(rawData []string, hasKey bool, formats strfmt.R
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var genderDefault string = string("not set")
-		o.Gender = &genderDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -281,9 +298,11 @@ func (o *PutMeParams) bindIsDaylog(rawData []string, hasKey bool, formats strfmt
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var isDaylogDefault bool = bool(false)
-		o.IsDaylog = &isDaylogDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -304,6 +323,9 @@ func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
 		return err
 	}
@@ -331,9 +353,11 @@ func (o *PutMeParams) bindShowInTops(rawData []string, hasKey bool, formats strf
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var showInTopsDefault bool = bool(false)
-		o.ShowInTops = &showInTopsDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 
@@ -354,6 +378,9 @@ func (o *PutMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: true
+
 	if err := validate.RequiredString("showName", "formData", raw); err != nil {
 		return err
 	}
@@ -385,9 +412,11 @@ func (o *PutMeParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Re
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+
 	if raw == "" { // empty values pass all other validations
-		var titleDefault string = string("")
-		o.Title = &titleDefault
+		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
 

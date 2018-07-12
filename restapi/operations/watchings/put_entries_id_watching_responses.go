@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PutEntriesIDWatchingOKCode is the HTTP code returned for type PutEntriesIDWatchingOK
@@ -30,6 +30,7 @@ type PutEntriesIDWatchingOK struct {
 
 // NewPutEntriesIDWatchingOK creates PutEntriesIDWatchingOK with default headers values
 func NewPutEntriesIDWatchingOK() *PutEntriesIDWatchingOK {
+
 	return &PutEntriesIDWatchingOK{}
 }
 
@@ -73,6 +74,7 @@ type PutEntriesIDWatchingNotFound struct {
 
 // NewPutEntriesIDWatchingNotFound creates PutEntriesIDWatchingNotFound with default headers values
 func NewPutEntriesIDWatchingNotFound() *PutEntriesIDWatchingNotFound {
+
 	return &PutEntriesIDWatchingNotFound{}
 }
 

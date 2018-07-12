@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostAccountRecoverOKCode is the HTTP code returned for type PostAccountRecoverOK
@@ -25,6 +25,7 @@ type PostAccountRecoverOK struct {
 
 // NewPostAccountRecoverOK creates PostAccountRecoverOK with default headers values
 func NewPostAccountRecoverOK() *PostAccountRecoverOK {
+
 	return &PostAccountRecoverOK{}
 }
 
@@ -53,6 +54,7 @@ type PostAccountRecoverBadRequest struct {
 
 // NewPostAccountRecoverBadRequest creates PostAccountRecoverBadRequest with default headers values
 func NewPostAccountRecoverBadRequest() *PostAccountRecoverBadRequest {
+
 	return &PostAccountRecoverBadRequest{}
 }
 

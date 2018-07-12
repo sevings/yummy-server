@@ -139,6 +139,7 @@ func TestPostMyTlog(t *testing.T) {
 	params.Title = &title
 
 	id := checkPostEntry(t, params, profiles[0], userIDs[0], 5)
+	checkEntryWatching(t, userIDs[0], id, true, true)
 
 	title = "title"
 	votable = true

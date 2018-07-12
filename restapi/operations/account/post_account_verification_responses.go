@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	"github.com/sevings/mindwell-server/models"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostAccountVerificationOKCode is the HTTP code returned for type PostAccountVerificationOK
@@ -25,6 +25,7 @@ type PostAccountVerificationOK struct {
 
 // NewPostAccountVerificationOK creates PostAccountVerificationOK with default headers values
 func NewPostAccountVerificationOK() *PostAccountVerificationOK {
+
 	return &PostAccountVerificationOK{}
 }
 
@@ -53,6 +54,7 @@ type PostAccountVerificationForbidden struct {
 
 // NewPostAccountVerificationForbidden creates PostAccountVerificationForbidden with default headers values
 func NewPostAccountVerificationForbidden() *PostAccountVerificationForbidden {
+
 	return &PostAccountVerificationForbidden{}
 }
 

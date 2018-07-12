@@ -20,10 +20,14 @@ import (
 // NewGetMeIgnoredParams creates a new GetMeIgnoredParams object
 // with the default values initialized.
 func NewGetMeIgnoredParams() GetMeIgnoredParams {
+
 	var (
+		// initialize parameters with default values
+
 		limitDefault = int64(50)
 		skipDefault  = int64(0)
 	)
+
 	return GetMeIgnoredParams{
 		Limit: &limitDefault,
 
@@ -55,9 +59,12 @@ type GetMeIgnoredParams struct {
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
-// for simple values it will use straight method calls
+// for simple values it will use straight method calls.
+//
+// To ensure default values, the struct must have been initialized with NewGetMeIgnoredParams() beforehand.
 func (o *GetMeIgnoredParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
+
 	o.HTTPRequest = r
 
 	qs := runtime.Values(r.URL.Query())
@@ -83,9 +90,11 @@ func (o *GetMeIgnoredParams) bindLimit(rawData []string, hasKey bool, formats st
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var limitDefault int64 = int64(50)
-		o.Limit = &limitDefault
+		// Default values have been previously initialized by NewGetMeIgnoredParams()
 		return nil
 	}
 
@@ -120,9 +129,11 @@ func (o *GetMeIgnoredParams) bindSkip(rawData []string, hasKey bool, formats str
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
+
+	// Required: false
+	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
-		var skipDefault int64 = int64(0)
-		o.Skip = &skipDefault
+		// Default values have been previously initialized by NewGetMeIgnoredParams()
 		return nil
 	}
 
