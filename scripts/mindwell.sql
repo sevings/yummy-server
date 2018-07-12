@@ -1225,6 +1225,10 @@ CREATE OR REPLACE FUNCTION mindwell.inc_comments() RETURNS TRIGGER AS $$
         SET comments_count = comments_count + 1
         WHERE id = NEW.entry_id;
         
+        INSERT INTO mindwell.watching
+        VALUES(NEW.author_id, NEW.entry_id)
+        ON CONFLICT ON CONSTRAINT unique_user_watching DO NOTHING;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
