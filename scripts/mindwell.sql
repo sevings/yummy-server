@@ -128,6 +128,17 @@ CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
+CREATE OR REPLACE FUNCTION burn_karma() RETURNS VOID AS $$
+    UPDATE users
+    SET karma = 
+        CASE 
+            WHEN abs(karma) > 50 THEN karma * 0.98
+            WHEN abs(karma) > 1 THEN karma - karma / trunc(karma)
+            ELSE 0
+        END
+    WHERE karma <> 0;
+$$ LANGUAGE SQL;
+
 
 
 CREATE VIEW mindwell.short_users AS
@@ -1033,7 +1044,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote * 5
+            SET karma = karma + NEW.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1074,7 +1085,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote * 5
+            SET karma = karma - OLD.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1086,7 +1097,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote * 5
+            SET karma = karma + NEW.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1132,7 +1143,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote * 5
+            SET karma = karma - OLD.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
