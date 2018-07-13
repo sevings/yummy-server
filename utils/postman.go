@@ -36,9 +36,8 @@ func NewPostman(domain, apiKey, pubKey string) *Postman {
 	go func() {
 		for msg := range pm.ch {
 			resp, id, err := pm.mg.Send(msg)
-			if err == nil {
+			if err != nil {
 				fmt.Printf("ID: %s Resp: %s\n", id, resp)
-			} else {
 				log.Println(err)
 			}
 		}
@@ -100,9 +99,9 @@ func (pm *Postman) SendGreeting(address, name, code string) {
 	pm.send(email, address, subj, name)
 }
 
-func (pm *Postman) SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment) {
+func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment) {
 	var ending string
-	if gender == models.ProfileAllOf1GenderFemale {
+	if fromGender == models.ProfileAllOf1GenderFemale {
 		ending = "а"
 	}
 
@@ -134,12 +133,12 @@ func (pm *Postman) SendNewComment(address, name, gender, entryTitle string, cmt 
 	}
 
 	subj := "Новый комментарий к записи" + entry
-	pm.send(email, address, subj, name)
+	pm.send(email, address, subj, toShowName)
 }
 
-func (pm *Postman) SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string) {
+func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string) {
 	var ending, pronoun string
-	if gender == models.ProfileAllOf1GenderFemale {
+	if fromGender == models.ProfileAllOf1GenderFemale {
 		ending = "ась"
 		pronoun = "её"
 	} else {
@@ -148,11 +147,11 @@ func (pm *Postman) SendNewFollower(address, name string, isPrivate bool, hisShow
 	}
 
 	var intro, text string
-	if isPrivate {
-		intro = hisShowName + " запрашивает доступ к чтению твоего тлога."
+	if toPrivate {
+		intro = fromShowName + " запрашивает доступ к чтению твоего тлога."
 		text = "Принять или отклонить запрос можно на странице " + pronoun + " профиля: "
 	} else {
-		intro = hisShowName + " подписал" + ending + " на твой тлог."
+		intro = fromShowName + " подписал" + ending + " на твой тлог."
 		text = "Ссылка на " + pronoun + " профиль: "
 	}
 
@@ -166,14 +165,14 @@ func (pm *Postman) SendNewFollower(address, name string, isPrivate bool, hisShow
 					Instructions: text,
 					Button: hermes.Button{
 						Color: "#22BC66",
-						Text:  hisName,
-						Link:  "http://mindwell.win/users/" + hisName,
+						Text:  fromShowName,
+						Link:  "http://mindwell.win/users/" + fromName,
 					},
 				},
 			},
 		},
 	}
 
-	subj := "Новый подписчик"
-	pm.send(email, address, subj, name)
+	const subj = "Новый подписчик"
+	pm.send(email, address, subj, toShowName)
 }

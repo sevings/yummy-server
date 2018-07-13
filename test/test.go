@@ -24,11 +24,11 @@ func (esm *EmailSenderMock) SendGreeting(address, name, code string) {
 	esm.Codes = append(esm.Codes, code)
 }
 
-func (esm *EmailSenderMock) SendNewComment(address, name, gender, entryTitle string, cmt *models.Comment) {
+func (esm *EmailSenderMock) SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment) {
 	esm.Emails = append(esm.Emails, address)
 }
 
-func (esm *EmailSenderMock) SendNewFollower(address, name string, isPrivate bool, hisShowName, hisName, gender string) {
+func (esm *EmailSenderMock) SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string) {
 	esm.Emails = append(esm.Emails, address)
 }
 

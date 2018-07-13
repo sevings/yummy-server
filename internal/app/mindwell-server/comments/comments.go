@@ -305,23 +305,29 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	var title string
 	tx.Query(titleQ, cmt.EntryID).Scan(&title)
 
-	if tx.Error() != nil {
-		log.Print("title:", tx.Error())
-	}
+	title, _ = utils.CutText(title, "%.60s", 60)
 
-	const usersQ = `
-		SELECT show_name, email, gender.type
-		FROM users, watching, gender
+	const fromQ = `
+		SELECT gender.type 
+		FROM users, gender 
+		WHERE users.id = $1 AND users.gender = gender.id
+	`
+
+	var fromGender string
+	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
+
+	const toQ = `
+		SELECT show_name, email
+		FROM users, watching 
 		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
-			AND users.gender = gender.id AND users.id <> $2 AND users.verified`
+			AND users.id <> $2 AND users.verified`
 
-	tx.Query(usersQ, cmt.EntryID, cmt.Author.ID)
+	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
 
-	var name, email, gender string
-	for tx.Scan(&name, &email, &gender) {
-		srv.Mail.SendNewComment(email, name, gender, title, cmt)
+	var toShowName, email string
+	for tx.Scan(&toShowName, &email) {
+		srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
 	}
-
 }
 
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
