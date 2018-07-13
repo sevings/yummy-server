@@ -2113,6 +2113,49 @@ func init() {
         }
       ]
     },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "new",
+              "karma"
+            ],
+            "type": "string",
+            "default": "new",
+            "name": "top",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "top": {
+                  "type": "string"
+                },
+                "users": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Friend"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/{name}": {
       "get": {
         "security": [
@@ -2725,9 +2768,6 @@ func init() {
     },
     "FriendList": {
       "type": "object",
-      "required": [
-        "users"
-      ],
       "properties": {
         "relation": {
           "type": "string",
@@ -5269,6 +5309,38 @@ func init() {
         }
       ]
     },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "new",
+              "karma"
+            ],
+            "type": "string",
+            "default": "new",
+            "name": "top",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/getUsersOKBody"
+            }
+          }
+        }
+      }
+    },
     "/users/{name}": {
       "get": {
         "security": [
@@ -5887,9 +5959,6 @@ func init() {
     },
     "FriendList": {
       "type": "object",
-      "required": [
-        "users"
-      ],
       "properties": {
         "relation": {
           "type": "string",
@@ -6189,6 +6258,21 @@ func init() {
           "type": "array",
           "items": {
             "type": "string"
+          }
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "getUsersOKBody": {
+      "type": "object",
+      "properties": {
+        "top": {
+          "type": "string"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Friend"
           }
         }
       },

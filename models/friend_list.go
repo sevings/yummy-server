@@ -28,7 +28,6 @@ type FriendList struct {
 	Subject *User `json:"subject,omitempty"`
 
 	// users
-	// Required: true
 	Users []*Friend `json:"users"`
 }
 
@@ -126,8 +125,8 @@ func (m *FriendList) validateSubject(formats strfmt.Registry) error {
 
 func (m *FriendList) validateUsers(formats strfmt.Registry) error {
 
-	if err := validate.Required("users", "body", m.Users); err != nil {
-		return err
+	if swag.IsZero(m.Users) { // not required
+		return nil
 	}
 
 	for i := 0; i < len(m.Users); i++ {

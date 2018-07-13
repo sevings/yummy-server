@@ -160,6 +160,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		RelationsGetRelationsToNameHandler: relations.GetRelationsToNameHandlerFunc(func(params relations.GetRelationsToNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsToName has not yet been implemented")
 		}),
+		UsersGetUsersHandler: users.GetUsersHandlerFunc(func(params users.GetUsersParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsers has not yet been implemented")
+		}),
 		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
 		}),
@@ -363,6 +366,8 @@ type MindwellAPI struct {
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
 	RelationsGetRelationsToNameHandler relations.GetRelationsToNameHandler
+	// UsersGetUsersHandler sets the operation handler for the get users operation
+	UsersGetUsersHandler users.GetUsersHandler
 	// UsersGetUsersNameHandler sets the operation handler for the get users name operation
 	UsersGetUsersNameHandler users.GetUsersNameHandler
 	// UsersGetUsersNameFavoritesHandler sets the operation handler for the get users name favorites operation
@@ -634,6 +639,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.RelationsGetRelationsToNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsToNameHandler")
+	}
+
+	if o.UsersGetUsersHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersHandler")
 	}
 
 	if o.UsersGetUsersNameHandler == nil {
@@ -1039,6 +1048,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/relations/to/{name}"] = relations.NewGetRelationsToName(o.context, o.RelationsGetRelationsToNameHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users"] = users.NewGetUsers(o.context, o.UsersGetUsersHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

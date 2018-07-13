@@ -32,6 +32,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.MeGetMeRequestedHandler = me.GetMeRequestedHandlerFunc(newMyRequestedLoader(srv))
 
 	srv.API.MePutMeOnlineHandler = me.PutMeOnlineHandlerFunc(newMyOnlineSetter(srv))
+
+	srv.API.UsersGetUsersHandler = users.GetUsersHandlerFunc(newTopUsersLoader(srv))
 }
 
 const profileQuery = `
@@ -175,13 +177,16 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 	return relation == models.RelationshipRelationFollowed
 }
 
-const usersQueryStart = `
+const usersQuerySelect = `
 SELECT long_users.id, name, show_name,
 is_online, extract(epoch from last_seen_at), title, karma,
 avatar, cover,
 entries_count, followings_count, followers_count, 
 ignored_count, invited_count, comments_count, 
 favorites_count, tags_count
+`
+
+const usersQueryStart = usersQuerySelect + `
 FROM long_users, relation, relations
 WHERE `
 
@@ -207,9 +212,8 @@ WHERE invited_by = by.id
 ORDER BY long_users.id DESC
 LIMIT $2 OFFSET $3`
 
-func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.FriendList {
-	var list models.FriendList
-	tx.Query(usersQuery, args...)
+func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend {
+	list := make([]*models.Friend, 0, 50)
 
 	for {
 		var user models.Friend
@@ -228,8 +232,17 @@ func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, s
 
 		user.Avatar = srv.NewAvatar(avatar)
 		user.Cover = srv.NewCover(user.ID, cover)
-		list.Users = append(list.Users, &user)
+		list = append(list, &user)
 	}
+
+	return list
+}
+
+func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, subjectQuery, relation string, args ...interface{}) *models.FriendList {
+	var list models.FriendList
+
+	tx.Query(usersQuery, args...)
+	list.Users = loadUserList(srv, tx)
 
 	list.Subject = loadUser(srv, tx, subjectQuery, args[0])
 	list.Relation = relation

@@ -123,8 +123,6 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Friend'
-    required:
-      - users
   Profile:
     allOf:
       - $ref: '#/definitions/Friend'
@@ -690,6 +688,30 @@ paths:
                 type: array
                 items:
                   type: string
+  /users:
+    get:
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - in: query
+          name: top
+          type: string
+          enum: [new, karma]
+          default: new
+      tags:
+        - users
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            properties:
+              top:
+                type: string
+              users:
+                type: array
+                items:
+                  $ref: '#/definitions/Friend'
   /users/{name}:
     parameters:
       - $ref: '#/parameters/pathName'
