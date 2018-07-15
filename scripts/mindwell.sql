@@ -588,6 +588,7 @@ CREATE TABLE "mindwell"."invites" (
     "word1" Integer NOT NULL,
     "word2" Integer NOT NULL,
     "word3" Integer NOT NULL,
+	"created_at" Date DEFAULT CURRENT_DATE NOT NULL,
     CONSTRAINT "unique_invite_id" PRIMARY KEY( "id" ),
     CONSTRAINT "invite_word1" FOREIGN KEY("word1") REFERENCES "mindwell"."invite_words"("id"),
     CONSTRAINT "invite_word2" FOREIGN KEY("word2") REFERENCES "mindwell"."invite_words"("id"),
@@ -616,6 +617,26 @@ CREATE OR REPLACE FUNCTION give_invite(userName TEXT) RETURNS VOID AS $$
                 trunc(random() * wordCount),
                 trunc(random() * wordCount),
                 trunc(random() * wordCount));
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
+    DECLARE
+        wordCount INTEGER;
+    BEGIN
+        wordCount = (SELECT COUNT(*) FROM invite_words);
+
+        INSERT INTO invites(referrer_id, word1, word2, word3)
+            SELECT users.id, 
+                trunc(random() * wordCount),
+                trunc(random() * wordCount),
+                trunc(random() * wordCount)
+            FROM users
+            LEFT JOIN invites ON users.id = invites.referrer_id
+            WHERE karma > (SELECT MAX(karma) / 2 FROM users)
+            GROUP BY users.id
+            HAVING COUNT(invites.id) = 0 OR (COUNT(invites.id) < 3 
+                AND age(MAX(invites.created_at)) >= interval '7 days');
     END;
 $$ LANGUAGE plpgsql;
 
@@ -1044,7 +1065,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1085,7 +1106,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1097,7 +1118,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1143,7 +1164,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote * 5
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
