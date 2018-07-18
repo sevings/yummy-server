@@ -132,8 +132,8 @@ CREATE OR REPLACE FUNCTION burn_karma() RETURNS VOID AS $$
     UPDATE users
     SET karma = 
         CASE 
-            WHEN abs(karma) > 50 THEN karma * 0.98
-            WHEN abs(karma) > 1 THEN karma - karma / trunc(karma)
+            WHEN abs(karma) > 25 THEN karma * 0.98
+            WHEN abs(karma) > 1 THEN karma - karma / 2 / trunc(karma)
             ELSE 0
         END
     WHERE karma <> 0;
@@ -1018,6 +1018,7 @@ CREATE TABLE "mindwell"."entry_votes" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
     "vote" Real NOT NULL,
+    "karma_diff" Real NOT NULL DEFAULT 0,
     CONSTRAINT "entry_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "entry_vote_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_entry_vote" UNIQUE("user_id", "entry_id") );
