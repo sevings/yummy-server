@@ -39,10 +39,6 @@ type ProfileAllOf1 struct {
 	// design
 	Design *Design `json:"design,omitempty"`
 
-	// gender
-	// Enum: [male female not set]
-	Gender string `json:"gender,omitempty"`
-
 	// invited by
 	InvitedBy *User `json:"invitedBy,omitempty"`
 
@@ -70,10 +66,6 @@ func (m *ProfileAllOf1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateDesign(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateGender(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -134,52 +126,6 @@ func (m *ProfileAllOf1) validateDesign(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-var profileAllOf1TypeGenderPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["male","female","not set"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		profileAllOf1TypeGenderPropEnum = append(profileAllOf1TypeGenderPropEnum, v)
-	}
-}
-
-const (
-
-	// ProfileAllOf1GenderMale captures enum value "male"
-	ProfileAllOf1GenderMale string = "male"
-
-	// ProfileAllOf1GenderFemale captures enum value "female"
-	ProfileAllOf1GenderFemale string = "female"
-
-	// ProfileAllOf1GenderNotSet captures enum value "not set"
-	ProfileAllOf1GenderNotSet string = "not set"
-)
-
-// prop value enum
-func (m *ProfileAllOf1) validateGenderEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, profileAllOf1TypeGenderPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *ProfileAllOf1) validateGender(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Gender) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateGenderEnum("gender", "body", m.Gender); err != nil {
-		return err
 	}
 
 	return nil

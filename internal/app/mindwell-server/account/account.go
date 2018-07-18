@@ -128,9 +128,9 @@ func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, na
 
 func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	var g govatar.Gender
-	if gender == models.ProfileAllOf1GenderMale {
+	if gender == models.FriendAllOf1GenderMale {
 		g = govatar.MALE
-	} else if gender == models.ProfileAllOf1GenderFemale {
+	} else if gender == models.FriendAllOf1GenderFemale {
 		g = govatar.FEMALE
 	} else if ch := name[len(name)-1]; ch == 'a' || ch == 'y' || ch == 'u' || ch == 'e' || ch == 'o' || ch == 'i' {
 		g = govatar.FEMALE
@@ -168,7 +168,7 @@ func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Post
 		RETURNING id`
 
 	if params.Gender == nil {
-		gender := models.ProfileAllOf1GenderNotSet
+		gender := models.FriendAllOf1GenderNotSet
 		params.Gender = &gender
 	}
 

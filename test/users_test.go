@@ -112,7 +112,7 @@ func TestEditProfile(t *testing.T) {
 	user.Birthday = "1988-01-01T20:01:31.844+03:00"
 	user.City = "city edit"
 	user.Country = "country edit"
-	user.Gender = models.ProfileAllOf1GenderFemale
+	user.Gender = models.FriendAllOf1GenderFemale
 	user.IsDaylog = true
 	user.Privacy = models.ProfileAllOf1PrivacyFollowers
 	user.Title = "title edit"

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -22,6 +24,10 @@ type FriendAllOf1 struct {
 
 	// cover
 	Cover *Cover `json:"cover,omitempty"`
+
+	// gender
+	// Enum: [male female not set]
+	Gender string `json:"gender,omitempty"`
 
 	// karma
 	Karma float32 `json:"karma,omitempty"`
@@ -43,6 +49,10 @@ func (m *FriendAllOf1) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateCover(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateGender(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -87,6 +97,52 @@ func (m *FriendAllOf1) validateCover(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+var friendAllOf1TypeGenderPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["male","female","not set"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		friendAllOf1TypeGenderPropEnum = append(friendAllOf1TypeGenderPropEnum, v)
+	}
+}
+
+const (
+
+	// FriendAllOf1GenderMale captures enum value "male"
+	FriendAllOf1GenderMale string = "male"
+
+	// FriendAllOf1GenderFemale captures enum value "female"
+	FriendAllOf1GenderFemale string = "female"
+
+	// FriendAllOf1GenderNotSet captures enum value "not set"
+	FriendAllOf1GenderNotSet string = "not set"
+)
+
+// prop value enum
+func (m *FriendAllOf1) validateGenderEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, friendAllOf1TypeGenderPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *FriendAllOf1) validateGender(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Gender) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateGenderEnum("gender", "body", m.Gender); err != nil {
+		return err
 	}
 
 	return nil

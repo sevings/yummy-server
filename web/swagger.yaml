@@ -81,6 +81,9 @@ definitions:
       - $ref: '#/definitions/User'
       - type: object
         properties:
+          gender:
+            type: string
+            enum: [male, female, not set]
           title:
             type: string
             maxLength: 260
@@ -128,9 +131,6 @@ definitions:
       - $ref: '#/definitions/Friend'
       - type: object
         properties:
-          gender:
-            type: string
-            enum: [male, female, not set]
           isDaylog:
             type: boolean
           privacy:

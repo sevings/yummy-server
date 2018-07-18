@@ -178,7 +178,7 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 }
 
 const usersQuerySelect = `
-SELECT long_users.id, name, show_name,
+SELECT long_users.id, name, show_name, gender,
 is_online, extract(epoch from last_seen_at), title, karma,
 avatar, cover,
 entries_count, followings_count, followers_count, 
@@ -200,13 +200,7 @@ WITH by AS (
 	SELECT id
 	FROM users
 	WHERE lower(name) = lower($1)
-)
-SELECT long_users.id, name, show_name,
-is_online, extract(epoch from last_seen_at), title, karma,
-avatar, cover,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count
+)` + usersQuerySelect + `
 FROM long_users, by
 WHERE invited_by = by.id
 ORDER BY long_users.id DESC
@@ -220,7 +214,7 @@ func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend 
 		user.Counts = &models.FriendAllOf1Counts{}
 		var avatar, cover string
 
-		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName,
+		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName, &user.Gender,
 			&user.IsOnline, &user.LastSeenAt, &user.Title, &user.Karma,
 			&avatar, &cover,
 			&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,

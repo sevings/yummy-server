@@ -2750,6 +2750,14 @@ func init() {
             "cover": {
               "$ref": "#/definitions/Cover"
             },
+            "gender": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female",
+                "not set"
+              ]
+            },
             "karma": {
               "type": "number",
               "format": "float"
@@ -2818,14 +2826,6 @@ func init() {
             },
             "design": {
               "$ref": "#/definitions/Design"
-            },
-            "gender": {
-              "type": "string",
-              "enum": [
-                "male",
-                "female",
-                "not set"
-              ]
             },
             "invitedBy": {
               "$ref": "#/definitions/User"
@@ -6154,6 +6154,14 @@ func init() {
         "cover": {
           "$ref": "#/definitions/Cover"
         },
+        "gender": {
+          "type": "string",
+          "enum": [
+            "male",
+            "female",
+            "not set"
+          ]
+        },
         "karma": {
           "type": "number",
           "format": "float"
@@ -6301,14 +6309,6 @@ func init() {
         },
         "design": {
           "$ref": "#/definitions/Design"
-        },
-        "gender": {
-          "type": "string",
-          "enum": [
-            "male",
-            "female",
-            "not set"
-          ]
         },
         "invitedBy": {
           "$ref": "#/definitions/User"
