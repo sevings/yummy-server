@@ -622,12 +622,46 @@ paths:
           description: code or email is not valid
           schema:
             $ref: '#/definitions/Error'
+  /account/settings/email:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - account
+      responses:
+        200:
+          description: email notification settings
+          schema:
+            type: object
+            properties:
+              comments:
+                type: boolean
+              followers:
+                type: boolean
+    put:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - account
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          type: boolean
+          name: comments
+          default: false
+        - in: formData
+          type: boolean
+          name: followers
+          default: false
+      responses:
+        200:
+          description: email notification settings has been updated
   /account/password:
     post:
       summary: set new password
       consumes:
         - multipart/form-data
-        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           type: string

@@ -31,6 +31,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(newVerificationSender(srv))
 	srv.API.AccountGetAccountVerificationEmailHandler = account.GetAccountVerificationEmailHandlerFunc(newEmailVerifier(srv))
+
+	srv.API.AccountGetAccountSettingsEmailHandler = account.GetAccountSettingsEmailHandlerFunc(newEmailSettingsLoader(srv))
+	srv.API.AccountPutAccountSettingsEmailHandler = account.PutAccountSettingsEmailHandlerFunc(newEmailSettingsEditor(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -444,6 +447,30 @@ func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerifica
 			tx.Exec(q, params.Email)
 
 			return account.NewGetAccountVerificationEmailOK()
+		})
+	}
+}
+
+func newEmailSettingsLoader(srv *utils.MindwellServer) func(account.GetAccountSettingsEmailParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountSettingsEmailParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			settings := models.GetAccountSettingsEmailOKBody{}
+
+			const q = "SELECT email_comments, email_followers from users where id = $1"
+			tx.Query(q, userID.ID).Scan(&settings.Comments, &settings.Followers)
+
+			return account.NewGetAccountSettingsEmailOK().WithPayload(&settings)
+		})
+	}
+}
+
+func newEmailSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSettingsEmailParams, *models.UserID) middleware.Responder {
+	return func(params account.PutAccountSettingsEmailParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = "UPDATE users SET email_comments = $2, email_followers = $3 where id = $1"
+			tx.Exec(q, userID.ID, *params.Comments, *params.Followers)
+
+			return account.NewPutAccountSettingsEmailOK()
 		})
 	}
 }

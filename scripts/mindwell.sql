@@ -86,6 +86,8 @@ CREATE TABLE "mindwell"."users" (
 	"text_alignment" Integer DEFAULT 0 NOT NULL,
 	"text_color" Character( 7 ) DEFAULT '#000000' NOT NULL,
 	"background_color" Character( 7 ) DEFAULT '#ffffff' NOT NULL,
+    "email_comments" Boolean NOT NULL DEFAULT TRUE,
+    "email_followers" Boolean NOT NULL DEFAULT TRUE,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
     CONSTRAINT "enum_user_gender" FOREIGN KEY("gender") REFERENCES "mindwell"."gender"("id"),
     CONSTRAINT "enum_user_privacy" FOREIGN KEY("privacy") REFERENCES "mindwell"."user_privacy"("id"),

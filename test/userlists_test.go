@@ -148,11 +148,11 @@ func checkNameInvited(t *testing.T, user *models.UserID, name string, skip, limi
 }
 
 func TestOpenFriendLists(t *testing.T) {
-	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
 	time.Sleep(10 * time.Millisecond)
-	checkFollow(t, userIDs[0], profiles[2], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 	time.Sleep(10 * time.Millisecond)
-	checkFollow(t, userIDs[1], profiles[2], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[1], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 
 	req := require.New(t)
 	var list []*models.Friend
@@ -189,9 +189,9 @@ func TestOpenFriendLists(t *testing.T) {
 	checkUnfollow(t, userIDs[0], userIDs[2])
 	checkUnfollow(t, userIDs[1], userIDs[2])
 
-	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationIgnored)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored)
 	time.Sleep(10 * time.Millisecond)
-	checkFollow(t, userIDs[0], profiles[2], models.RelationshipRelationIgnored)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored)
 
 	checkMyIgnored(t, userIDs[2], 0, 100, 0)
 
@@ -237,9 +237,9 @@ func TestOpenFriendLists(t *testing.T) {
 }
 
 func TestPrivateFriendLists(t *testing.T) {
-	checkFollow(t, userIDs[0], profiles[2], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 	time.Sleep(10 * time.Millisecond)
-	checkFollow(t, userIDs[1], profiles[2], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[1], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 
 	profiles[2].Privacy = models.ProfileAllOf1PrivacyFollowers
 

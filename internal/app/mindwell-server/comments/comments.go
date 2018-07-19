@@ -320,7 +320,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 		SELECT show_name, email
 		FROM users, watching 
 		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
-			AND users.id <> $2 AND users.verified`
+			AND users.id <> $2 AND users.verified AND users.email_comments`
 
 	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
 

@@ -75,15 +75,14 @@ func isPrivateTlog(tx *utils.AutoTx, name string) bool {
 
 func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, toPrivate bool, from, to string) {
 	const toQ = `
-		SELECT show_name, email, verified
+		SELECT show_name, email
 		FROM users 
-		WHERE lower(name) = lower($1)
+		WHERE lower(name) = lower($1) AND verified AND email_followers
 	`
 
 	var toShowName, email string
-	var verified bool
-	tx.Query(toQ, to).Scan(&toShowName, &email, &verified)
-	if !verified {
+	tx.Query(toQ, to).Scan(&toShowName, &email)
+	if tx.Error() != nil {
 		return
 	}
 

@@ -85,6 +85,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountNameNameHandler: account.GetAccountNameNameHandlerFunc(func(params account.GetAccountNameNameParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountNameName has not yet been implemented")
 		}),
+		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
+		}),
 		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
 		}),
@@ -205,6 +208,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePostMeTlog has not yet been implemented")
 		}),
+		AccountPutAccountSettingsEmailHandler: account.PutAccountSettingsEmailHandlerFunc(func(params account.PutAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountPutAccountSettingsEmail has not yet been implemented")
+		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
 		}),
@@ -316,6 +322,8 @@ type MindwellAPI struct {
 	AccountGetAccountInvitesHandler account.GetAccountInvitesHandler
 	// AccountGetAccountNameNameHandler sets the operation handler for the get account name name operation
 	AccountGetAccountNameNameHandler account.GetAccountNameNameHandler
+	// AccountGetAccountSettingsEmailHandler sets the operation handler for the get account settings email operation
+	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
 	// AccountGetAccountVerificationEmailHandler sets the operation handler for the get account verification email operation
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
@@ -396,6 +404,8 @@ type MindwellAPI struct {
 	CommentsPostEntriesIDCommentsHandler comments.PostEntriesIDCommentsHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
 	MePostMeTlogHandler me.PostMeTlogHandler
+	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
+	AccountPutAccountSettingsEmailHandler account.PutAccountSettingsEmailHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
 	// VotesPutCommentsIDVoteHandler sets the operation handler for the put comments ID vote operation
@@ -539,6 +549,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountNameNameHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountNameNameHandler")
+	}
+
+	if o.AccountGetAccountSettingsEmailHandler == nil {
+		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
 	}
 
 	if o.AccountGetAccountVerificationEmailHandler == nil {
@@ -699,6 +713,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePostMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.PostMeTlogHandler")
+	}
+
+	if o.AccountPutAccountSettingsEmailHandler == nil {
+		unregistered = append(unregistered, "account.PutAccountSettingsEmailHandler")
 	}
 
 	if o.CommentsPutCommentsIDHandler == nil {
@@ -927,6 +945,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/account/verification/{email}"] = account.NewGetAccountVerificationEmail(o.context, o.AccountGetAccountVerificationEmailHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1123,6 +1146,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/me/tlog"] = me.NewPostMeTlog(o.context, o.MePostMeTlogHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/account/settings/email"] = account.NewPutAccountSettingsEmail(o.context, o.AccountPutAccountSettingsEmailHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

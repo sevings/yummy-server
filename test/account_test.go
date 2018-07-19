@@ -325,3 +325,40 @@ func TestRegister(t *testing.T) {
 
 	req.NotEqual(acc.APIKey, user.Account.APIKey)
 }
+
+func getEmailSettings(t *testing.T, userID *models.UserID) *models.GetAccountSettingsEmailOKBody {
+	load := api.AccountGetAccountSettingsEmailHandler.Handle
+	resp := load(account.GetAccountSettingsEmailParams{}, userID)
+	body, ok := resp.(*account.GetAccountSettingsEmailOK)
+	require.True(t, ok, "user %d", userID.ID)
+	return body.Payload
+}
+
+func checkEmailSettings(t *testing.T, userID *models.UserID, comments, followers bool) {
+	settings := getEmailSettings(t, userID)
+	require.Equal(t, comments, settings.Comments)
+	require.Equal(t, followers, settings.Followers)
+}
+
+func checkUpdateEmailSettings(t *testing.T, userID *models.UserID, comments, followers bool) {
+	load := api.AccountPutAccountSettingsEmailHandler.Handle
+
+	settings := account.PutAccountSettingsEmailParams{
+		Comments:  &comments,
+		Followers: &followers,
+	}
+
+	resp := load(settings, userID)
+	_, ok := resp.(*account.PutAccountSettingsEmailOK)
+
+	require.True(t, ok, "user %d", userID.ID)
+
+	checkEmailSettings(t, userID, comments, followers)
+}
+
+func TestEmailSettings(t *testing.T) {
+	checkEmailSettings(t, userIDs[0], true, true)
+	checkUpdateEmailSettings(t, userIDs[0], true, false)
+	checkUpdateEmailSettings(t, userIDs[0], false, false)
+	checkUpdateEmailSettings(t, userIDs[0], true, true)
+}

@@ -196,8 +196,7 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -359,6 +358,66 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          }
+        }
+      }
+    },
+    "/account/settings/email": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "email notification settings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "boolean"
+                },
+                "followers": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "comments",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "followers",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "email notification settings has been updated"
           }
         }
       }
@@ -3212,8 +3271,7 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -3375,6 +3433,58 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          }
+        }
+      }
+    },
+    "/account/settings/email": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "email notification settings",
+            "schema": {
+              "$ref": "#/definitions/getAccountSettingsEmailOKBody"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "comments",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "followers",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "email notification settings has been updated"
           }
         }
       }
@@ -6258,6 +6368,18 @@ func init() {
         "isFree": false,
         "name": "example"
       }
+    },
+    "getAccountSettingsEmailOKBody": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "boolean"
+        },
+        "followers": {
+          "type": "boolean"
+        }
+      },
+      "x-go-gen-location": "operations"
     },
     "getDesignFontsOKBody": {
       "type": "object",

@@ -45,7 +45,7 @@ func checkRelation(t *testing.T, from, to *models.UserID, relation string) {
 	checkToRelation(t, to, from, relation)
 }
 
-func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, relation string) {
+func checkFollow(t *testing.T, user *models.UserID, toID *models.UserID, to *models.AuthProfile, relation string) {
 	put := api.RelationsPutRelationsToNameHandler.Handle
 	params := relations.PutRelationsToNameParams{
 		Name: to.Name,
@@ -61,7 +61,7 @@ func checkFollow(t *testing.T, user *models.UserID, to *models.AuthProfile, rela
 	req.Equal(user.Name, status.From)
 	req.Equal(relation, status.Relation)
 
-	if relation == models.RelationshipRelationFollowed && to.Account.Verified {
+	if relation == models.RelationshipRelationFollowed && to.Account.Verified && getEmailSettings(t, toID).Followers {
 		esm.CheckEmail(t, to.Account.Email)
 	} else {
 		req.Empty(esm.Emails)
@@ -123,15 +123,26 @@ func TestRelationship(t *testing.T) {
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationIgnored)
+	checkUpdateEmailSettings(t, userIDs[2], true, false)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
+	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationFollowed)
+	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
+
+	checkUpdateEmailSettings(t, userIDs[2], true, true)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
+
+	checkUnfollow(t, userIDs[0], userIDs[2])
+	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationNone)
+	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
 }

@@ -366,7 +366,7 @@ func TestLoadFriendsFeed(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
-	checkFollow(t, userIDs[0], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
