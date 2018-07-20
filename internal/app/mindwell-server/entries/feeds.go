@@ -98,7 +98,7 @@ func formatFloat(val float64) string {
 	return strconv.FormatFloat(val, 'f', 6, 64)
 }
 
-func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64) *models.Feed {
+func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse bool) *models.Feed {
 	feed := models.Feed{}
 
 	for {
@@ -132,6 +132,13 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64) *models
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
+	if reverse {
+		list := feed.Entries
+		for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
+			list[i], list[j] = list[j], list[i]
+		}
+	}
+
 	return &feed
 }
 
@@ -145,14 +152,14 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserI
 		q = liveFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
 		arg = before
 	} else {
-		q = liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		q = liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
 		arg = after
 	}
 
 	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(srv, tx, userID)
+	feed := loadFeed(srv, tx, userID, before <= 0)
 
 	if len(feed.Entries) == 0 {
 		return feed
@@ -238,13 +245,13 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserI
 		q = tlogFeedQuery + " AND entries.created_at < to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
 		arg = before
 	} else {
-		q = tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
+		q = tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at ASC LIMIT $4"
 		arg = after
 	}
 
 	tx.Query(q, uID.ID, tlog, arg, limit)
 
-	feed := loadFeed(srv, tx, uID.ID)
+	feed := loadFeed(srv, tx, uID.ID, before <= 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -312,14 +319,14 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 		q = myTlogFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
 		arg = before
 	} else {
-		q = myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		q = myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
 		arg = after
 	}
 
 	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(srv, tx, userID)
+	feed := loadFeed(srv, tx, userID, before <= 0)
 
 	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
 
@@ -389,14 +396,14 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Us
 		q = friendsFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
 		arg = before
 	} else {
-		q = friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		q = friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
 		arg = after
 	}
 
 	userID := uID.ID
 	tx.Query(q, userID, arg, limit)
 
-	feed := loadFeed(srv, tx, userID)
+	feed := loadFeed(srv, tx, userID, before <= 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id

@@ -202,11 +202,13 @@ func TestLoadLive(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
 	postEntry(userIDs[1], models.EntryPrivacyMe)
+	postEntry(userIDs[1], models.EntryPrivacyAll)
 	postEntry(userIDs[2], models.EntryPrivacyAll)
 
-	feed := checkLoadLive(t, userIDs[0], 10, "", "", 2)
+	feed := checkLoadLive(t, userIDs[0], 10, "", "", 3)
 	checkEntry(t, feed.Entries[0], profiles[2], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
@@ -218,14 +220,35 @@ func TestLoadLive(t *testing.T) {
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 1, feed.NextBefore, "", 1)
+	feed = checkLoadLive(t, userIDs[0], 5, feed.NextBefore, "", 2)
+	checkEntry(t, feed.Entries[0], profiles[1], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	req.False(feed.HasBefore)
+	req.True(feed.HasAfter)
+
+	feed = checkLoadLive(t, userIDs[0], 2, "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[2], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	req.True(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	feed = checkLoadLive(t, userIDs[0], 5, feed.NextBefore, "", 1)
 	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
-	checkLoadLive(t, userIDs[0], 1, feed.NextBefore, "", 0)
-	checkLoadLive(t, userIDs[0], 0, feed.NextBefore, "", 0)
+	feed = checkLoadLive(t, userIDs[0], 5, "", feed.NextAfter, 2)
+	checkEntry(t, feed.Entries[0], profiles[2], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, models.RatingVoteNot, false, 3, models.EntryPrivacyAll, true, "", "test test test")
+
+	req.True(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	checkLoadLive(t, userIDs[0], 1, "", feed.NextAfter, 0)
+	checkLoadLive(t, userIDs[0], 0, "", feed.NextAfter, 0)
 }
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {

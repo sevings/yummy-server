@@ -204,7 +204,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 	} else {
 		const q = commentQuery + `
 			WHERE entry_id = $2 AND comments.id > $3
-			ORDER BY comments.id DESC
+			ORDER BY comments.id ASC
 			LIMIT $4`
 
 		tx.Query(q, userID, entryID, after, limit)
@@ -235,8 +235,10 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		list = append(list, &comment)
 	}
 
-	for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
-		list[i], list[j] = list[j], list[i]
+	if before > 0 {
+		for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
+			list[i], list[j] = list[j], list[i]
+		}
 	}
 
 	comments := &models.CommentList{Data: list}
