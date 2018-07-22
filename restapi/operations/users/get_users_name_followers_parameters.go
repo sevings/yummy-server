@@ -24,7 +24,7 @@ func NewGetUsersNameFollowersParams() GetUsersNameFollowersParams {
 	var (
 		// initialize parameters with default values
 
-		limitDefault = int64(50)
+		limitDefault = int64(30)
 
 		skipDefault = int64(0)
 	)
@@ -49,7 +49,7 @@ type GetUsersNameFollowersParams struct {
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
-	  Default: 50
+	  Default: 30
 	*/
 	Limit *int64
 	/*

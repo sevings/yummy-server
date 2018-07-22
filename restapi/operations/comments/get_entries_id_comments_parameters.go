@@ -27,7 +27,7 @@ func NewGetEntriesIDCommentsParams() GetEntriesIDCommentsParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 
-		limitDefault = int64(50)
+		limitDefault = int64(30)
 	)
 
 	return GetEntriesIDCommentsParams{
@@ -68,7 +68,7 @@ type GetEntriesIDCommentsParams struct {
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
-	  Default: 50
+	  Default: 30
 	*/
 	Limit *int64
 }

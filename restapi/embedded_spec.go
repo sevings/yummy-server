@@ -3080,7 +3080,7 @@ func init() {
       "maximum": 100,
       "minimum": 1,
       "type": "integer",
-      "default": 50,
+      "default": 30,
       "name": "limit",
       "in": "query"
     },
@@ -3876,7 +3876,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -3969,7 +3969,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4022,7 +4022,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4070,7 +4070,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4273,7 +4273,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4838,7 +4838,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4880,7 +4880,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4916,7 +4916,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4952,7 +4952,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -4988,7 +4988,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5041,7 +5041,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5077,7 +5077,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5192,7 +5192,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5502,7 +5502,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5560,7 +5560,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5618,7 +5618,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5676,7 +5676,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -5734,7 +5734,7 @@ func init() {
             "maximum": 100,
             "minimum": 1,
             "type": "integer",
-            "default": 50,
+            "default": 30,
             "name": "limit",
             "in": "query"
           },
@@ -6518,7 +6518,7 @@ func init() {
       "maximum": 100,
       "minimum": 1,
       "type": "integer",
-      "default": 50,
+      "default": 30,
       "name": "limit",
       "in": "query"
     },

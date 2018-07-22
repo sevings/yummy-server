@@ -24,7 +24,7 @@ func BenchmarkLoadLive(b *testing.B) {
 		post(entryParams, userIDs[0])
 	}
 
-	var limit int64 = 50
+	var limit int64 = 30
 	before := "0"
 	after := "0"
 	params := entries.GetEntriesLiveParams{
