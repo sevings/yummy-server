@@ -85,6 +85,14 @@ WHERE (users.id = $1
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
 
+const tlogFavoritesQueryStart = tlogFeedQueryStart + `
+	INNER JOIN favorites ON entries.id = favorites.entry_id
+`
+
+const tlogFavoritesQueryWhere = friendsFeedQueryWhere + " AND favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))"
+
+const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
+
 func parseFloat(val string) float64 {
 	res, err := strconv.ParseFloat(val, 64)
 	if len(val) > 0 && err != nil {
@@ -449,6 +457,84 @@ func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFrie
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
 			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
+		})
+	}
+}
+
+func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
+	// if userID.Name == tlog {
+	// 	return loadMyFavorites(srv, tx, userID, beforeS, afterS, limit)
+	// }
+
+	before := parseFloat(beforeS)
+	after := parseFloat(afterS)
+
+	if after > 0 {
+		q := tlogFavoritesQuery + " AND favorites.date > to_timestamp($3) ORDER BY favorites.date ASC LIMIT $4"
+		tx.Query(q, userID.ID, tlog, after, limit)
+	} else if before > 0 {
+		q := tlogFavoritesQuery + " AND favorites.date < to_timestamp($3) ORDER BY favorites.date DESC LIMIT $4"
+		tx.Query(q, userID.ID, tlog, before, limit)
+	} else {
+		q := tlogFavoritesQuery + " ORDER BY favorites.date DESC LIMIT $3"
+		tx.Query(q, userID.ID, tlog, limit)
+	}
+
+	feed := loadFeed(srv, tx, userID.ID, after > 0)
+
+	const scrollQ = `FROM entries
+		INNER JOIN users ON entries.author_id = users.id
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
+		INNER JOIN favorites ON entries.id = favorites.entry_id
+		` + tlogFavoritesQueryWhere + " AND favorites.date "
+
+	if len(feed.Entries) == 0 {
+		if before > 0 {
+			const afterQuery = `SELECT extract(epoch from favorites.date) ` + scrollQ +
+				` >= to_timestamp($3)
+				ORDER BY favorites.date DESC LIMIT 1`
+
+			tx.Query(afterQuery, userID.ID, tlog, before)
+			var nextAfter float64
+			tx.Scan(&nextAfter)
+			feed.NextAfter = formatFloat(nextAfter)
+		}
+
+		if after > 0 {
+			const beforeQuery = `SELECT extract(epoch from favorites.date) ` + scrollQ +
+				` <= to_timestamp($3)
+				ORDER BY favorites.date DESC LIMIT 1`
+
+			tx.Query(beforeQuery, userID.ID, tlog, after)
+			var nextBefore float64
+			tx.Scan(&nextBefore)
+			feed.NextBefore = formatFloat(nextBefore)
+		}
+	} else {
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($3))"
+
+		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
+		feed.NextBefore = formatFloat(nextBefore)
+		tx.Query(beforeQuery, userID.ID, tlog, nextBefore)
+		tx.Scan(&feed.HasBefore)
+
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($3))"
+
+		nextAfter := feed.Entries[0].CreatedAt
+		feed.NextAfter = formatFloat(nextAfter)
+		tx.Query(afterQuery, userID.ID, tlog, nextAfter)
+		tx.Scan(&feed.HasAfter)
+	}
+
+	return feed
+}
+
+func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFavoritesParams, *models.UserID) middleware.Responder {
+	return func(params users.GetUsersNameFavoritesParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadTlogFavorites(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
+			return users.NewGetUsersNameFavoritesOK().WithPayload(feed)
 		})
 	}
 }

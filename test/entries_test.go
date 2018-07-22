@@ -433,3 +433,67 @@ func TestLoadFriendsFeed(t *testing.T) {
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
 }
+
+func checkLoadFavorites(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
+	params := users.GetUsersNameFavoritesParams{
+		Name:   tlog.Name,
+		Limit:  &limit,
+		Before: &before,
+		After:  &after,
+	}
+
+	load := api.UsersGetUsersNameFavoritesHandler.Handle
+	resp := load(params, user)
+	body, ok := resp.(*users.GetUsersNameFavoritesOK)
+	if !ok {
+		t.Fatal("error load tlog")
+	}
+
+	feed := body.Payload
+	require.Equal(t, size, len(feed.Entries))
+
+	return feed
+}
+
+func TestLoadFavorites(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+	postEntry(userIDs[0], models.EntryPrivacySome)
+	postEntry(userIDs[0], models.EntryPrivacyMe)
+	postEntry(userIDs[0], models.EntryPrivacyAll)
+
+	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", 4)
+
+	checkFavoriteEntry(t, userIDs[0], tlog.Entries[0].ID, true)
+	checkFavoriteEntry(t, userIDs[0], tlog.Entries[1].ID, true)
+	checkFavoriteEntry(t, userIDs[0], tlog.Entries[2].ID, true)
+
+	feed := checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 2)
+
+	req := require.New(t)
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 3)
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+
+	checkLoadFavorites(t, userIDs[1], userIDs[0], 10, "", "", 0)
+	checkLoadFavorites(t, userIDs[0], userIDs[1], 10, "", "", 1)
+
+	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 2, "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+
+	req.True(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 3, feed.NextBefore, "", 1)
+	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+
+	req.False(feed.HasBefore)
+	req.True(feed.HasAfter)
+}
