@@ -142,24 +142,22 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 	return &feed
 }
 
-func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
-	var q string
-	var arg float64
-	if before > 0 {
-		q = liveFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		arg = before
+	if after > 0 {
+		q := liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
+		tx.Query(q, userID.ID, after, limit)
+	} else if before > 0 {
+		q := liveFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		tx.Query(q, userID.ID, before, limit)
 	} else {
-		q = liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		arg = after
+		q := liveFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
+		tx.Query(q, userID.ID, limit)
 	}
 
-	userID := uID.ID
-	tx.Query(q, userID, arg, limit)
-
-	feed := loadFeed(srv, tx, userID, before <= 0)
+	feed := loadFeed(srv, tx, userID.ID, after > 0)
 
 	if len(feed.Entries) == 0 {
 		return feed
@@ -231,27 +229,26 @@ func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams,
 	}
 }
 
-func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
-	if uID.Name == tlog {
-		return loadMyTlogFeed(srv, tx, uID, beforeS, afterS, limit)
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
+	if userID.Name == tlog {
+		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, limit)
 	}
 
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
-	var q string
-	var arg float64
-	if before > 0 {
-		q = tlogFeedQuery + " AND entries.created_at < to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
-		arg = before
+	if after > 0 {
+		q := tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at ASC LIMIT $4"
+		tx.Query(q, userID.ID, tlog, after, limit)
+	} else if before > 0 {
+		q := tlogFeedQuery + " AND entries.created_at < to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
+		tx.Query(q, userID.ID, tlog, before, limit)
 	} else {
-		q = tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at ASC LIMIT $4"
-		arg = after
+		q := tlogFeedQuery + " ORDER BY entries.created_at DESC LIMIT $3"
+		tx.Query(q, userID.ID, tlog, limit)
 	}
 
-	tx.Query(q, uID.ID, tlog, arg, limit)
-
-	feed := loadFeed(srv, tx, uID.ID, before <= 0)
+	feed := loadFeed(srv, tx, userID.ID, after > 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -309,24 +306,22 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 	}
 }
 
-func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
-	var q string
-	var arg float64
-	if before > 0 {
-		q = myTlogFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		arg = before
+	if after > 0 {
+		q := myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
+		tx.Query(q, userID.ID, after, limit)
+	} else if before > 0 {
+		q := myTlogFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		tx.Query(q, userID.ID, before, limit)
 	} else {
-		q = myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		arg = after
+		q := myTlogFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
+		tx.Query(q, userID.ID, limit)
 	}
 
-	userID := uID.ID
-	tx.Query(q, userID, arg, limit)
-
-	feed := loadFeed(srv, tx, userID, before <= 0)
+	feed := loadFeed(srv, tx, userID.ID, after > 0)
 
 	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
 
@@ -336,7 +331,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 				` >= to_timestamp($1)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(afterQuery, userID, before)
+			tx.Query(afterQuery, userID.ID, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = formatFloat(nextAfter)
@@ -347,7 +342,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 				` <= to_timestamp($1)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(beforeQuery, userID, after)
+			tx.Query(beforeQuery, userID.ID, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = formatFloat(nextBefore)
@@ -357,14 +352,14 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Use
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = formatFloat(nextBefore)
-		tx.Query(beforeQuery, userID, nextBefore)
+		tx.Query(beforeQuery, userID.ID, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = formatFloat(nextAfter)
-		tx.Query(afterQuery, userID, nextAfter)
+		tx.Query(afterQuery, userID.ID, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
 
@@ -386,24 +381,22 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models
 	}
 }
 
-func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
-	var q string
-	var arg float64
-	if before > 0 {
-		q = friendsFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		arg = before
+	if after > 0 {
+		q := friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
+		tx.Query(q, userID.ID, after, limit)
+	} else if before > 0 {
+		q := friendsFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		tx.Query(q, userID.ID, before, limit)
 	} else {
-		q = friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		arg = after
+		q := friendsFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
+		tx.Query(q, userID.ID, limit)
 	}
 
-	userID := uID.ID
-	tx.Query(q, userID, arg, limit)
-
-	feed := loadFeed(srv, tx, userID, before <= 0)
+	feed := loadFeed(srv, tx, userID.ID, after > 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -416,7 +409,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Us
 				` >= to_timestamp($1)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(afterQuery, userID, before)
+			tx.Query(afterQuery, userID.ID, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = formatFloat(nextAfter)
@@ -427,7 +420,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Us
 				` <= to_timestamp($1)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(beforeQuery, userID, after)
+			tx.Query(beforeQuery, userID.ID, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = formatFloat(nextBefore)
@@ -437,14 +430,14 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, uID *models.Us
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = formatFloat(nextBefore)
-		tx.Query(beforeQuery, userID, nextBefore)
+		tx.Query(beforeQuery, userID.ID, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = formatFloat(nextAfter)
-		tx.Query(afterQuery, userID, nextAfter)
+		tx.Query(afterQuery, userID.ID, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
 
