@@ -194,7 +194,14 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		log.Printf("error parse after: %s", afterS)
 	}
 
-	if before > 0 {
+	if after > 0 {
+		const q = commentQuery + `
+			WHERE entry_id = $2 AND comments.id > $3
+			ORDER BY comments.id ASC
+			LIMIT $4`
+
+		tx.Query(q, userID, entryID, after, limit)
+	} else if before > 0 {
 		const q = commentQuery + `
 			WHERE entry_id = $2 AND comments.id < $3
 			ORDER BY comments.id DESC
@@ -203,11 +210,11 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		tx.Query(q, userID, entryID, before, limit)
 	} else {
 		const q = commentQuery + `
-			WHERE entry_id = $2 AND comments.id > $3
-			ORDER BY comments.id ASC
-			LIMIT $4`
+			WHERE entry_id = $2
+			ORDER BY comments.id DESC
+			LIMIT $3`
 
-		tx.Query(q, userID, entryID, after, limit)
+		tx.Query(q, userID, entryID, limit)
 	}
 
 	for {
@@ -235,7 +242,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		list = append(list, &comment)
 	}
 
-	if before > 0 {
+	if after <= 0 {
 		for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
 			list[i], list[j] = list[j], list[i]
 		}
