@@ -62,6 +62,7 @@ CREATE TABLE "mindwell"."users" (
 	"last_seen_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"karma" Real DEFAULT 0 NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	"last_invite" Date DEFAULT CURRENT_DATE NOT NULL,
     "invited_by" Integer NOT NULL,
 	"birthday" Date,
 	"css" Text DEFAULT '' NOT NULL,
@@ -975,24 +976,23 @@ CREATE OR REPLACE FUNCTION give_invite(userName TEXT) RETURNS VOID AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
-    DECLARE
-        wordCount INTEGER;
-    BEGIN
-        wordCount = (SELECT COUNT(*) FROM invite_words);
-
-        INSERT INTO invites(referrer_id, word1, word2, word3)
-            SELECT users.id, 
-                trunc(random() * wordCount),
-                trunc(random() * wordCount),
-                trunc(random() * wordCount)
-            FROM users
-            LEFT JOIN invites ON users.id = invites.referrer_id
-            WHERE karma > (SELECT MAX(karma) / 2 FROM users)
-            GROUP BY users.id
-            HAVING COUNT(invites.id) = 0 OR (COUNT(invites.id) < 3 
-                AND age(MAX(invites.created_at)) >= interval '7 days');
-    END;
-$$ LANGUAGE plpgsql;
+    WITH inviters AS (
+        UPDATE users 
+        SET last_invite = CURRENT_DATE
+        WHERE karma > (SELECT MAX(karma) / 3 FROM users)
+            AND age(last_invite) >= interval '7 days'
+            AND (SELECT COUNT(*) FROM invites WHERE referrer_id = users.id) < 3
+        RETURNING users.id
+    ), wc AS (
+        SELECT COUNT(*) AS words FROM invite_words
+    )
+    INSERT INTO invites(referrer_id, word1, word2, word3)
+        SELECT inviters.id, 
+            trunc(random() * wc.words),
+            trunc(random() * wc.words),
+            trunc(random() * wc.words)
+        FROM inviters, wc;
+$$ LANGUAGE SQL;
 
 CREATE VIEW mindwell.unwrapped_invites AS
 SELECT invites.id AS id, 
