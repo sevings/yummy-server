@@ -979,7 +979,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     WITH inviters AS (
         UPDATE users 
         SET last_invite = CURRENT_DATE
-        WHERE karma > (SELECT MAX(karma) / 3 FROM users)
+        WHERE karma > 37
             AND age(last_invite) >= interval '7 days'
             AND (SELECT COUNT(*) FROM invites WHERE referrer_id = users.id) < 3
         RETURNING users.id
