@@ -981,7 +981,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
         SET last_invite = CURRENT_DATE
         WHERE karma > 37
             AND age(last_invite) >= interval '7 days'
-            AND (SELECT COUNT(*) FROM invites WHERE referrer_id = users.id) < 3
+            AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
         RETURNING users.id
     ), wc AS (
         SELECT COUNT(*) AS words FROM invite_words
