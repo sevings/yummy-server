@@ -132,7 +132,7 @@ CREATE TRIGGER cnt_invited
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
 CREATE OR REPLACE FUNCTION burn_karma() RETURNS VOID AS $$
-    UPDATE users
+    UPDATE mindwell.users
     SET karma = 
         CASE 
             WHEN abs(karma) > 25 THEN karma * 0.98
@@ -977,7 +977,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     WITH inviters AS (
-        UPDATE users 
+        UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
         WHERE karma > 37
             AND age(last_invite) >= interval '7 days'
@@ -986,7 +986,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     ), wc AS (
         SELECT COUNT(*) AS words FROM invite_words
     )
-    INSERT INTO invites(referrer_id, word1, word2, word3)
+    INSERT INTO mindwell.invites(referrer_id, word1, word2, word3)
         SELECT inviters.id, 
             trunc(random() * wc.words),
             trunc(random() * wc.words),
