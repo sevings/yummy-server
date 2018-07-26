@@ -60,6 +60,11 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 		log.Print(err)
 	}
 
+	host, err := config.String("database.host")
+	if err != nil {
+		log.Print(err)
+	}
+
 	port, err := config.String("database.port")
 	if err != nil {
 		log.Print(err)
@@ -80,7 +85,7 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 		log.Print(err)
 	}
 
-	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name+" port="+port)
+	db, err := sql.Open(driver, "user="+user+" password="+pass+" dbname="+name+" host="+host+" port="+port)
 	if err != nil {
 		log.Fatal(err)
 	}
