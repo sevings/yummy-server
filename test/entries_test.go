@@ -455,6 +455,7 @@ func checkLoadFavorites(t *testing.T, tlog, user *models.UserID, limit int64, be
 	return feed
 }
 
+/*
 func TestLoadFavorites(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -497,3 +498,4 @@ func TestLoadFavorites(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 }
+*/
