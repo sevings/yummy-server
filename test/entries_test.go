@@ -6,6 +6,7 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
+	"github.com/sevings/mindwell-server/restapi/operations/favorites"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/utils"
@@ -446,7 +447,7 @@ func checkLoadFavorites(t *testing.T, tlog, user *models.UserID, limit int64, be
 	resp := load(params, user)
 	body, ok := resp.(*users.GetUsersNameFavoritesOK)
 	if !ok {
-		t.Fatal("error load tlog")
+		t.Fatal("error load favorites")
 	}
 
 	feed := body.Payload
@@ -455,10 +456,20 @@ func checkLoadFavorites(t *testing.T, tlog, user *models.UserID, limit int64, be
 	return feed
 }
 
-/*
+func favoriteEntry(t *testing.T, user *models.UserID, entryID int64) {
+	put := api.FavoritesPutEntriesIDFavoriteHandler.Handle
+	params := favorites.PutEntriesIDFavoriteParams{
+		ID: entryID,
+	}
+	put(params, user)
+
+	time.Sleep(10 * time.Millisecond)
+}
+
 func TestLoadFavorites(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	postEntry(userIDs[0], models.EntryPrivacyAll)
 	postEntry(userIDs[0], models.EntryPrivacySome)
@@ -467,35 +478,33 @@ func TestLoadFavorites(t *testing.T) {
 
 	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", 4)
 
-	checkFavoriteEntry(t, userIDs[0], tlog.Entries[0].ID, true)
-	checkFavoriteEntry(t, userIDs[0], tlog.Entries[1].ID, true)
-	checkFavoriteEntry(t, userIDs[0], tlog.Entries[2].ID, true)
-
-	feed := checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 2)
+	favoriteEntry(t, userIDs[0], tlog.Entries[2].ID)
+	favoriteEntry(t, userIDs[0], tlog.Entries[1].ID)
+	favoriteEntry(t, userIDs[0], tlog.Entries[0].ID)
 
 	req := require.New(t)
+
+	feed := checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 3)
+	req.Equal(tlog.Entries[0].ID, feed.Entries[0].ID)
+	req.Equal(tlog.Entries[1].ID, feed.Entries[1].ID)
+	req.Equal(tlog.Entries[2].ID, feed.Entries[2].ID)
+
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
-
-	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 3)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
-	checkEntry(t, feed.Entries[2], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
 
 	checkLoadFavorites(t, userIDs[1], userIDs[0], 10, "", "", 0)
 	checkLoadFavorites(t, userIDs[0], userIDs[1], 10, "", "", 1)
 
 	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 2, "", "", 2)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyAll, true, "", "test test test")
-	checkEntry(t, feed.Entries[1], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacyMe, true, "", "test test test")
+	req.Equal(tlog.Entries[0].ID, feed.Entries[0].ID)
+	req.Equal(tlog.Entries[1].ID, feed.Entries[1].ID)
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 3, feed.NextBefore, "", 1)
-	checkEntry(t, feed.Entries[0], profiles[0], true, models.RatingVoteBan, true, 3, models.EntryPrivacySome, true, "", "test test test")
+	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 10, feed.NextBefore, "", 1)
+	req.Equal(tlog.Entries[2].ID, feed.Entries[0].ID)
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 }
-*/

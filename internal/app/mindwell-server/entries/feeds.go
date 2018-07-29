@@ -89,7 +89,15 @@ const tlogFavoritesQueryStart = tlogFeedQueryStart + `
 	INNER JOIN favorites ON entries.id = favorites.entry_id
 `
 
-const tlogFavoritesQueryWhere = friendsFeedQueryWhere + " AND favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))"
+const tlogFavoritesQueryWhere = `
+WHERE favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))
+	AND (users.id = $1
+		OR ((entry_privacy.type = 'all' OR (entry_privacy.type = 'some' 
+			AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
+		AND (user_privacy.type = 'all' OR (user_privacy.type = 'followers'
+			AND EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
+				AND type = (SELECT id FROM relation WHERE type = 'followed'))))))
+`
 
 const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
 
@@ -512,19 +520,25 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			feed.NextBefore = formatFloat(nextBefore)
 		}
 	} else {
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($3))"
+		const dateQuery = "SELECT extract(epoch from date) FROM favorites WHERE user_id = $1 AND entry_id = $2"
 
-		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = formatFloat(nextBefore)
-		tx.Query(beforeQuery, userID.ID, tlog, nextBefore)
-		tx.Scan(&feed.HasBefore)
+		const queryEnd = " (SELECT date FROM favorites WHERE user_id = $1 AND entry_id = $3))"
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($3))"
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < " + queryEnd
 
-		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = formatFloat(nextAfter)
-		tx.Query(afterQuery, userID.ID, tlog, nextAfter)
-		tx.Scan(&feed.HasAfter)
+		lastID := feed.Entries[len(feed.Entries)-1].ID
+		tx.Query(beforeQuery, userID.ID, tlog, lastID).Scan(&feed.HasBefore)
+		if feed.HasBefore {
+			tx.Query(dateQuery, userID.ID, lastID).Scan(&feed.NextBefore)
+		}
+
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > " + queryEnd
+
+		firstID := feed.Entries[0].ID
+		tx.Query(afterQuery, userID.ID, tlog, firstID).Scan(&feed.HasAfter)
+		if feed.HasAfter {
+			tx.Query(dateQuery, userID.ID, firstID).Scan(&feed.NextAfter)
+		}
 	}
 
 	return feed
