@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
@@ -470,10 +472,6 @@ func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFrie
 }
 
 func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
-	// if userID.Name == tlog {
-	// 	return loadMyFavorites(srv, tx, userID, beforeS, afterS, limit)
-	// }
-
 	before := parseFloat(beforeS)
 	after := parseFloat(afterS)
 
@@ -547,8 +545,23 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFavoritesParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameFavoritesParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			if !canView {
+				err := srv.NewError(&i18n.Message{ID: "private_tlog", Other: "This is a private tlog."})
+				return users.NewGetUsersNameFavoritesNotFound().WithPayload(err)
+			}
+
 			feed := loadTlogFavorites(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
 			return users.NewGetUsersNameFavoritesOK().WithPayload(feed)
+		})
+	}
+}
+
+func newMyFavoritesLoader(srv *utils.MindwellServer) func(me.GetMeFavoritesParams, *models.UserID) middleware.Responder {
+	return func(params me.GetMeFavoritesParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadTlogFavorites(srv, tx, userID, userID.Name, *params.Before, *params.After, *params.Limit)
+			return me.NewGetMeFavoritesOK().WithPayload(feed)
 		})
 	}
 }

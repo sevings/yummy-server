@@ -118,28 +118,20 @@ func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID,
 			return result
 		}
 
+		const relationQuery = `
+			SELECT relation.type
+			FROM relations, relation
+			WHERE relations.from_id = $1
+				AND relations.to_id = $2
+				AND relations.type = relation.id`
+
 		profile.Relations = &models.ProfileAllOf1Relations{}
-		profile.Relations.FromMe = relationship(tx, relationToIDQuery, userID.ID, profile.ID)
-		profile.Relations.ToMe = relationship(tx, relationToIDQuery, profile.ID, userID.ID)
+		profile.Relations.FromMe = relationship(tx, relationQuery, userID.ID, profile.ID)
+		profile.Relations.ToMe = relationship(tx, relationQuery, profile.ID, userID.ID)
 
 		return result
 	})
 }
-
-const relationToIDQuery = `
-SELECT relation.type
-FROM relations, relation
-WHERE relations.from_id = $1
-	AND relations.to_id = $2
-	AND relations.type = relation.id`
-
-const relationToNameQuery = `
-SELECT relation.type
-FROM users, relations, relation
-WHERE lower(users.name) = lower($2)
-	AND relations.from_id = $1
-	AND relations.to_id = users.id
-	AND relations.type = relation.id`
 
 func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) string {
 	var relation string
@@ -151,16 +143,16 @@ func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) st
 	return relation
 }
 
-const privacyQueryStart = `
-SELECT users.id, user_privacy.type
-FROM users, user_privacy
-WHERE users.privacy = user_privacy.id AND `
+// IsOpenForMe returns true if you can see \param name tlog
+func IsOpenForMe(tx *utils.AutoTx, userID *models.UserID, name interface{}) bool {
+	const privacyQuery = `
+		SELECT users.id, user_privacy.type
+		FROM users, user_privacy
+		WHERE users.privacy = user_privacy.id AND lower(users.name) = lower($1)`
 
-func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
-	userID *models.UserID, arg interface{}) bool {
 	var subjectID int64
 	var privacy string
-	tx.Query(privacyQuery, arg).Scan(&subjectID, &privacy)
+	tx.Query(privacyQuery, name).Scan(&subjectID, &privacy)
 	if tx.Error() != nil {
 		return false
 	}
@@ -173,7 +165,15 @@ func isOpenForMe(tx *utils.AutoTx, privacyQuery, relationQuery string,
 		return true
 	}
 
-	relation := relationship(tx, relationQuery, userID.ID, arg)
+	const relationQuery = `
+	SELECT relation.type
+	FROM users, relations, relation
+	WHERE lower(users.name) = lower($2)
+		AND relations.from_id = $1
+		AND relations.to_id = users.id
+		AND relations.type = relation.id`
+
+	relation := relationship(tx, relationQuery, userID.ID, name)
 	return relation == models.RelationshipRelationFollowed
 }
 
@@ -244,10 +244,10 @@ func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, s
 	return &list
 }
 
-func loadUsers(srv *utils.MindwellServer, usersQuery, privacyQuery, relationQuery, subjectQuery, relation string,
+func loadUsers(srv *utils.MindwellServer, usersQuery, subjectQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
 	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-		open := isOpenForMe(tx, privacyQuery, relationQuery, userID, args[0])
+		open := IsOpenForMe(tx, userID, args[0])
 		if tx.Error() != nil {
 			err := srv.NewError(nil)
 			return users.NewGetUsersNameFollowersNotFound().WithPayload(err)

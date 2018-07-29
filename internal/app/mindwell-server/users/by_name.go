@@ -21,12 +21,7 @@ const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName
 func loadUsersRelatedToName(srv *utils.MindwellServer, usersQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
 
-	const privacyQuery = `
-	SELECT users.id, user_privacy.type
-	FROM users, user_privacy
-	WHERE users.privacy = user_privacy.id AND lower(users.name) = lower($1)`
-
-	return loadUsers(srv, usersQuery, privacyQuery, relationToNameQuery, loadUserQueryName, relation,
+	return loadUsers(srv, usersQuery, loadUserQueryName, relation,
 		userID, args...)
 }
 
