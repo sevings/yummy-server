@@ -281,10 +281,10 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	if len(feed.Entries) == 0 {
 		if before > 0 {
 			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` >= to_timestamp($1)
+				` >= to_timestamp($3)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(afterQuery, before, tlog)
+			tx.Query(afterQuery, userID.ID, tlog, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = formatFloat(nextAfter)
@@ -292,27 +292,27 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 
 		if after > 0 {
 			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` <= to_timestamp($1)
+				` <= to_timestamp($3)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
-			tx.Query(beforeQuery, after, tlog)
+			tx.Query(beforeQuery, userID.ID, tlog, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = formatFloat(nextBefore)
 		}
 	} else {
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($1))"
+		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($3))"
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = formatFloat(nextBefore)
-		tx.Query(beforeQuery, nextBefore, tlog)
+		tx.Query(beforeQuery, userID.ID, tlog, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($1))"
+		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($3))"
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = formatFloat(nextAfter)
-		tx.Query(afterQuery, nextAfter, tlog)
+		tx.Query(afterQuery, userID.ID, tlog, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
 
@@ -322,11 +322,11 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
-			if !canView {
-				err := srv.StandardError("no_tlog")
-				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
-			}
+			// canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			// if !canView {
+			// 	err := srv.StandardError("no_tlog")
+			// 	return users.NewGetUsersNameTlogNotFound().WithPayload(err)
+			// }
 
 			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
