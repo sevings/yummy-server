@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
@@ -60,7 +59,12 @@ const bestFeedQueryWhere = liveFeedQueryWhere + " AND entries.rating > 5 "
 
 const bestFeedQuery = tlogFeedQueryStart + bestFeedQueryWhere
 
-const tlogFeedQueryWhere = liveFeedQueryWhere + " AND lower(users.name) = lower($2) "
+const tlogFeedQueryWhere = `
+	WHERE lower(users.name) = lower($2)
+		AND (users.id = $1 OR entry_privacy.type = 'all' 
+			OR (entry_privacy.type = 'some' 
+				AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
+`
 
 const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere
 
@@ -318,6 +322,12 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			if !canView {
+				err := srv.StandardError("private_tlog")
+				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
+			}
+
 			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
 		})
@@ -547,7 +557,7 @@ func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFa
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
 			if !canView {
-				err := srv.NewError(&i18n.Message{ID: "private_tlog", Other: "This is a private tlog."})
+				err := srv.StandardError("private_tlog")
 				return users.NewGetUsersNameFavoritesNotFound().WithPayload(err)
 			}
 
