@@ -49,11 +49,10 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{
-			"no_entry":     &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
-			"no_comment":   &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
-			"no_tlog":      &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
-			"no_request":   &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
-			"private_tlog": &i18n.Message{ID: "private_tlog", Other: "This is a private tlog."},
+			"no_entry":   &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
+			"no_comment": &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
+			"no_tlog":    &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
+			"no_request": &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
 		},
 	}
 }

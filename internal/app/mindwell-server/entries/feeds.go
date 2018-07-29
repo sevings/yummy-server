@@ -324,7 +324,7 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
 			if !canView {
-				err := srv.StandardError("private_tlog")
+				err := srv.StandardError("no_tlog")
 				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
 			}
 
@@ -557,7 +557,7 @@ func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFa
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
 			if !canView {
-				err := srv.StandardError("private_tlog")
+				err := srv.StandardError("no_tlog")
 				return users.NewGetUsersNameFavoritesNotFound().WithPayload(err)
 			}
 
