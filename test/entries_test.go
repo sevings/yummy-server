@@ -435,7 +435,7 @@ func TestLoadFriendsFeed(t *testing.T) {
 	checkUnfollow(t, userIDs[0], userIDs[1])
 }
 
-func checkLoadFavorites(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
+func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, before, after string, size int) *models.Feed {
 	params := users.GetUsersNameFavoritesParams{
 		Name:   tlog.Name,
 		Limit:  &limit,
@@ -492,8 +492,8 @@ func TestLoadFavorites(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	checkLoadFavorites(t, userIDs[1], userIDs[0], 10, "", "", 0)
-	checkLoadFavorites(t, userIDs[0], userIDs[1], 10, "", "", 1)
+	checkLoadFavorites(t, userIDs[1], userIDs[0], 10, "", "", 1)
+	checkLoadFavorites(t, userIDs[0], userIDs[1], 10, "", "", 0)
 
 	feed = checkLoadFavorites(t, userIDs[0], userIDs[0], 2, "", "", 2)
 	req.Equal(tlog.Entries[0].ID, feed.Entries[0].ID)
@@ -507,4 +507,10 @@ func TestLoadFavorites(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
+
+	feed = checkLoadFavorites(t, userIDs[1], userIDs[0], 2, "", "", 1)
+	req.Equal(tlog.Entries[0].ID, feed.Entries[0].ID)
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
 }
