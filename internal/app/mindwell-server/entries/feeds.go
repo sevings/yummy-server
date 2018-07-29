@@ -528,16 +528,27 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			feed.NextBefore = formatFloat(nextBefore)
 		}
 	} else {
-		const dateQuery = "SELECT extract(epoch from date) FROM favorites WHERE user_id = $1 AND entry_id = $2"
+		const dateQuery = `
+			SELECT extract(epoch from date) 
+			FROM favorites 
+			WHERE user_id = (SELECT id FROM users WHERE lower(name) = lower($1)) 
+				AND entry_id = $2`
 
-		const queryEnd = " (SELECT date FROM favorites WHERE user_id = $1 AND entry_id = $3))"
+		const queryEnd = ` (
+			SELECT date 
+			FROM favorites 
+			WHERE user_id = (SELECT id FROM users WHERE lower(name) = lower($2)) 
+				AND entry_id = $3))`
 
 		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < " + queryEnd
 
 		lastID := feed.Entries[len(feed.Entries)-1].ID
 		tx.Query(beforeQuery, userID.ID, tlog, lastID).Scan(&feed.HasBefore)
 		if feed.HasBefore {
-			tx.Query(dateQuery, userID.ID, lastID).Scan(&feed.NextBefore)
+			tx.Query(dateQuery, tlog, lastID)
+			var nextBefore float64
+			tx.Scan(&nextBefore)
+			feed.NextBefore = formatFloat(nextBefore)
 		}
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > " + queryEnd
@@ -545,7 +556,10 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		firstID := feed.Entries[0].ID
 		tx.Query(afterQuery, userID.ID, tlog, firstID).Scan(&feed.HasAfter)
 		if feed.HasAfter {
-			tx.Query(dateQuery, userID.ID, firstID).Scan(&feed.NextAfter)
+			tx.Query(dateQuery, tlog, firstID)
+			var nextAfter float64
+			tx.Scan(&nextAfter)
+			feed.NextAfter = formatFloat(nextAfter)
 		}
 	}
 
