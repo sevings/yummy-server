@@ -322,11 +322,11 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			// canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
-			// if !canView {
-			// 	err := srv.StandardError("no_tlog")
-			// 	return users.NewGetUsersNameTlogNotFound().WithPayload(err)
-			// }
+			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			if !canView {
+				err := srv.StandardError("no_tlog")
+				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
+			}
 
 			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
