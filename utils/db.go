@@ -42,13 +42,9 @@ func ClearDatabase(db *sql.DB) {
 		log.Fatal("cannot clear table users: " + err.Error())
 	}
 
-	for i := 0; i < 3; i++ {
-		_, err = tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);")
-		if err != nil {
-			tx.Rollback()
-			log.Fatal("cannot create invite")
-		}
-	}
+	tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);")
+	tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 2, 2, 2);")
+	tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 3, 3, 3);")
 
 	tx.Commit()
 }

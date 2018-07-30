@@ -520,12 +520,6 @@ paths:
           required: true
           maxLength: 100
         - in: formData
-          name: referrer
-          type: string
-          minLength: 1
-          maxLength: 20
-          required: true
-        - in: formData
           name: birthday
           type: string
           format: full-date

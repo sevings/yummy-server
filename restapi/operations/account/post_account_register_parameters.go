@@ -95,13 +95,6 @@ type PostAccountRegisterParams struct {
 	  In: formData
 	*/
 	Password string
-	/*
-	  Required: true
-	  Max Length: 20
-	  Min Length: 1
-	  In: formData
-	*/
-	Referrer string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -159,11 +152,6 @@ func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middlewa
 
 	fdPassword, fdhkPassword, _ := fds.GetOK("password")
 	if err := o.bindPassword(fdPassword, fdhkPassword, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	fdReferrer, fdhkReferrer, _ := fds.GetOK("referrer")
-	if err := o.bindReferrer(fdReferrer, fdhkReferrer, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -421,43 +409,6 @@ func (o *PostAccountRegisterParams) validatePassword(formats strfmt.Registry) er
 	}
 
 	if err := validate.MaxLength("password", "formData", o.Password, 100); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *PostAccountRegisterParams) bindReferrer(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("referrer", "formData")
-	}
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: true
-
-	if err := validate.RequiredString("referrer", "formData", raw); err != nil {
-		return err
-	}
-
-	o.Referrer = raw
-
-	if err := o.validateReferrer(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *PostAccountRegisterParams) validateReferrer(formats strfmt.Registry) error {
-
-	if err := validate.MinLength("referrer", "formData", o.Referrer, 1); err != nil {
-		return err
-	}
-
-	if err := validate.MaxLength("referrer", "formData", o.Referrer, 20); err != nil {
 		return err
 	}
 

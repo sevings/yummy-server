@@ -45,13 +45,12 @@ func (esm *EmailSenderMock) Clear() {
 	esm.Codes = nil
 }
 
-func register(name string) (*models.UserID, *models.AuthProfile) {
+func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	params := account.PostAccountRegisterParams{
 		Name:     name,
 		Email:    name,
 		Password: "test123",
-		Invite:   "acknown acknown acknown",
-		Referrer: "HaveANiceDay",
+		Invite:   inviteWord + " " + inviteWord + " " + inviteWord,
 	}
 
 	resp := api.AccountPostAccountRegisterHandler.Handle(params)
@@ -76,8 +75,10 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	var userIDs []*models.UserID
 	var profiles []*models.AuthProfile
 
+	inviteWords := []string{"acknown", "aery", "affectioned"}
+
 	for i := 0; i < 3; i++ {
-		id, profile := register("test" + strconv.Itoa(i))
+		id, profile := register("test"+strconv.Itoa(i), inviteWords[i])
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
 

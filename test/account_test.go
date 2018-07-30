@@ -94,7 +94,7 @@ func checkName(t *testing.T, name string, free bool) {
 }
 
 func TestCheckName(t *testing.T) {
-	checkName(t, "HaveANICEDay", false)
+	checkName(t, "mINDWell", false)
 	checkName(t, "nAMe", true)
 }
 
@@ -175,28 +175,30 @@ func checkVerify(t *testing.T, userID *models.UserID, email string) {
 }
 
 func TestRegister(t *testing.T) {
-	{
-		const q = "INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)"
-		for i := 0; i < 3; i++ {
-			db.Exec(q)
-		}
-	}
+	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)")
+	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 2, 2, 2)")
+	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 3, 3, 3)")
 
 	inviter := &models.UserID{
 		ID:   1,
-		Name: "haveniceday",
+		Name: "Mindwell",
 	}
 
 	checkInvites(t, inviter, 3)
 	checkName(t, "testtEst", true)
 	checkEmail(t, "testeMAil", true)
 
+	invites := []string{
+		"acknown acknown acknown",
+		"aery aery aery",
+		"affectioned affectioned affectioned",
+	}
+
 	params := account.PostAccountRegisterParams{
 		Name:     "testtest",
 		Email:    "testemail",
 		Password: "test123",
-		Invite:   "acknown acknown acknown",
-		Referrer: "HaveANiceDay",
+		Invite:   invites[0],
 	}
 
 	register := api.AccountPostAccountRegisterHandler.Handle
@@ -234,7 +236,6 @@ func TestRegister(t *testing.T) {
 	req := require.New(t)
 	req.Equal(params.Name, user.Name)
 	req.Equal(params.Email, user.Account.Email)
-	req.Equal(params.Referrer, user.InvitedBy.Name)
 
 	req.Equal(user.Name, user.ShowName)
 	req.True(user.IsOnline)
@@ -270,6 +271,7 @@ func TestRegister(t *testing.T) {
 	req.NotEmpty(acc.ValidThru)
 	req.True(acc.Verified)
 
+	params.Invite = invites[1]
 	resp = register(params)
 	_, ok = resp.(*account.PostAccountRegisterBadRequest)
 	req.True(ok)
@@ -289,9 +291,9 @@ func TestRegister(t *testing.T) {
 		Country:  &country,
 		Birthday: &bday,
 		Invite:   "acknown acknown acknown",
-		Referrer: "HaveANiceDay",
 	}
 
+	params.Invite = invites[2]
 	resp = register(params)
 	body, ok = resp.(*account.PostAccountRegisterCreated)
 	req.True(ok)

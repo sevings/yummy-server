@@ -307,14 +307,6 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 20,
-            "minLength": 1,
-            "type": "string",
-            "name": "referrer",
-            "in": "formData",
-            "required": true
-          },
-          {
             "type": "string",
             "format": "full-date",
             "name": "birthday",
@@ -3378,14 +3370,6 @@ func init() {
             "maxLength": 100,
             "type": "string",
             "name": "invite",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "maxLength": 20,
-            "minLength": 1,
-            "type": "string",
-            "name": "referrer",
             "in": "formData",
             "required": true
           },

@@ -81,34 +81,26 @@ func newNameChecker(srv *utils.MindwellServer) func(account.GetAccountNameNamePa
 	}
 }
 
-func removeInvite(tx *utils.AutoTx, ref string, invite string) (int64, bool) {
+func removeInvite(tx *utils.AutoTx, invite string) (int64, bool) {
 	words := strings.Fields(invite)
 	if len(words) != 3 {
 		return 0, false
 	}
 
 	const q = `
-        select id, user_id 
-        from unwrapped_invites 
-        where word1 = $1 and word2 = $2 and word3 = $3
-        and name = $4`
+		DELETE FROM invites
+		WHERE word1 = (SELECT id FROM invite_words WHERE word = $1)
+		  AND word2 = (SELECT id FROM invite_words WHERE word = $2)
+		  AND word3 = (SELECT id FROM invite_words WHERE word = $3)
+		RETURNING referrer_id`
 
-	var inviteID int64
 	var userID int64
 	tx.Query(q,
 		strings.ToLower(words[0]),
 		strings.ToLower(words[1]),
-		strings.ToLower(words[2]),
-		strings.ToLower(ref)).Scan(&inviteID, &userID)
+		strings.ToLower(words[2])).Scan(&userID)
 
-	tx.Exec(`
-		delete from invites 
-		where id = $1`,
-		inviteID)
-
-	rows := tx.RowsAffected()
-
-	return userID, rows == 1
+	return userID, userID != 0
 }
 
 func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, name string) {
@@ -294,7 +286,7 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
-			ref, ok := removeInvite(tx, params.Referrer, params.Invite)
+			ref, ok := removeInvite(tx, params.Invite)
 			if !ok {
 				err := srv.NewError(&i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."})
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)

@@ -211,7 +211,7 @@ func TestOpenFriendLists(t *testing.T) {
 
 	inviter := models.UserID{
 		ID:   1,
-		Name: "haveaniceday",
+		Name: "mindwell",
 	}
 	list = checkMyInvited(t, &inviter, 0, 100, 4)
 	req.Equal(profiles[2].ID, list[0].ID)
@@ -229,7 +229,7 @@ func TestOpenFriendLists(t *testing.T) {
 
 	list = checkMyInvited(t, &inviter, 4, 2, 0)
 
-	list = checkNameInvited(t, userIDs[0], "haveANiceday", 0, 100, 4)
+	list = checkNameInvited(t, userIDs[0], "minDWEll", 0, 100, 4)
 	req.Equal(profiles[2].ID, list[0].ID)
 	req.Equal(profiles[1].ID, list[1].ID)
 	req.Equal(profiles[0].ID, list[2].ID)

@@ -951,13 +951,17 @@ CREATE TABLE "mindwell"."invites" (
 ;
 -- -------------------------------------------------------------
 
--- CREATE INDEX "index_referrer_id" -------------------------
+-- CREATE INDEX "index_referrer_id" ---------------------------
 CREATE INDEX "index_referrer_id" ON "mindwell"."invites" USING btree( "referrer_id" );
 -- -------------------------------------------------------------
 
+-- CREATE INDEX "index_invite_words" ---------------------------
+CREATE UNIQUE INDEX "index_invite_words" ON "mindwell"."invites" USING btree( "word1", "word2", "word3" );
+-- -------------------------------------------------------------
+
 INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);
-INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);
-INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);
+INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 2, 2, 2);
+INSERT INTO mindwell.invites (referrer_id, word1, word2, word3) VALUES(1, 3, 3, 3);
 
 CREATE OR REPLACE FUNCTION give_invite(userName TEXT) RETURNS VOID AS $$
     DECLARE
