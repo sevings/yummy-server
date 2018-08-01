@@ -1365,12 +1365,12 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/after'
-        - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - in: query
-          name: min_rating
-          type: integer
+          name: category
+          type: string
+          enum: [month, week]
+          default: month
       security:
         - ApiKeyHeader: []
       tags:

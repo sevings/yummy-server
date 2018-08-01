@@ -878,17 +878,16 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          },
-          {
             "$ref": "#/parameters/tag"
           },
           {
-            "type": "integer",
-            "name": "min_rating",
+            "enum": [
+              "month",
+              "week"
+            ],
+            "type": "string",
+            "default": "month",
+            "name": "category",
             "in": "query"
           }
         ],
@@ -3961,26 +3960,19 @@ func init() {
             "in": "query"
           },
           {
-            "type": "string",
-            "default": "",
-            "name": "after",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "",
-            "name": "before",
-            "in": "query"
-          },
-          {
             "maxLength": 50,
             "type": "string",
             "name": "tag",
             "in": "query"
           },
           {
-            "type": "integer",
-            "name": "min_rating",
+            "enum": [
+              "month",
+              "week"
+            ],
+            "type": "string",
+            "default": "month",
+            "name": "category",
             "in": "query"
           }
         ],

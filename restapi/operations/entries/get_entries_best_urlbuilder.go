@@ -15,11 +15,9 @@ import (
 
 // GetEntriesBestURL generates an URL for the get entries best operation
 type GetEntriesBestURL struct {
-	After     *string
-	Before    *string
-	Limit     *int64
-	MinRating *int64
-	Tag       *string
+	Category *string
+	Limit    *int64
+	Tag      *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -55,20 +53,12 @@ func (o *GetEntriesBestURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var after string
-	if o.After != nil {
-		after = *o.After
+	var category string
+	if o.Category != nil {
+		category = *o.Category
 	}
-	if after != "" {
-		qs.Set("after", after)
-	}
-
-	var before string
-	if o.Before != nil {
-		before = *o.Before
-	}
-	if before != "" {
-		qs.Set("before", before)
+	if category != "" {
+		qs.Set("category", category)
 	}
 
 	var limit string
@@ -77,14 +67,6 @@ func (o *GetEntriesBestURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
-	}
-
-	var minRating string
-	if o.MinRating != nil {
-		minRating = swag.FormatInt64(*o.MinRating)
-	}
-	if minRating != "" {
-		qs.Set("min_rating", minRating)
 	}
 
 	var tag string

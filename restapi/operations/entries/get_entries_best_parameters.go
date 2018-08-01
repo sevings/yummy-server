@@ -24,15 +24,12 @@ func NewGetEntriesBestParams() GetEntriesBestParams {
 	var (
 		// initialize parameters with default values
 
-		afterDefault  = string("")
-		beforeDefault = string("")
-		limitDefault  = int64(30)
+		categoryDefault = string("month")
+		limitDefault    = int64(30)
 	)
 
 	return GetEntriesBestParams{
-		After: &afterDefault,
-
-		Before: &beforeDefault,
+		Category: &categoryDefault,
 
 		Limit: &limitDefault,
 	}
@@ -49,14 +46,9 @@ type GetEntriesBestParams struct {
 
 	/*
 	  In: query
-	  Default: ""
+	  Default: "month"
 	*/
-	After *string
-	/*
-	  In: query
-	  Default: ""
-	*/
-	Before *string
+	Category *string
 	/*
 	  Maximum: 100
 	  Minimum: 1
@@ -64,10 +56,6 @@ type GetEntriesBestParams struct {
 	  Default: 30
 	*/
 	Limit *int64
-	/*
-	  In: query
-	*/
-	MinRating *int64
 	/*
 	  Max Length: 50
 	  In: query
@@ -86,23 +74,13 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	qs := runtime.Values(r.URL.Query())
 
-	qAfter, qhkAfter, _ := qs.GetOK("after")
-	if err := o.bindAfter(qAfter, qhkAfter, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qBefore, qhkBefore, _ := qs.GetOK("before")
-	if err := o.bindBefore(qBefore, qhkBefore, route.Formats); err != nil {
+	qCategory, qhkCategory, _ := qs.GetOK("category")
+	if err := o.bindCategory(qCategory, qhkCategory, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	qMinRating, qhkMinRating, _ := qs.GetOK("min_rating")
-	if err := o.bindMinRating(qMinRating, qhkMinRating, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -117,7 +95,7 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
-func (o *GetEntriesBestParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *GetEntriesBestParams) bindCategory(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -130,25 +108,20 @@ func (o *GetEntriesBestParams) bindAfter(rawData []string, hasKey bool, formats 
 		return nil
 	}
 
-	o.After = &raw
+	o.Category = &raw
+
+	if err := o.validateCategory(formats); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (o *GetEntriesBestParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
+func (o *GetEntriesBestParams) validateCategory(formats strfmt.Registry) error {
 
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		// Default values have been previously initialized by NewGetEntriesBestParams()
-		return nil
+	if err := validate.Enum("category", "query", *o.Category, []interface{}{"month", "week"}); err != nil {
+		return err
 	}
-
-	o.Before = &raw
 
 	return nil
 }
@@ -188,27 +161,6 @@ func (o *GetEntriesBestParams) validateLimit(formats strfmt.Registry) error {
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-func (o *GetEntriesBestParams) bindMinRating(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("min_rating", "query", "int64", raw)
-	}
-	o.MinRating = &value
 
 	return nil
 }

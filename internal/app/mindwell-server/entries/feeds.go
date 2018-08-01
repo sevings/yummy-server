@@ -15,7 +15,7 @@ import (
 )
 
 const feedQueryStart = `
-SELECT entries.id, extract(epoch from entries.created_at), 
+SELECT entries.id, extract(epoch from entries.created_at) as created_at, 
 rating, entries.up_votes, entries.down_votes,
 entries.title, cut_title, content, cut_content, edit_content, 
 has_cut, word_count, entry_privacy.type,
@@ -54,10 +54,6 @@ FROM entries
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 WHERE entry_privacy.type = 'anonymous' 
 ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3`
-
-const bestFeedQueryWhere = liveFeedQueryWhere + " AND entries.rating > 5 "
-
-const bestFeedQuery = tlogFeedQueryStart + bestFeedQueryWhere
 
 const tlogFeedQueryWhere = `
 	WHERE lower(users.name) = lower($2)
@@ -238,14 +234,30 @@ func newAnonymousLoader(srv *utils.MindwellServer) func(entries.GetEntriesAnonym
 	}
 }
 
-func loadBestFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	return &models.Feed{}
+func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, category string, limit int64) *models.Feed {
+	var interval string
+	if category == "month" {
+		interval = "1 month"
+	} else if category == "week" {
+		interval = "7 days"
+	} else {
+		log.Printf("Unknown best category: %s", category)
+		interval = "1 month"
+	}
+
+	q := "SELECT * FROM (" + liveFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
+		interval + "' ORDER BY entries.rating DESC LIMIT $2) AS feed ORDER BY feed.created_at DESC"
+	tx.Query(q, userID.ID, limit)
+
+	feed := loadFeed(srv, tx, userID.ID, false)
+
+	return feed
 }
 
 func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadBestFeed(tx, userID, *params.Before, *params.After, *params.Limit)
+			feed := loadBestFeed(srv, tx, userID, *params.Category, *params.Limit)
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}
