@@ -35,6 +35,9 @@ type Comment struct {
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
+	// is mine
+	IsMine bool `json:"isMine,omitempty"`
+
 	// rating
 	Rating *Rating `json:"rating,omitempty"`
 }

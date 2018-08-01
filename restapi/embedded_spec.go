@@ -2554,6 +2554,9 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
+        "isMine": {
+          "type": "boolean"
+        },
         "rating": {
           "$ref": "#/definitions/Rating"
         }
@@ -5833,6 +5836,9 @@ func init() {
           "type": "integer",
           "format": "int64",
           "minimum": 1
+        },
+        "isMine": {
+          "type": "boolean"
         },
         "rating": {
           "$ref": "#/definitions/Rating"

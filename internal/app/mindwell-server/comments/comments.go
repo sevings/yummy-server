@@ -28,7 +28,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 const commentQuery = `
 	SELECT comments.id, entry_id,
 		extract(epoch from created_at), content, rating,
-		votes.positive,
+		votes.positive, author_id = $1,
 		author_id, name, show_name, 
 		is_online,
 		avatar
@@ -65,7 +65,7 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 
 	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
-		&vote,
+		&vote, &comment.IsMine,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
 		&avatar)
@@ -228,7 +228,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
-			&vote,
+			&vote, &comment.IsMine,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
 			&avatar)
@@ -302,6 +302,7 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 		Author:  author,
 		Content: content,
 		EntryID: entryID,
+		IsMine:  true,
 	}
 
 	tx.Query(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)

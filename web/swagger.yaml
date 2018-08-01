@@ -365,6 +365,8 @@ definitions:
         minLength: 1
       rating:
         $ref: '#/definitions/Rating'
+      isMine:
+        type: boolean
     example:
       id: 999
       entryId: 152
