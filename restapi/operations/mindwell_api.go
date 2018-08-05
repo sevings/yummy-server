@@ -24,6 +24,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/design"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
 	"github.com/sevings/mindwell-server/restapi/operations/favorites"
+	"github.com/sevings/mindwell-server/restapi/operations/images"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/relations"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
@@ -145,6 +146,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeIgnoredHandler: me.GetMeIgnoredHandlerFunc(func(params me.GetMeIgnoredParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeIgnored has not yet been implemented")
 		}),
+		MeGetMeImagesHandler: me.GetMeImagesHandlerFunc(func(params me.GetMeImagesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeImages has not yet been implemented")
+		}),
 		MeGetMeInvitedHandler: me.GetMeInvitedHandlerFunc(func(params me.GetMeInvitedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeInvited has not yet been implemented")
 		}),
@@ -178,6 +182,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		UsersGetUsersNameFollowingsHandler: users.GetUsersNameFollowingsHandlerFunc(func(params users.GetUsersNameFollowingsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameFollowings has not yet been implemented")
 		}),
+		UsersGetUsersNameImagesHandler: users.GetUsersNameImagesHandlerFunc(func(params users.GetUsersNameImagesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameImages has not yet been implemented")
+		}),
 		UsersGetUsersNameInvitedHandler: users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameInvited has not yet been implemented")
 		}),
@@ -204,6 +211,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		CommentsPostEntriesIDCommentsHandler: comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPostEntriesIDComments has not yet been implemented")
+		}),
+		ImagesPostImagesHandler: images.PostImagesHandlerFunc(func(params images.PostImagesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ImagesPostImages has not yet been implemented")
 		}),
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePostMeTlog has not yet been implemented")
@@ -362,6 +372,8 @@ type MindwellAPI struct {
 	MeGetMeFollowingsHandler me.GetMeFollowingsHandler
 	// MeGetMeIgnoredHandler sets the operation handler for the get me ignored operation
 	MeGetMeIgnoredHandler me.GetMeIgnoredHandler
+	// MeGetMeImagesHandler sets the operation handler for the get me images operation
+	MeGetMeImagesHandler me.GetMeImagesHandler
 	// MeGetMeInvitedHandler sets the operation handler for the get me invited operation
 	MeGetMeInvitedHandler me.GetMeInvitedHandler
 	// MeGetMeRequestedHandler sets the operation handler for the get me requested operation
@@ -384,6 +396,8 @@ type MindwellAPI struct {
 	UsersGetUsersNameFollowersHandler users.GetUsersNameFollowersHandler
 	// UsersGetUsersNameFollowingsHandler sets the operation handler for the get users name followings operation
 	UsersGetUsersNameFollowingsHandler users.GetUsersNameFollowingsHandler
+	// UsersGetUsersNameImagesHandler sets the operation handler for the get users name images operation
+	UsersGetUsersNameImagesHandler users.GetUsersNameImagesHandler
 	// UsersGetUsersNameInvitedHandler sets the operation handler for the get users name invited operation
 	UsersGetUsersNameInvitedHandler users.GetUsersNameInvitedHandler
 	// UsersGetUsersNameTlogHandler sets the operation handler for the get users name tlog operation
@@ -402,6 +416,8 @@ type MindwellAPI struct {
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
 	CommentsPostEntriesIDCommentsHandler comments.PostEntriesIDCommentsHandler
+	// ImagesPostImagesHandler sets the operation handler for the post images operation
+	ImagesPostImagesHandler images.PostImagesHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
 	MePostMeTlogHandler me.PostMeTlogHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
@@ -631,6 +647,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeIgnoredHandler")
 	}
 
+	if o.MeGetMeImagesHandler == nil {
+		unregistered = append(unregistered, "me.GetMeImagesHandler")
+	}
+
 	if o.MeGetMeInvitedHandler == nil {
 		unregistered = append(unregistered, "me.GetMeInvitedHandler")
 	}
@@ -675,6 +695,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "users.GetUsersNameFollowingsHandler")
 	}
 
+	if o.UsersGetUsersNameImagesHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameImagesHandler")
+	}
+
 	if o.UsersGetUsersNameInvitedHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameInvitedHandler")
 	}
@@ -709,6 +733,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.CommentsPostEntriesIDCommentsHandler == nil {
 		unregistered = append(unregistered, "comments.PostEntriesIDCommentsHandler")
+	}
+
+	if o.ImagesPostImagesHandler == nil {
+		unregistered = append(unregistered, "images.PostImagesHandler")
 	}
 
 	if o.MePostMeTlogHandler == nil {
@@ -1045,6 +1073,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/me/images"] = me.NewGetMeImages(o.context, o.MeGetMeImagesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/me/invited"] = me.NewGetMeInvited(o.context, o.MeGetMeInvitedHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1100,6 +1133,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/users/{name}/images"] = users.NewGetUsersNameImages(o.context, o.UsersGetUsersNameImagesHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/users/{name}/invited"] = users.NewGetUsersNameInvited(o.context, o.UsersGetUsersNameInvitedHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1141,6 +1179,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/entries/{id}/comments"] = comments.NewPostEntriesIDComments(o.context, o.CommentsPostEntriesIDCommentsHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/images"] = images.NewPostImages(o.context, o.ImagesPostImagesHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

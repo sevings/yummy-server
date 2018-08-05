@@ -1468,6 +1468,42 @@ func init() {
         }
       ]
     },
+    "/images": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "type": "file",
+            "name": "file",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "schema": {
+              "$ref": "#/definitions/Image"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/me": {
       "get": {
         "security": [
@@ -1763,6 +1799,43 @@ func init() {
             "description": "User list",
             "schema": {
               "$ref": "#/definitions/FriendList"
+            }
+          }
+        }
+      }
+    },
+    "/me/images": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image list",
+            "schema": {
+              "$ref": "#/definitions/ImageList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -2369,6 +2442,48 @@ func init() {
         }
       ]
     },
+    "/users/{name}/images": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image list",
+            "schema": {
+              "$ref": "#/definitions/ImageList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
     "/users/{name}/invited": {
       "get": {
         "security": [
@@ -2848,6 +2963,54 @@ func init() {
           "items": {
             "$ref": "#/definitions/Friend"
           }
+        }
+      }
+    },
+    "Image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "large": {
+          "description": "fit 1024x768",
+          "type": "string"
+        },
+        "medium": {
+          "description": "fit 640x640",
+          "type": "string"
+        },
+        "small": {
+          "description": "fit 320x320",
+          "type": "string"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ImageList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Image"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
         }
       }
     },
@@ -4617,6 +4780,42 @@ func init() {
         }
       ]
     },
+    "/images": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "images"
+        ],
+        "parameters": [
+          {
+            "type": "file",
+            "name": "file",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "schema": {
+              "$ref": "#/definitions/Image"
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/me": {
       "get": {
         "security": [
@@ -4947,6 +5146,54 @@ func init() {
             "description": "User list",
             "schema": {
               "$ref": "#/definitions/FriendList"
+            }
+          }
+        }
+      }
+    },
+    "/me/images": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image list",
+            "schema": {
+              "$ref": "#/definitions/ImageList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -5640,6 +5887,64 @@ func init() {
         }
       ]
     },
+    "/users/{name}/images": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image list",
+            "schema": {
+              "$ref": "#/definitions/ImageList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/users/{name}/invited": {
       "get": {
         "security": [
@@ -6070,6 +6375,54 @@ func init() {
           "items": {
             "$ref": "#/definitions/Friend"
           }
+        }
+      }
+    },
+    "Image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "large": {
+          "description": "fit 1024x768",
+          "type": "string"
+        },
+        "medium": {
+          "description": "fit 640x640",
+          "type": "string"
+        },
+        "small": {
+          "description": "fit 320x320",
+          "type": "string"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ImageList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Image"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
         }
       }
     },
