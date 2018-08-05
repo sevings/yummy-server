@@ -1766,27 +1766,23 @@ INSERT INTO mindwell.users
     (name, show_name, email, password_hash, api_key, invited_by)
     VALUES('Mindwell', 'Mindwell', '', '', '', 1);
 
--- -- CREATE TABLE "images" ---------------------------------------
--- CREATE TABLE "mindwell"."images" (
--- 	"id" Serial NOT NULL,
--- 	"entry_id" Integer NOT NULL,
--- 	"url" Text NOT NULL,
--- 	"sorting" SmallInt NOT NULL,
--- 	CONSTRAINT "unique_image_id" PRIMARY KEY( "id" ),
---     CONSTRAINT "image_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") );
---  ;
--- -- -------------------------------------------------------------
---
--- -- CREATE INDEX "index_image_id" -------------------------------
--- CREATE INDEX "index_image_id" ON "mindwell"."images" USING btree( "id" );
--- -- -------------------------------------------------------------
---
--- -- CREATE INDEX "index_image_entry" ----------------------------
--- CREATE INDEX "index_image_entry" ON "mindwell"."images" USING btree( "entry_id" );
--- -- -------------------------------------------------------------
---
---
---
+
+
+-- CREATE TABLE "images" ---------------------------------------
+CREATE TABLE "mindwell"."images" (
+	"id" Serial NOT NULL,
+    "user_id" Integer NOT NULL,
+	"path" Text NOT NULL,
+    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL);
+ ;
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_image_id" -------------------------------
+CREATE UNIQUE INDEX "index_image_id" ON "mindwell"."images" USING btree( "id" );
+-- -------------------------------------------------------------
+
+
+
 -- -- CREATE TABLE "media" ----------------------------------------
 -- CREATE TABLE "mindwell"."media" (
 -- 	"id" Serial NOT NULL,

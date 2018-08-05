@@ -387,6 +387,39 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  Image:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      userId:
+        type: integer
+        format: int64
+      small: 
+        type: string
+        description: fit 320x320
+      medium:
+        type: string
+        description: fit 640x640
+      large:
+        type: string
+        description: fit 1024x768
+  ImageList:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Image'
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
 parameters:
   pathId:
     in: path
@@ -875,6 +908,27 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /users/{name}/images:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: Image list
+          schema:
+            $ref: '#/definitions/ImageList'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /me:
     get:
       security:
@@ -1152,6 +1206,25 @@ paths:
           description: Entry list
           schema:
             $ref: '#/definitions/Feed'
+  /me/images:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: Image list
+          schema:
+            $ref: '#/definitions/ImageList'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /design:
     get:
       security:
@@ -1829,6 +1902,27 @@ paths:
             $ref: '#/definitions/Rating'
         404:
           description: Comment not found
+          schema:
+            $ref: '#/definitions/Error'
+  /images:
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - images
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: file
+          type: file
+      responses:
+        200:
+          description: Image
+          schema:
+            $ref: '#/definitions/Image'
+        400:
+          description: bad request
           schema:
             $ref: '#/definitions/Error'
 produces:
