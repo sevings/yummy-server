@@ -61,7 +61,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var profile models.Profile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.FriendAllOf1Counts{}
+	profile.Counts = &models.FriendAO1Counts{}
 
 	var backColor string
 	var textColor string
@@ -125,7 +125,7 @@ func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID,
 				AND relations.to_id = $2
 				AND relations.type = relation.id`
 
-		profile.Relations = &models.ProfileAllOf1Relations{}
+		profile.Relations = &models.ProfileAO1Relations{}
 		profile.Relations.FromMe = relationship(tx, relationQuery, userID.ID, profile.ID)
 		profile.Relations.ToMe = relationship(tx, relationQuery, profile.ID, userID.ID)
 
@@ -161,7 +161,7 @@ func IsOpenForMe(tx *utils.AutoTx, userID *models.UserID, name interface{}) bool
 		return true
 	}
 
-	if privacy == models.ProfileAllOf1PrivacyAll {
+	if privacy == "all" {
 		return true
 	}
 
@@ -211,7 +211,7 @@ func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend 
 
 	for {
 		var user models.Friend
-		user.Counts = &models.FriendAllOf1Counts{}
+		user.Counts = &models.FriendAO1Counts{}
 		var avatar, cover string
 
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName, &user.Gender,

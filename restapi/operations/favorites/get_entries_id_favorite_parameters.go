@@ -60,6 +60,7 @@ func (o *GetEntriesIDFavoriteParams) BindRequest(r *http.Request, route *middlew
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *GetEntriesIDFavoriteParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -82,6 +83,7 @@ func (o *GetEntriesIDFavoriteParams) bindID(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *GetEntriesIDFavoriteParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {

@@ -73,6 +73,7 @@ func (o *PutRelationsToNameParams) BindRequest(r *http.Request, route *middlewar
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *PutRelationsToNameParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -91,6 +92,7 @@ func (o *PutRelationsToNameParams) bindName(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *PutRelationsToNameParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {
@@ -104,6 +106,7 @@ func (o *PutRelationsToNameParams) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindR binds and validates parameter R from query.
 func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("r", "query")
@@ -128,6 +131,7 @@ func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// validateR carries on validations for parameter R
 func (o *PutRelationsToNameParams) validateR(formats strfmt.Registry) error {
 
 	if err := validate.Enum("r", "query", o.R, []interface{}{"followed", "ignored"}); err != nil {

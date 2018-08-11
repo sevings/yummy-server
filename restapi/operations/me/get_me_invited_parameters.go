@@ -85,6 +85,7 @@ func (o *GetMeInvitedParams) BindRequest(r *http.Request, route *middleware.Matc
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetMeInvitedParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -111,6 +112,7 @@ func (o *GetMeInvitedParams) bindLimit(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetMeInvitedParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -124,6 +126,7 @@ func (o *GetMeInvitedParams) validateLimit(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindSkip binds and validates parameter Skip from query.
 func (o *GetMeInvitedParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

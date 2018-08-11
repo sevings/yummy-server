@@ -82,6 +82,7 @@ func (o *PostAccountLoginParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
+// bindName binds and validates parameter Name from formData.
 func (o *PostAccountLoginParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("name", "formData")
@@ -106,6 +107,7 @@ func (o *PostAccountLoginParams) bindName(rawData []string, hasKey bool, formats
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *PostAccountLoginParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "formData", o.Name, 1); err != nil {
@@ -119,6 +121,7 @@ func (o *PostAccountLoginParams) validateName(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindPassword binds and validates parameter Password from formData.
 func (o *PostAccountLoginParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("password", "formData")
@@ -143,6 +146,7 @@ func (o *PostAccountLoginParams) bindPassword(rawData []string, hasKey bool, for
 	return nil
 }
 
+// validatePassword carries on validations for parameter Password
 func (o *PostAccountLoginParams) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("password", "formData", o.Password, 6); err != nil {

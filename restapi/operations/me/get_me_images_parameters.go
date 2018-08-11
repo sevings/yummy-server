@@ -98,6 +98,7 @@ func (o *GetMeImagesParams) BindRequest(r *http.Request, route *middleware.Match
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetMeImagesParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -116,6 +117,7 @@ func (o *GetMeImagesParams) bindAfter(rawData []string, hasKey bool, formats str
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetMeImagesParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -134,6 +136,7 @@ func (o *GetMeImagesParams) bindBefore(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetMeImagesParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -160,6 +163,7 @@ func (o *GetMeImagesParams) bindLimit(rawData []string, hasKey bool, formats str
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetMeImagesParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {

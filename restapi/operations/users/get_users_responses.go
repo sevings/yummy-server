@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersOKCode is the HTTP code returned for type GetUsersOK
@@ -25,7 +23,7 @@ type GetUsersOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetUsersOKBody `json:"body,omitempty"`
+	Payload *GetUsersOKBody `json:"body,omitempty"`
 }
 
 // NewGetUsersOK creates GetUsersOK with default headers values
@@ -35,13 +33,13 @@ func NewGetUsersOK() *GetUsersOK {
 }
 
 // WithPayload adds the payload to the get users o k response
-func (o *GetUsersOK) WithPayload(payload *models.GetUsersOKBody) *GetUsersOK {
+func (o *GetUsersOK) WithPayload(payload *GetUsersOKBody) *GetUsersOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get users o k response
-func (o *GetUsersOK) SetPayload(payload *models.GetUsersOKBody) {
+func (o *GetUsersOK) SetPayload(payload *GetUsersOKBody) {
 	o.Payload = payload
 }
 

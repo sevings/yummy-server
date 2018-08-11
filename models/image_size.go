@@ -11,21 +11,27 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// GetDesignFontsOKBody get design fonts o k body
-// swagger:model getDesignFontsOKBody
-type GetDesignFontsOKBody struct {
+// ImageSize image size
+// swagger:model ImageSize
+type ImageSize struct {
 
-	// fonts
-	Fonts []string `json:"fonts"`
+	// height
+	Height int64 `json:"height,omitempty"`
+
+	// url
+	URL string `json:"url,omitempty"`
+
+	// width
+	Width int64 `json:"width,omitempty"`
 }
 
-// Validate validates this get design fonts o k body
-func (m *GetDesignFontsOKBody) Validate(formats strfmt.Registry) error {
+// Validate validates this image size
+func (m *ImageSize) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
 // MarshalBinary interface implementation
-func (m *GetDesignFontsOKBody) MarshalBinary() ([]byte, error) {
+func (m *ImageSize) MarshalBinary() ([]byte, error) {
 	if m == nil {
 		return nil, nil
 	}
@@ -33,8 +39,8 @@ func (m *GetDesignFontsOKBody) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary interface implementation
-func (m *GetDesignFontsOKBody) UnmarshalBinary(b []byte) error {
-	var res GetDesignFontsOKBody
+func (m *ImageSize) UnmarshalBinary(b []byte) error {
+	var res ImageSize
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

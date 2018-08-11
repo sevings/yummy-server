@@ -74,6 +74,7 @@ func (o *GetAccountVerificationEmailParams) BindRequest(r *http.Request, route *
 	return nil
 }
 
+// bindCode binds and validates parameter Code from query.
 func (o *GetAccountVerificationEmailParams) bindCode(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("code", "query")
@@ -98,6 +99,7 @@ func (o *GetAccountVerificationEmailParams) bindCode(rawData []string, hasKey bo
 	return nil
 }
 
+// validateCode carries on validations for parameter Code
 func (o *GetAccountVerificationEmailParams) validateCode(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("code", "query", o.Code, 64); err != nil {
@@ -111,6 +113,7 @@ func (o *GetAccountVerificationEmailParams) validateCode(formats strfmt.Registry
 	return nil
 }
 
+// bindEmail binds and validates parameter Email from path.
 func (o *GetAccountVerificationEmailParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -129,6 +132,7 @@ func (o *GetAccountVerificationEmailParams) bindEmail(rawData []string, hasKey b
 	return nil
 }
 
+// validateEmail carries on validations for parameter Email
 func (o *GetAccountVerificationEmailParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "path", o.Email, 500); err != nil {

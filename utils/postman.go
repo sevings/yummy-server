@@ -101,7 +101,7 @@ func (pm *Postman) SendGreeting(address, name, code string) {
 
 func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment) {
 	var ending string
-	if fromGender == models.FriendAllOf1GenderFemale {
+	if fromGender == "female" {
 		ending = "а"
 	}
 
@@ -138,7 +138,7 @@ func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle st
 
 func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string) {
 	var ending, pronoun string
-	if fromGender == models.FriendAllOf1GenderFemale {
+	if fromGender == "female" {
 		ending = "ась"
 		pronoun = "её"
 	} else {

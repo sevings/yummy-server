@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
 
 	models "github.com/sevings/mindwell-server/models"
 )
@@ -70,4 +72,35 @@ func (o *GetDesignFonts) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// GetDesignFontsOKBody get design fonts o k body
+// swagger:model GetDesignFontsOKBody
+type GetDesignFontsOKBody struct {
+
+	// fonts
+	Fonts []string `json:"fonts"`
+}
+
+// Validate validates this get design fonts o k body
+func (o *GetDesignFontsOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetDesignFontsOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetDesignFontsOKBody) UnmarshalBinary(b []byte) error {
+	var res GetDesignFontsOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

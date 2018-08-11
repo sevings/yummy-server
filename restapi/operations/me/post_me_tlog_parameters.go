@@ -124,6 +124,7 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindContent binds and validates parameter Content from formData.
 func (o *PostMeTlogParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("content", "formData")
@@ -148,6 +149,7 @@ func (o *PostMeTlogParams) bindContent(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// validateContent carries on validations for parameter Content
 func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
@@ -161,6 +163,7 @@ func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindIsVotable binds and validates parameter IsVotable from formData.
 func (o *PostMeTlogParams) bindIsVotable(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -183,6 +186,7 @@ func (o *PostMeTlogParams) bindIsVotable(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PostMeTlogParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("privacy", "formData")
@@ -207,6 +211,7 @@ func (o *PostMeTlogParams) bindPrivacy(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// validatePrivacy carries on validations for parameter Privacy
 func (o *PostMeTlogParams) validatePrivacy(formats strfmt.Registry) error {
 
 	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me"}); err != nil {
@@ -216,6 +221,7 @@ func (o *PostMeTlogParams) validatePrivacy(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTitle binds and validates parameter Title from formData.
 func (o *PostMeTlogParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -238,6 +244,7 @@ func (o *PostMeTlogParams) bindTitle(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// validateTitle carries on validations for parameter Title
 func (o *PostMeTlogParams) validateTitle(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
@@ -247,6 +254,9 @@ func (o *PostMeTlogParams) validateTitle(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindVisibleFor binds and validates array parameter VisibleFor from formData.
+//
+// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostMeTlogParams) bindVisibleFor(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	var qvVisibleFor string
@@ -276,11 +286,6 @@ func (o *PostMeTlogParams) bindVisibleFor(rawData []string, hasKey bool, formats
 	}
 
 	o.VisibleFor = visibleForIR
-
-	return nil
-}
-
-func (o *PostMeTlogParams) validateVisibleFor(formats strfmt.Registry) error {
 
 	return nil
 }

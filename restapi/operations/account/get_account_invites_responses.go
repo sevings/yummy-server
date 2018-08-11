@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountInvitesOKCode is the HTTP code returned for type GetAccountInvitesOK
@@ -25,7 +23,7 @@ type GetAccountInvitesOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetAccountInvitesOKBody `json:"body,omitempty"`
+	Payload *GetAccountInvitesOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountInvitesOK creates GetAccountInvitesOK with default headers values
@@ -35,13 +33,13 @@ func NewGetAccountInvitesOK() *GetAccountInvitesOK {
 }
 
 // WithPayload adds the payload to the get account invites o k response
-func (o *GetAccountInvitesOK) WithPayload(payload *models.GetAccountInvitesOKBody) *GetAccountInvitesOK {
+func (o *GetAccountInvitesOK) WithPayload(payload *GetAccountInvitesOKBody) *GetAccountInvitesOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account invites o k response
-func (o *GetAccountInvitesOK) SetPayload(payload *models.GetAccountInvitesOKBody) {
+func (o *GetAccountInvitesOK) SetPayload(payload *GetAccountInvitesOKBody) {
 	o.Payload = payload
 }
 

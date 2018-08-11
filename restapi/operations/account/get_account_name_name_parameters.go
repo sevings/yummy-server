@@ -60,6 +60,7 @@ func (o *GetAccountNameNameParams) BindRequest(r *http.Request, route *middlewar
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *GetAccountNameNameParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -78,6 +79,7 @@ func (o *GetAccountNameNameParams) bindName(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *GetAccountNameNameParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {

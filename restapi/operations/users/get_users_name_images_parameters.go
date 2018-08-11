@@ -110,6 +110,7 @@ func (o *GetUsersNameImagesParams) BindRequest(r *http.Request, route *middlewar
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetUsersNameImagesParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -128,6 +129,7 @@ func (o *GetUsersNameImagesParams) bindAfter(rawData []string, hasKey bool, form
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetUsersNameImagesParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -146,6 +148,7 @@ func (o *GetUsersNameImagesParams) bindBefore(rawData []string, hasKey bool, for
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetUsersNameImagesParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -172,6 +175,7 @@ func (o *GetUsersNameImagesParams) bindLimit(rawData []string, hasKey bool, form
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameImagesParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -185,6 +189,7 @@ func (o *GetUsersNameImagesParams) validateLimit(formats strfmt.Registry) error 
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *GetUsersNameImagesParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -203,6 +208,7 @@ func (o *GetUsersNameImagesParams) bindName(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *GetUsersNameImagesParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {

@@ -82,6 +82,7 @@ func (o *PostAccountPasswordParams) BindRequest(r *http.Request, route *middlewa
 	return nil
 }
 
+// bindNewPassword binds and validates parameter NewPassword from formData.
 func (o *PostAccountPasswordParams) bindNewPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("new_password", "formData")
@@ -106,6 +107,7 @@ func (o *PostAccountPasswordParams) bindNewPassword(rawData []string, hasKey boo
 	return nil
 }
 
+// validateNewPassword carries on validations for parameter NewPassword
 func (o *PostAccountPasswordParams) validateNewPassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("new_password", "formData", o.NewPassword, 6); err != nil {
@@ -119,6 +121,7 @@ func (o *PostAccountPasswordParams) validateNewPassword(formats strfmt.Registry)
 	return nil
 }
 
+// bindOldPassword binds and validates parameter OldPassword from formData.
 func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("old_password", "formData")
@@ -143,6 +146,7 @@ func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey boo
 	return nil
 }
 
+// validateOldPassword carries on validations for parameter OldPassword
 func (o *PostAccountPasswordParams) validateOldPassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("old_password", "formData", o.OldPassword, 6); err != nil {

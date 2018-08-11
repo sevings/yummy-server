@@ -95,6 +95,7 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
+// bindCategory binds and validates parameter Category from query.
 func (o *GetEntriesBestParams) bindCategory(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -117,6 +118,7 @@ func (o *GetEntriesBestParams) bindCategory(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateCategory carries on validations for parameter Category
 func (o *GetEntriesBestParams) validateCategory(formats strfmt.Registry) error {
 
 	if err := validate.Enum("category", "query", *o.Category, []interface{}{"month", "week"}); err != nil {
@@ -126,6 +128,7 @@ func (o *GetEntriesBestParams) validateCategory(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetEntriesBestParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -152,6 +155,7 @@ func (o *GetEntriesBestParams) bindLimit(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetEntriesBestParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -165,6 +169,7 @@ func (o *GetEntriesBestParams) validateLimit(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTag binds and validates parameter Tag from query.
 func (o *GetEntriesBestParams) bindTag(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -186,6 +191,7 @@ func (o *GetEntriesBestParams) bindTag(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// validateTag carries on validations for parameter Tag
 func (o *GetEntriesBestParams) validateTag(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {

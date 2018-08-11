@@ -71,7 +71,9 @@ func (o *PutMeAvatarParams) BindRequest(r *http.Request, route *middleware.Match
 	return nil
 }
 
+// bindFile binds file parameter File.
+//
+// The only supported validations on files are MinLength and MaxLength
 func (o *PutMeAvatarParams) bindFile(file multipart.File, header *multipart.FileHeader) error {
-
 	return nil
 }

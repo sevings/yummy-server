@@ -89,6 +89,7 @@ func (o *PutAccountSettingsEmailParams) BindRequest(r *http.Request, route *midd
 	return nil
 }
 
+// bindComments binds and validates parameter Comments from formData.
 func (o *PutAccountSettingsEmailParams) bindComments(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -111,6 +112,7 @@ func (o *PutAccountSettingsEmailParams) bindComments(rawData []string, hasKey bo
 	return nil
 }
 
+// bindFollowers binds and validates parameter Followers from formData.
 func (o *PutAccountSettingsEmailParams) bindFollowers(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

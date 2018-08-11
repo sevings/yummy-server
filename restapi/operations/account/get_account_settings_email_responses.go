@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountSettingsEmailOKCode is the HTTP code returned for type GetAccountSettingsEmailOK
@@ -25,7 +23,7 @@ type GetAccountSettingsEmailOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetAccountSettingsEmailOKBody `json:"body,omitempty"`
+	Payload *GetAccountSettingsEmailOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountSettingsEmailOK creates GetAccountSettingsEmailOK with default headers values
@@ -35,13 +33,13 @@ func NewGetAccountSettingsEmailOK() *GetAccountSettingsEmailOK {
 }
 
 // WithPayload adds the payload to the get account settings email o k response
-func (o *GetAccountSettingsEmailOK) WithPayload(payload *models.GetAccountSettingsEmailOKBody) *GetAccountSettingsEmailOK {
+func (o *GetAccountSettingsEmailOK) WithPayload(payload *GetAccountSettingsEmailOKBody) *GetAccountSettingsEmailOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account settings email o k response
-func (o *GetAccountSettingsEmailOK) SetPayload(payload *models.GetAccountSettingsEmailOKBody) {
+func (o *GetAccountSettingsEmailOK) SetPayload(payload *GetAccountSettingsEmailOKBody) {
 	o.Payload = payload
 }
 

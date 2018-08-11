@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
 
 	models "github.com/sevings/mindwell-server/models"
 )
@@ -70,4 +72,35 @@ func (o *GetAccountInvites) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// GetAccountInvitesOKBody get account invites o k body
+// swagger:model GetAccountInvitesOKBody
+type GetAccountInvitesOKBody struct {
+
+	// invites
+	Invites []string `json:"invites"`
+}
+
+// Validate validates this get account invites o k body
+func (o *GetAccountInvitesOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetAccountInvitesOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetAccountInvitesOKBody) UnmarshalBinary(b []byte) error {
+	var res GetAccountInvitesOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

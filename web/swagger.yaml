@@ -387,6 +387,15 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  ImageSize:
+    type: object
+    properties:
+      width: 
+        type: integer
+      height:
+        type: integer
+      url:
+        type: string
   Image:
     type: object
     properties:
@@ -396,15 +405,14 @@ definitions:
       userId:
         type: integer
         format: int64
+      mimeType:
+        type: string
       small: 
-        type: string
-        description: fit 320x320
+        $ref: '#/definitions/ImageSize'
       medium:
-        type: string
-        description: fit 640x640
+        $ref: '#/definitions/ImageSize'
       large:
-        type: string
-        description: fit 1024x768
+        $ref: '#/definitions/ImageSize'
   ImageList:
     type: object
     properties:

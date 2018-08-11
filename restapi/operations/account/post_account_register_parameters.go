@@ -161,6 +161,7 @@ func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middlewa
 	return nil
 }
 
+// bindBirthday binds and validates parameter Birthday from formData.
 func (o *PostAccountRegisterParams) bindBirthday(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -178,6 +179,7 @@ func (o *PostAccountRegisterParams) bindBirthday(rawData []string, hasKey bool, 
 	return nil
 }
 
+// bindCity binds and validates parameter City from formData.
 func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -200,6 +202,7 @@ func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, form
 	return nil
 }
 
+// validateCity carries on validations for parameter City
 func (o *PostAccountRegisterParams) validateCity(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("city", "formData", (*o.City), 50); err != nil {
@@ -209,6 +212,7 @@ func (o *PostAccountRegisterParams) validateCity(formats strfmt.Registry) error 
 	return nil
 }
 
+// bindCountry binds and validates parameter Country from formData.
 func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -231,6 +235,7 @@ func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, f
 	return nil
 }
 
+// validateCountry carries on validations for parameter Country
 func (o *PostAccountRegisterParams) validateCountry(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("country", "formData", (*o.Country), 50); err != nil {
@@ -240,6 +245,7 @@ func (o *PostAccountRegisterParams) validateCountry(formats strfmt.Registry) err
 	return nil
 }
 
+// bindEmail binds and validates parameter Email from formData.
 func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("email", "formData")
@@ -264,6 +270,7 @@ func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, for
 	return nil
 }
 
+// validateEmail carries on validations for parameter Email
 func (o *PostAccountRegisterParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
@@ -273,6 +280,7 @@ func (o *PostAccountRegisterParams) validateEmail(formats strfmt.Registry) error
 	return nil
 }
 
+// bindGender binds and validates parameter Gender from formData.
 func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -295,6 +303,7 @@ func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateGender carries on validations for parameter Gender
 func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) error {
 
 	if err := validate.Enum("gender", "formData", *o.Gender, []interface{}{"not set", "male", "female"}); err != nil {
@@ -304,6 +313,7 @@ func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) erro
 	return nil
 }
 
+// bindInvite binds and validates parameter Invite from formData.
 func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("invite", "formData")
@@ -328,6 +338,7 @@ func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateInvite carries on validations for parameter Invite
 func (o *PostAccountRegisterParams) validateInvite(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("invite", "formData", o.Invite, 100); err != nil {
@@ -337,6 +348,7 @@ func (o *PostAccountRegisterParams) validateInvite(formats strfmt.Registry) erro
 	return nil
 }
 
+// bindName binds and validates parameter Name from formData.
 func (o *PostAccountRegisterParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("name", "formData")
@@ -361,6 +373,7 @@ func (o *PostAccountRegisterParams) bindName(rawData []string, hasKey bool, form
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *PostAccountRegisterParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "formData", o.Name, 1); err != nil {
@@ -378,6 +391,7 @@ func (o *PostAccountRegisterParams) validateName(formats strfmt.Registry) error 
 	return nil
 }
 
+// bindPassword binds and validates parameter Password from formData.
 func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("password", "formData")
@@ -402,6 +416,7 @@ func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, 
 	return nil
 }
 
+// validatePassword carries on validations for parameter Password
 func (o *PostAccountRegisterParams) validatePassword(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("password", "formData", o.Password, 6); err != nil {

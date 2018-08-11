@@ -8,7 +8,11 @@ package account
 import (
 	"net/http"
 
+	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
+	validate "github.com/go-openapi/validate"
 )
 
 // GetAccountNameNameHandlerFunc turns a function with the right signature into a get account name name handler
@@ -55,4 +59,71 @@ func (o *GetAccountNameName) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// GetAccountNameNameOKBody get account name name o k body
+// swagger:model GetAccountNameNameOKBody
+type GetAccountNameNameOKBody struct {
+
+	// is free
+	// Required: true
+	IsFree *bool `json:"isFree"`
+
+	// name
+	// Required: true
+	Name *string `json:"name"`
+}
+
+// Validate validates this get account name name o k body
+func (o *GetAccountNameNameOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateIsFree(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateName(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetAccountNameNameOKBody) validateIsFree(formats strfmt.Registry) error {
+
+	if err := validate.Required("getAccountNameNameOK"+"."+"isFree", "body", o.IsFree); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (o *GetAccountNameNameOKBody) validateName(formats strfmt.Registry) error {
+
+	if err := validate.Required("getAccountNameNameOK"+"."+"name", "body", o.Name); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetAccountNameNameOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetAccountNameNameOKBody) UnmarshalBinary(b []byte) error {
+	var res GetAccountNameNameOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

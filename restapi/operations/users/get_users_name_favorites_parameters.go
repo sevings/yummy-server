@@ -110,6 +110,7 @@ func (o *GetUsersNameFavoritesParams) BindRequest(r *http.Request, route *middle
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetUsersNameFavoritesParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -128,6 +129,7 @@ func (o *GetUsersNameFavoritesParams) bindAfter(rawData []string, hasKey bool, f
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetUsersNameFavoritesParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -146,6 +148,7 @@ func (o *GetUsersNameFavoritesParams) bindBefore(rawData []string, hasKey bool, 
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetUsersNameFavoritesParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -172,6 +175,7 @@ func (o *GetUsersNameFavoritesParams) bindLimit(rawData []string, hasKey bool, f
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameFavoritesParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -185,6 +189,7 @@ func (o *GetUsersNameFavoritesParams) validateLimit(formats strfmt.Registry) err
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *GetUsersNameFavoritesParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -203,6 +208,7 @@ func (o *GetUsersNameFavoritesParams) bindName(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *GetUsersNameFavoritesParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {

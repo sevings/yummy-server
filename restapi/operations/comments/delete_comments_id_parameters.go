@@ -60,6 +60,7 @@ func (o *DeleteCommentsIDParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *DeleteCommentsIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -82,6 +83,7 @@ func (o *DeleteCommentsIDParams) bindID(rawData []string, hasKey bool, formats s
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *DeleteCommentsIDParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {

@@ -69,6 +69,7 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	return nil
 }
 
+// bindTop binds and validates parameter Top from query.
 func (o *GetUsersParams) bindTop(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -91,6 +92,7 @@ func (o *GetUsersParams) bindTop(rawData []string, hasKey bool, formats strfmt.R
 	return nil
 }
 
+// validateTop carries on validations for parameter Top
 func (o *GetUsersParams) validateTop(formats strfmt.Registry) error {
 
 	if err := validate.Enum("top", "query", *o.Top, []interface{}{"new", "karma"}); err != nil {

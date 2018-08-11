@@ -82,6 +82,7 @@ func (o *PutCommentsIDParams) BindRequest(r *http.Request, route *middleware.Mat
 	return nil
 }
 
+// bindContent binds and validates parameter Content from formData.
 func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("content", "formData")
@@ -106,6 +107,7 @@ func (o *PutCommentsIDParams) bindContent(rawData []string, hasKey bool, formats
 	return nil
 }
 
+// validateContent carries on validations for parameter Content
 func (o *PutCommentsIDParams) validateContent(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
@@ -119,6 +121,7 @@ func (o *PutCommentsIDParams) validateContent(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *PutCommentsIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -141,6 +144,7 @@ func (o *PutCommentsIDParams) bindID(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *PutCommentsIDParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {

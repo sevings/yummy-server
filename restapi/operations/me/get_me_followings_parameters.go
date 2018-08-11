@@ -85,6 +85,7 @@ func (o *GetMeFollowingsParams) BindRequest(r *http.Request, route *middleware.M
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetMeFollowingsParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -111,6 +112,7 @@ func (o *GetMeFollowingsParams) bindLimit(rawData []string, hasKey bool, formats
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetMeFollowingsParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -124,6 +126,7 @@ func (o *GetMeFollowingsParams) validateLimit(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindSkip binds and validates parameter Skip from query.
 func (o *GetMeFollowingsParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

@@ -110,6 +110,7 @@ func (o *GetEntriesIDCommentsParams) BindRequest(r *http.Request, route *middlew
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetEntriesIDCommentsParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -128,6 +129,7 @@ func (o *GetEntriesIDCommentsParams) bindAfter(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetEntriesIDCommentsParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -146,6 +148,7 @@ func (o *GetEntriesIDCommentsParams) bindBefore(rawData []string, hasKey bool, f
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *GetEntriesIDCommentsParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -168,6 +171,7 @@ func (o *GetEntriesIDCommentsParams) bindID(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *GetEntriesIDCommentsParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
@@ -177,6 +181,7 @@ func (o *GetEntriesIDCommentsParams) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetEntriesIDCommentsParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -203,6 +208,7 @@ func (o *GetEntriesIDCommentsParams) bindLimit(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetEntriesIDCommentsParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {

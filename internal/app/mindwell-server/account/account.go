@@ -53,7 +53,7 @@ func newEmailChecker(srv *utils.MindwellServer) func(account.GetAccountEmailEmai
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isEmailFree(tx, params.Email)
-			data := models.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
+			data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
 		})
 	}
@@ -75,7 +75,7 @@ func newNameChecker(srv *utils.MindwellServer) func(account.GetAccountNameNamePa
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isNameFree(tx, params.Name)
-			data := models.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
+			data := account.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
 			return account.NewGetAccountNameNameOK().WithPayload(&data)
 		})
 	}
@@ -123,9 +123,9 @@ func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, na
 
 func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	var g govatar.Gender
-	if gender == models.FriendAllOf1GenderMale {
+	if gender == "male" {
 		g = govatar.MALE
-	} else if gender == models.FriendAllOf1GenderFemale {
+	} else if gender == "female" {
 		g = govatar.FEMALE
 	} else if ch := name[len(name)-1]; ch == 'a' || ch == 'y' || ch == 'u' || ch == 'e' || ch == 'o' || ch == 'i' {
 		g = govatar.FEMALE
@@ -163,7 +163,7 @@ func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Post
 		RETURNING id`
 
 	if params.Gender == nil {
-		gender := models.FriendAllOf1GenderNotSet
+		gender := "not set"
 		params.Gender = &gender
 	}
 
@@ -219,8 +219,8 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Counts = &models.FriendAllOf1Counts{}
-	profile.Account = &models.AuthProfileAllOf1Account{}
+	profile.Counts = &models.FriendAO1Counts{}
+	profile.Account = &models.AuthProfileAO1Account{}
 
 	var backColor string
 	var textColor string
@@ -394,7 +394,7 @@ func newInvitesLoader(srv *utils.MindwellServer) func(account.GetAccountInvitesP
 				return account.NewPostAccountLoginBadRequest().WithPayload(err)
 			}
 
-			res := models.GetAccountInvitesOKBody{Invites: invites}
+			res := account.GetAccountInvitesOKBody{Invites: invites}
 			return account.NewGetAccountInvitesOK().WithPayload(&res)
 		})
 	}
@@ -446,7 +446,7 @@ func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerifica
 func newEmailSettingsLoader(srv *utils.MindwellServer) func(account.GetAccountSettingsEmailParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountSettingsEmailParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			settings := models.GetAccountSettingsEmailOKBody{}
+			settings := account.GetAccountSettingsEmailOKBody{}
 
 			const q = "SELECT email_comments, email_followers from users where id = $1"
 			tx.Query(q, userID.ID).Scan(&settings.Comments, &settings.Followers)

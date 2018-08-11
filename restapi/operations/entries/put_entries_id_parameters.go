@@ -149,6 +149,7 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	return nil
 }
 
+// bindAnonymousComments binds and validates parameter AnonymousComments from formData.
 func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -171,6 +172,7 @@ func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool
 	return nil
 }
 
+// bindContent binds and validates parameter Content from formData.
 func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("content", "formData")
@@ -195,6 +197,7 @@ func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// validateContent carries on validations for parameter Content
 func (o *PutEntriesIDParams) validateContent(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
@@ -208,6 +211,7 @@ func (o *PutEntriesIDParams) validateContent(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *PutEntriesIDParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -230,6 +234,7 @@ func (o *PutEntriesIDParams) bindID(rawData []string, hasKey bool, formats strfm
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *PutEntriesIDParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
@@ -239,6 +244,7 @@ func (o *PutEntriesIDParams) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindIsVotable binds and validates parameter IsVotable from formData.
 func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -261,6 +267,7 @@ func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, format
 	return nil
 }
 
+// bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("privacy", "formData")
@@ -285,6 +292,7 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// validatePrivacy carries on validations for parameter Privacy
 func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 
 	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}); err != nil {
@@ -294,6 +302,7 @@ func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTitle binds and validates parameter Title from formData.
 func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -316,6 +325,7 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// validateTitle carries on validations for parameter Title
 func (o *PutEntriesIDParams) validateTitle(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
@@ -325,6 +335,9 @@ func (o *PutEntriesIDParams) validateTitle(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindVisibleFor binds and validates array parameter VisibleFor from formData.
+//
+// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, formats strfmt.Registry) error {
 
 	var qvVisibleFor string
@@ -354,11 +367,6 @@ func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, forma
 	}
 
 	o.VisibleFor = visibleForIR
-
-	return nil
-}
-
-func (o *PutEntriesIDParams) validateVisibleFor(formats strfmt.Registry) error {
 
 	return nil
 }

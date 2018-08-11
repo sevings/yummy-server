@@ -27,7 +27,7 @@ func newTopUsersLoader(srv *utils.MindwellServer) func(users.GetUsersParams, *mo
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			tx.Query(query)
 			list := loadUserList(srv, tx)
-			body := &models.GetUsersOKBody{
+			body := &users.GetUsersOKBody{
 				Users: list,
 				Top:   *params.Top,
 			}

@@ -59,6 +59,7 @@ func (o *GetAccountEmailEmailParams) BindRequest(r *http.Request, route *middlew
 	return nil
 }
 
+// bindEmail binds and validates parameter Email from path.
 func (o *GetAccountEmailEmailParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -77,6 +78,7 @@ func (o *GetAccountEmailEmailParams) bindEmail(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateEmail carries on validations for parameter Email
 func (o *GetAccountEmailEmailParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "path", o.Email, 500); err != nil {

@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetDesignFontsOKCode is the HTTP code returned for type GetDesignFontsOK
@@ -25,7 +23,7 @@ type GetDesignFontsOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetDesignFontsOKBody `json:"body,omitempty"`
+	Payload *GetDesignFontsOKBody `json:"body,omitempty"`
 }
 
 // NewGetDesignFontsOK creates GetDesignFontsOK with default headers values
@@ -35,13 +33,13 @@ func NewGetDesignFontsOK() *GetDesignFontsOK {
 }
 
 // WithPayload adds the payload to the get design fonts o k response
-func (o *GetDesignFontsOK) WithPayload(payload *models.GetDesignFontsOKBody) *GetDesignFontsOK {
+func (o *GetDesignFontsOK) WithPayload(payload *GetDesignFontsOKBody) *GetDesignFontsOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get design fonts o k response
-func (o *GetDesignFontsOK) SetPayload(payload *models.GetDesignFontsOKBody) {
+func (o *GetDesignFontsOK) SetPayload(payload *GetDesignFontsOKBody) {
 	o.Payload = payload
 }
 

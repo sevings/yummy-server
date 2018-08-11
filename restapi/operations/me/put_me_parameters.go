@@ -182,6 +182,7 @@ func (o *PutMeParams) BindRequest(r *http.Request, route *middleware.MatchedRout
 	return nil
 }
 
+// bindBirthday binds and validates parameter Birthday from formData.
 func (o *PutMeParams) bindBirthday(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -200,6 +201,7 @@ func (o *PutMeParams) bindBirthday(rawData []string, hasKey bool, formats strfmt
 	return nil
 }
 
+// bindCity binds and validates parameter City from formData.
 func (o *PutMeParams) bindCity(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -222,6 +224,7 @@ func (o *PutMeParams) bindCity(rawData []string, hasKey bool, formats strfmt.Reg
 	return nil
 }
 
+// validateCity carries on validations for parameter City
 func (o *PutMeParams) validateCity(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("city", "formData", (*o.City), 50); err != nil {
@@ -231,6 +234,7 @@ func (o *PutMeParams) validateCity(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindCountry binds and validates parameter Country from formData.
 func (o *PutMeParams) bindCountry(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -253,6 +257,7 @@ func (o *PutMeParams) bindCountry(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
+// validateCountry carries on validations for parameter Country
 func (o *PutMeParams) validateCountry(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("country", "formData", (*o.Country), 50); err != nil {
@@ -262,6 +267,7 @@ func (o *PutMeParams) validateCountry(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindGender binds and validates parameter Gender from formData.
 func (o *PutMeParams) bindGender(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -284,6 +290,7 @@ func (o *PutMeParams) bindGender(rawData []string, hasKey bool, formats strfmt.R
 	return nil
 }
 
+// validateGender carries on validations for parameter Gender
 func (o *PutMeParams) validateGender(formats strfmt.Registry) error {
 
 	if err := validate.Enum("gender", "formData", *o.Gender, []interface{}{"male", "female", "not set"}); err != nil {
@@ -293,6 +300,7 @@ func (o *PutMeParams) validateGender(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindIsDaylog binds and validates parameter IsDaylog from formData.
 func (o *PutMeParams) bindIsDaylog(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -315,6 +323,7 @@ func (o *PutMeParams) bindIsDaylog(rawData []string, hasKey bool, formats strfmt
 	return nil
 }
 
+// bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("privacy", "formData")
@@ -339,6 +348,7 @@ func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
+// validatePrivacy carries on validations for parameter Privacy
 func (o *PutMeParams) validatePrivacy(formats strfmt.Registry) error {
 
 	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers"}); err != nil {
@@ -348,6 +358,7 @@ func (o *PutMeParams) validatePrivacy(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindShowInTops binds and validates parameter ShowInTops from formData.
 func (o *PutMeParams) bindShowInTops(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -370,6 +381,7 @@ func (o *PutMeParams) bindShowInTops(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// bindShowName binds and validates parameter ShowName from formData.
 func (o *PutMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("showName", "formData")
@@ -394,6 +406,7 @@ func (o *PutMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt
 	return nil
 }
 
+// validateShowName carries on validations for parameter ShowName
 func (o *PutMeParams) validateShowName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("showName", "formData", o.ShowName, 1); err != nil {
@@ -407,6 +420,7 @@ func (o *PutMeParams) validateShowName(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTitle binds and validates parameter Title from formData.
 func (o *PutMeParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -429,6 +443,7 @@ func (o *PutMeParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Re
 	return nil
 }
 
+// validateTitle carries on validations for parameter Title
 func (o *PutMeParams) validateTitle(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {

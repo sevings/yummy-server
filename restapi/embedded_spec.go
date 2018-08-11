@@ -2974,16 +2974,16 @@ func init() {
           "format": "int64"
         },
         "large": {
-          "description": "fit 1024x768",
-          "type": "string"
+          "$ref": "#/definitions/ImageSize"
         },
         "medium": {
-          "description": "fit 640x640",
+          "$ref": "#/definitions/ImageSize"
+        },
+        "mimeType": {
           "type": "string"
         },
         "small": {
-          "description": "fit 320x320",
-          "type": "string"
+          "$ref": "#/definitions/ImageSize"
         },
         "userId": {
           "type": "integer",
@@ -3011,6 +3011,20 @@ func init() {
         },
         "nextBefore": {
           "type": "string"
+        }
+      }
+    },
+    "ImageSize": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer"
         }
       }
     },
@@ -3325,7 +3339,23 @@ func init() {
           "200": {
             "description": "check result",
             "schema": {
-              "$ref": "#/definitions/getAccountEmailEmailOKBody"
+              "type": "object",
+              "required": [
+                "email",
+                "isFree"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "isFree": {
+                  "type": "boolean"
+                }
+              },
+              "example": {
+                "email": "mail@example.com",
+                "isFree": true
+              }
             }
           }
         }
@@ -3345,7 +3375,15 @@ func init() {
           "200": {
             "description": "invite list",
             "schema": {
-              "$ref": "#/definitions/getAccountInvitesOKBody"
+              "type": "object",
+              "properties": {
+                "invites": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           }
         }
@@ -3414,7 +3452,23 @@ func init() {
           "200": {
             "description": "check result",
             "schema": {
-              "$ref": "#/definitions/getAccountNameNameOKBody"
+              "type": "object",
+              "required": [
+                "name",
+                "isFree"
+              ],
+              "properties": {
+                "isFree": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "example": {
+                "isFree": false,
+                "name": "example"
+              }
             }
           }
         }
@@ -3600,7 +3654,15 @@ func init() {
           "200": {
             "description": "email notification settings",
             "schema": {
-              "$ref": "#/definitions/getAccountSettingsEmailOKBody"
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "boolean"
+                },
+                "followers": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         }
@@ -4004,7 +4066,15 @@ func init() {
           "200": {
             "description": "List of available font families",
             "schema": {
-              "$ref": "#/definitions/getDesignFontsOKBody"
+              "type": "object",
+              "properties": {
+                "fonts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           }
         }
@@ -5671,7 +5741,18 @@ func init() {
           "200": {
             "description": "OK",
             "schema": {
-              "$ref": "#/definitions/getUsersOKBody"
+              "type": "object",
+              "properties": {
+                "top": {
+                  "type": "string"
+                },
+                "users": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Friend"
+                  }
+                }
+              }
             }
           }
         }
@@ -6086,7 +6167,42 @@ func init() {
           "$ref": "#/definitions/Profile"
         },
         {
-          "$ref": "#/definitions/authProfileAllOf1"
+          "type": "object",
+          "properties": {
+            "account": {
+              "type": "object",
+              "properties": {
+                "apiKey": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "validThru": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "verified": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "birthday": {
+              "type": "string",
+              "format": "full-date"
+            },
+            "showInTops": {
+              "type": "boolean"
+            }
+          },
+          "example": {
+            "account": {
+              "apiKey": "blah-blah-blah",
+              "email": "mail@example.com",
+              "validThru": "1985-04-12T23:20:50.52Z",
+              "verified": true
+            }
+          }
         }
       ]
     },
@@ -6350,7 +6466,61 @@ func init() {
           "$ref": "#/definitions/User"
         },
         {
-          "$ref": "#/definitions/friendAllOf1"
+          "type": "object",
+          "properties": {
+            "counts": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "integer"
+                },
+                "entries": {
+                  "type": "integer"
+                },
+                "favorites": {
+                  "type": "integer"
+                },
+                "followers": {
+                  "type": "integer"
+                },
+                "followings": {
+                  "type": "integer"
+                },
+                "ignored": {
+                  "type": "integer"
+                },
+                "invited": {
+                  "type": "integer"
+                },
+                "tags": {
+                  "type": "integer"
+                }
+              }
+            },
+            "cover": {
+              "$ref": "#/definitions/Cover"
+            },
+            "gender": {
+              "type": "string",
+              "enum": [
+                "male",
+                "female",
+                "not set"
+              ]
+            },
+            "karma": {
+              "type": "number",
+              "format": "float"
+            },
+            "lastSeenAt": {
+              "type": "number",
+              "format": "double"
+            },
+            "title": {
+              "type": "string",
+              "maxLength": 260
+            }
+          }
         }
       ]
     },
@@ -6386,16 +6556,16 @@ func init() {
           "format": "int64"
         },
         "large": {
-          "description": "fit 1024x768",
-          "type": "string"
+          "$ref": "#/definitions/ImageSize"
         },
         "medium": {
-          "description": "fit 640x640",
+          "$ref": "#/definitions/ImageSize"
+        },
+        "mimeType": {
           "type": "string"
         },
         "small": {
-          "description": "fit 320x320",
-          "type": "string"
+          "$ref": "#/definitions/ImageSize"
         },
         "userId": {
           "type": "integer",
@@ -6426,13 +6596,111 @@ func init() {
         }
       }
     },
+    "ImageSize": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        },
+        "width": {
+          "type": "integer"
+        }
+      }
+    },
     "Profile": {
       "allOf": [
         {
           "$ref": "#/definitions/Friend"
         },
         {
-          "$ref": "#/definitions/profileAllOf1"
+          "type": "object",
+          "properties": {
+            "ageLowerBound": {
+              "type": "integer"
+            },
+            "ageUpperBound": {
+              "type": "integer"
+            },
+            "city": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "country": {
+              "type": "string",
+              "maxLength": 50
+            },
+            "createdAt": {
+              "type": "number",
+              "format": "double"
+            },
+            "design": {
+              "$ref": "#/definitions/Design"
+            },
+            "invitedBy": {
+              "$ref": "#/definitions/User"
+            },
+            "isDaylog": {
+              "type": "boolean"
+            },
+            "privacy": {
+              "type": "string",
+              "enum": [
+                "all",
+                "followers"
+              ]
+            },
+            "relations": {
+              "type": "object",
+              "properties": {
+                "fromMe": {
+                  "type": "string",
+                  "enum": [
+                    "followed",
+                    "requested",
+                    "ignored",
+                    "none"
+                  ]
+                },
+                "toMe": {
+                  "type": "string",
+                  "enum": [
+                    "followed",
+                    "requested",
+                    "ignored",
+                    "none"
+                  ]
+                }
+              }
+            }
+          },
+          "example": {
+            "city": "Казань",
+            "country": "Россия",
+            "counts": {
+              "comments": 22,
+              "entries": 13,
+              "favorites": 1,
+              "followers": 15,
+              "followings": 4,
+              "ignored": 0,
+              "invited": 0,
+              "tags": 0
+            },
+            "createdAt": 1531029717.333,
+            "gender": "male",
+            "isDaylog": false,
+            "karma": 100,
+            "lastSeenAt": 1531029717.333,
+            "privacy": "all",
+            "relations": {
+              "fromMe": "followed",
+              "toMe": "none"
+            },
+            "title": "some tlog title"
+          }
         }
       ]
     },
@@ -6546,294 +6814,6 @@ func init() {
           "type": "boolean"
         }
       }
-    },
-    "authProfileAllOf1": {
-      "type": "object",
-      "properties": {
-        "account": {
-          "$ref": "#/definitions/authProfileAllOf1Account"
-        },
-        "birthday": {
-          "type": "string",
-          "format": "full-date"
-        },
-        "showInTops": {
-          "type": "boolean"
-        }
-      },
-      "x-go-gen-location": "models",
-      "example": {
-        "account": {
-          "apiKey": "blah-blah-blah",
-          "email": "mail@example.com",
-          "validThru": "1985-04-12T23:20:50.52Z",
-          "verified": true
-        }
-      }
-    },
-    "authProfileAllOf1Account": {
-      "type": "object",
-      "properties": {
-        "apiKey": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "validThru": {
-          "type": "number",
-          "format": "double"
-        },
-        "verified": {
-          "type": "boolean"
-        }
-      },
-      "x-go-gen-location": "models"
-    },
-    "friendAllOf1": {
-      "type": "object",
-      "properties": {
-        "counts": {
-          "$ref": "#/definitions/friendAllOf1Counts"
-        },
-        "cover": {
-          "$ref": "#/definitions/Cover"
-        },
-        "gender": {
-          "type": "string",
-          "enum": [
-            "male",
-            "female",
-            "not set"
-          ]
-        },
-        "karma": {
-          "type": "number",
-          "format": "float"
-        },
-        "lastSeenAt": {
-          "type": "number",
-          "format": "double"
-        },
-        "title": {
-          "type": "string",
-          "maxLength": 260
-        }
-      },
-      "x-go-gen-location": "models"
-    },
-    "friendAllOf1Counts": {
-      "type": "object",
-      "properties": {
-        "comments": {
-          "type": "integer"
-        },
-        "entries": {
-          "type": "integer"
-        },
-        "favorites": {
-          "type": "integer"
-        },
-        "followers": {
-          "type": "integer"
-        },
-        "followings": {
-          "type": "integer"
-        },
-        "ignored": {
-          "type": "integer"
-        },
-        "invited": {
-          "type": "integer"
-        },
-        "tags": {
-          "type": "integer"
-        }
-      },
-      "x-go-gen-location": "models"
-    },
-    "getAccountEmailEmailOKBody": {
-      "type": "object",
-      "required": [
-        "email",
-        "isFree"
-      ],
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "isFree": {
-          "type": "boolean"
-        }
-      },
-      "x-go-gen-location": "operations",
-      "example": {
-        "email": "mail@example.com",
-        "isFree": true
-      }
-    },
-    "getAccountInvitesOKBody": {
-      "type": "object",
-      "properties": {
-        "invites": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-gen-location": "operations"
-    },
-    "getAccountNameNameOKBody": {
-      "type": "object",
-      "required": [
-        "name",
-        "isFree"
-      ],
-      "properties": {
-        "isFree": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "x-go-gen-location": "operations",
-      "example": {
-        "isFree": false,
-        "name": "example"
-      }
-    },
-    "getAccountSettingsEmailOKBody": {
-      "type": "object",
-      "properties": {
-        "comments": {
-          "type": "boolean"
-        },
-        "followers": {
-          "type": "boolean"
-        }
-      },
-      "x-go-gen-location": "operations"
-    },
-    "getDesignFontsOKBody": {
-      "type": "object",
-      "properties": {
-        "fonts": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "x-go-gen-location": "operations"
-    },
-    "getUsersOKBody": {
-      "type": "object",
-      "properties": {
-        "top": {
-          "type": "string"
-        },
-        "users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Friend"
-          }
-        }
-      },
-      "x-go-gen-location": "operations"
-    },
-    "profileAllOf1": {
-      "type": "object",
-      "properties": {
-        "ageLowerBound": {
-          "type": "integer"
-        },
-        "ageUpperBound": {
-          "type": "integer"
-        },
-        "city": {
-          "type": "string",
-          "maxLength": 50
-        },
-        "country": {
-          "type": "string",
-          "maxLength": 50
-        },
-        "createdAt": {
-          "type": "number",
-          "format": "double"
-        },
-        "design": {
-          "$ref": "#/definitions/Design"
-        },
-        "invitedBy": {
-          "$ref": "#/definitions/User"
-        },
-        "isDaylog": {
-          "type": "boolean"
-        },
-        "privacy": {
-          "type": "string",
-          "enum": [
-            "all",
-            "followers"
-          ]
-        },
-        "relations": {
-          "$ref": "#/definitions/profileAllOf1Relations"
-        }
-      },
-      "x-go-gen-location": "models",
-      "example": {
-        "city": "Казань",
-        "country": "Россия",
-        "counts": {
-          "comments": 22,
-          "entries": 13,
-          "favorites": 1,
-          "followers": 15,
-          "followings": 4,
-          "ignored": 0,
-          "invited": 0,
-          "tags": 0
-        },
-        "createdAt": 1531029717.333,
-        "gender": "male",
-        "isDaylog": false,
-        "karma": 100,
-        "lastSeenAt": 1531029717.333,
-        "privacy": "all",
-        "relations": {
-          "fromMe": "followed",
-          "toMe": "none"
-        },
-        "title": "some tlog title"
-      }
-    },
-    "profileAllOf1Relations": {
-      "type": "object",
-      "properties": {
-        "fromMe": {
-          "type": "string",
-          "enum": [
-            "followed",
-            "requested",
-            "ignored",
-            "none"
-          ]
-        },
-        "toMe": {
-          "type": "string",
-          "enum": [
-            "followed",
-            "requested",
-            "ignored",
-            "none"
-          ]
-        }
-      },
-      "x-go-gen-location": "models"
     }
   },
   "parameters": {

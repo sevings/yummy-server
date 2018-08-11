@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountNameNameOKCode is the HTTP code returned for type GetAccountNameNameOK
@@ -25,7 +23,7 @@ type GetAccountNameNameOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *models.GetAccountNameNameOKBody `json:"body,omitempty"`
+	Payload *GetAccountNameNameOKBody `json:"body,omitempty"`
 }
 
 // NewGetAccountNameNameOK creates GetAccountNameNameOK with default headers values
@@ -35,13 +33,13 @@ func NewGetAccountNameNameOK() *GetAccountNameNameOK {
 }
 
 // WithPayload adds the payload to the get account name name o k response
-func (o *GetAccountNameNameOK) WithPayload(payload *models.GetAccountNameNameOKBody) *GetAccountNameNameOK {
+func (o *GetAccountNameNameOK) WithPayload(payload *GetAccountNameNameOKBody) *GetAccountNameNameOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the get account name name o k response
-func (o *GetAccountNameNameOK) SetPayload(payload *models.GetAccountNameNameOKBody) {
+func (o *GetAccountNameNameOK) SetPayload(payload *GetAccountNameNameOKBody) {
 	o.Payload = payload
 }
 

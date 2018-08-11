@@ -60,6 +60,7 @@ func (o *PutRelationsFromNameParams) BindRequest(r *http.Request, route *middlew
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *PutRelationsFromNameParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -78,6 +79,7 @@ func (o *PutRelationsFromNameParams) bindName(rawData []string, hasKey bool, for
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *PutRelationsFromNameParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {

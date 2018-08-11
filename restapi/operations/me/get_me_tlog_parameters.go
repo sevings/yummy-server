@@ -108,6 +108,7 @@ func (o *GetMeTlogParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetMeTlogParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -126,6 +127,7 @@ func (o *GetMeTlogParams) bindAfter(rawData []string, hasKey bool, formats strfm
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetMeTlogParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -144,6 +146,7 @@ func (o *GetMeTlogParams) bindBefore(rawData []string, hasKey bool, formats strf
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetMeTlogParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -170,6 +173,7 @@ func (o *GetMeTlogParams) bindLimit(rawData []string, hasKey bool, formats strfm
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetMeTlogParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -183,6 +187,7 @@ func (o *GetMeTlogParams) validateLimit(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTag binds and validates parameter Tag from query.
 func (o *GetMeTlogParams) bindTag(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -204,6 +209,7 @@ func (o *GetMeTlogParams) bindTag(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
+// validateTag carries on validations for parameter Tag
 func (o *GetMeTlogParams) validateTag(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {

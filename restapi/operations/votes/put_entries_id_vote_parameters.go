@@ -81,6 +81,7 @@ func (o *PutEntriesIDVoteParams) BindRequest(r *http.Request, route *middleware.
 	return nil
 }
 
+// bindID binds and validates parameter ID from path.
 func (o *PutEntriesIDVoteParams) bindID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -103,6 +104,7 @@ func (o *PutEntriesIDVoteParams) bindID(rawData []string, hasKey bool, formats s
 	return nil
 }
 
+// validateID carries on validations for parameter ID
 func (o *PutEntriesIDVoteParams) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
@@ -112,6 +114,7 @@ func (o *PutEntriesIDVoteParams) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindPositive binds and validates parameter Positive from query.
 func (o *PutEntriesIDVoteParams) bindPositive(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

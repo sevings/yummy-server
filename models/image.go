@@ -8,6 +8,7 @@ package models
 import (
 	strfmt "github.com/go-openapi/strfmt"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
 )
 
@@ -18,14 +19,17 @@ type Image struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
-	// fit 1024x768
-	Large string `json:"large,omitempty"`
+	// large
+	Large *ImageSize `json:"large,omitempty"`
 
-	// fit 640x640
-	Medium string `json:"medium,omitempty"`
+	// medium
+	Medium *ImageSize `json:"medium,omitempty"`
 
-	// fit 320x320
-	Small string `json:"small,omitempty"`
+	// mime type
+	MimeType string `json:"mimeType,omitempty"`
+
+	// small
+	Small *ImageSize `json:"small,omitempty"`
 
 	// user Id
 	UserID int64 `json:"userId,omitempty"`
@@ -33,6 +37,77 @@ type Image struct {
 
 // Validate validates this image
 func (m *Image) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateLarge(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateMedium(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSmall(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Image) validateLarge(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Large) { // not required
+		return nil
+	}
+
+	if m.Large != nil {
+		if err := m.Large.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("large")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) validateMedium(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Medium) { // not required
+		return nil
+	}
+
+	if m.Medium != nil {
+		if err := m.Medium.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("medium")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) validateSmall(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Small) { // not required
+		return nil
+	}
+
+	if m.Small != nil {
+		if err := m.Small.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("small")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 

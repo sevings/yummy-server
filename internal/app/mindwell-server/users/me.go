@@ -37,8 +37,8 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	var profile models.AuthProfile
 	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
-	profile.Account = &models.AuthProfileAllOf1Account{}
-	profile.Counts = &models.FriendAllOf1Counts{}
+	profile.Account = &models.AuthProfileAO1Account{}
+	profile.Counts = &models.FriendAO1Counts{}
 
 	var backColor string
 	var textColor string

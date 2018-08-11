@@ -98,6 +98,7 @@ func (o *GetUsersNameInvitedParams) BindRequest(r *http.Request, route *middlewa
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetUsersNameInvitedParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -124,6 +125,7 @@ func (o *GetUsersNameInvitedParams) bindLimit(rawData []string, hasKey bool, for
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameInvitedParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -137,6 +139,7 @@ func (o *GetUsersNameInvitedParams) validateLimit(formats strfmt.Registry) error
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *GetUsersNameInvitedParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -155,6 +158,7 @@ func (o *GetUsersNameInvitedParams) bindName(rawData []string, hasKey bool, form
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *GetUsersNameInvitedParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {
@@ -168,6 +172,7 @@ func (o *GetUsersNameInvitedParams) validateName(formats strfmt.Registry) error 
 	return nil
 }
 
+// bindSkip binds and validates parameter Skip from query.
 func (o *GetUsersNameInvitedParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

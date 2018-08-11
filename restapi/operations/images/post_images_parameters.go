@@ -71,7 +71,9 @@ func (o *PostImagesParams) BindRequest(r *http.Request, route *middleware.Matche
 	return nil
 }
 
+// bindFile binds file parameter File.
+//
+// The only supported validations on files are MinLength and MaxLength
 func (o *PostImagesParams) bindFile(file multipart.File, header *multipart.FileHeader) error {
-
 	return nil
 }

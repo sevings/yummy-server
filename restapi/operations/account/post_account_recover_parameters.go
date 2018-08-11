@@ -69,6 +69,7 @@ func (o *PostAccountRecoverParams) BindRequest(r *http.Request, route *middlewar
 	return nil
 }
 
+// bindEmail binds and validates parameter Email from formData.
 func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("email", "formData")
@@ -93,6 +94,7 @@ func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, form
 	return nil
 }
 
+// validateEmail carries on validations for parameter Email
 func (o *PostAccountRecoverParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {

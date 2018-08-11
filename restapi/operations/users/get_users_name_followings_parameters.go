@@ -98,6 +98,7 @@ func (o *GetUsersNameFollowingsParams) BindRequest(r *http.Request, route *middl
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetUsersNameFollowingsParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -124,6 +125,7 @@ func (o *GetUsersNameFollowingsParams) bindLimit(rawData []string, hasKey bool, 
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameFollowingsParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -137,6 +139,7 @@ func (o *GetUsersNameFollowingsParams) validateLimit(formats strfmt.Registry) er
 	return nil
 }
 
+// bindName binds and validates parameter Name from path.
 func (o *GetUsersNameFollowingsParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -155,6 +158,7 @@ func (o *GetUsersNameFollowingsParams) bindName(rawData []string, hasKey bool, f
 	return nil
 }
 
+// validateName carries on validations for parameter Name
 func (o *GetUsersNameFollowingsParams) validateName(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("name", "path", o.Name, 1); err != nil {
@@ -168,6 +172,7 @@ func (o *GetUsersNameFollowingsParams) validateName(formats strfmt.Registry) err
 	return nil
 }
 
+// bindSkip binds and validates parameter Skip from query.
 func (o *GetUsersNameFollowingsParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {

@@ -108,6 +108,7 @@ func (o *GetEntriesFriendsParams) BindRequest(r *http.Request, route *middleware
 	return nil
 }
 
+// bindAfter binds and validates parameter After from query.
 func (o *GetEntriesFriendsParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -126,6 +127,7 @@ func (o *GetEntriesFriendsParams) bindAfter(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// bindBefore binds and validates parameter Before from query.
 func (o *GetEntriesFriendsParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -144,6 +146,7 @@ func (o *GetEntriesFriendsParams) bindBefore(rawData []string, hasKey bool, form
 	return nil
 }
 
+// bindLimit binds and validates parameter Limit from query.
 func (o *GetEntriesFriendsParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -170,6 +173,7 @@ func (o *GetEntriesFriendsParams) bindLimit(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateLimit carries on validations for parameter Limit
 func (o *GetEntriesFriendsParams) validateLimit(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
@@ -183,6 +187,7 @@ func (o *GetEntriesFriendsParams) validateLimit(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTag binds and validates parameter Tag from query.
 func (o *GetEntriesFriendsParams) bindTag(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -204,6 +209,7 @@ func (o *GetEntriesFriendsParams) bindTag(rawData []string, hasKey bool, formats
 	return nil
 }
 
+// validateTag carries on validations for parameter Tag
 func (o *GetEntriesFriendsParams) validateTag(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {

@@ -135,6 +135,7 @@ func (o *PutDesignParams) BindRequest(r *http.Request, route *middleware.Matched
 	return nil
 }
 
+// bindBackgroundColor binds and validates parameter BackgroundColor from formData.
 func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -157,6 +158,7 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 	return nil
 }
 
+// validateBackgroundColor carries on validations for parameter BackgroundColor
 func (o *PutDesignParams) validateBackgroundColor(formats strfmt.Registry) error {
 
 	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `#[0-9a-fA-F]{6}`); err != nil {
@@ -166,6 +168,7 @@ func (o *PutDesignParams) validateBackgroundColor(formats strfmt.Registry) error
 	return nil
 }
 
+// bindCSS binds and validates parameter CSS from formData.
 func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -188,6 +191,7 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 	return nil
 }
 
+// validateCSS carries on validations for parameter CSS
 func (o *PutDesignParams) validateCSS(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("css", "formData", (*o.CSS), 10000); err != nil {
@@ -197,6 +201,7 @@ func (o *PutDesignParams) validateCSS(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindFontFamily binds and validates parameter FontFamily from formData.
 func (o *PutDesignParams) bindFontFamily(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -214,6 +219,7 @@ func (o *PutDesignParams) bindFontFamily(rawData []string, hasKey bool, formats 
 	return nil
 }
 
+// bindFontSize binds and validates parameter FontSize from formData.
 func (o *PutDesignParams) bindFontSize(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -235,6 +241,7 @@ func (o *PutDesignParams) bindFontSize(rawData []string, hasKey bool, formats st
 	return nil
 }
 
+// bindTextAlignment binds and validates parameter TextAlignment from formData.
 func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("textAlignment", "formData")
@@ -259,6 +266,7 @@ func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, forma
 	return nil
 }
 
+// validateTextAlignment carries on validations for parameter TextAlignment
 func (o *PutDesignParams) validateTextAlignment(formats strfmt.Registry) error {
 
 	if err := validate.Enum("textAlignment", "formData", o.TextAlignment, []interface{}{"left", "right", "center", "justify"}); err != nil {
@@ -268,6 +276,7 @@ func (o *PutDesignParams) validateTextAlignment(formats strfmt.Registry) error {
 	return nil
 }
 
+// bindTextColor binds and validates parameter TextColor from formData.
 func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -290,6 +299,7 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 	return nil
 }
 
+// validateTextColor carries on validations for parameter TextColor
 func (o *PutDesignParams) validateTextColor(formats strfmt.Registry) error {
 
 	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `#[0-9a-fA-F]{6}`); err != nil {

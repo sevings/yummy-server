@@ -7,8 +7,12 @@ package users
 
 import (
 	"net/http"
+	"strconv"
 
+	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
 
 	models "github.com/sevings/mindwell-server/models"
 )
@@ -70,4 +74,72 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// GetUsersOKBody get users o k body
+// swagger:model GetUsersOKBody
+type GetUsersOKBody struct {
+
+	// top
+	Top string `json:"top,omitempty"`
+
+	// users
+	Users []*models.Friend `json:"users"`
+}
+
+// Validate validates this get users o k body
+func (o *GetUsersOKBody) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.validateUsers(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetUsersOKBody) validateUsers(formats strfmt.Registry) error {
+
+	if swag.IsZero(o.Users) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(o.Users); i++ {
+		if swag.IsZero(o.Users[i]) { // not required
+			continue
+		}
+
+		if o.Users[i] != nil {
+			if err := o.Users[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getUsersOK" + "." + "users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *GetUsersOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *GetUsersOKBody) UnmarshalBinary(b []byte) error {
+	var res GetUsersOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

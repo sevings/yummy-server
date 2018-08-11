@@ -104,6 +104,7 @@ func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middlew
 	return nil
 }
 
+// bindAnonymousComments binds and validates parameter AnonymousComments from formData.
 func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -126,6 +127,7 @@ func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, has
 	return nil
 }
 
+// bindContent binds and validates parameter Content from formData.
 func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("content", "formData")
@@ -150,6 +152,7 @@ func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, 
 	return nil
 }
 
+// validateContent carries on validations for parameter Content
 func (o *PostEntriesAnonymousParams) validateContent(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("content", "formData", o.Content, 1); err != nil {
@@ -163,6 +166,7 @@ func (o *PostEntriesAnonymousParams) validateContent(formats strfmt.Registry) er
 	return nil
 }
 
+// bindTitle binds and validates parameter Title from formData.
 func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
@@ -185,6 +189,7 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 	return nil
 }
 
+// validateTitle carries on validations for parameter Title
 func (o *PostEntriesAnonymousParams) validateTitle(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
