@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"log"
+	"strconv"
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/runtime/middleware"
@@ -66,6 +67,15 @@ func (srv *MindwellServer) ConfigString(field string) string {
 	return value
 }
 
+func (srv *MindwellServer) ConfigInt(field string) int {
+	value, err := srv.cfg.Int(field)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return value
+}
+
 func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
 	base := srv.ConfigString("images.base_url") + "avatars/"
 
@@ -78,7 +88,9 @@ func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
 
 func (srv *MindwellServer) NewCover(id int64, cover string) *models.Cover {
 	if len(cover) == 0 {
-		cover = srv.ConfigString("images.cover")
+		cnt := int64(srv.ConfigInt("images.covers"))
+		n := int(id % cnt)
+		cover = "default/" + strconv.Itoa(n) + ".jpg"
 	}
 
 	base := srv.ConfigString("images.base_url")
