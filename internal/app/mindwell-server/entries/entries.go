@@ -41,15 +41,19 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 }
 
 var wordRe *regexp.Regexp
+var imgRe *regexp.Regexp
 var md *markdown.Markdown
 
 func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
+	imgRe = regexp.MustCompile("!\\[[^\\]]*\\]\\([^\\)]+\\)")
 	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Tables(false))
 }
 
 func wordCount(content, title string) int64 {
 	var wc int64
+
+	content = imgRe.ReplaceAllLiteralString(content, " ")
 	contentWords := wordRe.FindAllStringIndex(content, -1)
 	wc += int64(len(contentWords))
 
@@ -82,7 +86,11 @@ func entryCategory(entry *models.Entry) string {
 		return "longread"
 	}
 
-	// media
+	images := imgRe.FindAllStringIndex(entry.EditContent, -1)
+	if len(images) > 0 && entry.WordCount < 50 {
+		return "media"
+	}
+
 	return "tweet"
 }
 
