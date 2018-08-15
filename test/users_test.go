@@ -112,9 +112,9 @@ func TestEditProfile(t *testing.T) {
 	user.Birthday = "1988-01-01T20:01:31.844+03:00"
 	user.City = "city edit"
 	user.Country = "country edit"
-	user.Gender = models.FriendAllOf1GenderFemale
+	user.Gender = "female"
 	user.IsDaylog = true
-	user.Privacy = models.ProfileAllOf1PrivacyFollowers
+	user.Privacy = "followers"
 	user.Title = "title edit"
 	user.ShowInTops = false
 	user.ShowName = "showname edit"
@@ -133,7 +133,7 @@ func TestEditProfile(t *testing.T) {
 
 	checkEditProfile(t, &user, params)
 
-	user.Privacy = models.ProfileAllOf1PrivacyAll
+	user.Privacy = "all"
 	params.Privacy = user.Privacy
 	checkEditProfile(t, &user, params)
 }
