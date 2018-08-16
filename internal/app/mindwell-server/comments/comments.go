@@ -28,23 +28,23 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 const commentQuery = `
 	SELECT comments.id, entry_id,
 		extract(epoch from created_at), content, rating,
-		votes.positive, author_id = $1,
+		up_votes, down_votes, votes.vote, author_id = $1,
 		author_id, name, show_name, 
 		is_online,
 		avatar
 	FROM comments
 	JOIN short_users ON comments.author_id = short_users.id
-	LEFT JOIN (SELECT comment_id, positive FROM comment_votes WHERE user_id = $1) AS votes 
+	LEFT JOIN (SELECT comment_id, vote FROM comment_votes WHERE user_id = $1) AS votes 
 		ON comments.id = votes.comment_id 
 `
 
-func commentVote(userID, authorID int64, vote sql.NullBool) string {
+func commentVote(userID, authorID int64, vote sql.NullFloat64) string {
 	switch {
 	case userID == authorID:
 		return models.RatingVoteBan
 	case !vote.Valid:
 		return models.RatingVoteNot
-	case vote.Bool:
+	case vote.Float64 > 0:
 		return models.RatingVotePos
 	default:
 		return models.RatingVoteNeg
@@ -54,7 +54,7 @@ func commentVote(userID, authorID int64, vote sql.NullBool) string {
 func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
-	var vote sql.NullBool
+	var vote sql.NullFloat64
 	var avatar string
 	comment := models.Comment{
 		Author: &models.User{},
@@ -65,7 +65,7 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 
 	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
-		&vote, &comment.IsMine,
+		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
 		&avatar)
@@ -224,11 +224,11 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 				IsVotable: true,
 			},
 		}
-		var vote sql.NullBool
+		var vote sql.NullFloat64
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
-			&vote, &comment.IsMine,
+			&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
 			&avatar)

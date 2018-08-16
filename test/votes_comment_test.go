@@ -68,7 +68,7 @@ func checkUnvoteComment(t *testing.T, user *models.UserID, success bool, comment
 }
 
 func TestCommentVotes(t *testing.T) {
-	e := createTlogEntry(t, userIDs[0], models.CommentPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
 	c := createComment(t, userIDs[0], e.ID)
 
 	checkCommentVote(t, userIDs[0], c.ID, 0, models.RatingVoteBan)
@@ -88,19 +88,4 @@ func TestCommentVotes(t *testing.T) {
 
 	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, "")
 	checkUnvoteComment(t, userIDs[0], false, c.ID, 0)
-
-	e = createTlogComment(t, userIDs[0], models.CommentPrivacyAll, false)
-	checkCommentVote(t, userIDs[1], c.ID, 0, models.RatingVoteBan)
-
-	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, "")
-	checkVoteForComment(t, userIDs[1], false, c.ID, 0, false, "")
-	checkUnvoteComment(t, userIDs[2], false, c.ID, -1)
-
-	e = createTlogComment(t, userIDs[0], models.CommentPrivacyAnonymous, true)
-	checkCommentVote(t, userIDs[0], c.ID, 0, models.RatingVoteBan)
-	checkCommentVote(t, userIDs[1], c.ID, 0, models.RatingVoteBan)
-
-	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, "")
-	checkVoteForComment(t, userIDs[1], false, c.ID, 0, false, "")
-	checkUnvoteComment(t, userIDs[2], false, c.ID, -1)
 }

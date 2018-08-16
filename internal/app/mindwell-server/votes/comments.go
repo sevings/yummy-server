@@ -47,15 +47,18 @@ func commentRating(tx *utils.AutoTx, userID, commentID int64) *models.Rating {
 	return &status
 }
 
-func canViewComment(tx *utils.AutoTx, userID, commentID int64) bool {
+func canVoteForComment(tx *utils.AutoTx, userID, commentID int64) bool {
 	const q = `
-		SELECT entry_id
+		SELECT entry_id, author_id
 		FROM comments
 		WHERE id = $1
 	`
 
-	var entryID int64
-	tx.Query(q, commentID).Scan(&entryID)
+	var entryID, authorID int64
+	tx.Query(q, commentID).Scan(&entryID, &authorID)
+	if authorID == userID {
+		return false
+	}
 
 	return utils.CanViewEntry(tx, userID, entryID)
 }
@@ -64,8 +67,8 @@ func newCommentVoteLoader(srv *utils.MindwellServer) func(votes.GetCommentsIDVot
 	return func(params votes.GetCommentsIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			canView := canViewComment(tx, userID, params.ID)
-			if !canView {
+			canVoteForComment(tx, userID, params.ID)
+			if tx.Error() != nil {
 				err := srv.StandardError("no_entry")
 				return votes.NewGetCommentsIDVoteNotFound().WithPayload(err)
 			}
@@ -132,7 +135,7 @@ func newCommentVoter(srv *utils.MindwellServer) func(votes.PutCommentsIDVotePara
 	return func(params votes.PutCommentsIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			canVote := canViewComment(tx, userID, params.ID)
+			canVote := canVoteForComment(tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_entry")
 				return votes.NewPutCommentsIDVoteNotFound().WithPayload(err)
@@ -174,7 +177,7 @@ func newCommentUnvoter(srv *utils.MindwellServer) func(votes.DeleteCommentsIDVot
 	return func(params votes.DeleteCommentsIDVoteParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			canVote := canViewComment(tx, userID, params.ID)
+			canVote := canVoteForComment(tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_entry")
 				return votes.NewDeleteCommentsIDVoteNotFound().WithPayload(err)

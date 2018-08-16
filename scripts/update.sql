@@ -17,7 +17,7 @@ ALTER TABLE comments
 ADD COLUMN "weight_sum" Real DEFAULT 0 NOT NULL;
 
 ALTER TABLE comment_votes
-DROP COLUMN "positive";
+DROP COLUMN "positive" CASCADE;
 
 ALTER TABLE comment_votes
 DROP COLUMN "taken";
@@ -25,10 +25,10 @@ DROP COLUMN "taken";
 ALTER TABLE comment_votes
 ADD COLUMN "vote" Real NOT NULL;
 
-DROP FUNCTION inc_comment_votes CASCADE
-DROP FUNCTION dec_comment_votes CASCADE
-DROP FUNCTION inc_comment_votes2 CASCADE
-DROP FUNCTION dec_comment_votes2 CASCADE
+DROP FUNCTION inc_comment_votes CASCADE;
+DROP FUNCTION dec_comment_votes CASCADE;
+DROP FUNCTION inc_comment_votes2 CASCADE;
+DROP FUNCTION dec_comment_votes2 CASCADE;
 
 CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
@@ -175,7 +175,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cnt_comment_votes_ins
-    AFTER INSERT ON mindwell.entry_votes
+    AFTER INSERT ON mindwell.comment_votes
     FOR EACH ROW 
     EXECUTE PROCEDURE mindwell.comment_votes_ins();
 

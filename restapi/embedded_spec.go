@@ -599,6 +599,12 @@ func init() {
               "$ref": "#/definitions/Rating"
             }
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -631,6 +637,12 @@ func init() {
               "$ref": "#/definitions/Rating"
             }
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -653,6 +665,12 @@ func init() {
             "description": "vote status",
             "schema": {
               "$ref": "#/definitions/Rating"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           },
           "404": {
@@ -3890,6 +3908,12 @@ func init() {
               "$ref": "#/definitions/Rating"
             }
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -3922,6 +3946,12 @@ func init() {
               "$ref": "#/definitions/Rating"
             }
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -3944,6 +3974,12 @@ func init() {
             "description": "vote status",
             "schema": {
               "$ref": "#/definitions/Rating"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           },
           "404": {

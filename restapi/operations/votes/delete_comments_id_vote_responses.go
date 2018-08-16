@@ -57,6 +57,50 @@ func (o *DeleteCommentsIDVoteOK) WriteResponse(rw http.ResponseWriter, producer 
 	}
 }
 
+// DeleteCommentsIDVoteForbiddenCode is the HTTP code returned for type DeleteCommentsIDVoteForbidden
+const DeleteCommentsIDVoteForbiddenCode int = 403
+
+/*DeleteCommentsIDVoteForbidden access denied
+
+swagger:response deleteCommentsIdVoteForbidden
+*/
+type DeleteCommentsIDVoteForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewDeleteCommentsIDVoteForbidden creates DeleteCommentsIDVoteForbidden with default headers values
+func NewDeleteCommentsIDVoteForbidden() *DeleteCommentsIDVoteForbidden {
+
+	return &DeleteCommentsIDVoteForbidden{}
+}
+
+// WithPayload adds the payload to the delete comments Id vote forbidden response
+func (o *DeleteCommentsIDVoteForbidden) WithPayload(payload *models.Error) *DeleteCommentsIDVoteForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the delete comments Id vote forbidden response
+func (o *DeleteCommentsIDVoteForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *DeleteCommentsIDVoteForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // DeleteCommentsIDVoteNotFoundCode is the HTTP code returned for type DeleteCommentsIDVoteNotFound
 const DeleteCommentsIDVoteNotFoundCode int = 404
 
