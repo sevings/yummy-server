@@ -11,6 +11,7 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/restapi/operations/comments"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 )
 
@@ -99,6 +100,20 @@ func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bo
 
 	resp := api.MePostMeTlogHandler.Handle(params, id)
 	body, ok := resp.(*me.PostMeTlogCreated)
+	require.True(t, ok)
+
+	return body.Payload
+}
+
+func createComment(t *testing.T, id *models.UserID, entryID int64) *models.Comment {
+	params := comments.PostEntriesIDCommentsParams{
+		ID:      entryID,
+		Content: "test comment",
+	}
+
+	post := api.CommentsPostEntriesIDCommentsHandler.Handle
+	resp := post(params, id)
+	body, ok := resp.(*comments.PostEntriesIDCommentsCreated)
 	require.True(t, ok)
 
 	return body.Payload

@@ -1611,7 +1611,11 @@ CREATE TABLE "mindwell"."comments" (
 	"entry_id" Integer NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"content" Text NOT NULL,
-	"rating" Integer DEFAULT 0 NOT NULL,
+	"rating" Real DEFAULT 0 NOT NULL,
+    "up_votes" Integer DEFAULT 0 NOT NULL,
+    "down_votes" Integer DEFAULT 0 NOT NULL,
+    "vote_sum" Real DEFAULT 0 NOT NULL,
+    "weight_sum" Real DEFAULT 0 NOT NULL,
 	CONSTRAINT "unique_comment_id" PRIMARY KEY( "id" ),
     CONSTRAINT "comment_user_id" FOREIGN KEY("author_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "comment_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE );
@@ -1668,8 +1672,7 @@ CREATE TRIGGER cnt_comments_dec
 CREATE TABLE "mindwell"."comment_votes" (
 	"user_id" Integer NOT NULL,
 	"comment_id" Integer NOT NULL,
-	"positive" Boolean NOT NULL,
-	"taken" Boolean DEFAULT TRUE NOT NULL,
+    "vote" Real NOT NULL,
     CONSTRAINT "comment_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "comment_vote_comment_id" FOREIGN KEY("comment_id") REFERENCES "mindwell"."comments"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_comment_vote" UNIQUE("user_id", "comment_id") );
@@ -1684,81 +1687,164 @@ CREATE INDEX "index_voted_comments" ON "mindwell"."comment_votes" USING btree( "
 CREATE INDEX "index_comment_voted_users" ON "mindwell"."comment_votes" USING btree( "user_id" );
 -- -------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION mindwell.inc_comment_votes() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.comments
-        SET rating = rating + 1
+        SET up_votes = up_votes + (NEW.vote > 0)::int,
+            down_votes = down_votes + (NEW.vote < 0)::int,
+            vote_sum = vote_sum + NEW.vote,
+            weight_sum = weight_sum + abs(NEW.vote),
+            rating = atan2(weight_sum + abs(NEW.vote), 2)
+                * (vote_sum + NEW.vote) / (weight_sum + abs(NEW.vote)) / pi() * 200
         WHERE id = NEW.comment_id;
         
+        WITH cmnt AS (
+            SELECT author_id
+            FROM mindwell.comments
+            WHERE id = NEW.comment_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_count = vote_count + 1,
+            vote_sum = vote_sum + NEW.vote,
+            weight_sum = weight_sum + abs(NEW.vote),
+            weight = atan2(vote_count + 1, 20) * (vote_sum + NEW.vote) 
+                / (weight_sum + abs(NEW.vote)) / pi() * 2
+        FROM cmnt
+        WHERE user_id = cmnt.author_id 
+            AND vote_weights.category = 
+                (SELECT id FROM categories WHERE "type" = 'comment');
+
+        IF abs(NEW.vote) > 0.2 THEN
+            WITH cmnt AS (
+                SELECT author_id
+                FROM mindwell.comments
+                WHERE id = NEW.comment_id
+            )
+            UPDATE mindwell.users
+            SET karma = karma + NEW.vote
+            FROM cmnt
+            WHERE users.id = cmnt.author_id;
+        END IF;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.dec_comment_votes() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.comments
-        SET rating = rating - 1
-        WHERE id = OLD.comment_id;
-        
-        RETURN NULL;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION mindwell.inc_comment_votes2() RETURNS TRIGGER AS $$
-    BEGIN
-        UPDATE mindwell.comments
-        SET rating = rating + 2
+        SET up_votes = up_votes - (OLD.vote > 0)::int + (NEW.vote > 0)::int,
+            down_votes = down_votes - (OLD.vote < 0)::int + (NEW.vote < 0)::int,
+            vote_sum = vote_sum - OLD.vote + NEW.vote,
+            weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
+            rating = atan2(weight_sum - abs(OLD.vote) + abs(NEW.vote), 2)
+                * (vote_sum - OLD.vote + NEW.vote) / (weight_sum - abs(OLD.vote) + abs(NEW.vote)) / pi() * 200
         WHERE id = NEW.comment_id;
         
+        WITH cmnt AS (
+            SELECT author_id
+            FROM mindwell.comments
+            WHERE id = NEW.comment_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_sum = vote_sum - OLD.vote + NEW.vote,
+            weight_sum = weight_sum - abs(OLD.vote) + abs(NEW.vote),
+            weight = atan2(vote_count, 20) * (vote_sum - OLD.vote + NEW.vote) 
+                / (weight_sum - abs(OLD.vote) + abs(NEW.vote)) / pi() * 2
+        FROM cmnt
+        WHERE user_id = cmnt.author_id
+            AND vote_weights.category = 
+                (SELECT id FROM categories WHERE "type" = 'comment');
+
+        IF abs(OLD.vote) > 0.2 THEN
+            WITH cmnt AS (
+                SELECT author_id
+                FROM mindwell.comments
+                WHERE id = OLD.comment_id
+            )
+            UPDATE mindwell.users
+            SET karma = karma - OLD.vote
+            FROM cmnt
+            WHERE users.id = cmnt.author_id;
+        END IF;
+
+        IF abs(NEW.vote) > 0.2 THEN
+            WITH cmnt AS (
+                SELECT author_id
+                FROM mindwell.comments
+                WHERE id = NEW.comment_id
+            )
+            UPDATE mindwell.users
+            SET karma = karma + NEW.vote
+            FROM cmnt
+            WHERE users.id = cmnt.author_id;
+        END IF;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION mindwell.dec_comment_votes2() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.comments
-        SET rating = rating - 2
+        SET up_votes = up_votes - (OLD.vote > 0)::int,
+            down_votes = down_votes - (OLD.vote < 0)::int,
+            vote_sum = vote_sum - OLD.vote,
+            weight_sum = weight_sum - abs(OLD.vote),
+            rating = CASE WHEN weight_sum = abs(OLD.vote) THEN 0
+                ELSE atan2(weight_sum - abs(OLD.vote), 2)
+                    * (vote_sum - OLD.vote) / (weight_sum - abs(OLD.vote)) / pi() * 200
+                END
         WHERE id = OLD.comment_id;
         
+        WITH cmnt AS (
+            SELECT author_id
+            FROM mindwell.comments
+            WHERE id = OLD.comment_id
+        )
+        UPDATE mindwell.vote_weights
+        SET vote_count = vote_count - 1,
+            vote_sum = vote_sum - OLD.vote,
+            weight_sum = weight_sum - abs(OLD.vote),
+            weight = CASE WHEN weight_sum = abs(OLD.vote) THEN 0.1
+                ELSE atan2(vote_count - 1, 20) * (vote_sum - OLD.vote) 
+                    / (weight_sum - abs(OLD.vote)) / pi() * 2
+                END
+        FROM cmnt
+        WHERE user_id = cmnt.author_id
+            AND vote_weights.category = 
+                (SELECT id FROM categories WHERE "type" = 'comment');
+
+        IF abs(OLD.vote) > 0.2 THEN
+            WITH cmnt AS (
+                SELECT author_id
+                FROM mindwell.comments
+                WHERE id = OLD.comment_id
+            )
+            UPDATE mindwell.users
+            SET karma = karma - OLD.vote
+            FROM cmnt
+            WHERE users.id = cmnt.author_id;
+        END IF;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER cnt_comment_votes_ins_inc
-    AFTER INSERT ON mindwell.comment_votes
+CREATE TRIGGER cnt_comment_votes_ins
+    AFTER INSERT ON mindwell.entry_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = true)
-    EXECUTE PROCEDURE mindwell.inc_comment_votes();
+    EXECUTE PROCEDURE mindwell.comment_votes_ins();
 
-CREATE TRIGGER cnt_comment_votes_ins_dec
-    AFTER INSERT ON mindwell.comment_votes
-    FOR EACH ROW 
-    WHEN (NEW."positive" = false)
-    EXECUTE PROCEDURE mindwell.dec_comment_votes();
-
-CREATE TRIGGER cnt_comment_votes_upd_inc
+CREATE TRIGGER cnt_comment_votes_upd
     AFTER UPDATE ON mindwell.comment_votes
     FOR EACH ROW 
-    WHEN (NEW."positive" = true)
-    EXECUTE PROCEDURE mindwell.inc_comment_votes2();
+    EXECUTE PROCEDURE mindwell.comment_votes_upd();
 
-CREATE TRIGGER cnt_comment_votes_upd_dec
-    AFTER UPDATE ON mindwell.comment_votes
-    FOR EACH ROW 
-    WHEN (NEW."positive" = false)
-    EXECUTE PROCEDURE mindwell.dec_comment_votes2();
-
-CREATE TRIGGER cnt_comment_votes_del_dec
+CREATE TRIGGER cnt_comment_votes_del
     AFTER DELETE ON mindwell.comment_votes
     FOR EACH ROW 
-    WHEN (OLD."positive" = true)
-    EXECUTE PROCEDURE mindwell.dec_comment_votes();
-
-CREATE TRIGGER cnt_comment_votes_del_inc
-    AFTER DELETE ON mindwell.comment_votes
-    FOR EACH ROW 
-    WHEN (OLD."positive" = false)
-    EXECUTE PROCEDURE mindwell.inc_comment_votes();
+    EXECUTE PROCEDURE mindwell.comment_votes_del();
 
     
 
