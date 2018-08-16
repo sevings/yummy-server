@@ -328,7 +328,7 @@ func TestRegister(t *testing.T) {
 	req.NotEqual(acc.APIKey, user.Account.APIKey)
 }
 
-func getEmailSettings(t *testing.T, userID *models.UserID) *models.GetAccountSettingsEmailOKBody {
+func getEmailSettings(t *testing.T, userID *models.UserID) *account.GetAccountSettingsEmailOKBody {
 	load := api.AccountGetAccountSettingsEmailHandler.Handle
 	resp := load(account.GetAccountSettingsEmailParams{}, userID)
 	body, ok := resp.(*account.GetAccountSettingsEmailOK)

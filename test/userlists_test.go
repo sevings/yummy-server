@@ -241,7 +241,7 @@ func TestPrivateFriendLists(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	checkFollow(t, userIDs[1], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 
-	profiles[2].Privacy = models.ProfileAllOf1PrivacyFollowers
+	profiles[2].Privacy = "followers"
 
 	params := me.PutMeParams{
 		Privacy:  profiles[2].Privacy,
