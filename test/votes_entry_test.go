@@ -83,7 +83,7 @@ func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, 
 }
 
 func TestEntryVotes(t *testing.T) {
-	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, false)
 	checkEntryVote(t, userIDs[0], e.ID, 0, models.RatingVoteBan)
 	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteNot)
 
@@ -102,14 +102,14 @@ func TestEntryVotes(t *testing.T) {
 	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, "")
 	checkUnvoteEntry(t, userIDs[0], false, e.ID, 0)
 
-	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, false)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, false, false)
 	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteBan)
 
 	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, "")
 	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, "")
 	checkUnvoteEntry(t, userIDs[2], false, e.ID, -1)
 
-	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAnonymous, true)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAnonymous, true, false)
 	checkEntryVote(t, userIDs[0], e.ID, 0, models.RatingVoteBan)
 	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteBan)
 

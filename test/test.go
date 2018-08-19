@@ -89,13 +89,14 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	return userIDs, profiles
 }
 
-func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable bool) *models.Entry {
+func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable, live bool) *models.Entry {
 	title := ""
 	params := me.PostMeTlogParams{
 		Content:   "test test test",
 		Title:     &title,
 		Privacy:   privacy,
 		IsVotable: &votable,
+		InLive:    &live,
 	}
 
 	resp := api.MePostMeTlogHandler.Handle(params, id)

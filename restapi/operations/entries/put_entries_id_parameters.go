@@ -27,6 +27,7 @@ func NewPutEntriesIDParams() PutEntriesIDParams {
 
 		anonymousCommentsDefault = bool(false)
 
+		inLiveDefault    = bool(false)
 		isVotableDefault = bool(false)
 
 		titleDefault = string("")
@@ -34,6 +35,8 @@ func NewPutEntriesIDParams() PutEntriesIDParams {
 
 	return PutEntriesIDParams{
 		AnonymousComments: &anonymousCommentsDefault,
+
+		InLive: &inLiveDefault,
 
 		IsVotable: &isVotableDefault,
 
@@ -68,6 +71,11 @@ type PutEntriesIDParams struct {
 	  In: path
 	*/
 	ID int64
+	/*
+	  In: formData
+	  Default: false
+	*/
+	InLive *bool
 	/*
 	  In: formData
 	  Default: false
@@ -120,6 +128,11 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	rID, rhkID, _ := route.Params.GetOK("id")
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdInLive, fdhkInLive, _ := fds.GetOK("inLive")
+	if err := o.bindInLive(fdInLive, fdhkInLive, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -240,6 +253,29 @@ func (o *PutEntriesIDParams) validateID(formats strfmt.Registry) error {
 	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// bindInLive binds and validates parameter InLive from formData.
+func (o *PutEntriesIDParams) bindInLive(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPutEntriesIDParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("inLive", "formData", "bool", raw)
+	}
+	o.InLive = &value
 
 	return nil
 }

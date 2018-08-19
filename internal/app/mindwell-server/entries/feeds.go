@@ -19,7 +19,7 @@ SELECT entries.id, extract(epoch from entries.created_at) as created_at,
 rating, entries.up_votes, entries.down_votes,
 entries.title, cut_title, content, cut_content, edit_content, 
 has_cut, word_count, entry_privacy.type,
-is_votable, entries.comments_count,
+is_votable, in_live, entries.comments_count,
 users.id, users.name, users.show_name,
 now() - users.last_seen_at < interval '15 minutes',
 users.avatar, `
@@ -36,7 +36,9 @@ LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes O
 
 const liveFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
-	AND user_privacy.type = 'all' `
+	AND user_privacy.type = 'all' 
+	AND in_live
+`
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
@@ -129,7 +131,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 			&rating.Rating, &rating.UpCount, &rating.DownCount,
 			&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 			&entry.HasCut, &entry.WordCount, &entry.Privacy,
-			&rating.IsVotable, &entry.CommentCount,
+			&rating.IsVotable, &entry.InLive, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,
 			&avatar,

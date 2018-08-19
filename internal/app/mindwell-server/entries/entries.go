@@ -94,7 +94,7 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
+func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -113,8 +113,10 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
 		IsWatching:  true,
+		InLive:      inLive,
 		Rating: &models.Rating{
-			Vote: models.RatingVoteBan,
+			Vote:      models.RatingVoteBan,
+			IsVotable: isVotable,
 		},
 	}
 
@@ -122,14 +124,14 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 
 	const q = `
 	INSERT INTO entries (author_id, title, cut_title, content, cut_content, edit_content, 
-		has_cut, word_count, visible_for, is_votable, category)
+		has_cut, word_count, visible_for, is_votable, in_live, category)
 	VALUES ($1, $2, $3, $4, $5, $6,$7, $8,
 		(SELECT id FROM entry_privacy WHERE type = $9), 
-		$10, (SELECT id from categories WHERE type = $11))
+		$10, $11, (SELECT id from categories WHERE type = $12))
 	RETURNING id, extract(epoch from created_at)`
 
 	tx.Query(q, userID, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent,
-		hasCut, entry.WordCount, privacy, isVotable, category).Scan(&entry.ID, &entry.CreatedAt)
+		hasCut, entry.WordCount, privacy, isVotable, inLive, category).Scan(&entry.ID, &entry.CreatedAt)
 
 	entry.Rating.ID = entry.ID
 	watchings.AddWatching(tx, userID, entry.ID)
@@ -143,7 +145,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			entry := createEntry(srv, tx, uID.ID,
-				*params.Title, params.Content, params.Privacy, *params.IsVotable)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
@@ -155,7 +157,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 	}
 }
 
-func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable bool) *models.Entry {
+func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -175,6 +177,7 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		WordCount:   wordCount(content, title),
 		Privacy:     privacy,
 		IsWatching:  true,
+		InLive:      inLive,
 		Rating: &models.Rating{
 			IsVotable: isVotable,
 			Vote:      models.RatingVoteBan,
@@ -188,13 +191,13 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	SET title = $1, cut_title = $2, content = $3, cut_content = $4, edit_content = $5, has_cut = $6, 
 	word_count = $7, 
 	visible_for = (SELECT id FROM entry_privacy WHERE type = $8), 
-	is_votable = $9,
-	category = (SELECT id from categories WHERE type = $10)
-	WHERE id = $11 AND author_id = $12
+	is_votable = $9, in_live = $10,
+	category = (SELECT id from categories WHERE type = $11)
+	WHERE id = $12 AND author_id = $13
 	RETURNING extract(epoch from created_at)`
 
 	tx.Query(q, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent, hasCut,
-		entry.WordCount, privacy, isVotable, category, entryID, userID).Scan(&entry.CreatedAt)
+		entry.WordCount, privacy, isVotable, inLive, category, entryID, userID).Scan(&entry.CreatedAt)
 
 	watchings.AddWatching(tx, userID, entry.ID)
 
@@ -209,7 +212,7 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			entry := editEntry(srv, tx, params.ID, uID.ID,
-				*params.Title, params.Content, params.Privacy, *params.IsVotable)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
 			if tx.Error() != nil {
 				err := srv.NewError(&i18n.Message{ID: "edit_not_your_entry", Other: "You can't edit someone else's entries."})
@@ -252,7 +255,7 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		&rating.Rating, &rating.UpCount, &rating.DownCount,
 		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 		&entry.HasCut, &entry.WordCount, &entry.Privacy,
-		&rating.IsVotable, &entry.CommentCount,
+		&rating.IsVotable, &entry.InLive, &entry.CommentCount,
 		&author.ID, &author.Name, &author.ShowName,
 		&author.IsOnline,
 		&avatar,

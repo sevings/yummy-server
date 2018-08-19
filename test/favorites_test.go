@@ -63,7 +63,7 @@ func checkUnfavoriteEntry(t *testing.T, user *models.UserID, entryID int64, succ
 }
 
 func TestFavorite(t *testing.T) {
-	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, false)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[1], e.ID, false, true)
@@ -78,7 +78,7 @@ func TestFavorite(t *testing.T) {
 	checkUnfavoriteEntry(t, userIDs[0], e.ID, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 
-	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true, true)
 	checkEntryFavorite(t, userIDs[0], e.ID, false, true)
 	checkEntryFavorite(t, userIDs[1], e.ID, false, false)
 	checkFavoriteEntry(t, userIDs[1], e.ID, false)

@@ -105,7 +105,7 @@ func checkDeleteComment(t *testing.T, commentID int64, userID *models.UserID, su
 }
 
 func TestOpenComments(t *testing.T) {
-	postEntry(userIDs[0], models.EntryPrivacyAll)
+	postEntry(userIDs[0], models.EntryPrivacyAll, true)
 	feed := checkLoadTlog(t, userIDs[0], userIDs[0], 10, "", "", 1)
 	entry := feed.Entries[0]
 
@@ -123,7 +123,7 @@ func TestOpenComments(t *testing.T) {
 }
 
 func TestPrivateComments(t *testing.T) {
-	postEntry(userIDs[0], models.EntryPrivacyMe)
+	postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	feed := checkLoadTlog(t, userIDs[0], userIDs[0], 10, "", "", 1)
 	entry := feed.Entries[0]
 

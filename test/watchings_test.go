@@ -63,7 +63,7 @@ func checkUnwatchEntry(t *testing.T, user *models.UserID, entryID int64, success
 }
 
 func TestWatching(t *testing.T) {
-	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true)
+	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, false)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[1], e.ID, false, true)
@@ -78,7 +78,7 @@ func TestWatching(t *testing.T) {
 	checkUnwatchEntry(t, userIDs[0], e.ID, true)
 	checkEntryWatching(t, userIDs[0], e.ID, false, true)
 
-	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true)
+	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true, false)
 	checkEntryWatching(t, userIDs[0], e.ID, true, true)
 	checkEntryWatching(t, userIDs[1], e.ID, false, false)
 	checkWatchEntry(t, userIDs[1], e.ID, false)

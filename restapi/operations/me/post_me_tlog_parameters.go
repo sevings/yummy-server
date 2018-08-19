@@ -25,12 +25,15 @@ func NewPostMeTlogParams() PostMeTlogParams {
 	var (
 		// initialize parameters with default values
 
+		inLiveDefault    = bool(false)
 		isVotableDefault = bool(false)
 
 		titleDefault = string("")
 	)
 
 	return PostMeTlogParams{
+		InLive: &inLiveDefault,
+
 		IsVotable: &isVotableDefault,
 
 		Title: &titleDefault,
@@ -53,6 +56,11 @@ type PostMeTlogParams struct {
 	  In: formData
 	*/
 	Content string
+	/*
+	  In: formData
+	  Default: false
+	*/
+	InLive *bool
 	/*
 	  In: formData
 	  Default: false
@@ -95,6 +103,11 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	fdContent, fdhkContent, _ := fds.GetOK("content")
 	if err := o.bindContent(fdContent, fdhkContent, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdInLive, fdhkInLive, _ := fds.GetOK("inLive")
+	if err := o.bindInLive(fdInLive, fdhkInLive, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -159,6 +172,29 @@ func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// bindInLive binds and validates parameter InLive from formData.
+func (o *PostMeTlogParams) bindInLive(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPostMeTlogParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("inLive", "formData", "bool", raw)
+	}
+	o.InLive = &value
 
 	return nil
 }

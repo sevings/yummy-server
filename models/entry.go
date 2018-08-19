@@ -51,6 +51,9 @@ type Entry struct {
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
+	// in live
+	InLive bool `json:"inLive,omitempty"`
+
 	// is favorited
 	IsFavorited bool `json:"isFavorited,omitempty"`
 

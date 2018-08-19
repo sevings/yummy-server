@@ -188,3 +188,6 @@ CREATE TRIGGER cnt_comment_votes_del
     AFTER DELETE ON mindwell.comment_votes
     FOR EACH ROW 
     EXECUTE PROCEDURE mindwell.comment_votes_del();
+
+ALTER TABLE entries
+ADD COLUMN "in_live" Boolean DEFAULT TRUE NOT NULL;

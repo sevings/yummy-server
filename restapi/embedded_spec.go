@@ -1079,6 +1079,12 @@ func init() {
           {
             "type": "boolean",
             "default": false,
+            "name": "inLive",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
             "name": "anonymous_comments",
             "in": "formData"
           }
@@ -2021,6 +2027,12 @@ func init() {
             "default": false,
             "name": "isVotable",
             "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "inLive",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -2804,6 +2816,9 @@ func init() {
           "type": "integer",
           "format": "int64",
           "minimum": 1
+        },
+        "inLive": {
+          "type": "boolean"
         },
         "isFavorited": {
           "type": "boolean"
@@ -4443,6 +4458,12 @@ func init() {
           {
             "type": "boolean",
             "default": false,
+            "name": "inLive",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
             "name": "anonymous_comments",
             "in": "formData"
           }
@@ -5497,6 +5518,12 @@ func init() {
             "default": false,
             "name": "isVotable",
             "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "inLive",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -6404,6 +6431,9 @@ func init() {
           "type": "integer",
           "format": "int64",
           "minimum": 1
+        },
+        "inLive": {
+          "type": "boolean"
         },
         "isFavorited": {
           "type": "boolean"

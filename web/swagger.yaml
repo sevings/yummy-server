@@ -263,6 +263,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/User'
+      inLive:
+        type: boolean
       commentCount:
         type: integer
       isFavorited:
@@ -1179,6 +1181,10 @@ paths:
           name: isVotable
           type: boolean
           default: false
+        - in: formData
+          name: inLive
+          type: boolean
+          default: false
       responses:
         201:
           description: Entry data
@@ -1561,6 +1567,10 @@ paths:
             minimum: 1
         - in: formData
           name: isVotable
+          type: boolean
+          default: false
+        - in: formData
+          name: inLive
           type: boolean
           default: false
         - in: formData
