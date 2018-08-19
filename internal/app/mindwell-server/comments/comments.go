@@ -303,9 +303,15 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 		Content: content,
 		EntryID: entryID,
 		IsMine:  true,
+		Rating: &models.Rating{
+			IsVotable: true,
+			Vote:      models.RatingVoteBan,
+		},
 	}
 
 	tx.Query(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
+
+	comment.Rating.ID = comment.ID
 
 	return &comment
 }

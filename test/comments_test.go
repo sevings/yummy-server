@@ -20,6 +20,18 @@ func checkComment(t *testing.T, cmt *models.Comment, entryID int64, mine bool, a
 	req.Equal(author.ShowName, cmt.Author.ShowName)
 	req.Equal(author.IsOnline, cmt.Author.IsOnline)
 	req.Equal(author.Avatar, cmt.Author.Avatar)
+
+	req.Equal(cmt.ID, cmt.Rating.ID)
+	req.True(cmt.Rating.IsVotable)
+	req.Zero(cmt.Rating.Rating)
+	req.Zero(cmt.Rating.UpCount)
+	req.Zero(cmt.Rating.DownCount)
+
+	if mine {
+		req.Equal(models.RatingVoteBan, cmt.Rating.Vote)
+	} else {
+		req.Equal(models.RatingVoteNot, cmt.Rating.Vote)
+	}
 }
 
 func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, success bool,
