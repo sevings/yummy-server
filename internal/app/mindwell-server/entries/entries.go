@@ -99,6 +99,11 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
 
+	if privacy == models.EntryPrivacyMe {
+		isVotable = false
+		inLive = false
+	}
+
 	title = bluemonday.StrictPolicy().Sanitize(title)
 
 	cutTitle, cutContent, hasCut := cutEntry(title, content)
@@ -160,6 +165,11 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
+	}
+
+	if privacy == models.EntryPrivacyMe {
+		isVotable = false
+		inLive = false
 	}
 
 	title = bluemonday.StrictPolicy().Sanitize(title)
