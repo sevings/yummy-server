@@ -287,5 +287,5 @@ func TestTopUsers(t *testing.T) {
 	req := require.New(t)
 	req.Equal(int64(1), list[3].ID)
 
-	checkTopUsers(t, "karma", 0)
+	checkTopUsers(t, "karma", 4)
 }

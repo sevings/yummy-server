@@ -241,21 +241,27 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 }
 
 func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool {
-	var entryCount int64
 	var inLive bool
+	const entryQ = "SELECT in_live FROM entries WHERE id = $1"
+	tx.Query(entryQ, entryID).Scan(&inLive)
+	if inLive {
+		return true
+	}
+
+	var entryCount int64
 	const countQ = `
-		SELECT count(entries.id), entry.in_live 
+		SELECT count(*)
 		FROM entries, 
 			(
-				SELECT in_live, created_at
+				SELECT created_at
 				FROM entries
 				WHERE id = $2
 			) AS entry
 		WHERE author_id = $1 
 			AND date_trunc('day', entries.created_at) = date_trunc('day', entry.created_at)
-			AND entries.in_live
+			AND in_live
 	`
-	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount, &inLive)
+	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount)
 
 	if inLive {
 		return true
