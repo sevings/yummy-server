@@ -86,6 +86,12 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 		time.Sleep(10 * time.Millisecond)
 	}
 
+	// remove user restrictions
+	_, err := db.Exec("UPDATE users SET karma = 100000")
+	if err != nil {
+		log.Println(err)
+	}
+
 	return userIDs, profiles
 }
 

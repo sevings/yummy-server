@@ -146,9 +146,31 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	return &entry
 }
 
+func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
+	var karma float64
+	const karmaQ = "SELECT karma FROM users WHERE id = $1"
+	tx.Query(karmaQ, userID.ID).Scan(&karma)
+	if karma < 0 {
+		return false
+	}
+
+	var entryCount int64
+	const countQ = `SELECT count(*) FROM entries WHERE author_id = $1 
+		AND date_trunc('day', created_at) = CURRENT_DATE AND in_live
+	`
+	tx.Query(countQ, userID.ID).Scan(&entryCount)
+
+	return int64(karma) >= entryCount*200
+}
+
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			if *params.InLive && !canPostInLive(tx, uID) {
+				err := srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You can't post in live anymore today."})
+				return me.NewPutMeCoverBadRequest().WithPayload(err)
+			}
+
 			entry := createEntry(srv, tx, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
@@ -218,9 +240,42 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	return &entry
 }
 
+func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool {
+	var entryCount int64
+	var inLive bool
+	const countQ = `
+		SELECT count(entries.id), entry.in_live 
+		FROM entries, 
+			(
+				SELECT in_live, created_at
+				FROM entries
+				WHERE id = $2
+			) AS entry
+		WHERE author_id = $1 
+			AND date_trunc('day', entries.created_at) = date_trunc('day', entry.created_at)
+			AND entries.in_live
+	`
+	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount, &inLive)
+
+	if inLive {
+		return true
+	}
+
+	var karma float64
+	const karmaQ = "SELECT karma FROM users WHERE id = $1"
+	tx.Query(karmaQ, userID.ID).Scan(&karma)
+
+	return int64(karma) >= entryCount*200
+}
+
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			if *params.InLive && !canEditInLive(tx, uID, params.ID) {
+				err := srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You can't post in live anymore on this day."})
+				return me.NewPutMeCoverBadRequest().WithPayload(err)
+			}
+
 			entry := editEntry(srv, tx, params.ID, uID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 

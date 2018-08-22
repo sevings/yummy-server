@@ -1,6 +1,7 @@
 package test
 
 import (
+	"log"
 	"testing"
 	"time"
 
@@ -79,13 +80,14 @@ func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success 
 
 func checkPostEntry(t *testing.T,
 	params me.PostMeTlogParams,
-	user *models.AuthProfile, id *models.UserID, wc int64) int64 {
+	user *models.AuthProfile, id *models.UserID, success bool, wc int64) int64 {
 
 	post := api.MePostMeTlogHandler.Handle
 	resp := post(params, id)
 	body, ok := resp.(*me.PostMeTlogCreated)
+	require.Equal(t, success, ok)
 	if !ok {
-		t.Fatal("error post entry")
+		return 0
 	}
 
 	entry := body.Payload
@@ -101,18 +103,14 @@ func checkPostEntry(t *testing.T,
 
 func checkEditEntry(t *testing.T,
 	params entries.PutEntriesIDParams,
-	user *models.AuthProfile, id *models.UserID, wc int64) {
+	user *models.AuthProfile, id *models.UserID, success bool, wc int64) {
 
 	edit := api.EntriesPutEntriesIDHandler.Handle
 	resp := edit(params, id)
 	body, ok := resp.(*entries.PutEntriesIDOK)
+	require.Equal(t, success, ok)
 	if !ok {
-		badBody, ok := resp.(*entries.PutEntriesIDForbidden)
-		if ok {
-			t.Fatal(badBody.Payload.Message)
-		}
-
-		t.Fatal("error edit entry")
+		return
 	}
 
 	entry := body.Payload
@@ -147,7 +145,7 @@ func TestPostMyTlog(t *testing.T) {
 	title := "title title ti"
 	params.Title = &title
 
-	id := checkPostEntry(t, params, profiles[0], userIDs[0], 5)
+	id := checkPostEntry(t, params, profiles[0], userIDs[0], true, 5)
 	checkEntryWatching(t, userIDs[0], id, true, true)
 
 	title = "title"
@@ -162,13 +160,63 @@ func TestPostMyTlog(t *testing.T) {
 		Privacy:   models.EntryPrivacyMe,
 	}
 
-	checkEditEntry(t, editParams, profiles[0], userIDs[0], 2)
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 2)
 
 	checkLoadEntry(t, id, userIDs[1], false, nil, false, "", false, 0, "", false, false, "", "")
 
 	checkDeleteEntry(t, id, userIDs[1], false)
 	checkDeleteEntry(t, id, userIDs[0], true)
 	checkDeleteEntry(t, id, userIDs[0], false)
+}
+
+func TestLiveRestrictions(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+
+	_, err := db.Exec("UPDATE users SET karma = 300 WHERE id = $1", userIDs[0].ID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	votable := true
+	live := true
+	title := ""
+	postParams := me.PostMeTlogParams{
+		Content:   "test test test",
+		Title:     &title,
+		Privacy:   models.EntryPrivacyAll,
+		IsVotable: &votable,
+		InLive:    &live,
+	}
+	e0 := checkPostEntry(t, postParams, profiles[0], userIDs[0], true, 3)
+	checkPostEntry(t, postParams, profiles[0], userIDs[0], true, 3)
+	checkPostEntry(t, postParams, profiles[0], userIDs[0], false, 3)
+
+	live = false
+	e1 := checkPostEntry(t, postParams, profiles[0], userIDs[0], true, 3)
+
+	live = true
+	editParams := entries.PutEntriesIDParams{
+		ID:        e0,
+		Content:   "content",
+		Title:     &title,
+		IsVotable: &votable,
+		InLive:    &live,
+		Privacy:   models.EntryPrivacyAll,
+	}
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+
+	live = false
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+
+	live = true
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+
+	editParams.ID = e1
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], false, 1)
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
 }
 
 func postEntry(id *models.UserID, privacy string, live bool) {
