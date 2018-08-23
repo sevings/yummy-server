@@ -13,7 +13,11 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     WITH inviters AS (
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
-        WHERE karma > (SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER by karma) FROM mindwell.users)
+        WHERE karma > (
+                SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER by karma) 
+                FROM mindwell.users
+                WHERE karma > 0
+            )
             AND age(last_invite) >= interval '7 days'
             AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
         RETURNING users.id
