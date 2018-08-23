@@ -56,12 +56,12 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 func NewKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
 	return func(apiKey string) (*models.UserID, error) {
 		const q = `
-			SELECT id, name
+			SELECT id, name, karma
 			FROM users
 			WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
 
 		var user models.UserID
-		err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name)
+		err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name, &user.Karma)
 		if err != nil {
 			if err != sql.ErrNoRows {
 				log.Print(err)

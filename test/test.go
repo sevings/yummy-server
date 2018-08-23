@@ -94,6 +94,7 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 
 	for i := 0; i < 3; i++ {
 		profiles[i].Karma = 100000
+		userIDs[i].Karma = 100000
 	}
 
 	return userIDs, profiles

@@ -20,6 +20,9 @@ type UserID struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
+	// karma
+	Karma float32 `json:"karma,omitempty"`
+
 	// name
 	// Max Length: 20
 	// Min Length: 1
