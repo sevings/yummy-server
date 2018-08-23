@@ -64,8 +64,8 @@ func wordCount(content, title string) int64 {
 }
 
 func cutEntry(title, content string) (cutTitle string, cutContent string, hasCut bool) {
-	const titleLength = 60
-	const titleFormat = "%.60s"
+	const titleLength = 80
+	const titleFormat = "%.80s"
 	cutTitle, isTitleCut := utils.CutText(title, titleFormat, titleLength)
 
 	const contentLength = 500

@@ -321,7 +321,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	var title string
 	tx.Query(titleQ, cmt.EntryID).Scan(&title)
 
-	title, _ = utils.CutText(title, "%.60s", 60)
+	title, _ = utils.CutText(title, "%.80s", 80)
 
 	const fromQ = `
 		SELECT gender.type 
