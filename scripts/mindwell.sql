@@ -131,12 +131,12 @@ CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
-CREATE OR REPLACE FUNCTION burn_karma() RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION mindwell.burn_karma() RETURNS VOID AS $$
     UPDATE mindwell.users
     SET karma = 
         CASE 
-            WHEN abs(karma) > 25 THEN karma * 0.98
-            WHEN abs(karma) > 1 THEN karma - karma / 2 / trunc(karma)
+            WHEN abs(karma) > 2.5 THEN karma * 0.98
+            WHEN abs(karma) > 0.05 THEN karma - karma / trunc(karma * 20)
             ELSE 0
         END
     WHERE karma <> 0;
@@ -983,7 +983,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     WITH inviters AS (
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
-        WHERE karma > 37
+        WHERE karma > (SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER by karma) FROM mindwell.users)
             AND age(last_invite) >= interval '7 days'
             AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
         RETURNING users.id
@@ -996,6 +996,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
             trunc(random() * wc.words),
             trunc(random() * wc.words)
         FROM inviters, wc;
+        -- TODO: conflict on index_invite_words
 $$ LANGUAGE SQL;
 
 CREATE VIEW mindwell.unwrapped_invites AS
@@ -1425,7 +1426,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote * 5
+            SET karma = karma + NEW.vote / 2
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1466,7 +1467,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote * 5
+            SET karma = karma - OLD.vote / 2
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1478,7 +1479,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote * 5
+            SET karma = karma + NEW.vote / 2
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1524,7 +1525,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote * 5
+            SET karma = karma - OLD.vote / 2
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1722,7 +1723,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.comment_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote / 20
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1764,7 +1765,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.comment_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote / 20
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1776,7 +1777,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.comment_id
             )
             UPDATE mindwell.users
-            SET karma = karma + NEW.vote
+            SET karma = karma + NEW.vote / 20
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1823,7 +1824,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.comment_id
             )
             UPDATE mindwell.users
-            SET karma = karma - OLD.vote
+            SET karma = karma - OLD.vote / 20
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;

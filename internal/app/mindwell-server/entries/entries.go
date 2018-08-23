@@ -160,7 +160,7 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 	`
 	tx.Query(countQ, userID.ID).Scan(&entryCount)
 
-	return int64(karma) >= entryCount*200
+	return int64(karma) >= entryCount*25
 }
 
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
@@ -271,7 +271,7 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 	const karmaQ = "SELECT karma FROM users WHERE id = $1"
 	tx.Query(karmaQ, userID.ID).Scan(&karma)
 
-	return int64(karma) >= entryCount*200
+	return int64(karma) >= entryCount*25
 }
 
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
