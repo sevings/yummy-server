@@ -1057,7 +1057,7 @@ paths:
       tags:
         - me
       responses:
-        200:
+        204:
           description: OK
   /me/followers:
     get:
@@ -1190,6 +1190,10 @@ paths:
           description: Entry data
           schema:
             $ref: '#/definitions/Entry'
+        403:
+          description: post in live restriction
+          schema:
+            $ref: '#/definitions/Error'
   /me/favorites:
     get:
       parameters:
@@ -1583,7 +1587,7 @@ paths:
           schema:
             $ref: '#/definitions/Entry'
         403:
-          description: access denied
+          description: access denied or post in live restriction
           schema:
             $ref: '#/definitions/Error'
         404:

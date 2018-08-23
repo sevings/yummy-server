@@ -1097,7 +1097,7 @@ func init() {
             }
           },
           "403": {
-            "description": "access denied",
+            "description": "access denied or post in live restriction",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -1904,7 +1904,7 @@ func init() {
           "me"
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "OK"
           }
         }
@@ -2040,6 +2040,12 @@ func init() {
             "description": "Entry data",
             "schema": {
               "$ref": "#/definitions/Entry"
+            }
+          },
+          "403": {
+            "description": "post in live restriction",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -4476,7 +4482,7 @@ func init() {
             }
           },
           "403": {
-            "description": "access denied",
+            "description": "access denied or post in live restriction",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -5373,7 +5379,7 @@ func init() {
           "me"
         ],
         "responses": {
-          "200": {
+          "204": {
             "description": "OK"
           }
         }
@@ -5531,6 +5537,12 @@ func init() {
             "description": "Entry data",
             "schema": {
               "$ref": "#/definitions/Entry"
+            }
+          },
+          "403": {
+            "description": "post in live restriction",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }

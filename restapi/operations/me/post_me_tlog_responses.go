@@ -56,3 +56,47 @@ func (o *PostMeTlogCreated) WriteResponse(rw http.ResponseWriter, producer runti
 		}
 	}
 }
+
+// PostMeTlogForbiddenCode is the HTTP code returned for type PostMeTlogForbidden
+const PostMeTlogForbiddenCode int = 403
+
+/*PostMeTlogForbidden post in live restriction
+
+swagger:response postMeTlogForbidden
+*/
+type PostMeTlogForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostMeTlogForbidden creates PostMeTlogForbidden with default headers values
+func NewPostMeTlogForbidden() *PostMeTlogForbidden {
+
+	return &PostMeTlogForbidden{}
+}
+
+// WithPayload adds the payload to the post me tlog forbidden response
+func (o *PostMeTlogForbidden) WithPayload(payload *models.Error) *PostMeTlogForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post me tlog forbidden response
+func (o *PostMeTlogForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostMeTlogForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

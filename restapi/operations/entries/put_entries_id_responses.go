@@ -60,7 +60,7 @@ func (o *PutEntriesIDOK) WriteResponse(rw http.ResponseWriter, producer runtime.
 // PutEntriesIDForbiddenCode is the HTTP code returned for type PutEntriesIDForbidden
 const PutEntriesIDForbiddenCode int = 403
 
-/*PutEntriesIDForbidden access denied
+/*PutEntriesIDForbidden access denied or post in live restriction
 
 swagger:response putEntriesIdForbidden
 */

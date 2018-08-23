@@ -168,7 +168,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if *params.InLive && !canPostInLive(tx, uID) {
 				err := srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You can't post in live anymore today."})
-				return me.NewPutMeCoverBadRequest().WithPayload(err)
+				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
 
 			entry := createEntry(srv, tx, uID.ID,
@@ -176,7 +176,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
-				return me.NewPutMeCoverBadRequest().WithPayload(err)
+				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
 
 			return me.NewPostMeTlogCreated().WithPayload(entry)
@@ -279,7 +279,7 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if *params.InLive && !canEditInLive(tx, uID, params.ID) {
 				err := srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You can't post in live anymore on this day."})
-				return me.NewPutMeCoverBadRequest().WithPayload(err)
+				return entries.NewPutEntriesIDForbidden().WithPayload(err)
 			}
 
 			entry := editEntry(srv, tx, params.ID, uID.ID,

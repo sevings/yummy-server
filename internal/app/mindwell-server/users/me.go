@@ -217,7 +217,7 @@ func newMyOnlineSetter(srv *utils.MindwellServer) func(me.PutMeOnlineParams, *mo
 			id := userID.ID
 			const q = `UPDATE users SET last_seen_at = DEFAULT WHERE id = $1`
 			tx.Exec(q, id)
-			return me.NewPutMeOnlineOK()
+			return me.NewPutMeOnlineNoContent()
 		})
 	}
 }

@@ -11,26 +11,26 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-// PutMeOnlineOKCode is the HTTP code returned for type PutMeOnlineOK
-const PutMeOnlineOKCode int = 200
+// PutMeOnlineNoContentCode is the HTTP code returned for type PutMeOnlineNoContent
+const PutMeOnlineNoContentCode int = 204
 
-/*PutMeOnlineOK OK
+/*PutMeOnlineNoContent OK
 
-swagger:response putMeOnlineOK
+swagger:response putMeOnlineNoContent
 */
-type PutMeOnlineOK struct {
+type PutMeOnlineNoContent struct {
 }
 
-// NewPutMeOnlineOK creates PutMeOnlineOK with default headers values
-func NewPutMeOnlineOK() *PutMeOnlineOK {
+// NewPutMeOnlineNoContent creates PutMeOnlineNoContent with default headers values
+func NewPutMeOnlineNoContent() *PutMeOnlineNoContent {
 
-	return &PutMeOnlineOK{}
+	return &PutMeOnlineNoContent{}
 }
 
 // WriteResponse to the client
-func (o *PutMeOnlineOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PutMeOnlineNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
-	rw.WriteHeader(200)
+	rw.WriteHeader(204)
 }
