@@ -42,6 +42,20 @@ WHERE entry_privacy.type = 'all'
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
+const commentsFeedQueryStart = tlogFavoritesQueryStart + `,
+(
+	SELECT DISTINCT entry_id, created_at
+	FROM comments
+) AS comments`
+
+const commentsFeedQueryEnd = `
+	AND entries.id = comments.entry_id
+ORDER BY comments.created_at DESC
+LIMIT $2
+`
+
+const liveCommentsFeedQuery = commentsFeedQueryStart + liveFeedQueryWhere + commentsFeedQueryEnd
+
 const anonymousFeedQuery = `
 SELECT entries.id, extract(epoch from entries.created_at), 0, 
 entries.title, content, edit_content, word_count,
@@ -213,10 +227,21 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	return feed
 }
 
+func loadLiveCommentsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
+	tx.Query(liveCommentsFeedQuery, userID.ID, limit)
+	return loadFeed(srv, tx, userID.ID, false)
+}
+
 func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesLiveParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadLiveFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
+			var feed *models.Feed
+			if *params.Section == "entries" {
+				feed = loadLiveFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
+			} else {
+				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Limit)
+			}
+
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
 		})
 	}

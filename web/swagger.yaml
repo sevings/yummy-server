@@ -1430,6 +1430,11 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
+        - in: query
+          name: section
+          type: string
+          enum: [entries, comments]
+          default: entries
       security:
         - ApiKeyHeader: []
       tags:

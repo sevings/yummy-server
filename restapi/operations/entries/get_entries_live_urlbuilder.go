@@ -15,10 +15,11 @@ import (
 
 // GetEntriesLiveURL generates an URL for the get entries live operation
 type GetEntriesLiveURL struct {
-	After  *string
-	Before *string
-	Limit  *int64
-	Tag    *string
+	After   *string
+	Before  *string
+	Limit   *int64
+	Section *string
+	Tag     *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -76,6 +77,14 @@ func (o *GetEntriesLiveURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var section string
+	if o.Section != nil {
+		section = *o.Section
+	}
+	if section != "" {
+		qs.Set("section", section)
 	}
 
 	var tag string

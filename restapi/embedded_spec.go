@@ -975,6 +975,16 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
+          },
+          {
+            "enum": [
+              "entries",
+              "comments"
+            ],
+            "type": "string",
+            "default": "entries",
+            "name": "section",
+            "in": "query"
           }
         ],
         "responses": {
@@ -4363,6 +4373,16 @@ func init() {
             "maxLength": 50,
             "type": "string",
             "name": "tag",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "entries",
+              "comments"
+            ],
+            "type": "string",
+            "default": "entries",
+            "name": "section",
             "in": "query"
           }
         ],

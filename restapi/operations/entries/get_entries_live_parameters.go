@@ -24,9 +24,10 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 	var (
 		// initialize parameters with default values
 
-		afterDefault  = string("")
-		beforeDefault = string("")
-		limitDefault  = int64(30)
+		afterDefault   = string("")
+		beforeDefault  = string("")
+		limitDefault   = int64(30)
+		sectionDefault = string("entries")
 	)
 
 	return GetEntriesLiveParams{
@@ -35,6 +36,8 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Section: &sectionDefault,
 	}
 }
 
@@ -65,6 +68,11 @@ type GetEntriesLiveParams struct {
 	*/
 	Limit *int64
 	/*
+	  In: query
+	  Default: "entries"
+	*/
+	Section *string
+	/*
 	  Max Length: 50
 	  In: query
 	*/
@@ -94,6 +102,11 @@ func (o *GetEntriesLiveParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qSection, qhkSection, _ := qs.GetOK("section")
+	if err := o.bindSection(qSection, qhkSection, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -181,6 +194,39 @@ func (o *GetEntriesLiveParams) validateLimit(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindSection binds and validates parameter Section from query.
+func (o *GetEntriesLiveParams) bindSection(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesLiveParams()
+		return nil
+	}
+
+	o.Section = &raw
+
+	if err := o.validateSection(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateSection carries on validations for parameter Section
+func (o *GetEntriesLiveParams) validateSection(formats strfmt.Registry) error {
+
+	if err := validate.Enum("section", "query", *o.Section, []interface{}{"entries", "comments"}); err != nil {
 		return err
 	}
 
