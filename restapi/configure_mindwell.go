@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/didip/tollbooth"
@@ -19,6 +20,7 @@ import (
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
 	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
+	"github.com/unrolled/logger"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
@@ -88,8 +90,8 @@ func configureServer(s *http.Server, scheme, addr string) {
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
 	lmt := tollbooth.NewLimiter(5, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
-	lmt.SetIPLookups([]string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"})
-	// lmt.SetHeader("X-Api-Token", []string{})
+	lmt.SetIPLookups([]string{"X-Forwarded-For"})
+	// lmt.SetHeader("X-User-Key", []string{})
 	// lmt.SetHeaderEntryExpirationTTL(time.Hour)
 	lmt.SetMessage(`{"message":"You have reached maximum request limit."}`)
 	lmt.SetMessageContentType("application/json")
@@ -100,5 +102,10 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return handler
+	log := logger.New(logger.Options{
+		RemoteAddressHeaders: []string{"X-Forwarded-For"},
+		Out:                  os.Stdout,
+	})
+
+	return log.Handler(handler)
 }
