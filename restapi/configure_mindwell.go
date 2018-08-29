@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/limiter"
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
@@ -85,7 +87,14 @@ func configureServer(s *http.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
-	return handler
+	lmt := tollbooth.NewLimiter(5, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt.SetIPLookups([]string{"X-Forwarded-For", "RemoteAddr", "X-Real-IP"})
+	// lmt.SetHeader("X-Api-Token", []string{})
+	// lmt.SetHeaderEntryExpirationTTL(time.Hour)
+	lmt.SetMessage(`{"message":"You have reached maximum request limit."}`)
+	lmt.SetMessageContentType("application/json")
+
+	return tollbooth.LimitHandler(lmt, handler)
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
