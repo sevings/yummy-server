@@ -42,7 +42,7 @@ WHERE entry_privacy.type = 'all'
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
-const commentsFeedQueryStart = tlogFavoritesQueryStart + `,
+const commentsFeedQueryStart = tlogFeedQueryStart + `,
 (
 	SELECT DISTINCT entry_id, created_at
 	FROM comments

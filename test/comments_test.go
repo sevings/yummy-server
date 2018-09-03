@@ -2,6 +2,7 @@ package test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
@@ -138,4 +139,20 @@ func TestPrivateComments(t *testing.T) {
 	checkEntryWatching(t, userIDs[1], entry.ID, false, false)
 
 	checkDeleteEntry(t, entry.ID, userIDs[0], true)
+}
+
+func postComment(id *models.UserID, entryID int64) int64 {
+	params := comments.PostEntriesIDCommentsParams{
+		ID:      entryID,
+		Content: "test comment",
+	}
+
+	post := api.CommentsPostEntriesIDCommentsHandler.Handle
+	resp := post(params, id)
+	body := resp.(*comments.PostEntriesIDCommentsCreated)
+	cmt := body.Payload
+
+	time.Sleep(10 * time.Millisecond)
+
+	return cmt.ID
 }

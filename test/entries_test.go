@@ -222,8 +222,7 @@ func TestLiveRestrictions(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 }
 
-func postEntry(id *models.UserID, privacy string, live bool) {
-	post := api.MePostMeTlogHandler.Handle
+func postEntry(id *models.UserID, privacy string, live bool) *models.Entry {
 	votable := true
 	title := ""
 	params := me.PostMeTlogParams{
@@ -233,9 +232,14 @@ func postEntry(id *models.UserID, privacy string, live bool) {
 		IsVotable: &votable,
 		InLive:    &live,
 	}
-	post(params, id)
+	post := api.MePostMeTlogHandler.Handle
+	resp := post(params, id)
+	body := resp.(*me.PostMeTlogCreated)
+	entry := body.Payload
 
 	time.Sleep(10 * time.Millisecond)
+
+	return entry
 }
 
 func checkLoadLive(t *testing.T, id *models.UserID, limit int64, section, before, after string, size int) *models.Feed {
@@ -578,4 +582,50 @@ func TestLoadFavorites(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
+}
+
+func TestLoadLiveComments(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+
+	entries := make([]*models.Entry, 6)
+
+	entries[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
+	entries[1] = postEntry(userIDs[0], models.EntryPrivacyAll, false)
+	entries[2] = postEntry(userIDs[0], models.EntryPrivacySome, true)
+	entries[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
+	entries[4] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	entries[5] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
+
+	// skip 4
+	postComment(userIDs[0], entries[5].ID)
+	postComment(userIDs[0], entries[0].ID)
+	postComment(userIDs[0], entries[3].ID)
+	postComment(userIDs[0], entries[1].ID)
+	postComment(userIDs[0], entries[2].ID)
+
+	for _, e := range entries {
+		e.CommentCount = 1
+		e.EditContent = ""
+		e.IsWatching = false
+		e.Rating.Vote = "not"
+	}
+
+	feed := checkLoadLive(t, userIDs[2], 10, "comments", "", "", 3)
+
+	req := require.New(t)
+	req.Equal(*entries[3], *feed.Entries[0])
+	req.Equal(*entries[0], *feed.Entries[1])
+	req.Equal(*entries[5], *feed.Entries[2])
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	feed = checkLoadLive(t, userIDs[2], 1, "comments", "", "", 1)
+	req.Equal(*entries[3], *feed.Entries[0])
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	esm.Clear()
 }
