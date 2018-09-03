@@ -629,3 +629,65 @@ func TestLoadLiveComments(t *testing.T) {
 
 	esm.Clear()
 }
+
+func checkLoadWatching(t *testing.T, id *models.UserID, limit int64, size int) *models.Feed {
+	params := entries.GetEntriesWatchingParams{
+		Limit: &limit,
+	}
+
+	load := api.EntriesGetEntriesWatchingHandler.Handle
+	resp := load(params, id)
+	body, ok := resp.(*entries.GetEntriesWatchingOK)
+
+	require.True(t, ok)
+
+	feed := body.Payload
+	require.Equal(t, size, len(feed.Entries))
+
+	return feed
+}
+
+func TestLoadWatching(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+
+	entries := make([]*models.Entry, 4)
+
+	entries[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
+	entries[1] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
+	entries[2] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	entries[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
+
+	// skip 2
+	postComment(userIDs[2], entries[3].ID)
+	postComment(userIDs[2], entries[1].ID)
+	postComment(userIDs[2], entries[0].ID)
+	postComment(userIDs[0], entries[1].ID)
+
+	for _, e := range entries {
+		e.CommentCount = 1
+		e.EditContent = ""
+		e.IsWatching = true
+		e.Rating.Vote = "not"
+	}
+
+	entries[1].CommentCount = 2
+
+	feed := checkLoadWatching(t, userIDs[2], 10, 3)
+
+	req := require.New(t)
+	req.Equal(*entries[1], *feed.Entries[0])
+	req.Equal(*entries[0], *feed.Entries[1])
+	req.Equal(*entries[3], *feed.Entries[2])
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	feed = checkLoadWatching(t, userIDs[2], 1, 1)
+	req.Equal(*entries[1], *feed.Entries[0])
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	esm.Clear()
+}

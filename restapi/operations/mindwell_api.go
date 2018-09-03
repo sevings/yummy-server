@@ -131,6 +131,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
 		}),
+		EntriesGetEntriesWatchingHandler: entries.GetEntriesWatchingHandlerFunc(func(params entries.GetEntriesWatchingParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesWatching has not yet been implemented")
+		}),
 		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
 		}),
@@ -157,9 +160,6 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
-		}),
-		MeGetMeWatchingHandler: me.GetMeWatchingHandlerFunc(func(params me.GetMeWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeWatching has not yet been implemented")
 		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
@@ -362,6 +362,8 @@ type MindwellAPI struct {
 	WatchingsGetEntriesIDWatchingHandler watchings.GetEntriesIDWatchingHandler
 	// EntriesGetEntriesLiveHandler sets the operation handler for the get entries live operation
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
+	// EntriesGetEntriesWatchingHandler sets the operation handler for the get entries watching operation
+	EntriesGetEntriesWatchingHandler entries.GetEntriesWatchingHandler
 	// MeGetMeHandler sets the operation handler for the get me operation
 	MeGetMeHandler me.GetMeHandler
 	// MeGetMeFavoritesHandler sets the operation handler for the get me favorites operation
@@ -380,8 +382,6 @@ type MindwellAPI struct {
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
 	// MeGetMeTlogHandler sets the operation handler for the get me tlog operation
 	MeGetMeTlogHandler me.GetMeTlogHandler
-	// MeGetMeWatchingHandler sets the operation handler for the get me watching operation
-	MeGetMeWatchingHandler me.GetMeWatchingHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
@@ -627,6 +627,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
 	}
 
+	if o.EntriesGetEntriesWatchingHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesWatchingHandler")
+	}
+
 	if o.MeGetMeHandler == nil {
 		unregistered = append(unregistered, "me.GetMeHandler")
 	}
@@ -661,10 +665,6 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MeGetMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.GetMeTlogHandler")
-	}
-
-	if o.MeGetMeWatchingHandler == nil {
-		unregistered = append(unregistered, "me.GetMeWatchingHandler")
 	}
 
 	if o.RelationsGetRelationsFromNameHandler == nil {
@@ -1048,6 +1048,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/entries/watching"] = entries.NewGetEntriesWatching(o.context, o.EntriesGetEntriesWatchingHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/me"] = me.NewGetMe(o.context, o.MeGetMeHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1089,11 +1094,6 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/tlog"] = me.NewGetMeTlog(o.context, o.MeGetMeTlogHandler)
-
-	if o.handlers["GET"] == nil {
-		o.handlers["GET"] = make(map[string]http.Handler)
-	}
-	o.handlers["GET"]["/me/watching"] = me.NewGetMeWatching(o.context, o.MeGetMeWatchingHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

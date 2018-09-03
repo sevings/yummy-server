@@ -997,6 +997,37 @@ func init() {
         }
       }
     },
+    "/entries/watching": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
+            }
+          }
+        }
+      }
+    },
     "/entries/{id}": {
       "get": {
         "security": [
@@ -2056,37 +2087,6 @@ func init() {
             "description": "post in live restriction",
             "schema": {
               "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/me/watching": {
-      "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "tags": [
-          "me"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/limit"
-          },
-          {
-            "$ref": "#/parameters/after"
-          },
-          {
-            "$ref": "#/parameters/before"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
             }
           }
         }
@@ -4396,6 +4396,48 @@ func init() {
         }
       }
     },
+    "/entries/watching": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Feed"
+            }
+          }
+        }
+      }
+    },
     "/entries/{id}": {
       "get": {
         "security": [
@@ -5567,48 +5609,6 @@ func init() {
             "description": "post in live restriction",
             "schema": {
               "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/me/watching": {
-      "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          }
-        ],
-        "tags": [
-          "me"
-        ],
-        "parameters": [
-          {
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer",
-            "default": 30,
-            "name": "limit",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "",
-            "name": "after",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "",
-            "name": "before",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entry list",
-            "schema": {
-              "$ref": "#/definitions/Feed"
             }
           }
         }

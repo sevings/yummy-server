@@ -44,8 +44,9 @@ const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
 const commentsFeedQueryStart = tlogFeedQueryStart + `,
 (
-	SELECT DISTINCT entry_id, created_at
+	SELECT DISTINCT ON (entry_id) entry_id, created_at
 	FROM comments
+	ORDER BY entry_id, created_at DESC
 ) AS comments`
 
 const commentsFeedQueryEnd = `
@@ -102,6 +103,21 @@ WHERE (users.id = $1
 `
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
+
+const watchingFeedQuery = commentsFeedQueryStart + `,
+watching
+WHERE (users.id = $1 
+		OR user_privacy.type = 'all' 
+		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
+			AND type = (SELECT id FROM relation WHERE type = 'followed')))
+	AND (entry_privacy.type = 'all' 
+		OR (entry_privacy.type = 'some' 
+			AND (users.id = $1
+				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
+		OR (entry_privacy.type = 'me' AND users.id = $1))
+	AND watching.entry_id = entries.id
+	AND watching.user_id = $1
+` + commentsFeedQueryEnd
 
 const tlogFavoritesQueryStart = tlogFeedQueryStart + `
 	INNER JOIN favorites ON entries.id = favorites.entry_id
@@ -625,6 +641,20 @@ func newMyFavoritesLoader(srv *utils.MindwellServer) func(me.GetMeFavoritesParam
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			feed := loadTlogFavorites(srv, tx, userID, userID.Name, *params.Before, *params.After, *params.Limit)
 			return me.NewGetMeFavoritesOK().WithPayload(feed)
+		})
+	}
+}
+
+func loadWatchingFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
+	tx.Query(watchingFeedQuery, userID.ID, limit)
+	return loadFeed(srv, tx, userID.ID, false)
+}
+
+func newWatchingLoader(srv *utils.MindwellServer) func(entries.GetEntriesWatchingParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesWatchingParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			feed := loadWatchingFeed(srv, tx, userID, *params.Limit)
+			return entries.NewGetEntriesWatchingOK().WithPayload(feed)
 		})
 	}
 }
