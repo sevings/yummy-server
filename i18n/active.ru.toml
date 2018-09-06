@@ -36,7 +36,7 @@ other = "Произошла ошибка на сервере. Мы такого 
 
 [invalid_code]
 hash = "sha1-2363dff2014941ab9862f432ab93b5b1daa5fde1"
-other = "Invalid reset link."
+other = "Срок действия ссылки истек или она была неверной."
 
 [invalid_invite]
 hash = "sha1-94d067b264f80b6acda171371ad1d0cb44e88b91"
@@ -60,7 +60,7 @@ other = "Прости, но нам не удалось найти коммент
 
 [no_email]
 hash = "sha1-46715fb859ec5660ad8f3e066f4dbe22810cf96c"
-other = "User with this email not found or not verified."
+other = "Пользователь с таким адресом не существует или не подтвердил свою почту."
 
 [no_entry]
 hash = "sha1-984cc6cc0833ae3bb27978fe6e99a2d038a804bf"
