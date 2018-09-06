@@ -99,6 +99,36 @@ func (pm *Postman) SendGreeting(address, name, code string) {
 	pm.send(email, address, subj, name)
 }
 
+func (pm *Postman) SendResetPassword(address, name, gender, code string, date int64) {
+	var ending string
+	if gender == "female" {
+		ending = "а"
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"кто-то запросил сброс пароля для твоего аккаунта.",
+				"Если это был" + ending + " не ты, можешь просто проигнорировать данное письмо.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Или открой эту ссылку и придумай хороший новый пароль. Она будет действительна в течение часа.",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Сбросить пароль",
+						Link: "http://mindwell.win/account/recover?email=" + address +
+							"&code=" + code + "&date=" + strconv.FormatInt(date, 10),
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Забыл" + ending + " пароль, " + name + "?"
+	pm.send(email, address, subj, name)
+}
+
 func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment) {
 	var ending string
 	if fromGender == "female" {

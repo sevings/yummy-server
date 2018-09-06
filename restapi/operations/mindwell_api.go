@@ -200,6 +200,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountPostAccountRecoverHandler: account.PostAccountRecoverHandlerFunc(func(params account.PostAccountRecoverParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountRecover has not yet been implemented")
 		}),
+		AccountPostAccountRecoverPasswordHandler: account.PostAccountRecoverPasswordHandlerFunc(func(params account.PostAccountRecoverPasswordParams) middleware.Responder {
+			return middleware.NotImplemented("operation AccountPostAccountRecoverPassword has not yet been implemented")
+		}),
 		AccountPostAccountRegisterHandler: account.PostAccountRegisterHandlerFunc(func(params account.PostAccountRegisterParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountRegister has not yet been implemented")
 		}),
@@ -408,6 +411,8 @@ type MindwellAPI struct {
 	AccountPostAccountPasswordHandler account.PostAccountPasswordHandler
 	// AccountPostAccountRecoverHandler sets the operation handler for the post account recover operation
 	AccountPostAccountRecoverHandler account.PostAccountRecoverHandler
+	// AccountPostAccountRecoverPasswordHandler sets the operation handler for the post account recover password operation
+	AccountPostAccountRecoverPasswordHandler account.PostAccountRecoverPasswordHandler
 	// AccountPostAccountRegisterHandler sets the operation handler for the post account register operation
 	AccountPostAccountRegisterHandler account.PostAccountRegisterHandler
 	// AccountPostAccountVerificationHandler sets the operation handler for the post account verification operation
@@ -717,6 +722,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountPostAccountRecoverHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountRecoverHandler")
+	}
+
+	if o.AccountPostAccountRecoverPasswordHandler == nil {
+		unregistered = append(unregistered, "account.PostAccountRecoverPasswordHandler")
 	}
 
 	if o.AccountPostAccountRegisterHandler == nil {
@@ -1159,6 +1168,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/recover"] = account.NewPostAccountRecover(o.context, o.AccountPostAccountRecoverHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/account/recover/password"] = account.NewPostAccountRecoverPassword(o.context, o.AccountPostAccountRecoverPasswordHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

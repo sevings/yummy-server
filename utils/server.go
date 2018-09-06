@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/runtime/middleware"
@@ -18,6 +19,7 @@ import (
 
 type MailSender interface {
 	SendGreeting(address, name, code string)
+	SendResetPassword(address, name, gender, code string, date int64)
 	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
 }
@@ -121,6 +123,32 @@ func (srv *MindwellServer) VerificationCode(email string) string {
 	sum := sha256.Sum256([]byte(email + salt))
 	sha := hex.EncodeToString(sum[:])
 	return sha
+}
+
+func (srv *MindwellServer) resetCode(email string, date int64) string {
+	salt := srv.ConfigString("server.mail_salt")
+	sum := sha256.Sum256([]byte(email + salt))
+	sha := hex.EncodeToString(sum[:])
+	return sha
+}
+
+func (srv *MindwellServer) ResetPasswordCode(email string) (string, int64) {
+	date := time.Now().Unix()
+	code := srv.resetCode(email, date)
+	return code, date
+}
+
+func (srv *MindwellServer) CheckResetPasswordCode(email, code string, date int64) bool {
+	now := time.Now().Unix()
+	if (now - date) >= 60*60 {
+		return false
+	}
+
+	if date > now {
+		return false
+	}
+
+	return srv.resetCode(email, date) == code
 }
 
 // NewError returns error object with some message

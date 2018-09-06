@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 	}
 
 	for i := 0; i < 3; i++ {
-		email := "test" + strconv.Itoa(i)
+		email := "test" + strconv.Itoa(i) + "@example.com"
 		if esm.Emails[i] != email {
 			log.Fatal("Greeting has not sent to ", email)
 		}
@@ -174,6 +174,33 @@ func checkVerify(t *testing.T, userID *models.UserID, email string) {
 	esm.Clear()
 }
 
+func checkResetPassword(t *testing.T, email string) {
+	request := api.AccountPostAccountRecoverHandler.Handle
+	resp := request(account.PostAccountRecoverParams{Email: email})
+	_, ok := resp.(*account.PostAccountRecoverOK)
+
+	req := require.New(t)
+	req.True(ok)
+	req.Equal(1, len(esm.Emails))
+	req.Equal(email, esm.Emails[0])
+	req.Equal(1, len(esm.Codes))
+	req.Equal(1, len(esm.Dates))
+
+	reset := api.AccountPostAccountRecoverPasswordHandler.Handle
+	params := account.PostAccountRecoverPasswordParams{
+		Code:     esm.Codes[0],
+		Email:    esm.Emails[0],
+		Date:     esm.Dates[0],
+		Password: "test123",
+	}
+	resp = reset(params)
+	_, ok = resp.(*account.PostAccountRecoverPasswordOK)
+
+	req.True(ok)
+
+	esm.Clear()
+}
+
 func TestRegister(t *testing.T) {
 	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)")
 	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 2, 2, 2)")
@@ -227,6 +254,7 @@ func TestRegister(t *testing.T) {
 
 	checkVerify(t, userID, user.Account.Email)
 	user.Account.Verified = true
+	checkResetPassword(t, user.Account.Email)
 	checkLogin(t, user, params.Name, params.Password)
 
 	changePassword(t, userID, "test123", "new123", true)

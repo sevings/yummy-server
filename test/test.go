@@ -18,11 +18,18 @@ import (
 type EmailSenderMock struct {
 	Emails []string
 	Codes  []string
+	Dates  []int64
 }
 
 func (esm *EmailSenderMock) SendGreeting(address, name, code string) {
 	esm.Emails = append(esm.Emails, address)
 	esm.Codes = append(esm.Codes, code)
+}
+
+func (esm *EmailSenderMock) SendResetPassword(address, name, gender, code string, date int64) {
+	esm.Emails = append(esm.Emails, address)
+	esm.Codes = append(esm.Codes, code)
+	esm.Dates = append(esm.Dates, date)
 }
 
 func (esm *EmailSenderMock) SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment) {
@@ -49,7 +56,7 @@ func (esm *EmailSenderMock) Clear() {
 func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	params := account.PostAccountRegisterParams{
 		Name:     name,
-		Email:    name,
+		Email:    name + "@example.com",
 		Password: "test123",
 		Invite:   inviteWord + " " + inviteWord + " " + inviteWord,
 	}

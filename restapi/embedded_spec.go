@@ -201,7 +201,7 @@ func init() {
         "tags": [
           "account"
         ],
-        "summary": "set new password",
+        "summary": "change new password",
         "parameters": [
           {
             "maxLength": 100,
@@ -236,12 +236,12 @@ func init() {
     "/account/recover": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "multipart/form-data"
         ],
         "tags": [
           "account"
         ],
+        "summary": "request reset password email",
         "parameters": [
           {
             "maxLength": 500,
@@ -254,6 +254,60 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Email not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/account/recover/password": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "summary": "reset password",
+        "parameters": [
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "email",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "date",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 64,
+            "minLength": 64,
+            "type": "string",
+            "name": "code",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
           },
           "400": {
             "description": "Email not found",
@@ -3540,7 +3594,7 @@ func init() {
         "tags": [
           "account"
         ],
-        "summary": "set new password",
+        "summary": "change new password",
         "parameters": [
           {
             "maxLength": 100,
@@ -3575,12 +3629,12 @@ func init() {
     "/account/recover": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "multipart/form-data"
         ],
         "tags": [
           "account"
         ],
+        "summary": "request reset password email",
         "parameters": [
           {
             "maxLength": 500,
@@ -3593,6 +3647,60 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "Email not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/account/recover/password": {
+      "post": {
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "summary": "reset password",
+        "parameters": [
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "email",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "date",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 64,
+            "minLength": 64,
+            "type": "string",
+            "name": "code",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
           },
           "400": {
             "description": "Email not found",

@@ -701,7 +701,7 @@ paths:
           description: email notification settings has been updated
   /account/password:
     post:
-      summary: set new password
+      summary: change new password
       consumes:
         - multipart/form-data
       parameters:
@@ -730,9 +730,9 @@ paths:
             $ref: '#/definitions/Error'
   /account/recover:
     post:
+      summary: request reset password email
       consumes:
         - multipart/form-data
-        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           name: email
@@ -744,6 +744,43 @@ paths:
       responses:
         200:
           description: OK
+        400:
+          description: Email not found
+          schema:
+            $ref: '#/definitions/Error'
+  /account/recover/password:
+    post:
+      summary: reset password
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: email
+          type: string
+          maxLength: 500
+          required: true
+        - in: formData
+          type: string
+          name: password
+          minLength: 6
+          maxLength: 100
+          required: true
+        - in: formData
+          type: integer
+          format: int64
+          name: date
+          required: true
+        - in: formData
+          type: string
+          name: code
+          minLength: 64
+          maxLength: 64
+          required: true
+      tags:
+        - account
+      responses:
+        200:
+          description: Password changed
         400:
           description: Email not found
           schema:

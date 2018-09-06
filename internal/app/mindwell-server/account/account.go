@@ -32,6 +32,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(newVerificationSender(srv))
 	srv.API.AccountGetAccountVerificationEmailHandler = account.GetAccountVerificationEmailHandlerFunc(newEmailVerifier(srv))
 
+	srv.API.AccountPostAccountRecoverHandler = account.PostAccountRecoverHandlerFunc(newResetPasswordSender(srv))
+	srv.API.AccountPostAccountRecoverPasswordHandler = account.PostAccountRecoverPasswordHandlerFunc(newPasswordResetter(srv))
+
 	srv.API.AccountGetAccountSettingsEmailHandler = account.GetAccountSettingsEmailHandlerFunc(newEmailSettingsLoader(srv))
 	srv.API.AccountPutAccountSettingsEmailHandler = account.PutAccountSettingsEmailHandlerFunc(newEmailSettingsEditor(srv))
 }
@@ -439,6 +442,65 @@ func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerifica
 			tx.Exec(q, params.Email)
 
 			return account.NewGetAccountVerificationEmailOK()
+		})
+	}
+}
+
+func newResetPasswordSender(srv *utils.MindwellServer) func(account.PostAccountRecoverParams) middleware.Responder {
+	return func(params account.PostAccountRecoverParams) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = `
+				SELECT show_name, gender.type 
+				FROM users, gender 
+				WHERE users.email = $1 and verified and users.gender = gender.id`
+
+			var gender string
+			var name string
+			tx.Query(q, params.Email).Scan(&name, &gender)
+			if tx.Error() == sql.ErrNoRows {
+				err := srv.NewError(&i18n.Message{ID: "no_email", Other: "User with this email not found or not verified."})
+				return account.NewPostAccountRecoverBadRequest().WithPayload(err)
+			}
+
+			if tx.Error() != nil {
+				err := srv.NewError(nil)
+				return account.NewPostAccountRecoverBadRequest().WithPayload(err)
+			}
+
+			code, date := srv.ResetPasswordCode(params.Email)
+			srv.Mail.SendResetPassword(params.Email, name, gender, code, date)
+
+			return account.NewPostAccountRecoverOK()
+		})
+	}
+}
+
+func resetPassword(srv *utils.MindwellServer, tx *utils.AutoTx, email, password string) bool {
+	const q = `
+        update users
+        set password_hash = $2
+        where email = $1`
+
+	hash := srv.PasswordHash(password)
+	tx.Exec(q, email, hash)
+
+	return tx.RowsAffected() == 1
+}
+
+func newPasswordResetter(srv *utils.MindwellServer) func(account.PostAccountRecoverPasswordParams) middleware.Responder {
+	return func(params account.PostAccountRecoverPasswordParams) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			if !srv.CheckResetPasswordCode(params.Email, params.Code, params.Date) {
+				err := srv.NewError(&i18n.Message{ID: "invalid_code", Other: "Invalid reset link."})
+				return account.NewPostAccountRecoverPasswordBadRequest()
+			}
+
+			if !resetPassword(srv, tx, params.Email, params.Password) {
+				err := srv.NewError(nil)
+				return account.NewPostAccountRecoverPasswordBadRequest().WithPayload(err)
+			}
+
+			return account.NewPostAccountRecoverPasswordOK()
 		})
 	}
 }

@@ -31,7 +31,7 @@ func NewPostAccountRecover(ctx *middleware.Context, handler PostAccountRecoverHa
 
 /*PostAccountRecover swagger:route POST /account/recover account postAccountRecover
 
-PostAccountRecover post account recover API
+request reset password email
 
 */
 type PostAccountRecover struct {

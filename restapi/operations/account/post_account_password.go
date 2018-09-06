@@ -33,7 +33,7 @@ func NewPostAccountPassword(ctx *middleware.Context, handler PostAccountPassword
 
 /*PostAccountPassword swagger:route POST /account/password account postAccountPassword
 
-set new password
+change new password
 
 */
 type PostAccountPassword struct {
