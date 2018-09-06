@@ -26,7 +26,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 			Product: hermes.Product{
 				Name:      "команда Mindwell",
 				Link:      baseURL,
-				Logo:      baseURL + "/assets/olympus/img/logo-mindwell.png",
+				Logo:      baseURL + "assets/olympus/img/logo-mindwell.png",
 				Copyright: "© 2018 Mindwell.",
 				TroubleText: "Если кнопка '{ACTION}' по какой-то причине не работает, " +
 					"скопируй и вставь в адреснуню строку браузера следующую ссылку: ",
@@ -90,7 +90,7 @@ func (pm *Postman) SendGreeting(address, name, code string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "Начать пользоваться Mindwell",
-						Link:  pm.url + "/account/verification/" + address + "?code=" + code,
+						Link:  pm.url + "account/verification/" + address + "?code=" + code,
 					},
 				},
 			},
@@ -119,7 +119,7 @@ func (pm *Postman) SendResetPassword(address, name, gender, code string, date in
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "Сбросить пароль",
-						Link: pm.url + "/account/recover?email=" + address +
+						Link: pm.url + "account/recover?email=" + address +
 							"&code=" + code + "&date=" + strconv.FormatInt(date, 10),
 					},
 				},
@@ -157,7 +157,7 @@ func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle st
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "Открыть запись",
-						Link:  pm.url + "/entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments",
+						Link:  pm.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments",
 					},
 				},
 			},
@@ -198,7 +198,7 @@ func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender s
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  fromShowName,
-						Link:  pm.url + "/users/" + fromName,
+						Link:  pm.url + "users/" + fromName,
 					},
 				},
 			},
