@@ -492,7 +492,7 @@ func newPasswordResetter(srv *utils.MindwellServer) func(account.PostAccountReco
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if !srv.CheckResetPasswordCode(params.Email, params.Code, params.Date) {
 				err := srv.NewError(&i18n.Message{ID: "invalid_code", Other: "Invalid reset link."})
-				return account.NewPostAccountRecoverPasswordBadRequest()
+				return account.NewPostAccountRecoverPasswordBadRequest().WithPayload(err)
 			}
 
 			if !resetPassword(srv, tx, params.Email, params.Password) {
