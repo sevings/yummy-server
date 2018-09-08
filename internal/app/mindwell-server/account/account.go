@@ -369,9 +369,16 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 
 func loadInvites(tx *utils.AutoTx, userID *models.UserID) []string {
 	const q = `
-        select word1 || ' ' || word2 || ' ' || word3 
-        from unwrapped_invites
-        where user_id = $1`
+		SELECT one.word || two.word || three.word
+		FROM mindwell.invites,
+			mindwell.invite_words AS one,
+			mindwell.invite_words AS two,
+			mindwell.invite_words AS three
+		WHERE invites.referrer_id = $1
+			AND invites.word1 = one.id 
+			AND invites.word2 = two.id 
+			AND invites.word3 = three.id
+		ORDER BY created_at ASC`
 
 	tx.Query(q, userID.ID)
 
