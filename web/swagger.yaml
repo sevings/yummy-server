@@ -2006,7 +2006,5 @@ paths:
             $ref: '#/definitions/Error'
 produces:
   - application/json
-schemes:
-  - http
 swagger: '2.0'
 basePath: /api/v1
