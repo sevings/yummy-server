@@ -47,6 +47,18 @@ INSERT INTO "mindwell"."alignment" VALUES(3, 'justify');
 -- -------------------------------------------------------------
 
 
+CREATE OR REPLACE FUNCTION next_user_position() RETURNS INTEGER AS $$
+    DECLARE
+        pos INTEGER;
+    BEGIN
+        pos = (
+            SELECT COUNT(*) + 1
+            FROM users
+            WHERE karma >= 0
+        );
+        RETURN pos;
+    END;
+$$ language plpgsql;
 
 -- CREATE TABLE "users" ----------------------------------------
 CREATE TABLE "mindwell"."users" (
@@ -60,6 +72,7 @@ CREATE TABLE "mindwell"."users" (
 	"privacy" Integer DEFAULT 0 NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
 	"last_seen_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "position" Integer DEFAULT next_user_position() NOT NULL,
 	"karma" Real DEFAULT 0 NOT NULL,
     "karma_raw" Real DEFAULT 0 NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -132,15 +145,37 @@ CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
-CREATE OR REPLACE FUNCTION burn_karma() RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
+    WITH upd AS (
+        SELECT ek.id, (users.karma * 4 + ek.karma + ck.karma) / 5 AS karma
+        FROM mindwell.users, (
+            SELECT users.id, sum(entry_votes.vote) AS karma
+            FROM mindwell.entry_votes, mindwell.entries, mindwell.users
+            WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
+                AND entry_votes.entry_id = entries.id AND entries.author_id = users.id
+            GROUP BY users.id  
+        ) as ek, (
+            SELECT users.id, sum(comment_votes.vote) / 10 AS karma
+            FROM mindwell.comment_votes, mindwell.comments, mindwell.users
+            WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
+                AND comment_votes.comment_id = comments.id AND comments.author_id = users.id
+            GROUP BY users.id  
+        ) AS ck
+        WHERE ek.id = ck.id AND ek.id = users.id
+    )
     UPDATE mindwell.users
-    SET karma_raw = 
-        CASE 
-            WHEN abs(karma_raw) > 25 THEN karma_raw * 0.98
-            WHEN abs(karma_raw) > 0.5 THEN karma_raw - karma_raw / trunc(karma_raw * 2)
-            ELSE 0
-        END
-    WHERE karma_raw <> 0;
+    SET karma = upd.karma
+    FROM upd
+    WHERE users.id = upd.id;
+
+    WITH upd AS (
+        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as position
+        FROM mindwell.users
+    )
+    UPDATE mindwell.users
+    SET position = upd.position
+    FROM upd
+    WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION mindwell.upd_karma() RETURNS TRIGGER AS $$
