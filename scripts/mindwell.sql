@@ -74,7 +74,6 @@ CREATE TABLE "mindwell"."users" (
 	"last_seen_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     "position" Integer DEFAULT next_user_position() NOT NULL,
 	"karma" Real DEFAULT 0 NOT NULL,
-    "karma_raw" Real DEFAULT 0 NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"last_invite" Date DEFAULT CURRENT_DATE NOT NULL,
     "invited_by" Integer NOT NULL,
@@ -147,21 +146,22 @@ CREATE TRIGGER cnt_invited
 
 CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     WITH upd AS (
-        SELECT ek.id, (users.karma * 4 + ek.karma + ck.karma) / 5 AS karma
-        FROM mindwell.users, (
+        SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0)) / 5 AS karma
+        FROM mindwell.users
+        LEFT JOIN (
             SELECT users.id, sum(entry_votes.vote) AS karma
             FROM mindwell.entry_votes, mindwell.entries, mindwell.users
             WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
                 AND entry_votes.entry_id = entries.id AND entries.author_id = users.id
             GROUP BY users.id  
-        ) as ek, (
+        ) as ek ON users.id = ek.id
+        LEFT JOIN (
             SELECT users.id, sum(comment_votes.vote) / 10 AS karma
             FROM mindwell.comment_votes, mindwell.comments, mindwell.users
             WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
                 AND comment_votes.comment_id = comments.id AND comments.author_id = users.id
             GROUP BY users.id  
-        ) AS ck
-        WHERE ek.id = ck.id AND ek.id = users.id
+        ) AS ck ON users.id = ck.id
     )
     UPDATE mindwell.users
     SET karma = upd.karma
@@ -177,24 +177,6 @@ CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     FROM upd
     WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
-
-CREATE OR REPLACE FUNCTION mindwell.upd_karma() RETURNS TRIGGER AS $$
-    BEGIN
-        NEW.karma = 
-            CASE
-                WHEN abs(NEW.karma_raw) < 1000 THEN sin(NEW.karma_raw * pi() / 2 / 1000) * 100
-                WHEN NEW.karma_raw >= 1000 THEN 100
-                ELSE -100
-            END;
-        RETURN NEW;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER upd_user_karma
-    BEFORE UPDATE ON mindwell.users
-    FOR EACH ROW
-    WHEN (OLD.karma_raw IS DISTINCT FROM NEW.karma_raw)
-    EXECUTE PROCEDURE mindwell.upd_karma();
 
 
 
@@ -1484,7 +1466,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw + NEW.vote / 2
+            SET karma = karma + NEW.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1525,7 +1507,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw - OLD.vote / 2
+            SET karma = karma - OLD.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1537,7 +1519,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.entry_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw + NEW.vote / 2
+            SET karma = karma + NEW.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1583,7 +1565,7 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.entry_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw - OLD.vote / 2
+            SET karma = karma - OLD.vote
             FROM entry
             WHERE users.id = entry.author_id;
         END IF;
@@ -1781,7 +1763,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
                 WHERE id = NEW.comment_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw + NEW.vote / 20
+            SET karma = karma + NEW.vote / 10
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1823,7 +1805,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = OLD.comment_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw - OLD.vote / 20
+            SET karma = karma - OLD.vote / 10
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1835,7 +1817,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
                 WHERE id = NEW.comment_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw + NEW.vote / 20
+            SET karma = karma + NEW.vote / 10
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
@@ -1882,7 +1864,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
                 WHERE id = OLD.comment_id
             )
             UPDATE mindwell.users
-            SET karma_raw = karma_raw - OLD.vote / 20
+            SET karma = karma - OLD.vote / 10
             FROM cmnt
             WHERE users.id = cmnt.author_id;
         END IF;
