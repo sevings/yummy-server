@@ -147,8 +147,27 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 	return &entry
 }
 
+func allowedInLive(followersCount, entryCount int64) bool {
+	switch {
+	case followersCount < 3:
+		return entryCount < 1
+	case followersCount < 10:
+		return entryCount < 2
+	case followersCount < 50:
+		return entryCount < 3
+	default:
+		return true
+	}
+}
+
 func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
-	if userID.Karma < 0 {
+	var negKarma bool
+	var followersCount int64
+
+	const karmaQ = "SELECT karma < 0, followers_count FROM users WHERE id = $1"
+	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
+
+	if negKarma {
 		return false
 	}
 
@@ -158,7 +177,7 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 	`
 	tx.Query(countQ, userID.ID).Scan(&entryCount)
 
-	return int64(userID.Karma) >= entryCount*40
+	return allowedInLive(followersCount, entryCount)
 }
 
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
@@ -246,6 +265,16 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 		return true
 	}
 
+	var negKarma bool
+	var followersCount int64
+
+	const karmaQ = "SELECT karma < 0, followers_count FROM users WHERE id = $1"
+	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
+
+	if negKarma {
+		return false
+	}
+
 	var entryCount int64
 	const countQ = `
 		SELECT count(*)
@@ -261,11 +290,7 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 	`
 	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount)
 
-	if inLive {
-		return true
-	}
-
-	return int64(userID.Karma) >= entryCount*40
+	return allowedInLive(followersCount, entryCount)
 }
 
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {

@@ -3313,10 +3313,6 @@ func init() {
           "type": "integer",
           "format": "int64"
         },
-        "karma": {
-          "type": "number",
-          "format": "float"
-        },
         "name": {
           "type": "string",
           "maxLength": 20,
@@ -6998,10 +6994,6 @@ func init() {
         "id": {
           "type": "integer",
           "format": "int64"
-        },
-        "karma": {
-          "type": "number",
-          "format": "float"
         },
         "name": {
           "type": "string",

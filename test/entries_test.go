@@ -173,12 +173,10 @@ func TestLiveRestrictions(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 
-	_, err := db.Exec("UPDATE users SET karma = 50 WHERE id = $1", userIDs[0].ID)
+	_, err := db.Exec("UPDATE users SET followers_count = 4 WHERE id = $1", userIDs[0].ID)
 	if err != nil {
 		log.Println(err)
 	}
-
-	userIDs[0].Karma = 50
 
 	votable := true
 	live := true

@@ -19,9 +19,6 @@ definitions:
         type: string
         minLength: 1
         maxLength: 20
-      karma:
-        type: number
-        format: float
   Error:
     type: object
     properties:

@@ -94,13 +94,9 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	}
 
 	// remove user restrictions
-	_, err := db.Exec("UPDATE users SET karma = 100")
+	_, err := db.Exec("UPDATE users SET followers_count = 100")
 	if err != nil {
 		log.Println(err)
-	}
-
-	for i := 0; i < 3; i++ {
-		userIDs[i].Karma = 100
 	}
 
 	return userIDs, profiles
