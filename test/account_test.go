@@ -251,6 +251,8 @@ func TestRegister(t *testing.T) {
 	checkEmail(t, "testeMAil", false)
 	checkLogin(t, user, params.Name, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Name), params.Password)
+	checkLogin(t, user, params.Email, params.Password)
+	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
 	checkVerify(t, userID, user.Account.Email)
 	user.Account.Verified = true

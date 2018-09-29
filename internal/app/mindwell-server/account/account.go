@@ -315,7 +315,10 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 	}
 }
 
-const authProfileQueryByPassword = authProfileQuery + "WHERE lower(long_users.name) = lower($1) and long_users.password_hash = $2"
+const authProfileQueryByPassword = authProfileQuery + `
+	WHERE password_hash = $2
+		AND (lower(name) = lower($1) OR lower(email) = lower($1))
+`
 
 func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
