@@ -14,7 +14,7 @@ func newTopUsersLoader(srv *utils.MindwellServer) func(users.GetUsersParams, *mo
 		query := usersQuerySelect + "FROM long_users "
 
 		if *params.Top == "rank" {
-			query += "WHERE rank > 0 ORDER BY rank DESC"
+			query += "ORDER BY rank ASC"
 		} else if *params.Top == "new" {
 			query += "ORDER BY created_at DESC"
 		} else {
