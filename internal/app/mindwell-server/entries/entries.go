@@ -183,7 +183,7 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			if *params.InLive && !canPostInLive(tx, uID) {
+			if *params.InLive && params.Privacy == models.EntryPrivacyAll && !canPostInLive(tx, uID) {
 				err := srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You can't post in live anymore today."})
 				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
@@ -296,7 +296,7 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			if *params.InLive && !canEditInLive(tx, uID, params.ID) {
+			if *params.InLive && params.Privacy == models.EntryPrivacyAll && !canEditInLive(tx, uID, params.ID) {
 				err := srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You can't post in live anymore on this day."})
 				return entries.NewPutEntriesIDForbidden().WithPayload(err)
 			}
