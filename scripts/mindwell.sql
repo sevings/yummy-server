@@ -1019,13 +1019,22 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
     WITH inviters AS (
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
-        WHERE karma > (
-                SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER by karma) 
-                FROM mindwell.users
-                WHERE karma > 0
+        WHERE (rank <= (
+                    SELECT COUNT(*) / 2
+                    FROM mindwell.users
+                    WHERE karma > 0
+                )
+                AND age(last_invite) >= interval '7 days'
+                AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
+            ) OR (
+                last_invite = created_at::Date
+                AND (
+                    SELECT COUNT(entries.id)
+                    FROM mindwell.entries, mindwell.entry_votes
+                    WHERE entries.author_id = users.id AND entry_votes.entry_id = entries.id
+                        AND entry_votes.vote > 0 AND entry_votes.user_id <> users.invited_by
+                ) >= 10
             )
-            AND age(last_invite) >= interval '7 days'
-            AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
         RETURNING users.id
     ), wc AS (
         SELECT COUNT(*) AS words FROM invite_words
@@ -1035,8 +1044,8 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
             trunc(random() * wc.words),
             trunc(random() * wc.words),
             trunc(random() * wc.words)
-        FROM inviters, wc;
-        -- TODO: conflict on index_invite_words
+        FROM inviters, wc
+        ON CONFLICT (word1, word2, word3) DO NOTHING;
 $$ LANGUAGE SQL;
 
 CREATE VIEW mindwell.unwrapped_invites AS

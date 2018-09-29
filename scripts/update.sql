@@ -344,3 +344,36 @@ SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
 FROM mindwell.long_users, mindwell.entries, mindwell.entry_privacy
 WHERE long_users.id = entries.author_id 
     AND entry_privacy.id = entries.visible_for;
+
+CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
+    WITH inviters AS (
+        UPDATE mindwell.users 
+        SET last_invite = CURRENT_DATE
+        WHERE (rank <= (
+                    SELECT COUNT(*) / 2
+                    FROM mindwell.users
+                    WHERE karma > 0
+                )
+                AND age(last_invite) >= interval '7 days'
+                AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
+            ) OR (
+                last_invite = created_at::Date
+                AND (
+                    SELECT COUNT(entries.id)
+                    FROM mindwell.entries, mindwell.entry_votes
+                    WHERE entries.author_id = users.id AND entry_votes.entry_id = entries.id
+                        AND entry_votes.vote > 0 AND entry_votes.user_id <> users.invited_by
+                ) >= 10
+            )
+        RETURNING users.id
+    ), wc AS (
+        SELECT COUNT(*) AS words FROM invite_words
+    )
+    INSERT INTO mindwell.invites(referrer_id, word1, word2, word3)
+        SELECT inviters.id, 
+            trunc(random() * wc.words),
+            trunc(random() * wc.words),
+            trunc(random() * wc.words)
+        FROM inviters, wc
+        ON CONFLICT (word1, word2, word3) DO NOTHING;
+$$ LANGUAGE SQL;
