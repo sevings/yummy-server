@@ -377,5 +377,3 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
         FROM inviters, wc
         ON CONFLICT (word1, word2, word3) DO NOTHING;
 $$ LANGUAGE SQL;
-
-ALTER TABLE entry_votes DROP COLUMN karma_diff;
