@@ -114,6 +114,8 @@ definitions:
                 type: integer
               tags:
                 type: integer
+              days:
+                type: integer
   FriendList:
     type: object
     properties:

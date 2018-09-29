@@ -2992,6 +2992,9 @@ func init() {
                 "comments": {
                   "type": "integer"
                 },
+                "days": {
+                  "type": "integer"
+                },
                 "entries": {
                   "type": "integer"
                 },
@@ -6672,6 +6675,9 @@ func init() {
               "type": "object",
               "properties": {
                 "comments": {
+                  "type": "integer"
+                },
+                "days": {
                   "type": "integer"
                 },
                 "entries": {

@@ -267,6 +267,9 @@ type FriendAO1Counts struct {
 	// comments
 	Comments int64 `json:"comments,omitempty"`
 
+	// days
+	Days int64 `json:"days,omitempty"`
+
 	// entries
 	Entries int64 `json:"entries,omitempty"`
 

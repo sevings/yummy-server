@@ -46,7 +46,7 @@ extract(epoch from created_at), extract(epoch from last_seen_at), is_online,
 age,
 entries_count, followings_count, followers_count, 
 ignored_count, invited_count, comments_count, 
-favorites_count, tags_count,
+favorites_count, tags_count, days_count, 
 country, city,
 cover,
 css, background_color, text_color, 
@@ -80,7 +80,7 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&age,
 		&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
-		&profile.Counts.Favorites, &profile.Counts.Tags,
+		&profile.Counts.Favorites, &profile.Counts.Tags, &profile.Counts.Days,
 		&profile.Country, &profile.City,
 		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
@@ -183,7 +183,7 @@ is_online, extract(epoch from last_seen_at), title, rank,
 avatar, cover,
 entries_count, followings_count, followers_count, 
 ignored_count, invited_count, comments_count, 
-favorites_count, tags_count
+favorites_count, tags_count, days_count
 `
 
 const usersQueryStart = usersQuerySelect + `
@@ -219,7 +219,7 @@ func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend 
 			&avatar, &cover,
 			&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,
 			&user.Counts.Ignored, &user.Counts.Invited, &user.Counts.Comments,
-			&user.Counts.Favorites, &user.Counts.Tags)
+			&user.Counts.Favorites, &user.Counts.Tags, &user.Counts.Days)
 		if !ok {
 			break
 		}
