@@ -47,7 +47,7 @@ INSERT INTO "mindwell"."alignment" VALUES(3, 'justify');
 -- -------------------------------------------------------------
 
 
-CREATE OR REPLACE FUNCTION next_user_position() RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION next_user_rank() RETURNS INTEGER AS $$
     DECLARE
         pos INTEGER;
     BEGIN
@@ -72,7 +72,7 @@ CREATE TABLE "mindwell"."users" (
 	"privacy" Integer DEFAULT 0 NOT NULL,
 	"title" Text DEFAULT '' NOT NULL,
 	"last_seen_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    "position" Integer DEFAULT next_user_position() NOT NULL,
+    "rank" Integer DEFAULT next_user_rank() NOT NULL,
 	"karma" Real DEFAULT 0 NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"last_invite" Date DEFAULT CURRENT_DATE NOT NULL,
@@ -169,11 +169,11 @@ CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     WHERE users.id = upd.id;
 
     WITH upd AS (
-        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as position
+        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as rank
         FROM mindwell.users
     )
     UPDATE mindwell.users
-    SET position = upd.position
+    SET users.rank = upd.rank
     FROM upd
     WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
@@ -198,7 +198,7 @@ SELECT users.id,
     user_privacy.type AS privacy,
     users.title,
     users.last_seen_at,
-    users.karma,
+    users.rank,
     users.created_at,
     users.invited_by,
     users.birthday,
@@ -1459,18 +1459,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
         WHERE user_id = entry.author_id 
             AND vote_weights.category = entry.category;
 
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = NEW.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -1499,30 +1487,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
         FROM entry
         WHERE user_id = entry.author_id
             AND vote_weights.category = entry.category;
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = OLD.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
-
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = NEW.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
 
         RETURN NULL;
     END;
@@ -1557,18 +1521,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
         FROM entry
         WHERE user_id = entry.author_id
             AND vote_weights.category = entry.category;
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = OLD.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
 
         RETURN NULL;
     END;
@@ -1756,18 +1708,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
 
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = NEW.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -1797,30 +1737,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
         WHERE user_id = cmnt.author_id
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = OLD.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
-
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = NEW.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
 
         RETURN NULL;
     END;
@@ -1856,18 +1772,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
         WHERE user_id = cmnt.author_id
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = OLD.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
 
         RETURN NULL;
     END;

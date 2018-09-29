@@ -90,9 +90,9 @@ definitions:
           title:
             type: string
             maxLength: 260
-          karma:
+          rank:
             type: number
-            format: float
+            format: int64
           lastSeenAt:
             type: number
             format: double
@@ -170,7 +170,7 @@ definitions:
           isDaylog: false
           privacy: all
           title: 'some tlog title'
-          karma: 100.0
+          rank: 17
           createdAt: 1531029717.333
           lastSeenAt: 1531029717.333
           country: Россия
@@ -809,7 +809,7 @@ paths:
         - in: query
           name: top
           type: string
-          enum: [new, karma]
+          enum: [new, rank]
           default: new
       tags:
         - users

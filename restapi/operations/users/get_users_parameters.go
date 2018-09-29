@@ -95,7 +95,7 @@ func (o *GetUsersParams) bindTop(rawData []string, hasKey bool, formats strfmt.R
 // validateTop carries on validations for parameter Top
 func (o *GetUsersParams) validateTop(formats strfmt.Registry) error {
 
-	if err := validate.Enum("top", "query", *o.Top, []interface{}{"new", "karma"}); err != nil {
+	if err := validate.Enum("top", "query", *o.Top, []interface{}{"new", "rank"}); err != nil {
 		return err
 	}
 

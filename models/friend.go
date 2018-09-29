@@ -30,11 +30,11 @@ type Friend struct {
 	// Enum: [male female not set]
 	Gender string `json:"gender,omitempty"`
 
-	// karma
-	Karma float32 `json:"karma,omitempty"`
-
 	// last seen at
 	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
+
+	// rank
+	Rank int64 `json:"rank,omitempty"`
 
 	// title
 	// Max Length: 260
@@ -58,9 +58,9 @@ func (m *Friend) UnmarshalJSON(raw []byte) error {
 
 		Gender string `json:"gender,omitempty"`
 
-		Karma float32 `json:"karma,omitempty"`
-
 		LastSeenAt float64 `json:"lastSeenAt,omitempty"`
+
+		Rank int64 `json:"rank,omitempty"`
 
 		Title string `json:"title,omitempty"`
 	}
@@ -74,9 +74,9 @@ func (m *Friend) UnmarshalJSON(raw []byte) error {
 
 	m.Gender = dataAO1.Gender
 
-	m.Karma = dataAO1.Karma
-
 	m.LastSeenAt = dataAO1.LastSeenAt
+
+	m.Rank = dataAO1.Rank
 
 	m.Title = dataAO1.Title
 
@@ -100,9 +100,9 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 
 		Gender string `json:"gender,omitempty"`
 
-		Karma float32 `json:"karma,omitempty"`
-
 		LastSeenAt float64 `json:"lastSeenAt,omitempty"`
+
+		Rank int64 `json:"rank,omitempty"`
 
 		Title string `json:"title,omitempty"`
 	}
@@ -113,9 +113,9 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 
 	dataAO1.Gender = m.Gender
 
-	dataAO1.Karma = m.Karma
-
 	dataAO1.LastSeenAt = m.LastSeenAt
+
+	dataAO1.Rank = m.Rank
 
 	dataAO1.Title = m.Title
 

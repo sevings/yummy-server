@@ -179,7 +179,6 @@ func TestLiveRestrictions(t *testing.T) {
 	}
 
 	userIDs[0].Karma = 50
-	profiles[0].Karma = 50
 
 	votable := true
 	live := true

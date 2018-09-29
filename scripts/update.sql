@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION next_user_position() RETURNS INTEGER AS $$
+CREATE OR REPLACE FUNCTION next_user_rank() RETURNS INTEGER AS $$
     DECLARE
         pos INTEGER;
     BEGIN
@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION next_user_position() RETURNS INTEGER AS $$
 $$ language plpgsql;
 
 ALTER TABLE users
-ADD COLUMN position Integer DEFAULT next_user_position() NOT NULL;
+ADD COLUMN rank Integer DEFAULT next_user_rank() NOT NULL;
 
 CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     WITH upd AS (
@@ -39,11 +39,11 @@ CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     WHERE users.id = upd.id;
 
     WITH upd AS (
-        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as position
+        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as rank
         FROM mindwell.users
     )
     UPDATE mindwell.users
-    SET position = upd.position
+    SET rank = upd.rank
     FROM upd
     WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
@@ -72,11 +72,11 @@ FROM upd
 WHERE users.id = upd.id;
 
 WITH upd AS (
-    SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as position
+    SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as rank
     FROM mindwell.users
 )
 UPDATE mindwell.users
-SET position = upd.position
+SET rank = upd.rank
 FROM upd
 WHERE users.id = upd.id;
 
@@ -108,18 +108,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_ins() RETURNS TRIGGER AS $$
         WHERE user_id = entry.author_id 
             AND vote_weights.category = entry.category;
 
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = NEW.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -148,30 +136,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_upd() RETURNS TRIGGER AS $$
         FROM entry
         WHERE user_id = entry.author_id
             AND vote_weights.category = entry.category;
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = OLD.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
-
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = NEW.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
 
         RETURN NULL;
     END;
@@ -207,18 +171,6 @@ CREATE OR REPLACE FUNCTION mindwell.entry_votes_del() RETURNS TRIGGER AS $$
         WHERE user_id = entry.author_id
             AND vote_weights.category = entry.category;
 
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH entry AS (
-                SELECT author_id
-                FROM mindwell.entries
-                WHERE id = OLD.entry_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote
-            FROM entry
-            WHERE users.id = entry.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -250,18 +202,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_ins() RETURNS TRIGGER AS $$
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
 
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = NEW.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -291,30 +231,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_upd() RETURNS TRIGGER AS $$
         WHERE user_id = cmnt.author_id
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
-
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = OLD.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
-
-        IF abs(NEW.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = NEW.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma + NEW.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
 
         RETURN NULL;
     END;
@@ -351,18 +267,6 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
             AND vote_weights.category = 
                 (SELECT id FROM categories WHERE "type" = 'comment');
 
-        IF abs(OLD.vote) > 0.2 THEN
-            WITH cmnt AS (
-                SELECT author_id
-                FROM mindwell.comments
-                WHERE id = OLD.comment_id
-            )
-            UPDATE mindwell.users
-            SET karma = karma - OLD.vote / 10
-            FROM cmnt
-            WHERE users.id = cmnt.author_id;
-        END IF;
-
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -370,3 +274,73 @@ $$ LANGUAGE plpgsql;
 DROP FUNCTION IF EXISTS mindwell.burn_karma();
 
 ALTER TABLE users DROP COLUMN karma_raw;
+
+DROP VIEW feed;
+DROP VIEW long_users;
+
+CREATE VIEW mindwell.long_users AS
+SELECT users.id,
+    users.name,
+    users.show_name,
+    users.password_hash,
+    gender.type AS gender,
+    users.is_daylog,
+    user_privacy.type AS privacy,
+    users.title,
+    users.last_seen_at,
+    users.rank,
+    users.created_at,
+    users.invited_by,
+    users.birthday,
+    users.css,
+    users.entries_count,
+    users.followings_count,
+    users.followers_count,
+    users.comments_count,
+    users.ignored_count,
+    users.invited_count,
+    users.favorites_count,
+    users.tags_count,
+    users.country,
+    users.city,
+    users.email,
+    users.verified,
+    users.api_key,
+    users.valid_thru,
+    users.avatar,
+    users.cover,
+    font_family.type AS font_family,
+    users.font_size,
+    alignment.type AS text_alignment,
+    users.text_color,
+    users.background_color,
+    now() - last_seen_at < interval '15 minutes' AS is_online,
+    extract(year from age(birthday))::integer as "age",
+    short_users.id AS invited_by_id,
+    short_users.name AS invited_by_name,
+    short_users.show_name AS invited_by_show_name,
+    short_users.is_online AS invited_by_is_online,
+    short_users.avatar AS invited_by_avatar
+FROM mindwell.users, mindwell.short_users,
+    mindwell.gender, mindwell.user_privacy, mindwell.font_family, mindwell.alignment
+WHERE users.invited_by = short_users.id
+    AND users.gender = gender.id
+    AND users.privacy = user_privacy.id
+    AND users.font_family = font_family.id
+    AND users.text_alignment = alignment.id;
+
+CREATE VIEW mindwell.feed AS
+SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
+    entries.title, cut_title, content, cut_content, edit_content, 
+    has_cut, word_count,
+    entry_privacy.type AS entry_privacy,
+    is_votable, entries.comments_count,
+    long_users.id AS author_id,
+    long_users.name AS author_name, 
+    long_users.show_name AS author_show_name,
+    long_users.is_online AS author_is_online,
+    long_users.avatar AS author_avatar,
+    long_users.privacy AS author_privacy
+FROM mindwell.long_users, mindwell.entries, mindwell.entry_privacy
+WHERE long_users.id = entries.author_id 
+    AND entry_privacy.id = entries.visible_for;

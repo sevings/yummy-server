@@ -57,7 +57,7 @@ func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profil
 	req.Equal(user.IsDaylog, profile.IsDaylog)
 	req.Equal(user.Privacy, profile.Privacy)
 	req.Equal(user.Title, profile.Title)
-	req.Equal(user.Karma, profile.Karma)
+	req.Equal(user.Rank, profile.Rank)
 	req.Equal(user.CreatedAt, profile.CreatedAt)
 	req.Equal(user.LastSeenAt, profile.LastSeenAt)
 	req.Equal(user.InvitedBy, profile.InvitedBy)

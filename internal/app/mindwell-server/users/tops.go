@@ -13,8 +13,8 @@ func newTopUsersLoader(srv *utils.MindwellServer) func(users.GetUsersParams, *mo
 	return func(params users.GetUsersParams, userID *models.UserID) middleware.Responder {
 		query := usersQuerySelect + "FROM long_users "
 
-		if *params.Top == "karma" {
-			query += "WHERE karma > 0 ORDER BY karma DESC"
+		if *params.Top == "rank" {
+			query += "WHERE rank > 0 ORDER BY rank DESC"
 		} else if *params.Top == "new" {
 			query += "ORDER BY created_at DESC"
 		} else {

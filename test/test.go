@@ -100,7 +100,6 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	}
 
 	for i := 0; i < 3; i++ {
-		profiles[i].Karma = 100
 		userIDs[i].Karma = 100
 	}
 

@@ -2347,7 +2347,7 @@ func init() {
           {
             "enum": [
               "new",
-              "karma"
+              "rank"
             ],
             "type": "string",
             "default": "new",
@@ -3026,13 +3026,13 @@ func init() {
                 "not set"
               ]
             },
-            "karma": {
-              "type": "number",
-              "format": "float"
-            },
             "lastSeenAt": {
               "type": "number",
               "format": "double"
+            },
+            "rank": {
+              "type": "number",
+              "format": "int64"
             },
             "title": {
               "type": "string",
@@ -3210,9 +3210,9 @@ func init() {
             "createdAt": 1531029717.333,
             "gender": "male",
             "isDaylog": false,
-            "karma": 100,
             "lastSeenAt": 1531029717.333,
             "privacy": "all",
+            "rank": 17,
             "relations": {
               "fromMe": "followed",
               "toMe": "none"
@@ -5930,7 +5930,7 @@ func init() {
           {
             "enum": [
               "new",
-              "karma"
+              "rank"
             ],
             "type": "string",
             "default": "new",
@@ -6712,13 +6712,13 @@ func init() {
                 "not set"
               ]
             },
-            "karma": {
-              "type": "number",
-              "format": "float"
-            },
             "lastSeenAt": {
               "type": "number",
               "format": "double"
+            },
+            "rank": {
+              "type": "number",
+              "format": "int64"
             },
             "title": {
               "type": "string",
@@ -6896,9 +6896,9 @@ func init() {
             "createdAt": 1531029717.333,
             "gender": "male",
             "isDaylog": false,
-            "karma": 100,
             "lastSeenAt": 1531029717.333,
             "privacy": "all",
+            "rank": 17,
             "relations": {
               "fromMe": "followed",
               "toMe": "none"

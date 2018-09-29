@@ -273,7 +273,6 @@ func TestRegister(t *testing.T) {
 	req.False(user.IsDaylog)
 	req.Equal("all", user.Privacy)
 	req.Empty(user.Title)
-	req.Zero(user.Karma)
 	req.NotEmpty(user.CreatedAt)
 	req.Equal(user.CreatedAt, user.LastSeenAt)
 	req.Zero(user.AgeLowerBound)
