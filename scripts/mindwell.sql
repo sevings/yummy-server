@@ -1614,6 +1614,7 @@ CREATE TABLE "mindwell"."comments" (
 	"entry_id" Integer NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"content" Text NOT NULL,
+    "edit_content" Text DEFAULT '' NOT NULL,
 	"rating" Real DEFAULT 0 NOT NULL,
     "up_votes" Integer DEFAULT 0 NOT NULL,
     "down_votes" Integer DEFAULT 0 NOT NULL,

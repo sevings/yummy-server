@@ -2748,12 +2748,14 @@ func init() {
           "$ref": "#/definitions/User"
         },
         "content": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "createdAt": {
           "type": "number",
           "format": "double"
+        },
+        "editContent": {
+          "type": "string"
         },
         "entryId": {
           "type": "integer",
@@ -6433,12 +6435,14 @@ func init() {
           "$ref": "#/definitions/User"
         },
         "content": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "createdAt": {
           "type": "number",
           "format": "double"
+        },
+        "editContent": {
+          "type": "string"
         },
         "entryId": {
           "type": "integer",

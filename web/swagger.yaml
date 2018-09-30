@@ -366,7 +366,8 @@ definitions:
         format: double
       content:
         type: string
-        minLength: 1
+      editContent:
+        type: string
       rating:
         $ref: '#/definitions/Rating'
       isMine:

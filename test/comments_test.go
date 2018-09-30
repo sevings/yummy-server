@@ -13,7 +13,8 @@ func checkComment(t *testing.T, cmt *models.Comment, entryID int64, mine bool, a
 	req := require.New(t)
 
 	req.Equal(entryID, cmt.EntryID)
-	req.Equal(content, cmt.Content)
+	req.Equal("<p>"+content+"</p>", cmt.Content)
+	req.Equal(content, cmt.EditContent)
 	req.Equal(mine, cmt.IsMine)
 
 	req.Equal(author.ID, cmt.Author.ID)
@@ -155,4 +156,64 @@ func postComment(id *models.UserID, entryID int64) int64 {
 	time.Sleep(10 * time.Millisecond)
 
 	return cmt.ID
+}
+
+func TestCommentHTML(t *testing.T) {
+	req := require.New(t)
+	entry := postEntry(userIDs[0], models.EntryPrivacyAll, false)
+
+	post := func(content string) *models.Comment {
+		params := comments.PostEntriesIDCommentsParams{
+			ID:      entry.ID,
+			Content: content,
+		}
+
+		post := api.CommentsPostEntriesIDCommentsHandler.Handle
+		resp := post(params, userIDs[0])
+		body, ok := resp.(*comments.PostEntriesIDCommentsCreated)
+		req.True(ok)
+
+		return body.Payload
+	}
+
+	content := "http://ex.com/im.jpg"
+	cmt := post(content)
+
+	req.Equal(content, cmt.EditContent)
+	req.Equal("<p><img src=\""+content+"\"></p>", cmt.Content)
+
+	edit := func(content string) *models.Comment {
+		params := comments.PutCommentsIDParams{
+			ID:      cmt.ID,
+			Content: content,
+		}
+
+		edit := api.CommentsPutCommentsIDHandler.Handle
+		resp := edit(params, userIDs[0])
+		body, ok := resp.(*comments.PutCommentsIDOK)
+		req.True(ok)
+		return body.Payload
+	}
+
+	content = "http://ex.com/im.jpga"
+	cmt = edit(content)
+
+	req.Equal(content, cmt.EditContent)
+	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+
+	content = "http://ex.com/im.jpg?trolo"
+	cmt = edit(content)
+	req.Equal("<p><img src=\""+content+"\"></p>", cmt.Content)
+
+	content = "https://ex.com/im#aaa?oooo"
+	cmt = edit(content)
+	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+
+	content = "https://ex.com/im.gif#aaa?oooo"
+	cmt = edit(content)
+	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+
+	content = "<>&\n\"'\t"
+	cmt = edit(content)
+	req.Equal("<p>&lt;&gt;&amp;<br>&#34;&#39;</p>", cmt.Content)
 }

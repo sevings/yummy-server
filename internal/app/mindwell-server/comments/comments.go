@@ -2,11 +2,13 @@ package comments
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
-	"github.com/microcosm-cc/bluemonday"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
@@ -25,9 +27,42 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.CommentsPostEntriesIDCommentsHandler = comments.PostEntriesIDCommentsHandlerFunc(newCommentPoster(srv))
 }
 
+var imgRe *regexp.Regexp
+var urlRe *regexp.Regexp
+var htmlEsc *strings.Replacer
+
+func init() {
+	imgRe = regexp.MustCompile(`(?i)\.(?:png|jpg|jpeg|gif)(?:\?[^\s]*)?$`)
+	urlRe = regexp.MustCompile(`(?i)(https?://[^\s]+\.[^\s]*(?:#[^\s]*)?(?:\?[^\s]*)?)`)
+	htmlEsc = strings.NewReplacer(
+		"<", "&lt;",
+		">", "&gt;",
+		"&", "&amp;",
+		"\"", "&#34;",
+		"'", "&#39;",
+		"\n", "<br>",
+	)
+}
+
+func htmlContent(content string) string {
+	replaceURL := func(url string) string {
+		if imgRe.MatchString(url) {
+			return fmt.Sprintf("<img src=\"%s\">", url)
+		}
+
+		return fmt.Sprintf("<a href=\"%s\">%s</a>", url, url)
+	}
+
+	content = strings.TrimSpace(content)
+	content = htmlEsc.Replace(content)
+	content = urlRe.ReplaceAllStringFunc(content, replaceURL)
+
+	return "<p>" + content + "</p>"
+}
+
 const commentQuery = `
 	SELECT comments.id, entry_id,
-		extract(epoch from created_at), content, rating,
+		extract(epoch from created_at), content, edit_content, rating,
 		up_votes, down_votes, votes.vote, author_id = $1,
 		author_id, name, show_name, 
 		is_online,
@@ -64,11 +99,15 @@ func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 	}
 
 	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
-		&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
+		&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
 		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
 		&avatar)
+
+	if !comment.IsMine {
+		comment.EditContent = ""
+	}
 
 	comment.Rating.ID = comment.ID
 	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
@@ -97,15 +136,13 @@ func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDPara
 	}
 }
 
-func editComment(tx *utils.AutoTx, commentID int64, content string) {
-	content = bluemonday.StrictPolicy().Sanitize(content)
-
+func editComment(tx *utils.AutoTx, comment *models.Comment) {
 	const q = `
 		UPDATE comments
-		SET content = $2
+		SET content = $2, edit_content = $3
 		WHERE id = $1`
 
-	tx.Exec(q, commentID, content)
+	tx.Exec(q, comment.ID, comment.Content, comment.EditContent)
 }
 
 func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
@@ -123,13 +160,14 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 				return comments.NewGetCommentsIDForbidden().WithPayload(err)
 			}
 
-			editComment(tx, params.ID, params.Content)
+			comment.Content = htmlContent(params.Content)
+			comment.EditContent = params.Content
+			editComment(tx, comment)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
-			comment.Content = params.Content
 			return comments.NewPutCommentsIDOK().WithPayload(comment)
 		})
 	}
@@ -227,13 +265,17 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 		var vote sql.NullFloat64
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
-			&comment.CreatedAt, &comment.Content, &comment.Rating.Rating,
+			&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
 			&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
 			&avatar)
 		if !ok {
 			break
+		}
+
+		if !comment.IsMine {
+			comment.EditContent = ""
 		}
 
 		comment.Rating.ID = comment.ID
@@ -291,25 +333,25 @@ func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesI
 }
 
 func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
-	content = bluemonday.StrictPolicy().Sanitize(content)
-
 	const q = `
-		INSERT INTO comments (author_id, entry_id, content)
-		VALUES ($1, $2, $3)
+		INSERT INTO comments (author_id, entry_id, content, edit_content)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, extract(epoch from created_at)`
 
 	comment := models.Comment{
-		Author:  author,
-		Content: content,
-		EntryID: entryID,
-		IsMine:  true,
+		Author:      author,
+		Content:     htmlContent(content),
+		EditContent: content,
+		EntryID:     entryID,
+		IsMine:      true,
 		Rating: &models.Rating{
 			IsVotable: true,
 			Vote:      models.RatingVoteBan,
 		},
 	}
 
-	tx.Query(q, author.ID, entryID, content).Scan(&comment.ID, &comment.CreatedAt)
+	tx.Query(q, author.ID, entryID, comment.Content, comment.EditContent)
+	tx.Scan(&comment.ID, &comment.CreatedAt)
 
 	comment.Rating.ID = comment.ID
 

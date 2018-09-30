@@ -378,3 +378,9 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
         FROM inviters, wc
         ON CONFLICT (word1, word2, word3) DO NOTHING;
 $$ LANGUAGE SQL;
+
+ALTER TABLE comments
+ADD COLUMN "edit_content" Text DEFAULT '' NOT NULL;
+
+UPDATE comments
+SET edit_content = content;

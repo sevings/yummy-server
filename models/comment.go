@@ -21,11 +21,13 @@ type Comment struct {
 	Author *User `json:"author,omitempty"`
 
 	// content
-	// Min Length: 1
 	Content string `json:"content,omitempty"`
 
 	// created at
 	CreatedAt float64 `json:"createdAt,omitempty"`
+
+	// edit content
+	EditContent string `json:"editContent,omitempty"`
 
 	// entry Id
 	// Minimum: 1
@@ -47,10 +49,6 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateAuthor(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateContent(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -85,19 +83,6 @@ func (m *Comment) validateAuthor(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-func (m *Comment) validateContent(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Content) { // not required
-		return nil
-	}
-
-	if err := validate.MinLength("content", "body", string(m.Content), 1); err != nil {
-		return err
 	}
 
 	return nil
