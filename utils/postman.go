@@ -149,7 +149,7 @@ func (pm *Postman) SendNewComment(address, fromGender, toShowName, entryTitle st
 			Intros: []string{
 				cmt.Author.ShowName + " оставил" + ending + " новый комментарий к записи" + entry + ".",
 				"Вот, что он" + ending + " пишет:",
-				"«" + cmt.Content + "».",
+				"«" + cmt.EditContent + "».",
 			},
 			Actions: []hermes.Action{
 				{
