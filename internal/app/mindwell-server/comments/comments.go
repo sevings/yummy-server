@@ -32,8 +32,8 @@ var urlRe *regexp.Regexp
 var htmlEsc *strings.Replacer
 
 func init() {
-	imgRe = regexp.MustCompile(`(?i)\.(?:png|jpg|jpeg|gif)(?:\?[^\s]*)?$`)
-	urlRe = regexp.MustCompile(`(?i)(https?://[^\s]+\.[^\s]*(?:#[^\s]*)?(?:\?[^\s]*)?)`)
+	imgRe = regexp.MustCompile(`(?i)^https?.+\.(?:png|jpg|jpeg|gif)(?:\?\S*)?$`)
+	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://\S+)`)
 	htmlEsc = strings.NewReplacer(
 		"<", "&lt;",
 		">", "&gt;",
@@ -44,7 +44,7 @@ func init() {
 	)
 }
 
-func htmlContent(content string) string {
+func HtmlContent(content string) string {
 	replaceURL := func(url string) string {
 		if imgRe.MatchString(url) {
 			return fmt.Sprintf("<img src=\"%s\">", url)
@@ -160,7 +160,7 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 				return comments.NewGetCommentsIDForbidden().WithPayload(err)
 			}
 
-			comment.Content = htmlContent(params.Content)
+			comment.Content = HtmlContent(params.Content)
 			comment.EditContent = params.Content
 			editComment(tx, comment)
 			if tx.Error() != nil {
@@ -340,7 +340,7 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 
 	comment := models.Comment{
 		Author:      author,
-		Content:     htmlContent(content),
+		Content:     HtmlContent(content),
 		EditContent: content,
 		EntryID:     entryID,
 		IsMine:      true,

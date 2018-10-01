@@ -195,23 +195,34 @@ func TestCommentHTML(t *testing.T) {
 		return body.Payload
 	}
 
-	content = "http://ex.com/im.jpga"
-	cmt = edit(content)
+	checkImage := func(content string) {
+		cmt = edit(content)
+		req.Equal(content, cmt.EditContent)
+		req.Equal("<p><img src=\""+content+"\"></p>", cmt.Content)
+	}
 
-	req.Equal(content, cmt.EditContent)
-	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+	checkImage("http://ex.com/im.jpg?trolo")
+	checkImage("hTTps://ex.com/im.GIf?oooo#aaa")
 
-	content = "http://ex.com/im.jpg?trolo"
-	cmt = edit(content)
-	req.Equal("<p><img src=\""+content+"\"></p>", cmt.Content)
+	checkURL := func(content string) {
+		cmt = edit(content)
+		req.Equal(content, cmt.EditContent)
+		req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+	}
 
-	content = "https://ex.com/im#aaa?oooo"
-	cmt = edit(content)
-	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+	checkURL("http://ex.com/im.ajpg")
+	checkURL("tg://resolve?domain=telegram")
+	checkURL("https://ex.com/im?oooo#aaa")
 
-	content = "https://ex.com/im.gif#aaa?oooo"
-	cmt = edit(content)
-	req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+	checkText := func(content string) {
+		cmt = edit(content)
+		req.Equal(content, cmt.EditContent)
+		req.Equal("<p>"+content+"</p>", cmt.Content)
+	}
+
+	checkText("http://")
+	checkText("://a")
+	checkText("aa:// a")
 
 	content = "<>&\n\"'\t"
 	cmt = edit(content)
