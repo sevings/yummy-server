@@ -130,6 +130,10 @@ CREATE UNIQUE INDEX "index_user_key" ON "mindwell"."users" USING btree( "api_key
 CREATE INDEX "index_invited_by" ON "mindwell"."users" USING btree( "invited_by" );
 -- -------------------------------------------------------------
 
+-- CREATE INDEX "index_user_rank" ------------------------------
+CREATE INDEX "index_user_rank" ON "mindwell"."users" USING btree( "rank" );
+-- -------------------------------------------------------------
+
 CREATE OR REPLACE FUNCTION mindwell.count_invited() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.users
