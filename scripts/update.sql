@@ -383,4 +383,4 @@ ALTER TABLE comments
 ADD COLUMN "edit_content" Text DEFAULT '' NOT NULL;
 
 UPDATE comments
-SET edit_content = content, content = '<p>' || content || '</p>';
+SET edit_content = content;
