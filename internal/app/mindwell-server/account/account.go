@@ -372,7 +372,7 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 
 func loadInvites(tx *utils.AutoTx, userID *models.UserID) []string {
 	const q = `
-		SELECT one.word || two.word || three.word
+		SELECT one.word || ' ' || two.word || ' ' || three.word
 		FROM mindwell.invites,
 			mindwell.invite_words AS one,
 			mindwell.invite_words AS two,
