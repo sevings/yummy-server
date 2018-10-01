@@ -50,7 +50,11 @@ func HtmlContent(content string) string {
 			return fmt.Sprintf("<img src=\"%s\">", url)
 		}
 
-		return fmt.Sprintf("<a href=\"%s\">%s</a>", url, url)
+		text := url
+		if len(text) > 40 {
+			text = text[:40] + "..."
+		}
+		return fmt.Sprintf("<a href=\"%s\">%s</a>", url, text)
 	}
 
 	content = strings.TrimSpace(content)
