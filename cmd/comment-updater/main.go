@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/utils"
@@ -35,9 +36,21 @@ func main() {
 
 	log.Printf("Updating %d comments...\n", len(cmts))
 
+	htmlEsc := strings.NewReplacer(
+		"&lt;", "<",
+		"&gt;", ">",
+		"&amp;", "&",
+		"&quot;", "\"",
+		"&#34;", "\"",
+		"&#034;", "\"",
+		"&#39;", "'",
+		"&#039;", "'",
+	)
+
 	for _, cmt := range cmts {
-		html := comments.HtmlContent(cmt.text)
-		_, err = tx.Exec("UPDATE comments SET content = $2 WHERE id = $1", cmt.id, html)
+		text := htmlEsc.Replace(cmt.text)
+		html := comments.HtmlContent(text)
+		_, err = tx.Exec("UPDATE comments SET content = $2, edit_content = $3 WHERE id = $1", cmt.id, html, text)
 		if err != nil {
 			log.Println(err)
 		}
