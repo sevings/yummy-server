@@ -20,6 +20,7 @@ import (
 	"github.com/go-openapi/swag"
 
 	"github.com/sevings/mindwell-server/restapi/operations/account"
+	"github.com/sevings/mindwell-server/restapi/operations/adm"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 	"github.com/sevings/mindwell-server/restapi/operations/design"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
@@ -91,6 +92,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
+		}),
+		AdmGetAdmGrandsonHandler: adm.GetAdmGrandsonHandlerFunc(func(params adm.GetAdmGrandsonParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmGetAdmGrandson has not yet been implemented")
 		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsGetCommentsID has not yet been implemented")
@@ -208,6 +212,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		AccountPostAccountVerificationHandler: account.PostAccountVerificationHandlerFunc(func(params account.PostAccountVerificationParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountVerification has not yet been implemented")
+		}),
+		AdmPostAdmGrandsonHandler: adm.PostAdmGrandsonHandlerFunc(func(params adm.PostAdmGrandsonParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmPostAdmGrandson has not yet been implemented")
 		}),
 		EntriesPostEntriesAnonymousHandler: entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesPostEntriesAnonymous has not yet been implemented")
@@ -339,6 +346,8 @@ type MindwellAPI struct {
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
 	// AccountGetAccountVerificationEmailHandler sets the operation handler for the get account verification email operation
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
+	// AdmGetAdmGrandsonHandler sets the operation handler for the get adm grandson operation
+	AdmGetAdmGrandsonHandler adm.GetAdmGrandsonHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
 	CommentsGetCommentsIDHandler comments.GetCommentsIDHandler
 	// VotesGetCommentsIDVoteHandler sets the operation handler for the get comments ID vote operation
@@ -417,6 +426,8 @@ type MindwellAPI struct {
 	AccountPostAccountRegisterHandler account.PostAccountRegisterHandler
 	// AccountPostAccountVerificationHandler sets the operation handler for the post account verification operation
 	AccountPostAccountVerificationHandler account.PostAccountVerificationHandler
+	// AdmPostAdmGrandsonHandler sets the operation handler for the post adm grandson operation
+	AdmPostAdmGrandsonHandler adm.PostAdmGrandsonHandler
 	// EntriesPostEntriesAnonymousHandler sets the operation handler for the post entries anonymous operation
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
@@ -580,6 +591,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "account.GetAccountVerificationEmailHandler")
 	}
 
+	if o.AdmGetAdmGrandsonHandler == nil {
+		unregistered = append(unregistered, "adm.GetAdmGrandsonHandler")
+	}
+
 	if o.CommentsGetCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.GetCommentsIDHandler")
 	}
@@ -734,6 +749,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountPostAccountVerificationHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountVerificationHandler")
+	}
+
+	if o.AdmPostAdmGrandsonHandler == nil {
+		unregistered = append(unregistered, "adm.PostAdmGrandsonHandler")
 	}
 
 	if o.EntriesPostEntriesAnonymousHandler == nil {
@@ -992,6 +1011,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/adm/grandson"] = adm.NewGetAdmGrandson(o.context, o.AdmGetAdmGrandsonHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/comments/{id}"] = comments.NewGetCommentsID(o.context, o.CommentsGetCommentsIDHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1183,6 +1207,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/verification"] = account.NewPostAccountVerification(o.context, o.AccountPostAccountVerificationHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/adm/grandson"] = adm.NewPostAdmGrandson(o.context, o.AdmPostAdmGrandsonHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

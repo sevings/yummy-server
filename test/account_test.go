@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
+	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
 	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
@@ -42,6 +43,7 @@ func TestMain(m *testing.M) {
 	utils.ClearDatabase(db)
 
 	accountImpl.ConfigureAPI(srv)
+	admImpl.ConfigureAPI(srv)
 	usersImpl.ConfigureAPI(srv)
 	entriesImpl.ConfigureAPI(srv)
 	votesImpl.ConfigureAPI(srv)

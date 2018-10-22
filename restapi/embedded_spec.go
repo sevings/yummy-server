@@ -525,6 +525,93 @@ func init() {
         }
       }
     },
+    "/adm/grandson": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "your address",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "anonymous": {
+                  "type": "boolean"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "postcode",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "country",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "address",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "anonymous",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/comments/{id}": {
       "get": {
         "security": [
@@ -3912,6 +3999,93 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          }
+        }
+      }
+    },
+    "/adm/grandson": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "your address",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "anonymous": {
+                  "type": "boolean"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "string",
+            "name": "postcode",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "country",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "address",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "name",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "anonymous",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           }
         }
       }

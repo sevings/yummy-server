@@ -1983,6 +1983,59 @@ paths:
           description: Comment not found
           schema:
             $ref: '#/definitions/Error'
+  /adm/grandson:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      responses:
+        200:
+          description: your address
+          schema:
+            type: object
+            properties:
+              postcode:
+                type: string
+              country:
+                type: string
+              address:
+                type: string
+              name:
+                type: string
+              anonymous:
+                type: boolean
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: postcode
+          type: string
+          required: true
+        - in: formData
+          name: country
+          type: string
+          required: true
+        - in: formData
+          name: address
+          type: string
+          required: true
+        - in: formData
+          name: name
+          type: string
+          required: true
+        - in: formData
+          name: anonymous
+          type: boolean
+          default: false
+      responses:
+        200:
+          description: OK
   /images:
     post:
       security:
