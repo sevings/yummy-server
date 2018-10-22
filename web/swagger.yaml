@@ -2036,6 +2036,20 @@ paths:
       responses:
         200:
           description: OK
+  /adm/stat:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      responses:
+        200:
+          description: ADM stats
+          schema:
+            type: object
+            properties:
+              grandsons:
+                type: integer
   /images:
     post:
       security:

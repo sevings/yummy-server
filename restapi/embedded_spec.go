@@ -612,6 +612,31 @@ func init() {
         }
       }
     },
+    "/adm/stat": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "ADM stats",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "grandsons": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/comments/{id}": {
       "get": {
         "security": [
@@ -4086,6 +4111,31 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/adm/stat": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "ADM stats",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "grandsons": {
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }

@@ -1,21 +1,18 @@
 package adm
 
 import (
-	"log"
-
-	sq "github.com/Masterminds/squirrel"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/adm"
 	"github.com/sevings/mindwell-server/utils"
 )
 
-var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AdmGetAdmGrandsonHandler = adm.GetAdmGrandsonHandlerFunc(newGrandsonLoader(srv))
 	srv.API.AdmPostAdmGrandsonHandler = adm.PostAdmGrandsonHandlerFunc(newGrandsonUpdater(srv))
+
+	srv.API.AdmGetAdmStatHandler = adm.GetAdmStatHandlerFunc(newAdmStatLoader(srv))
 }
 
 func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams, *models.UserID) middleware.Responder {
@@ -29,7 +26,6 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 				WHERE lower(name) = lower($1)
 			`
 
-			log.Println(q)
 			tx.Query(q, userID.Name).
 				Scan(&address.Anonymous, &address.Name, &address.Postcode, &address.Country, &address.Address)
 
@@ -62,6 +58,25 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 			tx.Exec(q, userID.Name, params.Anonymous, params.Name, params.Postcode, params.Country, params.Address)
 
 			return adm.NewPostAdmGrandsonOK()
+		})
+	}
+}
+
+func newAdmStatLoader(srv *utils.MindwellServer) func(adm.GetAdmStatParams, *models.UserID) middleware.Responder {
+	return func(params adm.GetAdmStatParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			stat := adm.GetAdmStatOKBody{}
+
+			const q = `
+				SELECT anonymous, fullname, postcode, country, address
+				FROM adm
+				WHERE lower(name) = lower($1)
+			`
+
+			tx.Query("SELECT count(*) FROM adm").
+				Scan(&stat.Grandsons)
+
+			return adm.NewGetAdmStatOK().WithPayload(&stat)
 		})
 	}
 }

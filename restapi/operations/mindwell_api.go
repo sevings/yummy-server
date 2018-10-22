@@ -96,6 +96,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AdmGetAdmGrandsonHandler: adm.GetAdmGrandsonHandlerFunc(func(params adm.GetAdmGrandsonParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmGrandson has not yet been implemented")
 		}),
+		AdmGetAdmStatHandler: adm.GetAdmStatHandlerFunc(func(params adm.GetAdmStatParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmGetAdmStat has not yet been implemented")
+		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsGetCommentsID has not yet been implemented")
 		}),
@@ -348,6 +351,8 @@ type MindwellAPI struct {
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
 	// AdmGetAdmGrandsonHandler sets the operation handler for the get adm grandson operation
 	AdmGetAdmGrandsonHandler adm.GetAdmGrandsonHandler
+	// AdmGetAdmStatHandler sets the operation handler for the get adm stat operation
+	AdmGetAdmStatHandler adm.GetAdmStatHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
 	CommentsGetCommentsIDHandler comments.GetCommentsIDHandler
 	// VotesGetCommentsIDVoteHandler sets the operation handler for the get comments ID vote operation
@@ -593,6 +598,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AdmGetAdmGrandsonHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandsonHandler")
+	}
+
+	if o.AdmGetAdmStatHandler == nil {
+		unregistered = append(unregistered, "adm.GetAdmStatHandler")
 	}
 
 	if o.CommentsGetCommentsIDHandler == nil {
@@ -1012,6 +1021,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/grandson"] = adm.NewGetAdmGrandson(o.context, o.AdmGetAdmGrandsonHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/adm/stat"] = adm.NewGetAdmStat(o.context, o.AdmGetAdmStatHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
