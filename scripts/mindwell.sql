@@ -244,6 +244,21 @@ WHERE users.invited_by = short_users.id
     AND users.font_family = font_family.id
     AND users.text_alignment = alignment.id;
 
+-- CREATE TABLE "adm" ------------------------------------------
+CREATE TABLE "mindwell"."adm" (
+	"name" Text NOT NULL,
+    "fullname" Text NOT NULL,
+    "postcode" Text NOT NULL,
+    "country" Text NOT NULL,
+    "address" Text NOT NULL,
+    "anonymous" Boolean NOT NULL );
+;
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_adm" ------------------------------------
+CREATE UNIQUE INDEX "index_adm" ON "mindwell"."adm" USING btree( lower("name") );
+-- -------------------------------------------------------------
+
     
 
 -- CREATE TABLE "invite_words" ---------------------------------

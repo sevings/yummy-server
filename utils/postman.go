@@ -29,7 +29,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 				Logo:      baseURL + "assets/olympus/img/logo-mindwell.png",
 				Copyright: "© 2018 Mindwell.",
 				TroubleText: "Если кнопка '{ACTION}' по какой-то причине не работает, " +
-					"скопируй и вставь в адреснуню строку браузера следующую ссылку: ",
+					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
 		},
 		ch: make(chan *mailgun.Message, 10),
