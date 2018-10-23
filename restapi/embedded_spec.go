@@ -547,6 +547,9 @@ func init() {
                 "anonymous": {
                   "type": "boolean"
                 },
+                "comment": {
+                  "type": "string"
+                },
                 "country": {
                   "type": "string"
                 },
@@ -575,28 +578,38 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 50,
             "type": "string",
             "name": "postcode",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 50,
             "type": "string",
             "name": "country",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "address",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 100,
             "type": "string",
             "name": "name",
             "in": "formData",
             "required": true
+          },
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "comment",
+            "in": "formData"
           },
           {
             "type": "boolean",
@@ -4050,6 +4063,9 @@ func init() {
                 "anonymous": {
                   "type": "boolean"
                 },
+                "comment": {
+                  "type": "string"
+                },
                 "country": {
                   "type": "string"
                 },
@@ -4078,28 +4094,38 @@ func init() {
         ],
         "parameters": [
           {
+            "maxLength": 50,
             "type": "string",
             "name": "postcode",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 50,
             "type": "string",
             "name": "country",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "address",
             "in": "formData",
             "required": true
           },
           {
+            "maxLength": 100,
             "type": "string",
             "name": "name",
             "in": "formData",
             "required": true
+          },
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "comment",
+            "in": "formData"
           },
           {
             "type": "boolean",

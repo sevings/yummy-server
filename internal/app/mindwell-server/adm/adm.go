@@ -50,7 +50,7 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			const q = `
 				INSERT INTO adm(name, anonymous, fullname, postcode, country, address, comment)
-				VALUES($1, $2, $3, $4, $5, $6)
+				VALUES($1, $2, $3, $4, $5, $6, $7)
 				ON CONFLICT (lower(name)) DO UPDATE 
 				SET anonymous = EXCLUDED.anonymous, fullname = EXCLUDED.fullname,
 					postcode = EXCLUDED.postcode, country = EXCLUDED.country,

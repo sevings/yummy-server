@@ -43,6 +43,7 @@ type PostAdmGrandsonParams struct {
 
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: formData
 	*/
 	Address string
@@ -52,17 +53,25 @@ type PostAdmGrandsonParams struct {
 	*/
 	Anonymous *bool
 	/*
+	  Max Length: 1000
+	  In: formData
+	*/
+	Comment *string
+	/*
 	  Required: true
+	  Max Length: 50
 	  In: formData
 	*/
 	Country string
 	/*
 	  Required: true
+	  Max Length: 100
 	  In: formData
 	*/
 	Name string
 	/*
 	  Required: true
+	  Max Length: 50
 	  In: formData
 	*/
 	Postcode string
@@ -93,6 +102,11 @@ func (o *PostAdmGrandsonParams) BindRequest(r *http.Request, route *middleware.M
 
 	fdAnonymous, fdhkAnonymous, _ := fds.GetOK("anonymous")
 	if err := o.bindAnonymous(fdAnonymous, fdhkAnonymous, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdComment, fdhkComment, _ := fds.GetOK("comment")
+	if err := o.bindComment(fdComment, fdhkComment, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -135,6 +149,20 @@ func (o *PostAdmGrandsonParams) bindAddress(rawData []string, hasKey bool, forma
 
 	o.Address = raw
 
+	if err := o.validateAddress(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateAddress carries on validations for parameter Address
+func (o *PostAdmGrandsonParams) validateAddress(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("address", "formData", o.Address, 500); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -161,6 +189,38 @@ func (o *PostAdmGrandsonParams) bindAnonymous(rawData []string, hasKey bool, for
 	return nil
 }
 
+// bindComment binds and validates parameter Comment from formData.
+func (o *PostAdmGrandsonParams) bindComment(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Comment = &raw
+
+	if err := o.validateComment(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateComment carries on validations for parameter Comment
+func (o *PostAdmGrandsonParams) validateComment(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("comment", "formData", (*o.Comment), 1000); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // bindCountry binds and validates parameter Country from formData.
 func (o *PostAdmGrandsonParams) bindCountry(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
@@ -178,6 +238,20 @@ func (o *PostAdmGrandsonParams) bindCountry(rawData []string, hasKey bool, forma
 	}
 
 	o.Country = raw
+
+	if err := o.validateCountry(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateCountry carries on validations for parameter Country
+func (o *PostAdmGrandsonParams) validateCountry(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("country", "formData", o.Country, 50); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -200,6 +274,20 @@ func (o *PostAdmGrandsonParams) bindName(rawData []string, hasKey bool, formats 
 
 	o.Name = raw
 
+	if err := o.validateName(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateName carries on validations for parameter Name
+func (o *PostAdmGrandsonParams) validateName(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("name", "formData", o.Name, 100); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -220,6 +308,20 @@ func (o *PostAdmGrandsonParams) bindPostcode(rawData []string, hasKey bool, form
 	}
 
 	o.Postcode = raw
+
+	if err := o.validatePostcode(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validatePostcode carries on validations for parameter Postcode
+func (o *PostAdmGrandsonParams) validatePostcode(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("postcode", "formData", o.Postcode, 50); err != nil {
+		return err
+	}
 
 	return nil
 }

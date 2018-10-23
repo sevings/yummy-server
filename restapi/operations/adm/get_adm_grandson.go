@@ -84,6 +84,9 @@ type GetAdmGrandsonOKBody struct {
 	// anonymous
 	Anonymous bool `json:"anonymous,omitempty"`
 
+	// comment
+	Comment string `json:"comment,omitempty"`
+
 	// country
 	Country string `json:"country,omitempty"`
 

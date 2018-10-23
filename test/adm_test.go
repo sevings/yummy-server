@@ -32,7 +32,7 @@ func updateGrandsonAddress(t *testing.T, userID *models.UserID, name, postcode, 
 		Postcode:  postcode,
 		Country:   country,
 		Address:   address,
-		Comment:   comment,
+		Comment:   &comment,
 		Anonymous: &anonymous,
 	}
 
