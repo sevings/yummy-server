@@ -21,13 +21,14 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 			address := adm.GetAdmGrandsonOKBody{}
 
 			const q = `
-				SELECT anonymous, fullname, postcode, country, address
+				SELECT anonymous, fullname, postcode, country, address, comment
 				FROM adm
 				WHERE lower(name) = lower($1)
 			`
 
 			tx.Query(q, userID.Name).
-				Scan(&address.Anonymous, &address.Name, &address.Postcode, &address.Country, &address.Address)
+				Scan(&address.Anonymous, &address.Name, &address.Postcode,
+					&address.Country, &address.Address, &address.Comment)
 
 			if address.Country == "" {
 				const usersQ = `
@@ -48,14 +49,16 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 	return func(params adm.PostAdmGrandsonParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			const q = `
-				INSERT INTO adm(name, anonymous, fullname, postcode, country, address)
+				INSERT INTO adm(name, anonymous, fullname, postcode, country, address, comment)
 				VALUES($1, $2, $3, $4, $5, $6)
 				ON CONFLICT (lower(name)) DO UPDATE 
 				SET anonymous = EXCLUDED.anonymous, fullname = EXCLUDED.fullname,
-					postcode = EXCLUDED.postcode, country = EXCLUDED.country, address = EXCLUDED.address
+					postcode = EXCLUDED.postcode, country = EXCLUDED.country,
+					address = EXCLUDED.address, comment = EXCLUDED.comment
 			`
 
-			tx.Exec(q, userID.Name, params.Anonymous, params.Name, params.Postcode, params.Country, params.Address)
+			tx.Exec(q, userID.Name, params.Anonymous, params.Name, params.Postcode,
+				params.Country, params.Address, params.Comment)
 
 			return adm.NewPostAdmGrandsonOK()
 		})
@@ -66,12 +69,6 @@ func newAdmStatLoader(srv *utils.MindwellServer) func(adm.GetAdmStatParams, *mod
 	return func(params adm.GetAdmStatParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			stat := adm.GetAdmStatOKBody{}
-
-			const q = `
-				SELECT anonymous, fullname, postcode, country, address
-				FROM adm
-				WHERE lower(name) = lower($1)
-			`
 
 			tx.Query("SELECT count(*) FROM adm").
 				Scan(&stat.Grandsons)

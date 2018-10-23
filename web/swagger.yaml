@@ -2003,6 +2003,8 @@ paths:
                 type: string
               name:
                 type: string
+              comment:
+                type: string
               anonymous:
                 type: boolean
     post:
@@ -2029,6 +2031,9 @@ paths:
           name: name
           type: string
           required: true
+        - in: formData
+          name: comment
+          type: string
         - in: formData
           name: anonymous
           type: boolean

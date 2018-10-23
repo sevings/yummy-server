@@ -4,6 +4,7 @@ CREATE TABLE "mindwell"."adm" (
     "postcode" Text NOT NULL,
     "country" Text NOT NULL,
     "address" Text NOT NULL,
+    "comment" Text NOT NULL,
     "anonymous" Boolean NOT NULL );
 ;
 
