@@ -2018,22 +2018,27 @@ paths:
         - in: formData
           name: postcode
           type: string
+          maxLength: 50
           required: true
         - in: formData
           name: country
           type: string
+          maxLength: 50
           required: true
         - in: formData
           name: address
           type: string
+          maxLength: 500
           required: true
         - in: formData
           name: name
           type: string
+          maxLength: 100
           required: true
         - in: formData
           name: comment
           type: string
+          maxLength: 1000
         - in: formData
           name: anonymous
           type: boolean
