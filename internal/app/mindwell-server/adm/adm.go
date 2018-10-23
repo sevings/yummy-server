@@ -30,7 +30,7 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 				Scan(&address.Anonymous, &address.Name, &address.Postcode,
 					&address.Country, &address.Address, &address.Comment)
 
-			if address.Country == "" {
+			if len(address.Country) == 0 {
 				const usersQ = `
 					SELECT country, city
 					FROM users
