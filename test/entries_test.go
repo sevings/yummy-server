@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"log"
 	"testing"
 	"time"
@@ -687,4 +688,41 @@ func TestLoadWatching(t *testing.T) {
 	req.False(feed.HasAfter)
 
 	esm.Clear()
+}
+
+func TestEntryHTML(t *testing.T) {
+	post := func(in, out string) {
+		params := me.PostMeTlogParams{
+			Content: in,
+		}
+
+		votable := false
+		params.IsVotable = &votable
+
+		live := false
+		params.InLive = &live
+
+		params.Privacy = models.EntryPrivacyAll
+
+		title := "title title ti"
+		params.Title = &title
+
+		post := api.MePostMeTlogHandler.Handle
+		resp := post(params, userIDs[0])
+		body, ok := resp.(*me.PostMeTlogCreated)
+		require.True(t, ok)
+		if !ok {
+			return
+		}
+
+		entry := body.Payload
+		require.Equal(t, out, entry.Content)
+	}
+
+	linkify := func(url string) (string, string) {
+		return url, fmt.Sprintf(`<p><a href="%s" target="_blank">%s</a></p>
+`, url, url)
+	}
+
+	post(linkify("https://ya.ru"))
 }
