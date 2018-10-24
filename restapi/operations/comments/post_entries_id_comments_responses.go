@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
-
 	models "github.com/sevings/mindwell-server/models"
 )
 

@@ -18,7 +18,7 @@ import (
 	spec "github.com/go-openapi/spec"
 	strfmt "github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-
+	models "github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/restapi/operations/adm"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
@@ -32,7 +32,17 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/restapi/operations/images"
+
+	"github.com/sevings/mindwell-server/restapi/operations/me"
+
+	"github.com/sevings/mindwell-server/restapi/operations/relations"
+
+	"github.com/sevings/mindwell-server/restapi/operations/users"
+
+	"github.com/sevings/mindwell-server/restapi/operations/votes"
+
+	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 )
 
 // NewMindwellAPI creates a new Mindwell instance

@@ -11,7 +11,6 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
-
 	models "github.com/sevings/mindwell-server/models"
 )
 

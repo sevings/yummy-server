@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
-
 	models "github.com/sevings/mindwell-server/models"
 )
 
