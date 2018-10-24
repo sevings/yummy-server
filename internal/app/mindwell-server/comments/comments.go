@@ -54,7 +54,7 @@ func HtmlContent(content string) string {
 		if len(text) > 40 {
 			text = text[:40] + "..."
 		}
-		return fmt.Sprintf("<a href=\"%s\">%s</a>", url, text)
+		return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener nofollow">%s</a>`, url, text)
 	}
 
 	content = strings.TrimSpace(content)

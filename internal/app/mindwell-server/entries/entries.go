@@ -48,7 +48,27 @@ var md *markdown.Markdown
 func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
 	imgRe = regexp.MustCompile("!\\[[^\\]]*\\]\\([^\\)]+\\)")
+
+	markdown.RegisterCoreRule(250, appendTargetToLinks)
 	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Tables(false))
+}
+
+func appendTargetToLinks(s *markdown.StateCore) {
+	for _, token := range s.Tokens {
+		inline, ok := token.(*markdown.Inline)
+		if !ok {
+			continue
+		}
+
+		for _, tok := range inline.Children {
+			link, ok := tok.(*markdown.LinkOpen)
+			if !ok {
+				continue
+			}
+
+			link.Target = "_blank"
+		}
+	}
 }
 
 func wordCount(content, title string) int64 {

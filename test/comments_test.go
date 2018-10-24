@@ -207,7 +207,7 @@ func TestCommentHTML(t *testing.T) {
 	checkURL := func(content string) {
 		cmt = edit(content)
 		req.Equal(content, cmt.EditContent)
-		req.Equal("<p><a href=\""+content+"\">"+content+"</a></p>", cmt.Content)
+		req.Equal("<p><a href=\""+content+"\" target=\"_blank\" rel=\"noopener nofollow\">"+content+"</a></p>", cmt.Content)
 	}
 
 	checkURL("http://ex.com/im.ajpg")
