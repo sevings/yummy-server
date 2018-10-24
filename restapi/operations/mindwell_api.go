@@ -31,18 +31,6 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 	"github.com/sevings/mindwell-server/restapi/operations/watchings"
-
-	"github.com/sevings/mindwell-server/restapi/operations/images"
-
-	"github.com/sevings/mindwell-server/restapi/operations/me"
-
-	"github.com/sevings/mindwell-server/restapi/operations/relations"
-
-	"github.com/sevings/mindwell-server/restapi/operations/users"
-
-	"github.com/sevings/mindwell-server/restapi/operations/votes"
-
-	"github.com/sevings/mindwell-server/restapi/operations/watchings"
 )
 
 // NewMindwellAPI creates a new Mindwell instance
