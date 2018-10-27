@@ -608,6 +608,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "comment",
             "in": "formData"
           },
@@ -4124,6 +4125,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "comment",
             "in": "formData"
           },

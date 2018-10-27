@@ -24,10 +24,13 @@ func NewPostAdmGrandsonParams() PostAdmGrandsonParams {
 		// initialize parameters with default values
 
 		anonymousDefault = bool(false)
+		commentDefault   = string("")
 	)
 
 	return PostAdmGrandsonParams{
 		Anonymous: &anonymousDefault,
+
+		Comment: &commentDefault,
 	}
 }
 
@@ -54,6 +57,7 @@ type PostAdmGrandsonParams struct {
 	/*
 	  Max Length: 1000
 	  In: formData
+	  Default: ""
 	*/
 	Comment *string
 	/*
@@ -198,6 +202,7 @@ func (o *PostAdmGrandsonParams) bindComment(rawData []string, hasKey bool, forma
 	// Required: false
 
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPostAdmGrandsonParams()
 		return nil
 	}
 

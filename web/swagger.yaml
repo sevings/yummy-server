@@ -2038,6 +2038,7 @@ paths:
         - in: formData
           name: comment
           type: string
+          default: ''
           maxLength: 1000
         - in: formData
           name: anonymous
