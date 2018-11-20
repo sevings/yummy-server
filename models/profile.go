@@ -45,10 +45,6 @@ type Profile struct {
 	// is daylog
 	IsDaylog bool `json:"isDaylog,omitempty"`
 
-	// privacy
-	// Enum: [all followers]
-	Privacy string `json:"privacy,omitempty"`
-
 	// relations
 	Relations *ProfileAO1Relations `json:"relations,omitempty"`
 }
@@ -80,8 +76,6 @@ func (m *Profile) UnmarshalJSON(raw []byte) error {
 
 		IsDaylog bool `json:"isDaylog,omitempty"`
 
-		Privacy string `json:"privacy,omitempty"`
-
 		Relations *ProfileAO1Relations `json:"relations,omitempty"`
 	}
 	if err := swag.ReadJSON(raw, &dataAO1); err != nil {
@@ -103,8 +97,6 @@ func (m *Profile) UnmarshalJSON(raw []byte) error {
 	m.InvitedBy = dataAO1.InvitedBy
 
 	m.IsDaylog = dataAO1.IsDaylog
-
-	m.Privacy = dataAO1.Privacy
 
 	m.Relations = dataAO1.Relations
 
@@ -138,8 +130,6 @@ func (m Profile) MarshalJSON() ([]byte, error) {
 
 		IsDaylog bool `json:"isDaylog,omitempty"`
 
-		Privacy string `json:"privacy,omitempty"`
-
 		Relations *ProfileAO1Relations `json:"relations,omitempty"`
 	}
 
@@ -158,8 +148,6 @@ func (m Profile) MarshalJSON() ([]byte, error) {
 	dataAO1.InvitedBy = m.InvitedBy
 
 	dataAO1.IsDaylog = m.IsDaylog
-
-	dataAO1.Privacy = m.Privacy
 
 	dataAO1.Relations = m.Relations
 
@@ -194,10 +182,6 @@ func (m *Profile) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateInvitedBy(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validatePrivacy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -268,40 +252,6 @@ func (m *Profile) validateInvitedBy(formats strfmt.Registry) error {
 			}
 			return err
 		}
-	}
-
-	return nil
-}
-
-var profileTypePrivacyPropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["all","followers"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		profileTypePrivacyPropEnum = append(profileTypePrivacyPropEnum, v)
-	}
-}
-
-// property enum
-func (m *Profile) validatePrivacyEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, profileTypePrivacyPropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Profile) validatePrivacy(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Privacy) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validatePrivacyEnum("privacy", "body", m.Privacy); err != nil {
-		return err
 	}
 
 	return nil

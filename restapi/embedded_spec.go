@@ -3161,6 +3161,13 @@ func init() {
               "type": "number",
               "format": "double"
             },
+            "privacy": {
+              "type": "string",
+              "enum": [
+                "all",
+                "followers"
+              ]
+            },
             "rank": {
               "type": "number",
               "format": "int64"
@@ -3293,13 +3300,6 @@ func init() {
             },
             "isDaylog": {
               "type": "boolean"
-            },
-            "privacy": {
-              "type": "string",
-              "enum": [
-                "all",
-                "followers"
-              ]
             },
             "relations": {
               "type": "object",
@@ -6974,6 +6974,13 @@ func init() {
               "type": "number",
               "format": "double"
             },
+            "privacy": {
+              "type": "string",
+              "enum": [
+                "all",
+                "followers"
+              ]
+            },
             "rank": {
               "type": "number",
               "format": "int64"
@@ -7106,13 +7113,6 @@ func init() {
             },
             "isDaylog": {
               "type": "boolean"
-            },
-            "privacy": {
-              "type": "string",
-              "enum": [
-                "all",
-                "followers"
-              ]
             },
             "relations": {
               "type": "object",

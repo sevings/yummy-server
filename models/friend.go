@@ -32,6 +32,10 @@ type Friend struct {
 	// last seen at
 	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
+	// privacy
+	// Enum: [all followers]
+	Privacy string `json:"privacy,omitempty"`
+
 	// rank
 	Rank int64 `json:"rank,omitempty"`
 
@@ -59,6 +63,8 @@ func (m *Friend) UnmarshalJSON(raw []byte) error {
 
 		LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
+		Privacy string `json:"privacy,omitempty"`
+
 		Rank int64 `json:"rank,omitempty"`
 
 		Title string `json:"title,omitempty"`
@@ -74,6 +80,8 @@ func (m *Friend) UnmarshalJSON(raw []byte) error {
 	m.Gender = dataAO1.Gender
 
 	m.LastSeenAt = dataAO1.LastSeenAt
+
+	m.Privacy = dataAO1.Privacy
 
 	m.Rank = dataAO1.Rank
 
@@ -101,6 +109,8 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 
 		LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
+		Privacy string `json:"privacy,omitempty"`
+
 		Rank int64 `json:"rank,omitempty"`
 
 		Title string `json:"title,omitempty"`
@@ -113,6 +123,8 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 	dataAO1.Gender = m.Gender
 
 	dataAO1.LastSeenAt = m.LastSeenAt
+
+	dataAO1.Privacy = m.Privacy
 
 	dataAO1.Rank = m.Rank
 
@@ -145,6 +157,10 @@ func (m *Friend) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateGender(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePrivacy(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -222,6 +238,40 @@ func (m *Friend) validateGender(formats strfmt.Registry) error {
 
 	// value enum
 	if err := m.validateGenderEnum("gender", "body", m.Gender); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+var friendTypePrivacyPropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["all","followers"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		friendTypePrivacyPropEnum = append(friendTypePrivacyPropEnum, v)
+	}
+}
+
+// property enum
+func (m *Friend) validatePrivacyEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, friendTypePrivacyPropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Friend) validatePrivacy(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Privacy) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validatePrivacyEnum("privacy", "body", m.Privacy); err != nil {
 		return err
 	}
 

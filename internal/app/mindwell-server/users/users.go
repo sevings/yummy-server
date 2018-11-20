@@ -180,7 +180,7 @@ func IsOpenForMe(tx *utils.AutoTx, userID *models.UserID, name interface{}) bool
 const usersQuerySelect = `
 SELECT long_users.id, name, show_name, gender,
 is_online, extract(epoch from last_seen_at), title, rank,
-avatar, cover,
+privacy, avatar, cover,
 entries_count, followings_count, followers_count, 
 ignored_count, invited_count, comments_count, 
 favorites_count, tags_count, days_count
@@ -216,7 +216,7 @@ func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend 
 
 		ok := tx.Scan(&user.ID, &user.Name, &user.ShowName, &user.Gender,
 			&user.IsOnline, &user.LastSeenAt, &user.Title, &user.Rank,
-			&avatar, &cover,
+			&user.Privacy, &avatar, &cover,
 			&user.Counts.Entries, &user.Counts.Followings, &user.Counts.Followers,
 			&user.Counts.Ignored, &user.Counts.Invited, &user.Counts.Comments,
 			&user.Counts.Favorites, &user.Counts.Tags, &user.Counts.Days)

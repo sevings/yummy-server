@@ -84,6 +84,9 @@ definitions:
           gender:
             type: string
             enum: [male, female, not set]
+          privacy:
+            type: string
+            enum: [all, followers]
           title:
             type: string
             maxLength: 260
@@ -135,9 +138,6 @@ definitions:
         properties:
           isDaylog:
             type: boolean
-          privacy:
-            type: string
-            enum: [all, followers]
           createdAt:
             type: number
             format: double
