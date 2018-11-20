@@ -33,7 +33,7 @@ type PostAccountLoginParams struct {
 
 	/*
 	  Required: true
-	  Max Length: 20
+	  Max Length: 500
 	  Min Length: 1
 	  In: formData
 	*/
@@ -113,7 +113,7 @@ func (o *PostAccountLoginParams) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "formData", o.Name, 20); err != nil {
+	if err := validate.MaxLength("name", "formData", o.Name, 500); err != nil {
 		return err
 	}
 

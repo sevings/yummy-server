@@ -111,7 +111,7 @@ func init() {
         ],
         "parameters": [
           {
-            "maxLength": 20,
+            "maxLength": 500,
             "minLength": 1,
             "type": "string",
             "name": "name",
@@ -3628,7 +3628,7 @@ func init() {
         ],
         "parameters": [
           {
-            "maxLength": 20,
+            "maxLength": 500,
             "minLength": 1,
             "type": "string",
             "name": "name",
