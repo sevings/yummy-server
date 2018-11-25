@@ -252,7 +252,8 @@ CREATE TABLE "mindwell"."adm" (
     "country" Text NOT NULL,
     "address" Text NOT NULL,
     "comment" Text NOT NULL,
-    "anonymous" Boolean NOT NULL );
+    "anonymous" Boolean NOT NULL,
+    "grandfather" Text NOT NULL DEFAULT '' );
 ;
 -- -------------------------------------------------------------
 

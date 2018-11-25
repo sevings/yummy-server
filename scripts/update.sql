@@ -1,0 +1,2 @@
+ALTER TABLE adm
+ADD COLUMN "grandfather" Text NOT NULL DEFAULT '';
