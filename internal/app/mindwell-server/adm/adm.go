@@ -136,7 +136,7 @@ func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherP
 
 			var anon bool
 			tx.Query(q, userID.Name).
-				Scan(&anon, &address.Name, &address.Postcode,
+				Scan(&anon, &address.Fullname, &address.Postcode,
 					&address.Country, &address.Address, &address.Comment, &address.Name)
 
 			if tx.Error() == sql.ErrNoRows {
