@@ -607,6 +607,12 @@ func init() {
                 }
               }
             }
+          },
+          "410": {
+            "description": "registration finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -668,6 +674,12 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "410": {
+            "description": "registration finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -4170,6 +4182,12 @@ func init() {
                 }
               }
             }
+          },
+          "410": {
+            "description": "registration finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -4231,6 +4249,12 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "410": {
+            "description": "registration finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }

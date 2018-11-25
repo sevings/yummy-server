@@ -2007,6 +2007,10 @@ paths:
                 type: string
               anonymous:
                 type: boolean
+        410:
+          description: registration finished
+          schema:
+            $ref: '#/definitions/Error'
     post:
       security:
         - ApiKeyHeader: []
@@ -2047,6 +2051,10 @@ paths:
       responses:
         200:
           description: OK
+        410:
+          description: registration finished
+          schema:
+            $ref: '#/definitions/Error'
   /adm/grandfather:
     get:
       security:

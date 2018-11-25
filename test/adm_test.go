@@ -9,7 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const admRegFinished = true
+
 func checkGrandsonAddress(t *testing.T, userID *models.UserID, name, postcode, country, address, comment string, anonymous bool) {
+	if admRegFinished {
+		return
+	}
+
 	req := require.New(t)
 
 	load := api.AdmGetAdmGrandsonHandler.Handle
@@ -27,6 +33,10 @@ func checkGrandsonAddress(t *testing.T, userID *models.UserID, name, postcode, c
 }
 
 func updateGrandsonAddress(t *testing.T, userID *models.UserID, name, postcode, country, address, comment string, anonymous bool) {
+	if admRegFinished {
+		return
+	}
+
 	params := adm.PostAdmGrandsonParams{
 		Name:      name,
 		Postcode:  postcode,
@@ -45,6 +55,10 @@ func updateGrandsonAddress(t *testing.T, userID *models.UserID, name, postcode, 
 }
 
 func checkAdmStat(t *testing.T, grandsons int64) {
+	if admRegFinished {
+		return
+	}
+
 	req := require.New(t)
 
 	load := api.AdmGetAdmStatHandler.Handle

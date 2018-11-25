@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // PostAdmGrandsonOKCode is the HTTP code returned for type PostAdmGrandsonOK
@@ -33,4 +34,48 @@ func (o *PostAdmGrandsonOK) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(200)
+}
+
+// PostAdmGrandsonGoneCode is the HTTP code returned for type PostAdmGrandsonGone
+const PostAdmGrandsonGoneCode int = 410
+
+/*PostAdmGrandsonGone registration finished
+
+swagger:response postAdmGrandsonGone
+*/
+type PostAdmGrandsonGone struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostAdmGrandsonGone creates PostAdmGrandsonGone with default headers values
+func NewPostAdmGrandsonGone() *PostAdmGrandsonGone {
+
+	return &PostAdmGrandsonGone{}
+}
+
+// WithPayload adds the payload to the post adm grandson gone response
+func (o *PostAdmGrandsonGone) WithPayload(payload *models.Error) *PostAdmGrandsonGone {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post adm grandson gone response
+func (o *PostAdmGrandsonGone) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostAdmGrandsonGone) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(410)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

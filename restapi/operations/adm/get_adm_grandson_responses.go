@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAdmGrandsonOKCode is the HTTP code returned for type GetAdmGrandsonOK
@@ -47,6 +48,50 @@ func (o *GetAdmGrandsonOK) SetPayload(payload *GetAdmGrandsonOKBody) {
 func (o *GetAdmGrandsonOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// GetAdmGrandsonGoneCode is the HTTP code returned for type GetAdmGrandsonGone
+const GetAdmGrandsonGoneCode int = 410
+
+/*GetAdmGrandsonGone registration finished
+
+swagger:response getAdmGrandsonGone
+*/
+type GetAdmGrandsonGone struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetAdmGrandsonGone creates GetAdmGrandsonGone with default headers values
+func NewGetAdmGrandsonGone() *GetAdmGrandsonGone {
+
+	return &GetAdmGrandsonGone{}
+}
+
+// WithPayload adds the payload to the get adm grandson gone response
+func (o *GetAdmGrandsonGone) WithPayload(payload *models.Error) *GetAdmGrandsonGone {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get adm grandson gone response
+func (o *GetAdmGrandsonGone) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetAdmGrandsonGone) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(410)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

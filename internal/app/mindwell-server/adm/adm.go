@@ -10,8 +10,14 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
+var finishedErr *models.Error
+
+const regFinished = true
+
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
+	finishedErr = srv.NewError(&i18n.Message{ID: "adm_reg_finished", Other: "ADM registration finished."})
+
 	srv.API.AdmGetAdmGrandsonHandler = adm.GetAdmGrandsonHandlerFunc(newGrandsonLoader(srv))
 	srv.API.AdmPostAdmGrandsonHandler = adm.PostAdmGrandsonHandlerFunc(newGrandsonUpdater(srv))
 
@@ -20,6 +26,10 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmGrandsonParams, userID *models.UserID) middleware.Responder {
+		if regFinished {
+			return adm.NewGetAdmGrandsonGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			address := adm.GetAdmGrandsonOKBody{}
 
@@ -50,6 +60,10 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 
 func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParams, *models.UserID) middleware.Responder {
 	return func(params adm.PostAdmGrandsonParams, userID *models.UserID) middleware.Responder {
+		if regFinished {
+			return adm.NewPostAdmGrandsonGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			const q = `
 				INSERT INTO adm(name, anonymous, fullname, postcode, country, address, comment)
