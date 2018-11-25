@@ -1,7 +1,10 @@
 package adm
 
 import (
+	"database/sql"
+
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/adm"
 	"github.com/sevings/mindwell-server/utils"
@@ -61,6 +64,36 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 				params.Country, params.Address, params.Comment)
 
 			return adm.NewPostAdmGrandsonOK()
+		})
+	}
+}
+
+func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherParams, *models.UserID) middleware.Responder {
+	return func(params adm.GetAdmGrandfatherParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			address := adm.GetAdmGrandfatherOKBody{}
+
+			const q = `
+				SELECT anonymous, fullname, postcode, country, address, comment, name
+				FROM adm
+				WHERE lower(grandfather) = lower($1)
+			`
+
+			var anon bool
+			tx.Query(q, userID.Name).
+				Scan(&anon, &address.Name, &address.Postcode,
+					&address.Country, &address.Address, &address.Comment, &address.Name)
+
+			if tx.Error() == sql.ErrNoRows {
+				err := srv.NewError(&i18n.Message{ID: "not_in_adm", Other: "You are not registered in ADM."})
+				return adm.NewGetAdmGrandfatherForbidden().WithPayload(err)
+			}
+
+			if anon {
+				address.Name = ""
+			}
+
+			return adm.NewGetAdmGrandfatherOK().WithPayload(&address)
 		})
 	}
 }

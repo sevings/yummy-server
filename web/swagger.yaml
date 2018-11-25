@@ -2047,6 +2047,34 @@ paths:
       responses:
         200:
           description: OK
+  /adm/grandfather:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      responses:
+        200:
+          description: your grandson address
+          schema:
+            type: object
+            properties:
+              postcode:
+                type: string
+              country:
+                type: string
+              address:
+                type: string
+              fullname:
+                type: string
+              comment:
+                type: string
+              name:
+                type: string
+        403:
+          description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
   /adm/stat:
     get:
       security:

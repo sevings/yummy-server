@@ -91,6 +91,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
 		}),
+		AdmGetAdmGrandfatherHandler: adm.GetAdmGrandfatherHandlerFunc(func(params adm.GetAdmGrandfatherParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmGetAdmGrandfather has not yet been implemented")
+		}),
 		AdmGetAdmGrandsonHandler: adm.GetAdmGrandsonHandlerFunc(func(params adm.GetAdmGrandsonParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmGrandson has not yet been implemented")
 		}),
@@ -347,6 +350,8 @@ type MindwellAPI struct {
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
 	// AccountGetAccountVerificationEmailHandler sets the operation handler for the get account verification email operation
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
+	// AdmGetAdmGrandfatherHandler sets the operation handler for the get adm grandfather operation
+	AdmGetAdmGrandfatherHandler adm.GetAdmGrandfatherHandler
 	// AdmGetAdmGrandsonHandler sets the operation handler for the get adm grandson operation
 	AdmGetAdmGrandsonHandler adm.GetAdmGrandsonHandler
 	// AdmGetAdmStatHandler sets the operation handler for the get adm stat operation
@@ -592,6 +597,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountVerificationEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountVerificationEmailHandler")
+	}
+
+	if o.AdmGetAdmGrandfatherHandler == nil {
+		unregistered = append(unregistered, "adm.GetAdmGrandfatherHandler")
 	}
 
 	if o.AdmGetAdmGrandsonHandler == nil {
@@ -1014,6 +1023,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/verification/{email}"] = account.NewGetAccountVerificationEmail(o.context, o.AccountGetAccountVerificationEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/adm/grandfather"] = adm.NewGetAdmGrandfather(o.context, o.AdmGetAdmGrandfatherHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

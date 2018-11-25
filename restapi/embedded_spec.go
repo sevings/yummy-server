@@ -525,6 +525,52 @@ func init() {
         }
       }
     },
+    "/adm/grandfather": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "your grandson address",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "comment": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "fullname": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/adm/grandson": {
       "get": {
         "security": [
@@ -4035,6 +4081,52 @@ func init() {
           },
           "400": {
             "description": "code or email is not valid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/adm/grandfather": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "your grandson address",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "comment": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "fullname": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "postcode": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
             "schema": {
               "$ref": "#/definitions/Error"
             }
