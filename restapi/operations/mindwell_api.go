@@ -94,8 +94,14 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AdmGetAdmGrandfatherHandler: adm.GetAdmGrandfatherHandlerFunc(func(params adm.GetAdmGrandfatherParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmGrandfather has not yet been implemented")
 		}),
+		AdmGetAdmGrandfatherStatusHandler: adm.GetAdmGrandfatherStatusHandlerFunc(func(params adm.GetAdmGrandfatherStatusParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmGetAdmGrandfatherStatus has not yet been implemented")
+		}),
 		AdmGetAdmGrandsonHandler: adm.GetAdmGrandsonHandlerFunc(func(params adm.GetAdmGrandsonParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmGrandson has not yet been implemented")
+		}),
+		AdmGetAdmGrandsonStatusHandler: adm.GetAdmGrandsonStatusHandlerFunc(func(params adm.GetAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmGetAdmGrandsonStatus has not yet been implemented")
 		}),
 		AdmGetAdmStatHandler: adm.GetAdmStatHandlerFunc(func(params adm.GetAdmStatParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmStat has not yet been implemented")
@@ -217,8 +223,14 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountPostAccountVerificationHandler: account.PostAccountVerificationHandlerFunc(func(params account.PostAccountVerificationParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountVerification has not yet been implemented")
 		}),
+		AdmPostAdmGrandfatherStatusHandler: adm.PostAdmGrandfatherStatusHandlerFunc(func(params adm.PostAdmGrandfatherStatusParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmPostAdmGrandfatherStatus has not yet been implemented")
+		}),
 		AdmPostAdmGrandsonHandler: adm.PostAdmGrandsonHandlerFunc(func(params adm.PostAdmGrandsonParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmPostAdmGrandson has not yet been implemented")
+		}),
+		AdmPostAdmGrandsonStatusHandler: adm.PostAdmGrandsonStatusHandlerFunc(func(params adm.PostAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AdmPostAdmGrandsonStatus has not yet been implemented")
 		}),
 		EntriesPostEntriesAnonymousHandler: entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesPostEntriesAnonymous has not yet been implemented")
@@ -352,8 +364,12 @@ type MindwellAPI struct {
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
 	// AdmGetAdmGrandfatherHandler sets the operation handler for the get adm grandfather operation
 	AdmGetAdmGrandfatherHandler adm.GetAdmGrandfatherHandler
+	// AdmGetAdmGrandfatherStatusHandler sets the operation handler for the get adm grandfather status operation
+	AdmGetAdmGrandfatherStatusHandler adm.GetAdmGrandfatherStatusHandler
 	// AdmGetAdmGrandsonHandler sets the operation handler for the get adm grandson operation
 	AdmGetAdmGrandsonHandler adm.GetAdmGrandsonHandler
+	// AdmGetAdmGrandsonStatusHandler sets the operation handler for the get adm grandson status operation
+	AdmGetAdmGrandsonStatusHandler adm.GetAdmGrandsonStatusHandler
 	// AdmGetAdmStatHandler sets the operation handler for the get adm stat operation
 	AdmGetAdmStatHandler adm.GetAdmStatHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
@@ -434,8 +450,12 @@ type MindwellAPI struct {
 	AccountPostAccountRegisterHandler account.PostAccountRegisterHandler
 	// AccountPostAccountVerificationHandler sets the operation handler for the post account verification operation
 	AccountPostAccountVerificationHandler account.PostAccountVerificationHandler
+	// AdmPostAdmGrandfatherStatusHandler sets the operation handler for the post adm grandfather status operation
+	AdmPostAdmGrandfatherStatusHandler adm.PostAdmGrandfatherStatusHandler
 	// AdmPostAdmGrandsonHandler sets the operation handler for the post adm grandson operation
 	AdmPostAdmGrandsonHandler adm.PostAdmGrandsonHandler
+	// AdmPostAdmGrandsonStatusHandler sets the operation handler for the post adm grandson status operation
+	AdmPostAdmGrandsonStatusHandler adm.PostAdmGrandsonStatusHandler
 	// EntriesPostEntriesAnonymousHandler sets the operation handler for the post entries anonymous operation
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
@@ -603,8 +623,16 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "adm.GetAdmGrandfatherHandler")
 	}
 
+	if o.AdmGetAdmGrandfatherStatusHandler == nil {
+		unregistered = append(unregistered, "adm.GetAdmGrandfatherStatusHandler")
+	}
+
 	if o.AdmGetAdmGrandsonHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandsonHandler")
+	}
+
+	if o.AdmGetAdmGrandsonStatusHandler == nil {
+		unregistered = append(unregistered, "adm.GetAdmGrandsonStatusHandler")
 	}
 
 	if o.AdmGetAdmStatHandler == nil {
@@ -767,8 +795,16 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "account.PostAccountVerificationHandler")
 	}
 
+	if o.AdmPostAdmGrandfatherStatusHandler == nil {
+		unregistered = append(unregistered, "adm.PostAdmGrandfatherStatusHandler")
+	}
+
 	if o.AdmPostAdmGrandsonHandler == nil {
 		unregistered = append(unregistered, "adm.PostAdmGrandsonHandler")
+	}
+
+	if o.AdmPostAdmGrandsonStatusHandler == nil {
+		unregistered = append(unregistered, "adm.PostAdmGrandsonStatusHandler")
 	}
 
 	if o.EntriesPostEntriesAnonymousHandler == nil {
@@ -1032,7 +1068,17 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/adm/grandfather/status"] = adm.NewGetAdmGrandfatherStatus(o.context, o.AdmGetAdmGrandfatherStatusHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/adm/grandson"] = adm.NewGetAdmGrandson(o.context, o.AdmGetAdmGrandsonHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/adm/grandson/status"] = adm.NewGetAdmGrandsonStatus(o.context, o.AdmGetAdmGrandsonStatusHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1237,7 +1283,17 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/adm/grandfather/status"] = adm.NewPostAdmGrandfatherStatus(o.context, o.AdmPostAdmGrandfatherStatusHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/adm/grandson"] = adm.NewPostAdmGrandson(o.context, o.AdmPostAdmGrandsonHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/adm/grandson/status"] = adm.NewPostAdmGrandsonStatus(o.context, o.AdmPostAdmGrandsonStatusHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

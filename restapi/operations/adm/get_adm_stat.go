@@ -79,6 +79,12 @@ type GetAdmStatOKBody struct {
 
 	// grandsons
 	Grandsons int64 `json:"grandsons,omitempty"`
+
+	// received
+	Received int64 `json:"received,omitempty"`
+
+	// sent
+	Sent int64 `json:"sent,omitempty"`
 }
 
 // Validate validates this get adm stat o k body

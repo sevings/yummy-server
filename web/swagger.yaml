@@ -2055,6 +2055,45 @@ paths:
           description: registration finished
           schema:
             $ref: '#/definitions/Error'
+  /adm/grandson/status:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      responses:
+        200:
+          description: status of your gifts
+          schema:
+            type: object
+            properties:
+              sent:
+                type: boolean
+              received:
+                type: boolean
+        403:
+          description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: query
+          name: received
+          type: boolean
+          required: true
+      responses:
+        200:
+          description: OK
+        403:
+          description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
   /adm/grandfather:
     get:
       security:
@@ -2083,6 +2122,45 @@ paths:
           description: you're not registered in adm
           schema:
             $ref: '#/definitions/Error'
+  /adm/grandfather/status:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      responses:
+        200:
+          description: status of your gifts
+          schema:
+            type: object
+            properties:
+              sent:
+                type: boolean
+              received:
+                type: boolean
+        403:
+          description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - adm
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: query
+          name: sent
+          type: boolean
+          required: true
+      responses:
+        200:
+          description: OK
+        403:
+          description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
   /adm/stat:
     get:
       security:
@@ -2096,6 +2174,10 @@ paths:
             type: object
             properties:
               grandsons:
+                type: integer
+              sent:
+                type: integer
+              received:
                 type: integer
   /images:
     post:

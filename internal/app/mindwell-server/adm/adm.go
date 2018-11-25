@@ -11,15 +11,25 @@ import (
 )
 
 var finishedErr *models.Error
+var notRegErr *models.Error
 
 const regFinished = true
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	finishedErr = srv.NewError(&i18n.Message{ID: "adm_reg_finished", Other: "ADM registration finished."})
+	notRegErr = srv.NewError(&i18n.Message{ID: "not_in_adm", Other: "You are not registered in ADM."})
 
 	srv.API.AdmGetAdmGrandsonHandler = adm.GetAdmGrandsonHandlerFunc(newGrandsonLoader(srv))
 	srv.API.AdmPostAdmGrandsonHandler = adm.PostAdmGrandsonHandlerFunc(newGrandsonUpdater(srv))
+
+	srv.API.AdmGetAdmGrandsonStatusHandler = adm.GetAdmGrandsonStatusHandlerFunc(newGrandsonStatusLoader(srv))
+	srv.API.AdmPostAdmGrandsonStatusHandler = adm.PostAdmGrandsonStatusHandlerFunc(newGrandsonStatusUpdater(srv))
+
+	srv.API.AdmGetAdmGrandfatherHandler = adm.GetAdmGrandfatherHandlerFunc(newGrandfatherLoader(srv))
+
+	srv.API.AdmGetAdmGrandfatherStatusHandler = adm.GetAdmGrandfatherStatusHandlerFunc(newGrandfatherStatusLoader(srv))
+	srv.API.AdmPostAdmGrandfatherStatusHandler = adm.PostAdmGrandfatherStatusHandlerFunc(newGrandfatherStatusUpdater(srv))
 
 	srv.API.AdmGetAdmStatHandler = adm.GetAdmStatHandlerFunc(newAdmStatLoader(srv))
 }
@@ -82,6 +92,37 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 	}
 }
 
+func newGrandsonStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonStatusParams, *models.UserID) middleware.Responder {
+	return func(params adm.GetAdmGrandsonStatusParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			status := adm.GetAdmGrandsonStatusOKBody{}
+
+			tx.Query("SELECT received, sent FROM adm WHERE lower(name) = lower($1)", userID.Name).
+				Scan(&status.Received, &status.Sent)
+
+			if tx.Error() == sql.ErrNoRows {
+				return adm.NewGetAdmGrandsonStatusForbidden().WithPayload(notRegErr)
+			}
+
+			return adm.NewGetAdmGrandsonStatusOK().WithPayload(&status)
+		})
+	}
+}
+
+func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonStatusParams, *models.UserID) middleware.Responder {
+	return func(params adm.PostAdmGrandsonStatusParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			tx.Exec("UPDATE adm SET received = $2 WHERE lower(name) = lower($1)", userID.Name, params.Received)
+
+			if tx.RowsAffected() == 0 {
+				return adm.NewPostAdmGrandsonStatusForbidden().WithPayload(notRegErr)
+			}
+
+			return adm.NewPostAdmGrandsonStatusOK()
+		})
+	}
+}
+
 func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmGrandfatherParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -99,8 +140,7 @@ func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherP
 					&address.Country, &address.Address, &address.Comment, &address.Name)
 
 			if tx.Error() == sql.ErrNoRows {
-				err := srv.NewError(&i18n.Message{ID: "not_in_adm", Other: "You are not registered in ADM."})
-				return adm.NewGetAdmGrandfatherForbidden().WithPayload(err)
+				return adm.NewGetAdmGrandfatherForbidden().WithPayload(notRegErr)
 			}
 
 			if anon {
@@ -112,6 +152,37 @@ func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherP
 	}
 }
 
+func newGrandfatherStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherStatusParams, *models.UserID) middleware.Responder {
+	return func(params adm.GetAdmGrandfatherStatusParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			status := adm.GetAdmGrandfatherStatusOKBody{}
+
+			tx.Query("SELECT received, sent FROM adm WHERE lower(grandfather) = lower($1)", userID.Name).
+				Scan(&status.Received, &status.Sent)
+
+			if tx.Error() == sql.ErrNoRows {
+				return adm.NewGetAdmGrandfatherStatusForbidden().WithPayload(notRegErr)
+			}
+
+			return adm.NewGetAdmGrandfatherStatusOK().WithPayload(&status)
+		})
+	}
+}
+
+func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandfatherStatusParams, *models.UserID) middleware.Responder {
+	return func(params adm.PostAdmGrandfatherStatusParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			tx.Exec("UPDATE adm SET sent = $2 WHERE lower(grandfather) = lower($1)", userID.Name, params.Sent)
+
+			if tx.RowsAffected() == 0 {
+				return adm.NewPostAdmGrandfatherStatusForbidden().WithPayload(notRegErr)
+			}
+
+			return adm.NewPostAdmGrandfatherStatusOK()
+		})
+	}
+}
+
 func newAdmStatLoader(srv *utils.MindwellServer) func(adm.GetAdmStatParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmStatParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -119,6 +190,12 @@ func newAdmStatLoader(srv *utils.MindwellServer) func(adm.GetAdmStatParams, *mod
 
 			tx.Query("SELECT count(*) FROM adm").
 				Scan(&stat.Grandsons)
+
+			tx.Query("SELECT count(*) FROM adm WHERE sent").
+				Scan(&stat.Sent)
+
+			tx.Query("SELECT count(*) FROM adm WHERE received").
+				Scan(&stat.Received)
 
 			return adm.NewGetAdmStatOK().WithPayload(&stat)
 		})

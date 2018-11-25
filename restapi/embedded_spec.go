@@ -571,6 +571,72 @@ func init() {
         }
       }
     },
+    "/adm/grandfather/status": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "status of your gifts",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "received": {
+                  "type": "boolean"
+                },
+                "sent": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "sent",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/adm/grandson": {
       "get": {
         "security": [
@@ -684,6 +750,72 @@ func init() {
         }
       }
     },
+    "/adm/grandson/status": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "status of your gifts",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "received": {
+                  "type": "boolean"
+                },
+                "sent": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "received",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/adm/stat": {
       "get": {
         "security": [
@@ -701,6 +833,12 @@ func init() {
               "type": "object",
               "properties": {
                 "grandsons": {
+                  "type": "integer"
+                },
+                "received": {
+                  "type": "integer"
+                },
+                "sent": {
                   "type": "integer"
                 }
               }
@@ -4146,6 +4284,72 @@ func init() {
         }
       }
     },
+    "/adm/grandfather/status": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "status of your gifts",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "received": {
+                  "type": "boolean"
+                },
+                "sent": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "sent",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/adm/grandson": {
       "get": {
         "security": [
@@ -4259,6 +4463,72 @@ func init() {
         }
       }
     },
+    "/adm/grandson/status": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "adm"
+        ],
+        "responses": {
+          "200": {
+            "description": "status of your gifts",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "received": {
+                  "type": "boolean"
+                },
+                "sent": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "adm"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "received",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/adm/stat": {
       "get": {
         "security": [
@@ -4276,6 +4546,12 @@ func init() {
               "type": "object",
               "properties": {
                 "grandsons": {
+                  "type": "integer"
+                },
+                "received": {
+                  "type": "integer"
+                },
+                "sent": {
                   "type": "integer"
                 }
               }
