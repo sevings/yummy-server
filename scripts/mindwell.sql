@@ -1044,16 +1044,17 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
         WHERE (rank <= (
-                    SELECT COUNT(*) / 2
-                    FROM mindwell.users
-                    WHERE karma > 0
+                    SELECT COUNT(DISTINCT author_id) / 2
+                    FROM mindwell.entries
+                    WHERE age(created_at) <= '2 months' 
+                        AND visible_for = (SELECT id FROM entry_privacy WHERE type = 'all')
                 )
                 AND age(last_invite) >= interval '7 days'
                 AND (SELECT COUNT(*) FROM mindwell.invites WHERE referrer_id = users.id) < 3
             ) OR (
                 last_invite = created_at::Date
                 AND (
-                    SELECT COUNT(entries.id)
+                    SELECT COUNT(DISTINCT entries.id)
                     FROM mindwell.entries, mindwell.entry_votes
                     WHERE entries.author_id = users.id AND entry_votes.entry_id = entries.id
                         AND entry_votes.vote > 0 AND entry_votes.user_id <> users.invited_by
