@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/sevings/mindwell-server/utils"
+	goconf "github.com/zpatrick/go-config"
 )
 
 func takeRandom(s []string) (string, []string) {
@@ -13,6 +16,26 @@ func takeRandom(s []string) (string, []string) {
 	i := rand.Intn(len(s))
 	result, s[i] = s[i], s[len(s)-1]
 	return result, s[:len(s)-1]
+}
+
+func postman(cfg *goconf.Config) *utils.Postman {
+	domain, _ := cfg.String("mailgun.domain")
+	apiKey, _ := cfg.String("mailgun.api_key")
+	pubKey, _ := cfg.String("mailgun.pub_key")
+	baseURL, _ := cfg.String("server.base_url")
+
+	if len(domain) == 0 || len(apiKey) == 0 || len(pubKey) == 0 || len(baseURL) == 0 {
+		log.Println("Check config consistency")
+		return nil
+	}
+
+	return utils.NewPostman(domain, apiKey, pubKey, baseURL)
+}
+
+type user struct {
+	email  string
+	name   string
+	gender string
 }
 
 func main() {
@@ -36,6 +59,7 @@ func main() {
 		"ORDER BY gender")
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	for rows.Next() {
@@ -82,10 +106,36 @@ func main() {
 	}
 	setAdm(adm[cnt-1], adm[0])
 
+	var users []user
+
+	for _, name := range adm {
+		rows, err := tx.Query("SELECT show_name, gender.type, email, verified FROM users, gender "+
+			"WHERE lower(name) = lower($1) AND users.gender = gender.id", name)
+		if err != nil {
+			log.Println(err)
+		}
+		for rows.Next() {
+			var verified bool
+			var usr user
+			rows.Scan(&usr.name, &usr.gender, &usr.email, &verified)
+			if verified {
+				users = append(users, usr)
+			}
+		}
+	}
+
 	err = tx.Commit()
 	if err != nil {
 		log.Println(err)
 	}
 
-	log.Println("Completed.")
+	mail := postman(cfg)
+	for _, usr := range users {
+		mail.SendAdm(usr.email, usr.name, usr.gender)
+	}
+
+	log.Println("Completed. Sending emails... (press Enter to exit)")
+
+	reader := bufio.NewReader(os.Stdin)
+	reader.ReadString('\n')
 }

@@ -27,7 +27,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 				Name:      "команда Mindwell",
 				Link:      baseURL,
 				Logo:      baseURL + "assets/olympus/img/logo-mindwell.png",
-				Copyright: "© 2018 Mindwell.",
+				Copyright: "© Mindwell.",
 				TroubleText: "Если кнопка '{ACTION}' по какой-то причине не работает, " +
 					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
@@ -38,8 +38,9 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 	go func() {
 		for msg := range pm.ch {
 			resp, id, err := pm.mg.Send(msg)
-			if err != nil {
-				fmt.Printf("ID: %s Resp: %s\n", id, resp)
+			if err == nil {
+				fmt.Printf("ID: %s. Resp: %s.\n", id, resp)
+			} else {
 				log.Println(err)
 			}
 		}
@@ -207,4 +208,33 @@ func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender s
 
 	const subj = "Новый подписчик"
 	pm.send(email, address, subj, toShowName)
+}
+
+func (pm *Postman) SendAdm(address, name, gender string) {
+	var ending string
+	if gender == "female" {
+		ending = "а"
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"ты подавал" + ending + " заявку для участия в Клубе АДМ.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Твой дорогой внук уже ждет от тебя подарок! " +
+						"Вся необходимая информация доступна по этой ссылке:",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Клуб АДМ",
+						Link:  pm.url + "adm/grandfather",
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Клуб анонимных Дедов Морозов"
+	pm.send(email, address, subj, name)
 }
