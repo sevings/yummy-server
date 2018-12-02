@@ -1,5 +1,7 @@
 CREATE SCHEMA "mindwell";
 
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 ALTER DATABASE mindwell SET search_path TO mindwell, public;
 
 -- CREATE TABLE "gender" ---------------------------------
@@ -59,6 +61,13 @@ CREATE OR REPLACE FUNCTION next_user_rank() RETURNS INTEGER AS $$
         RETURN pos;
     END;
 $$ language plpgsql;
+
+CREATE OR REPLACE FUNCTION to_search_string(name TEXT, show_name TEXT, country TEXT, city TEXT)
+   RETURNS TEXT AS $$
+BEGIN
+  RETURN name || ' ' || show_name || ' ' || country || ' ' || city;
+END
+$$ LANGUAGE plpgsql IMMUTABLE;
 
 -- CREATE TABLE "users" ----------------------------------------
 CREATE TABLE "mindwell"."users" (
@@ -132,6 +141,11 @@ CREATE INDEX "index_invited_by" ON "mindwell"."users" USING btree( "invited_by" 
 
 -- CREATE INDEX "index_user_rank" ------------------------------
 CREATE INDEX "index_user_rank" ON "mindwell"."users" USING btree( "rank" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_user_search" ----------------------------
+CREATE INDEX "index_user_search" ON "mindwell"."users" USING GIST 
+    (to_search_string("name", "show_name", "country", "city") gist_trgm_ops);
 -- -------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION mindwell.count_invited() RETURNS TRIGGER AS $$

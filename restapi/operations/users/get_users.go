@@ -79,6 +79,9 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 // swagger:model GetUsersOKBody
 type GetUsersOKBody struct {
 
+	// query
+	Query string `json:"query,omitempty"`
+
 	// top
 	Top string `json:"top,omitempty"`
 

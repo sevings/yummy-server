@@ -40,6 +40,12 @@ type GetUsersParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
+	  Max Length: 50
+	  Min Length: 1
+	  In: query
+	*/
+	Query *string
+	/*
 	  In: query
 	  Default: "new"
 	*/
@@ -57,6 +63,11 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 
 	qs := runtime.Values(r.URL.Query())
 
+	qQuery, qhkQuery, _ := qs.GetOK("query")
+	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
 	qTop, qhkTop, _ := qs.GetOK("top")
 	if err := o.bindTop(qTop, qhkTop, route.Formats); err != nil {
 		res = append(res, err)
@@ -65,6 +76,42 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindQuery binds and validates parameter Query from query.
+func (o *GetUsersParams) bindQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		return nil
+	}
+
+	o.Query = &raw
+
+	if err := o.validateQuery(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateQuery carries on validations for parameter Query
+func (o *GetUsersParams) validateQuery(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("query", "query", (*o.Query), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("query", "query", (*o.Query), 50); err != nil {
+		return err
+	}
+
 	return nil
 }
 

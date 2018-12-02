@@ -277,6 +277,7 @@ func checkTopUsers(t *testing.T, top string, size int) []*models.Friend {
 	list := body.Payload
 	require.Equal(t, size, len(list.Users))
 	require.Equal(t, top, list.Top)
+	require.Empty(t, list.Query)
 
 	return list.Users
 }
@@ -288,4 +289,28 @@ func TestTopUsers(t *testing.T) {
 	req.Equal(int64(1), list[3].ID)
 
 	checkTopUsers(t, "rank", 4)
+}
+
+func checkSearchUsers(t *testing.T, query string, size int) []*models.Friend {
+	get := api.UsersGetUsersHandler.Handle
+	params := users.GetUsersParams{
+		Query: &query,
+	}
+	resp := get(params, userIDs[0])
+	body, ok := resp.(*users.GetUsersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, query, list.Query)
+	require.Empty(t, list.Top)
+
+	return list.Users
+}
+
+func TestSearchUsers(t *testing.T) {
+	checkSearchUsers(t, "testo", 3)
+	checkSearchUsers(t, "mind", 1)
+	checkSearchUsers(t, "psychotherapist", 0)
 }

@@ -2675,6 +2675,13 @@ func init() {
             "default": "new",
             "name": "top",
             "in": "query"
+          },
+          {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -2683,6 +2690,9 @@ func init() {
             "schema": {
               "type": "object",
               "properties": {
+                "query": {
+                  "type": "string"
+                },
                 "top": {
                   "type": "string"
                 },
@@ -6581,6 +6591,13 @@ func init() {
             "default": "new",
             "name": "top",
             "in": "query"
+          },
+          {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -6589,6 +6606,9 @@ func init() {
             "schema": {
               "type": "object",
               "properties": {
+                "query": {
+                  "type": "string"
+                },
                 "top": {
                   "type": "string"
                 },

@@ -811,6 +811,11 @@ paths:
           type: string
           enum: [new, rank]
           default: new
+        - in: query
+          name: query
+          type: string
+          minLength: 1
+          maxLength: 50
       tags:
         - users
       responses:
@@ -820,6 +825,8 @@ paths:
             type: object
             properties:
               top:
+                type: string
+              query:
                 type: string
               users:
                 type: array

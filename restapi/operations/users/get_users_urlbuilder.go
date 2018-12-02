@@ -13,7 +13,8 @@ import (
 
 // GetUsersURL generates an URL for the get users operation
 type GetUsersURL struct {
-	Top *string
+	Query *string
+	Top   *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -48,6 +49,14 @@ func (o *GetUsersURL) Build() (*url.URL, error) {
 	result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
+
+	var query string
+	if o.Query != nil {
+		query = *o.Query
+	}
+	if query != "" {
+		qs.Set("query", query)
+	}
 
 	var top string
 	if o.Top != nil {

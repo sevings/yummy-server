@@ -33,7 +33,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.MePutMeOnlineHandler = me.PutMeOnlineHandlerFunc(newMyOnlineSetter(srv))
 
-	srv.API.UsersGetUsersHandler = users.GetUsersHandlerFunc(newTopUsersLoader(srv))
+	srv.API.UsersGetUsersHandler = users.GetUsersHandlerFunc(newUsersLoader(srv))
 }
 
 const profileQuery = `
