@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/matcornic/hermes"
 	"github.com/sevings/mindwell-server/models"
@@ -32,11 +33,35 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
 		},
-		ch: make(chan *mailgun.Message, 10),
+		ch: make(chan *mailgun.Message, 200),
 	}
 
 	go func() {
+		const limitPerInt = 100
+		const interval = time.Hour
+
+		until := time.Now().Add(interval)
+		count := 0
+
+		resetCounter := func() {
+			until = until.Add(interval)
+			count = 0
+		}
+
 		for msg := range pm.ch {
+			timeLeft := time.Until(until)
+			if timeLeft < 0 {
+				resetCounter()
+			}
+
+			if count == limitPerInt {
+				fmt.Printf("Exceeded the limit of emails. Sleeping for %.0f minutes...\n", timeLeft.Minutes())
+				time.Sleep(timeLeft)
+				resetCounter()
+			}
+
+			count++
+
 			resp, id, err := pm.mg.Send(msg)
 			if err == nil {
 				fmt.Printf("ID: %s. Resp: %s.\n", id, resp)
