@@ -93,11 +93,11 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	recp := name + " <" + address + ">"
 	msg := pm.mg.NewMessage(from, subj, text, recp)
 
-	html, err := pm.h.GenerateHTML(email)
-	if err != nil {
-		log.Println(err)
-	}
-	msg.SetHtml(html)
+	// html, err := pm.h.GenerateHTML(email)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// msg.SetHtml(html)
 
 	// err = ioutil.WriteFile("preview.html", []byte(html), 0644)
 	// err = ioutil.WriteFile("preview.txt", []byte(text), 0644)
