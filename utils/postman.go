@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aymerick/douceur/inliner"
 	"github.com/matcornic/hermes"
 	"github.com/sevings/mindwell-server/models"
 	"gopkg.in/mailgun/mailgun-go.v1"
@@ -79,8 +78,8 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	email.Body.Title = "Привет, " + name
 	email.Body.Signature = "С наилучшими пожеланиями"
 	email.Body.Outros = []string{
-		"Изменить настройки уведомлений можно в панели управления учетной записью: " +
-			pm.url + "account/email",
+		// "Изменить настройки уведомлений можно в панели управления учетной записью: " +
+		// 	pm.url + "account/email",
 		"Появились вопросы или какая-то проблема? " +
 			"Не стесняйся и просто ответь на это письмо. Мы будем рады помочь. ",
 	}
@@ -94,17 +93,17 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	recp := name + " <" + address + ">"
 	msg := pm.mg.NewMessage(from, subj, text, recp)
 
-	html, err := pm.h.GenerateHTML(email)
-	if err != nil {
-		log.Println(err)
-	}
+	// html, err := pm.h.GenerateHTML(email)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	html, err = inliner.Inline(html)
-	if err != nil {
-		log.Println(err)
-	}
+	// html, err = inliner.Inline(html)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	msg.SetHtml(html)
+	// msg.SetHtml(html)
 
 	// err = ioutil.WriteFile("preview.html", []byte(html), 0644)
 	// err = ioutil.WriteFile("preview.txt", []byte(text), 0644)
