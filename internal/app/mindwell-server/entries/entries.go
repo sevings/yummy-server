@@ -347,7 +347,7 @@ func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
 	}
 }
 
-func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) *models.Entry {
+func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) *models.Entry {
 	const q = tlogFeedQueryStart + `
 		WHERE entries.id = $2
 			AND (entries.author_id = $1
@@ -391,7 +391,7 @@ func loadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entry := loadEntry(srv, tx, params.ID, uID.ID)
+			entry := LoadEntry(srv, tx, params.ID, uID.ID)
 
 			if entry.ID == 0 {
 				err := srv.StandardError("no_entry")

@@ -90,7 +90,7 @@ func commentVote(userID, authorID int64, vote sql.NullFloat64) string {
 	}
 }
 
-func loadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID int64) *models.Comment {
+func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullFloat64
@@ -123,7 +123,7 @@ func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDPara
 	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			comment := loadComment(srv, tx, userID, params.ID)
+			comment := LoadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
@@ -153,7 +153,7 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			comment := loadComment(srv, tx, userID, params.ID)
+			comment := LoadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
@@ -379,16 +379,27 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
 
 	const toQ = `
-		SELECT show_name, email
+		SELECT users.id, show_name, email, verified
 		FROM users, watching 
 		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
-			AND users.id <> $2 AND users.verified AND users.email_comments`
+			AND users.id <> $2 AND users.email_comments`
 
 	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
 
+	var toIDs []int64
+	var toID int64
+	var verified bool
 	var toShowName, email string
-	for tx.Scan(&toShowName, &email) {
-		srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
+	for tx.Scan(&toID, &toShowName, &email, &verified) {
+		if verified {
+			srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
+		}
+
+		toIDs = append(toIDs, toID)
+	}
+
+	for _, id := range toIDs {
+		srv.Ntf.Notify(tx, id, cmt.ID, "comment")
 	}
 }
 

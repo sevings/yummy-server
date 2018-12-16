@@ -75,24 +75,35 @@ func isPrivateTlog(tx *utils.AutoTx, name string) bool {
 
 func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, toPrivate bool, from, to string) {
 	const toQ = `
-		SELECT show_name, email
+		SELECT id, show_name, email, verified
 		FROM users 
-		WHERE lower(name) = lower($1) AND verified AND email_followers
+		WHERE lower(name) = lower($1) AND email_followers
 	`
 
+	var toID int64
+	var verified bool
 	var toShowName, email string
-	tx.Query(toQ, to).Scan(&toShowName, &email)
+	tx.Query(toQ, to).Scan(&toID, &toShowName, &email, &verified)
 	if tx.Error() != nil {
 		return
 	}
 
 	const fromQ = `
-		SELECT show_name, gender.type 
+		SELECT users.id, show_name, gender.type 
 		FROM users, gender 
 		WHERE lower(users.name) = lower($1) AND users.gender = gender.id`
 
+	var fromID int64
 	var fromShowName, fromGender string
-	tx.Query(fromQ, from).Scan(&fromShowName, &fromGender)
+	tx.Query(fromQ, from).Scan(&fromID, &fromShowName, &fromGender)
 
-	srv.Mail.SendNewFollower(email, from, fromShowName, fromGender, toPrivate, toShowName)
+	if verified {
+		srv.Mail.SendNewFollower(email, from, fromShowName, fromGender, toPrivate, toShowName)
+	}
+
+	if toPrivate {
+		srv.Ntf.Notify(tx, toID, fromID, "request")
+	} else {
+		srv.Ntf.Notify(tx, toID, fromID, "follower")
+	}
 }

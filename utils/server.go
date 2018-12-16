@@ -28,6 +28,7 @@ type MindwellServer struct {
 	DB    *sql.DB
 	API   *operations.MindwellAPI
 	Mail  MailSender
+	Ntf   *Notifier
 	cfg   *goconf.Config
 	local *i18n.Localizer
 	errs  map[string]*i18n.Message
@@ -49,6 +50,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	return &MindwellServer{
 		DB:    db,
 		API:   api,
+		Ntf:   &Notifier{},
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{

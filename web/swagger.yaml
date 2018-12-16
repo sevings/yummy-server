@@ -392,6 +392,44 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  Notification:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        minimum: 1
+      type: 
+        type: string
+        enum: [comment, follower, request, accept]
+      read:
+        type: boolean
+      createdAt:
+        type: number
+        format: double
+      user:
+        $ref: '#/definitions/User'
+      comment:
+        $ref: '#/definitions/Comment'
+      entry: 
+        $ref: '#/definitions/Entry'
+  NotificationList:
+    type: object
+    properties:
+      notifications:
+        type: array
+        items:
+          $ref: '#/definitions/Notification'
+      unreadCount:
+        type: integer
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
   ImageSize:
     type: object
     properties:
@@ -801,6 +839,46 @@ paths:
                 type: array
                 items:
                   type: string
+  /notifications:
+    get:
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+        - in: query
+          name: unread
+          type: boolean
+          default: false
+      tags:
+        - notifications
+      responses:
+        200:
+          description: notification list
+          schema:
+            $ref: '#/definitions/NotificationList'
+  /notifications/read:
+    put:
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - in: query
+          name: time
+          type: number
+          default: 0
+      consumes:
+        - application/x-www-form-urlencoded
+      tags:
+        - notifications
+      responses:
+        200:
+          description: unread count
+          schema:
+            type: object
+            properties:
+              unread:
+                type: integer
   /users:
     get:
       security:

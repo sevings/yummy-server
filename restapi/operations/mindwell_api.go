@@ -27,6 +27,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/favorites"
 	"github.com/sevings/mindwell-server/restapi/operations/images"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/restapi/operations/notifications"
 	"github.com/sevings/mindwell-server/restapi/operations/relations"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
@@ -175,6 +176,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
 		}),
+		NotificationsGetNotificationsHandler: notifications.GetNotificationsHandlerFunc(func(params notifications.GetNotificationsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation NotificationsGetNotifications has not yet been implemented")
+		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
 		}),
@@ -279,6 +283,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		MePutMeOnlineHandler: me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutMeOnline has not yet been implemented")
+		}),
+		NotificationsPutNotificationsReadHandler: notifications.PutNotificationsReadHandlerFunc(func(params notifications.PutNotificationsReadParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation NotificationsPutNotificationsRead has not yet been implemented")
 		}),
 		RelationsPutRelationsFromNameHandler: relations.PutRelationsFromNameHandlerFunc(func(params relations.PutRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsPutRelationsFromName has not yet been implemented")
@@ -418,6 +425,8 @@ type MindwellAPI struct {
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
 	// MeGetMeTlogHandler sets the operation handler for the get me tlog operation
 	MeGetMeTlogHandler me.GetMeTlogHandler
+	// NotificationsGetNotificationsHandler sets the operation handler for the get notifications operation
+	NotificationsGetNotificationsHandler notifications.GetNotificationsHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
@@ -488,6 +497,8 @@ type MindwellAPI struct {
 	MePutMeCoverHandler me.PutMeCoverHandler
 	// MePutMeOnlineHandler sets the operation handler for the put me online operation
 	MePutMeOnlineHandler me.PutMeOnlineHandler
+	// NotificationsPutNotificationsReadHandler sets the operation handler for the put notifications read operation
+	NotificationsPutNotificationsReadHandler notifications.PutNotificationsReadHandler
 	// RelationsPutRelationsFromNameHandler sets the operation handler for the put relations from name operation
 	RelationsPutRelationsFromNameHandler relations.PutRelationsFromNameHandler
 	// RelationsPutRelationsToNameHandler sets the operation handler for the put relations to name operation
@@ -731,6 +742,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeTlogHandler")
 	}
 
+	if o.NotificationsGetNotificationsHandler == nil {
+		unregistered = append(unregistered, "notifications.GetNotificationsHandler")
+	}
+
 	if o.RelationsGetRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
@@ -869,6 +884,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePutMeOnlineHandler == nil {
 		unregistered = append(unregistered, "me.PutMeOnlineHandler")
+	}
+
+	if o.NotificationsPutNotificationsReadHandler == nil {
+		unregistered = append(unregistered, "notifications.PutNotificationsReadHandler")
 	}
 
 	if o.RelationsPutRelationsFromNameHandler == nil {
@@ -1203,6 +1222,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/notifications"] = notifications.NewGetNotifications(o.context, o.NotificationsGetNotificationsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1374,6 +1398,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me/online"] = me.NewPutMeOnline(o.context, o.MePutMeOnlineHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/notifications/read"] = notifications.NewPutNotificationsRead(o.context, o.NotificationsPutNotificationsReadHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

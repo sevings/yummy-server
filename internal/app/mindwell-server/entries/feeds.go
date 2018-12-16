@@ -3,7 +3,6 @@ package entries
 import (
 	"database/sql"
 	"log"
-	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
@@ -135,19 +134,6 @@ WHERE favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))
 
 const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
 
-func parseFloat(val string) float64 {
-	res, err := strconv.ParseFloat(val, 64)
-	if len(val) > 0 && err != nil {
-		log.Printf("error parse float: '%s'", val)
-	}
-
-	return res
-}
-
-func formatFloat(val float64) string {
-	return strconv.FormatFloat(val, 'f', 6, 64)
-}
-
 func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse bool) *models.Feed {
 	feed := models.Feed{}
 
@@ -193,8 +179,8 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 }
 
 func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	before := parseFloat(beforeS)
-	after := parseFloat(afterS)
+	before := utils.ParseFloat(beforeS)
+	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
 		q := liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
@@ -214,7 +200,7 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	}
 
 	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-	feed.NextBefore = formatFloat(nextBefore)
+	feed.NextBefore = utils.FormatFloat(nextBefore)
 
 	const beforeQuery = `SELECT EXISTS(
 		SELECT 1 
@@ -236,7 +222,7 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	` + liveFeedQueryWhere + " AND entries.created_at > to_timestamp($1))"
 
 	nextAfter := feed.Entries[0].CreatedAt
-	feed.NextAfter = formatFloat(nextAfter)
+	feed.NextAfter = utils.FormatFloat(nextAfter)
 	tx.Query(afterQuery, nextAfter)
 	tx.Scan(&feed.HasAfter)
 
@@ -311,8 +297,8 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, limit)
 	}
 
-	before := parseFloat(beforeS)
-	after := parseFloat(afterS)
+	before := utils.ParseFloat(beforeS)
+	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
 		q := tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at ASC LIMIT $4"
@@ -342,7 +328,7 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 			tx.Query(afterQuery, userID.ID, tlog, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
-			feed.NextAfter = formatFloat(nextAfter)
+			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
@@ -353,20 +339,20 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 			tx.Query(beforeQuery, userID.ID, tlog, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
-			feed.NextBefore = formatFloat(nextBefore)
+			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
 		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($3))"
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = formatFloat(nextBefore)
+		feed.NextBefore = utils.FormatFloat(nextBefore)
 		tx.Query(beforeQuery, userID.ID, tlog, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($3))"
 
 		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = formatFloat(nextAfter)
+		feed.NextAfter = utils.FormatFloat(nextAfter)
 		tx.Query(afterQuery, userID.ID, tlog, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
@@ -390,8 +376,8 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 }
 
 func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	before := parseFloat(beforeS)
-	after := parseFloat(afterS)
+	before := utils.ParseFloat(beforeS)
+	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
 		q := myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
@@ -417,7 +403,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 			tx.Query(afterQuery, userID.ID, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
-			feed.NextAfter = formatFloat(nextAfter)
+			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
@@ -428,20 +414,20 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 			tx.Query(beforeQuery, userID.ID, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
-			feed.NextBefore = formatFloat(nextBefore)
+			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
 		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "	< to_timestamp($2))"
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = formatFloat(nextBefore)
+		feed.NextBefore = utils.FormatFloat(nextBefore)
 		tx.Query(beforeQuery, userID.ID, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
 
 		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = formatFloat(nextAfter)
+		feed.NextAfter = utils.FormatFloat(nextAfter)
 		tx.Query(afterQuery, userID.ID, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
@@ -465,8 +451,8 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models
 }
 
 func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	before := parseFloat(beforeS)
-	after := parseFloat(afterS)
+	before := utils.ParseFloat(beforeS)
+	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
 		q := friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
@@ -495,7 +481,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 			tx.Query(afterQuery, userID.ID, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
-			feed.NextAfter = formatFloat(nextAfter)
+			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
@@ -506,20 +492,20 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 			tx.Query(beforeQuery, userID.ID, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
-			feed.NextBefore = formatFloat(nextBefore)
+			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
 		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < to_timestamp($2))"
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = formatFloat(nextBefore)
+		feed.NextBefore = utils.FormatFloat(nextBefore)
 		tx.Query(beforeQuery, userID.ID, nextBefore)
 		tx.Scan(&feed.HasBefore)
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
 
 		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = formatFloat(nextAfter)
+		feed.NextAfter = utils.FormatFloat(nextAfter)
 		tx.Query(afterQuery, userID.ID, nextAfter)
 		tx.Scan(&feed.HasAfter)
 	}
@@ -537,8 +523,8 @@ func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFrie
 }
 
 func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
-	before := parseFloat(beforeS)
-	after := parseFloat(afterS)
+	before := utils.ParseFloat(beforeS)
+	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
 		q := tlogFavoritesQuery + " AND favorites.date > to_timestamp($3) ORDER BY favorites.date ASC LIMIT $4"
@@ -569,7 +555,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			tx.Query(afterQuery, userID.ID, tlog, before)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
-			feed.NextAfter = formatFloat(nextAfter)
+			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
@@ -580,7 +566,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			tx.Query(beforeQuery, userID.ID, tlog, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
-			feed.NextBefore = formatFloat(nextBefore)
+			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
 		const dateQuery = `
@@ -603,7 +589,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			tx.Query(dateQuery, tlog, lastID)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
-			feed.NextBefore = formatFloat(nextBefore)
+			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 
 		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > " + queryEnd
@@ -614,7 +600,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			tx.Query(dateQuery, tlog, firstID)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
-			feed.NextAfter = formatFloat(nextAfter)
+			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 	}
 

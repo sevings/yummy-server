@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -121,4 +122,17 @@ func CutText(text, format string, size int) (string, bool) {
 	text += "..."
 
 	return text, true
+}
+
+func ParseFloat(val string) float64 {
+	res, err := strconv.ParseFloat(val, 64)
+	if len(val) > 0 && err != nil {
+		log.Printf("error parse float: '%s'", val)
+	}
+
+	return res
+}
+
+func FormatFloat(val float64) string {
+	return strconv.FormatFloat(val, 'f', 6, 64)
 }

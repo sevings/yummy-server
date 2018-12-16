@@ -2465,6 +2465,79 @@ func init() {
         }
       }
     },
+    "/notifications": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "unread",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "notification list",
+            "schema": {
+              "$ref": "#/definitions/NotificationList"
+            }
+          }
+        }
+      }
+    },
+    "/notifications/read": {
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "type": "number",
+            "default": 0,
+            "name": "time",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "unread count",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "unread": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/relations/from/{name}": {
       "get": {
         "security": [
@@ -3468,6 +3541,67 @@ func init() {
           "type": "string"
         },
         "width": {
+          "type": "integer"
+        }
+      }
+    },
+    "Notification": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "$ref": "#/definitions/Comment"
+        },
+        "createdAt": {
+          "type": "number",
+          "format": "double"
+        },
+        "entry": {
+          "$ref": "#/definitions/Entry"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "comment",
+            "follower",
+            "request",
+            "accept"
+          ]
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "NotificationList": {
+      "type": "object",
+      "properties": {
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Notification"
+          }
+        },
+        "unreadCount": {
           "type": "integer"
         }
       }
@@ -6371,6 +6505,90 @@ func init() {
         }
       }
     },
+    "/notifications": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "unread",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "notification list",
+            "schema": {
+              "$ref": "#/definitions/NotificationList"
+            }
+          }
+        }
+      }
+    },
+    "/notifications/read": {
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "type": "number",
+            "default": 0,
+            "name": "time",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "unread count",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "unread": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/relations/from/{name}": {
       "get": {
         "security": [
@@ -7487,6 +7705,67 @@ func init() {
           "type": "string"
         },
         "width": {
+          "type": "integer"
+        }
+      }
+    },
+    "Notification": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "$ref": "#/definitions/Comment"
+        },
+        "createdAt": {
+          "type": "number",
+          "format": "double"
+        },
+        "entry": {
+          "$ref": "#/definitions/Entry"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "minimum": 1
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "comment",
+            "follower",
+            "request",
+            "accept"
+          ]
+        },
+        "user": {
+          "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "NotificationList": {
+      "type": "object",
+      "properties": {
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
+        "notifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Notification"
+          }
+        },
+        "unreadCount": {
           "type": "integer"
         }
       }

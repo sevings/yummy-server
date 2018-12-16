@@ -5,6 +5,7 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/relations"
+	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -120,6 +121,10 @@ func checkCancelFollow(t *testing.T, user, from *models.UserID, success bool) {
 }
 
 func TestRelationship(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
+
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
