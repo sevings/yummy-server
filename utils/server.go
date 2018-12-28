@@ -47,10 +47,9 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	bundle.MustLoadMessageFile(trFile)
 
-	return &MindwellServer{
+	srv := &MindwellServer{
 		DB:    db,
 		API:   api,
-		Ntf:   &Notifier{},
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{
@@ -60,6 +59,12 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 			"no_request": &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
 		},
 	}
+
+	ntfURL := srv.ConfigString("centrifugo.api_url")
+	ntfKey := srv.ConfigString("centrifugo.api_key")
+	srv.Ntf = NewNotifier(ntfURL, ntfKey)
+
+	return srv
 }
 
 func (srv *MindwellServer) ConfigString(field string) string {

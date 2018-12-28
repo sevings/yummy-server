@@ -1,7 +1,11 @@
 package notifications
 
 import (
+	"fmt"
 	"log"
+	"strconv"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
@@ -12,8 +16,12 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
+var secret string
+
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
+	secret = srv.ConfigString("centrifugo.secret")
+
 	srv.API.NotificationsPutNotificationsReadHandler = notifications.PutNotificationsReadHandlerFunc(newNotificationsReader(srv))
 	srv.API.NotificationsGetNotificationsHandler = notifications.GetNotificationsHandlerFunc(newNotificationsLoader(srv))
 }
@@ -163,4 +171,28 @@ func newNotificationsLoader(srv *utils.MindwellServer) func(notifications.GetNot
 			return notifications.NewGetNotificationsOK().WithPayload(feed)
 		})
 	}
+}
+
+func generateToken(claims jwt.MapClaims) string {
+	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	str, err := tok.SignedString(secret)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return str
+}
+
+func connectionToken(userID *models.UserID) string {
+	return generateToken(jwt.MapClaims{
+		"sub":  strconv.FormatInt(userID.ID, 10),
+		"info": fmt.Sprintf(`{"id":%d,"name":"%s"}`, userID.ID, userID.Name),
+	})
+}
+
+func privateChannelToken(userID *models.UserID, channel string) string {
+	return generateToken(jwt.MapClaims{
+		"client":  strconv.FormatInt(userID.ID, 10),
+		"channel": channel,
+	})
 }
