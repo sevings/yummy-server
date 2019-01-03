@@ -71,7 +71,7 @@ func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
 			ID:   id,
 			Subj: subjectID,
 			Type: tpe,
-			ch:   fmt.Sprintf("news#%d", userID),
+			ch:   fmt.Sprintf("notifications#%d", userID),
 		}
 	}
 }

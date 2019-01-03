@@ -2,11 +2,14 @@ package account
 
 import (
 	"database/sql"
+	"fmt"
 	"image"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/disintegration/imaging"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -19,8 +22,12 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
+var secret []byte
+
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
+	secret = []byte(srv.ConfigString("centrifugo.secret"))
+
 	srv.API.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(srv))
 	srv.API.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(srv))
 
@@ -37,6 +44,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.AccountGetAccountSettingsEmailHandler = account.GetAccountSettingsEmailHandlerFunc(newEmailSettingsLoader(srv))
 	srv.API.AccountPutAccountSettingsEmailHandler = account.PutAccountSettingsEmailHandlerFunc(newEmailSettingsEditor(srv))
+
+	srv.API.AccountGetAccountSubscribeTokenHandler = account.GetAccountSubscribeTokenHandlerFunc(newTokenGenerator(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -536,5 +545,37 @@ func newEmailSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSe
 
 			return account.NewPutAccountSettingsEmailOK()
 		})
+	}
+}
+
+func generateToken(claims jwt.MapClaims) string {
+	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	str, err := tok.SignedString(secret)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return str
+}
+
+func connectionToken(userID *models.UserID) string {
+	return generateToken(jwt.MapClaims{
+		"sub":  strconv.FormatInt(userID.ID, 10),
+		"info": fmt.Sprintf(`{"id":%d,"name":"%s"}`, userID.ID, userID.Name),
+	})
+}
+
+func privateChannelToken(userID *models.UserID, channel string) string {
+	return generateToken(jwt.MapClaims{
+		"client":  strconv.FormatInt(userID.ID, 10),
+		"channel": channel,
+	})
+}
+
+func newTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeTokenParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountSubscribeTokenParams, userID *models.UserID) middleware.Responder {
+		tok := connectionToken(userID)
+		res := account.GetAccountSubscribeTokenOKBody{Token: tok}
+		return account.NewGetAccountSubscribeTokenOK().WithPayload(&res)
 	}
 }

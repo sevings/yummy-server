@@ -397,3 +397,15 @@ func TestEmailSettings(t *testing.T) {
 	checkUpdateEmailSettings(t, userIDs[0], false, false)
 	checkUpdateEmailSettings(t, userIDs[0], true, true)
 }
+
+func TestConnectionToken(t *testing.T) {
+	load := api.AccountGetAccountSubscribeTokenHandler.Handle
+	resp := load(account.GetAccountSubscribeTokenParams{}, userIDs[1])
+	body, ok := resp.(*account.GetAccountSubscribeTokenOK)
+
+	req := require.New(t)
+	req.True(ok)
+
+	data := body.Payload
+	req.NotEmpty(data.Token)
+}

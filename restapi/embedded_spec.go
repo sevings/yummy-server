@@ -465,6 +465,31 @@ func init() {
         }
       }
     },
+    "/account/subscribe/token": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "centrifugo connection token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/account/verification": {
       "post": {
         "security": [
@@ -4318,6 +4343,31 @@ func init() {
         "responses": {
           "200": {
             "description": "email notification settings has been updated"
+          }
+        }
+      }
+    },
+    "/account/subscribe/token": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "centrifugo connection token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

@@ -91,6 +91,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
 		}),
+		AccountGetAccountSubscribeTokenHandler: account.GetAccountSubscribeTokenHandlerFunc(func(params account.GetAccountSubscribeTokenParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountGetAccountSubscribeToken has not yet been implemented")
+		}),
 		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
 		}),
@@ -369,6 +372,8 @@ type MindwellAPI struct {
 	AccountGetAccountNameNameHandler account.GetAccountNameNameHandler
 	// AccountGetAccountSettingsEmailHandler sets the operation handler for the get account settings email operation
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
+	// AccountGetAccountSubscribeTokenHandler sets the operation handler for the get account subscribe token operation
+	AccountGetAccountSubscribeTokenHandler account.GetAccountSubscribeTokenHandler
 	// AccountGetAccountVerificationEmailHandler sets the operation handler for the get account verification email operation
 	AccountGetAccountVerificationEmailHandler account.GetAccountVerificationEmailHandler
 	// AdmGetAdmGrandfatherHandler sets the operation handler for the get adm grandfather operation
@@ -626,6 +631,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
+	}
+
+	if o.AccountGetAccountSubscribeTokenHandler == nil {
+		unregistered = append(unregistered, "account.GetAccountSubscribeTokenHandler")
 	}
 
 	if o.AccountGetAccountVerificationEmailHandler == nil {
@@ -1075,6 +1084,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/account/subscribe/token"] = account.NewGetAccountSubscribeToken(o.context, o.AccountGetAccountSubscribeTokenHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
