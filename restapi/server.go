@@ -23,8 +23,9 @@ import (
 	"github.com/go-openapi/runtime/flagext"
 	"github.com/go-openapi/swag"
 	flags "github.com/jessevdk/go-flags"
-	"github.com/sevings/mindwell-server/restapi/operations"
 	"golang.org/x/net/netutil"
+
+	"github.com/sevings/mindwell-server/restapi/operations"
 )
 
 const (
@@ -186,6 +187,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(domainSocket, "unix", string(s.SocketPath))
 
+		servers = append(servers, domainSocket)
 		wg.Add(1)
 		s.Logf("Serving mindwell at unix://%s", s.SocketPath)
 		go func(l net.Listener) {
@@ -195,7 +197,6 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving mindwell at unix://%s", s.SocketPath)
 		}(s.domainSocketL)
-		servers = append(servers, domainSocket)
 	}
 
 	if s.hasScheme(schemeHTTP) {
@@ -216,6 +217,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(httpServer, "http", s.httpServerL.Addr().String())
 
+		servers = append(servers, httpServer)
 		wg.Add(1)
 		s.Logf("Serving mindwell at http://%s", s.httpServerL.Addr())
 		go func(l net.Listener) {
@@ -225,7 +227,6 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving mindwell at http://%s", l.Addr())
 		}(s.httpServerL)
-		servers = append(servers, httpServer)
 	}
 
 	if s.hasScheme(schemeHTTPS) {
@@ -312,6 +313,7 @@ func (s *Server) Serve() (err error) {
 
 		configureServer(httpsServer, "https", s.httpsServerL.Addr().String())
 
+		servers = append(servers, httpsServer)
 		wg.Add(1)
 		s.Logf("Serving mindwell at https://%s", s.httpsServerL.Addr())
 		go func(l net.Listener) {
@@ -321,7 +323,6 @@ func (s *Server) Serve() (err error) {
 			}
 			s.Logf("Stopped serving mindwell at https://%s", l.Addr())
 		}(tls.NewListener(s.httpsServerL, httpsServer.TLSConfig))
-		servers = append(servers, httpsServer)
 	}
 
 	wg.Wait()

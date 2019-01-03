@@ -43,7 +43,7 @@ func (o *GetUsersNameInvitedURL) SetBasePath(bp string) {
 
 // Build a url path and query string
 func (o *GetUsersNameInvitedURL) Build() (*url.URL, error) {
-	var result url.URL
+	var _result url.URL
 
 	var _path = "/users/{name}/invited"
 
@@ -58,7 +58,7 @@ func (o *GetUsersNameInvitedURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/api/v1"
 	}
-	result.Path = golangswaggerpaths.Join(_basePath, _path)
+	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
 
@@ -78,9 +78,9 @@ func (o *GetUsersNameInvitedURL) Build() (*url.URL, error) {
 		qs.Set("skip", skip)
 	}
 
-	result.RawQuery = qs.Encode()
+	_result.RawQuery = qs.Encode()
 
-	return &result, nil
+	return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error

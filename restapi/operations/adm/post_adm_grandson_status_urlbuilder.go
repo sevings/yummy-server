@@ -39,7 +39,7 @@ func (o *PostAdmGrandsonStatusURL) SetBasePath(bp string) {
 
 // Build a url path and query string
 func (o *PostAdmGrandsonStatusURL) Build() (*url.URL, error) {
-	var result url.URL
+	var _result url.URL
 
 	var _path = "/adm/grandson/status"
 
@@ -47,7 +47,7 @@ func (o *PostAdmGrandsonStatusURL) Build() (*url.URL, error) {
 	if _basePath == "" {
 		_basePath = "/api/v1"
 	}
-	result.Path = golangswaggerpaths.Join(_basePath, _path)
+	_result.Path = golangswaggerpaths.Join(_basePath, _path)
 
 	qs := make(url.Values)
 
@@ -56,9 +56,9 @@ func (o *PostAdmGrandsonStatusURL) Build() (*url.URL, error) {
 		qs.Set("received", received)
 	}
 
-	result.RawQuery = qs.Encode()
+	_result.RawQuery = qs.Encode()
 
-	return &result, nil
+	return &_result, nil
 }
 
 // Must is a helper function to panic when the url builder returns an error
