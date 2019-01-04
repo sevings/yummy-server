@@ -32,3 +32,9 @@ CREATE UNIQUE INDEX "index_notification_id" ON "mindwell"."notifications" USING 
 -- CREATE INDEX "index_notification_user_id" -------------------
 CREATE INDEX "index_notification_user_id" ON "mindwell"."notifications" USING btree( "user_id" );
 -- -------------------------------------------------------------
+
+ALTER TABLE users
+ALTER COLUMN email_comments SET DEFAULT FALSE;
+
+ALTER TABLE users
+ALTER COLUMN email_followers SET DEFAULT FALSE;
