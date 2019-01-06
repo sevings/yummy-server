@@ -392,7 +392,7 @@ func checkUpdateEmailSettings(t *testing.T, userID *models.UserID, comments, fol
 }
 
 func TestEmailSettings(t *testing.T) {
-	checkEmailSettings(t, userIDs[0], true, true)
+	checkEmailSettings(t, userIDs[0], false, false)
 	checkUpdateEmailSettings(t, userIDs[0], true, false)
 	checkUpdateEmailSettings(t, userIDs[0], false, false)
 	checkUpdateEmailSettings(t, userIDs[0], true, true)
