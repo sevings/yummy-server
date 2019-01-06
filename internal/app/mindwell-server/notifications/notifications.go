@@ -37,9 +37,21 @@ func newNotificationsReader(srv *utils.MindwellServer) func(notifications.PutNot
 
 			if *params.Time > 0 {
 				q = q + " AND extract(epoch from created_at) <= $2"
-				tx.Exec(q, uID.ID, *params.Time)
+				q = q + " RETURNING id"
+				tx.Query(q, uID.ID, *params.Time)
 			} else {
-				tx.Exec(q, uID.ID)
+				q = q + " RETURNING id"
+				tx.Query(q, uID.ID)
+			}
+
+			for {
+				var id int64
+				ok := tx.Scan(&id)
+				if !ok {
+					break
+				}
+
+				srv.Ntf.NotifyRead(uID.ID, id)
 			}
 
 			unread := unreadCount(tx, uID.ID)

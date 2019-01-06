@@ -11,8 +11,9 @@ import (
 
 type message struct {
 	ID   int64  `json:"id"`
-	Subj int64  `json:"subject"`
-	Type string `json:"type"`
+	Subj int64  `json:"subject,omitempty"`
+	Type string `json:"type,omitempty"`
+	Read bool   `json:"read,omitempty"`
 	ch   string
 }
 
@@ -56,6 +57,10 @@ func NewNotifier(apiURL, apiKey string) *Notifier {
 	return ntf
 }
 
+func notificationsChannel(userID int64) string {
+	return fmt.Sprintf("notifications#%d", userID)
+}
+
 func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
 	const q = `
 		INSERT INTO notifications(user_id, subject_id, type)
@@ -71,7 +76,19 @@ func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
 			ID:   id,
 			Subj: subjectID,
 			Type: tpe,
-			ch:   fmt.Sprintf("notifications#%d", userID),
+			ch:   notificationsChannel(userID),
 		}
+	}
+}
+
+func (ntf *Notifier) NotifyRead(userID, ntfID int64) {
+	if ntf.ch == nil {
+		return
+	}
+
+	ntf.ch <- &message{
+		ID:   ntfID,
+		Read: true,
+		ch:   notificationsChannel(userID),
 	}
 }
