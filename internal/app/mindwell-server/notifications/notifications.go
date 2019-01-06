@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
@@ -16,6 +17,7 @@ import (
 func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.NotificationsPutNotificationsReadHandler = notifications.PutNotificationsReadHandlerFunc(newNotificationsReader(srv))
 	srv.API.NotificationsGetNotificationsHandler = notifications.GetNotificationsHandlerFunc(newNotificationsLoader(srv))
+	srv.API.NotificationsGetNotificationsIDHandler = notifications.GetNotificationsIDHandlerFunc(newSingleNotificationLoader(srv))
 }
 
 func unreadCount(tx *utils.AutoTx, userID int64) int64 {
@@ -55,6 +57,33 @@ type notice struct {
 	read bool
 }
 
+func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, not *notice) *models.Notification {
+	notif := models.Notification{
+		ID:        not.id,
+		CreatedAt: not.at,
+		Read:      not.read,
+		Type:      not.tpe,
+	}
+
+	switch not.tpe {
+	case "comment":
+		notif.Comment = comments.LoadComment(srv, tx, userID, not.subj)
+		notif.Entry = entries.LoadEntry(srv, tx, notif.Comment.EntryID, userID)
+		break
+	case "follower":
+		fallthrough
+	case "request":
+		fallthrough
+	case "accept":
+		notif.User = users.LoadUserByID(srv, tx, not.subj)
+		break
+	default:
+		log.Println("Unknown notification type:", not.tpe)
+	}
+
+	return &notif
+}
+
 func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse bool) *models.NotificationList {
 	var notices []notice
 	for {
@@ -71,30 +100,8 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 	feed.UnreadCount = unreadCount(tx, userID)
 
 	for _, not := range notices {
-		notif := models.Notification{
-			ID:        not.id,
-			CreatedAt: not.at,
-			Read:      not.read,
-			Type:      not.tpe,
-		}
-
-		switch not.tpe {
-		case "comment":
-			notif.Comment = comments.LoadComment(srv, tx, userID, not.subj)
-			notif.Entry = entries.LoadEntry(srv, tx, notif.Comment.EntryID, userID)
-			break
-		case "follower":
-			fallthrough
-		case "request":
-			fallthrough
-		case "accept":
-			notif.User = users.LoadUserByID(srv, tx, not.subj)
-			break
-		default:
-			log.Println("Unknown notification type:", not.tpe)
-		}
-
-		feed.Notifications = append(feed.Notifications, &notif)
+		notif := loadNotification(srv, tx, userID, &not)
+		feed.Notifications = append(feed.Notifications, notif)
 	}
 
 	if reverse {
@@ -161,6 +168,28 @@ func newNotificationsLoader(srv *utils.MindwellServer) func(notifications.GetNot
 			tx.Scan(&feed.HasAfter)
 
 			return notifications.NewGetNotificationsOK().WithPayload(feed)
+		})
+	}
+}
+
+func newSingleNotificationLoader(srv *utils.MindwellServer) func(notifications.GetNotificationsIDParams, *models.UserID) middleware.Responder {
+	return func(params notifications.GetNotificationsIDParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			var q = `SELECT notifications.id, extract(epoch from created_at), notification_type.type, subject_id, read
+				FROM notifications, notification_type
+				WHERE notifications.id = $1 AND user_id = $2 AND notifications.type = notification_type.id
+				`
+
+			var not notice
+			tx.Query(q, params.ID, userID.ID).Scan(&not.id, &not.at, &not.tpe, &not.subj, &not.read)
+
+			if not.subj == 0 {
+				err := srv.NewError(&i18n.Message{ID: "no_notification", Other: "Notification not found or it's not yours."})
+				return notifications.NewGetNotificationsIDNotFound().WithPayload(err)
+			}
+
+			ntf := loadNotification(srv, tx, userID.ID, &not)
+			return notifications.NewGetNotificationsIDOK().WithPayload(ntf)
 		})
 	}
 }

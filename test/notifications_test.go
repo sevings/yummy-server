@@ -29,6 +29,27 @@ func checkLoadNotifications(t *testing.T, id *models.UserID, limit int64, before
 	return list
 }
 
+func checkLoadSingleNotification(t *testing.T, userID *models.UserID, ntf *models.Notification, success bool) {
+	params := notifications.GetNotificationsIDParams{
+		ID: ntf.ID,
+	}
+
+	get := api.NotificationsGetNotificationsIDHandler.Handle
+	resp := get(params, userID)
+	body, ok := resp.(*notifications.GetNotificationsIDOK)
+
+	req := require.New(t)
+	req.Equal(success, ok)
+	if !ok {
+		return
+	}
+
+	loaded := body.Payload
+	req.Equal(ntf.ID, loaded.ID)
+	req.Equal(ntf.Type, loaded.Type)
+	req.Equal(ntf.Read, loaded.Read)
+}
+
 func checkReadNotifications(t *testing.T, id *models.UserID, time float64, unread int64) {
 	params := notifications.PutNotificationsReadParams{
 		Time: &time,
@@ -70,6 +91,9 @@ func TestNotification(t *testing.T) {
 	nots = checkLoadNotifications(t, userIDs[0], 20, nots.NextBefore, "", false, 1)
 	req.Equal(ids[0], nots.Notifications[0].Comment.ID)
 	req.Equal(e.ID, nots.Notifications[0].Entry.ID)
+
+	checkLoadSingleNotification(t, userIDs[0], nots.Notifications[0], true)
+	checkLoadSingleNotification(t, userIDs[1], nots.Notifications[0], false)
 
 	req.True(nots.HasAfter)
 	req.False(nots.HasBefore)

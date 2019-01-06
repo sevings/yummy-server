@@ -184,6 +184,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		NotificationsGetNotificationsHandler: notifications.GetNotificationsHandlerFunc(func(params notifications.GetNotificationsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation NotificationsGetNotifications has not yet been implemented")
 		}),
+		NotificationsGetNotificationsIDHandler: notifications.GetNotificationsIDHandlerFunc(func(params notifications.GetNotificationsIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation NotificationsGetNotificationsID has not yet been implemented")
+		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
 		}),
@@ -434,6 +437,8 @@ type MindwellAPI struct {
 	MeGetMeTlogHandler me.GetMeTlogHandler
 	// NotificationsGetNotificationsHandler sets the operation handler for the get notifications operation
 	NotificationsGetNotificationsHandler notifications.GetNotificationsHandler
+	// NotificationsGetNotificationsIDHandler sets the operation handler for the get notifications ID operation
+	NotificationsGetNotificationsIDHandler notifications.GetNotificationsIDHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
@@ -755,6 +760,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.NotificationsGetNotificationsHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsHandler")
+	}
+
+	if o.NotificationsGetNotificationsIDHandler == nil {
+		unregistered = append(unregistered, "notifications.GetNotificationsIDHandler")
 	}
 
 	if o.RelationsGetRelationsFromNameHandler == nil {
@@ -1239,6 +1248,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/notifications"] = notifications.NewGetNotifications(o.context, o.NotificationsGetNotificationsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/notifications/{id}"] = notifications.NewGetNotificationsID(o.context, o.NotificationsGetNotificationsIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

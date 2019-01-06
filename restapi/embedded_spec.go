@@ -2563,6 +2563,37 @@ func init() {
         }
       }
     },
+    "/notifications/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/pathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "notification",
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/relations/from/{name}": {
       "get": {
         "security": [
@@ -6634,6 +6665,42 @@ func init() {
                   "type": "integer"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "notification",
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }

@@ -872,6 +872,23 @@ paths:
           description: notification list
           schema:
             $ref: '#/definitions/NotificationList'
+  /notifications/{id}:
+    get:
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - $ref: '#/parameters/pathId'
+      tags:
+        - notifications
+      responses:
+        200:
+          description: notification
+          schema:
+            $ref: '#/definitions/Notification'
+        404:
+          description: not found
+          schema:
+            $ref: '#/definitions/Error'
   /notifications/read:
     put:
       security:
