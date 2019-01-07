@@ -258,9 +258,10 @@ func TestRegister(t *testing.T) {
 	checkLogin(t, user, params.Email, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
-	checkVerify(t, userID, user.Account.Email)
+	checkVerify(t, userID, "testemail")
 	user.Account.Verified = true
-	checkResetPassword(t, user.Account.Email)
+	checkResetPassword(t, "testemail")
+	checkResetPassword(t, "testeMAil")
 	checkLogin(t, user, params.Name, params.Password)
 
 	changePassword(t, userID, "test123", "new123", true)
@@ -269,7 +270,7 @@ func TestRegister(t *testing.T) {
 
 	req := require.New(t)
 	req.Equal(params.Name, user.Name)
-	req.Equal(params.Email, user.Account.Email)
+	req.Equal(params.Email, "testemail")
 
 	req.Equal(user.Name, user.ShowName)
 	req.True(user.IsOnline)

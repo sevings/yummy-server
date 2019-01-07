@@ -51,6 +51,7 @@ func (esm *EmailSenderMock) CheckEmail(t *testing.T, email string) {
 func (esm *EmailSenderMock) Clear() {
 	esm.Emails = nil
 	esm.Codes = nil
+	esm.Dates = nil
 }
 
 func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {

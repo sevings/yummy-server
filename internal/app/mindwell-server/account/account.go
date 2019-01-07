@@ -471,7 +471,7 @@ func newResetPasswordSender(srv *utils.MindwellServer) func(account.PostAccountR
 			const q = `
 				SELECT show_name, gender.type 
 				FROM users, gender 
-				WHERE users.email = $1 and verified and users.gender = gender.id`
+				WHERE lower(users.email) = lower($1) and verified and users.gender = gender.id`
 
 			var gender string
 			var name string
@@ -498,7 +498,7 @@ func resetPassword(srv *utils.MindwellServer, tx *utils.AutoTx, email, password 
 	const q = `
         update users
         set password_hash = $2
-        where email = $1`
+        where lower(email) = lower($1)`
 
 	hash := srv.PasswordHash(password)
 	tx.Exec(q, email, hash)
