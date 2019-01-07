@@ -1,4 +1,4 @@
-package main
+package helper
 
 import (
 	"bufio"
@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/sevings/mindwell-server/utils"
-	goconf "github.com/zpatrick/go-config"
 )
 
 type user struct {
@@ -118,30 +117,8 @@ func takeRandom(s []string) (string, []string) {
 	return result, s[:len(s)-1]
 }
 
-func postman(cfg *goconf.Config) *utils.Postman {
-	domain, _ := cfg.String("mailgun.domain")
-	apiKey, _ := cfg.String("mailgun.api_key")
-	pubKey, _ := cfg.String("mailgun.pub_key")
-	baseURL, _ := cfg.String("server.base_url")
-
-	if len(domain) == 0 || len(apiKey) == 0 || len(pubKey) == 0 || len(baseURL) == 0 {
-		log.Println("Check config consistency")
-		return nil
-	}
-
-	return utils.NewPostman(domain, apiKey, pubKey, baseURL)
-}
-
-func main() {
+func UpdateAdm(tx *sql.Tx, mail *utils.Postman) {
 	rand.Seed(time.Now().UTC().UnixNano())
-
-	cfg := utils.LoadConfig("configs/server")
-	db := utils.OpenDatabase(cfg)
-	tx, err := db.Begin()
-	defer tx.Rollback()
-	if err != nil {
-		log.Println(err)
-	}
 
 	names, err := genderNames(tx)
 	if err != nil {
@@ -169,7 +146,6 @@ func main() {
 		return
 	}
 
-	mail := postman(cfg)
 	for _, usr := range users {
 		mail.SendAdm(usr.email, usr.name, usr.gender)
 	}

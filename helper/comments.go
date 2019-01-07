@@ -1,11 +1,11 @@
-package main
+package helper
 
 import (
+	"database/sql"
 	"log"
 	"strings"
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
-	"github.com/sevings/mindwell-server/utils"
 )
 
 type comment struct {
@@ -13,15 +13,7 @@ type comment struct {
 	text string
 }
 
-func main() {
-	cfg := utils.LoadConfig("configs/server")
-	db := utils.OpenDatabase(cfg)
-	tx, err := db.Begin()
-	defer tx.Rollback()
-	if err != nil {
-		log.Println(err)
-	}
-
+func UpdateComments(tx *sql.Tx) {
 	rows, err := tx.Query("SELECT id, edit_content FROM comments")
 	if err != nil {
 		log.Println(err)
