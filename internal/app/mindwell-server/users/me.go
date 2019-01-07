@@ -2,6 +2,7 @@ package users
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/sevings/mindwell-server/utils"
 
@@ -114,12 +115,14 @@ func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 
 	if params.City != nil {
 		const q = "update users set city = $2 where id = $1"
-		tx.Exec(q, id, *params.City)
+		city := strings.TrimSpace(*params.City)
+		tx.Exec(q, id, city)
 	}
 
 	if params.Country != nil {
 		const q = "update users set country = $2 where id = $1"
-		tx.Exec(q, id, *params.Country)
+		country := strings.TrimSpace(*params.Country)
+		tx.Exec(q, id, country)
 	}
 
 	if params.Gender != nil {
@@ -133,7 +136,8 @@ func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	}
 
 	const q = "update users set privacy = (select id from user_privacy where type = $2), show_name = $3 where id = $1"
-	tx.Exec(q, id, params.Privacy, params.ShowName)
+	showName := strings.TrimSpace(params.ShowName)
+	tx.Exec(q, id, params.Privacy, showName)
 
 	if params.ShowInTops != nil {
 		const q = "update users set show_in_tops = $2 where id = $1"
@@ -142,7 +146,8 @@ func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 
 	if params.Title != nil {
 		const q = "update users set title = $2 where id = $1"
-		tx.Exec(q, id, *params.Title)
+		title := strings.TrimSpace(*params.Title)
+		tx.Exec(q, id, title)
 	}
 
 	const loadQuery = profileQuery + "WHERE long_users.id = $1"

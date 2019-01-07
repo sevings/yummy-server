@@ -3,6 +3,7 @@ package entries
 import (
 	"database/sql"
 	"regexp"
+	"strings"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -84,24 +85,6 @@ func wordCount(content, title string) int64 {
 	return wc
 }
 
-func cutEntry(title, content string) (cutTitle string, cutContent string, hasCut bool) {
-	const titleLength = 80
-	const titleFormat = "%.80s"
-	cutTitle, isTitleCut := utils.CutText(title, titleFormat, titleLength)
-
-	const contentLength = 500
-	const contentFormat = "%.500s"
-	cutContent, isContentCut := utils.CutText(content, contentFormat, contentLength)
-
-	hasCut = isTitleCut || isContentCut
-	if !hasCut {
-		cutTitle = ""
-		cutContent = ""
-	}
-
-	return
-}
-
 func entryCategory(entry *models.Entry) string {
 	if entry.WordCount > 100 {
 		return "longread"
@@ -115,7 +98,7 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -125,11 +108,27 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		inLive = false
 	}
 
+	title = strings.TrimSpace(title)
 	title = bluemonday.StrictPolicy().Sanitize(title)
 
-	cutTitle, cutContent, hasCut := cutEntry(title, content)
+	const titleLength = 100
+	const titleFormat = "%.100s"
+	cutTitle, isTitleCut := utils.CutText(title, titleFormat, titleLength)
+
+	content = strings.TrimSpace(content)
+
+	const contentLength = 500
+	const contentFormat = "%.500s"
+	cutContent, isContentCut := utils.CutText(content, contentFormat, contentLength)
+
+	hasCut := isTitleCut || isContentCut
+	if !hasCut {
+		cutTitle = ""
+		cutContent = ""
+	}
 
 	entry := models.Entry{
+		Author:      users.LoadUserByID(srv, tx, userID),
 		Title:       title,
 		CutTitle:    cutTitle,
 		Content:     md.RenderToString([]byte(content)),
@@ -146,7 +145,13 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		},
 	}
 
-	category := entryCategory(&entry)
+	return &entry
+}
+
+func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
+
+	category := entryCategory(entry)
 
 	const q = `
 	INSERT INTO entries (author_id, title, cut_title, content, cut_content, edit_content, 
@@ -156,15 +161,14 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		$10, $11, (SELECT id from categories WHERE type = $12))
 	RETURNING id, extract(epoch from created_at)`
 
-	tx.Query(q, userID, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent,
-		hasCut, entry.WordCount, privacy, isVotable, inLive, category).Scan(&entry.ID, &entry.CreatedAt)
+	tx.Query(q, userID, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent,
+		entry.HasCut, entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category).
+		Scan(&entry.ID, &entry.CreatedAt)
 
 	entry.Rating.ID = entry.ID
 	watchings.AddWatching(tx, userID, entry.ID)
-	author := users.LoadUserByID(srv, tx, userID)
-	entry.Author = author
 
-	return &entry
+	return entry
 }
 
 func allowedInLive(followersCount, entryCount int64) bool {
@@ -222,38 +226,9 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 }
 
 func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
-	if privacy == "followers" {
-		privacy = models.EntryPrivacySome //! \todo add users to list
-	}
+	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
 
-	if privacy == models.EntryPrivacyMe {
-		isVotable = false
-		inLive = false
-	}
-
-	title = bluemonday.StrictPolicy().Sanitize(title)
-
-	cutTitle, cutContent, hasCut := cutEntry(title, content)
-
-	entry := models.Entry{
-		ID:          entryID,
-		Title:       title,
-		CutTitle:    cutTitle,
-		Content:     md.RenderToString([]byte(content)),
-		CutContent:  md.RenderToString([]byte(cutContent)),
-		EditContent: content,
-		HasCut:      hasCut,
-		WordCount:   wordCount(content, title),
-		Privacy:     privacy,
-		IsWatching:  true,
-		InLive:      inLive,
-		Rating: &models.Rating{
-			IsVotable: isVotable,
-			Vote:      models.RatingVoteBan,
-		},
-	}
-
-	category := entryCategory(&entry)
+	category := entryCategory(entry)
 
 	const q = `
 	UPDATE entries
@@ -265,16 +240,15 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	WHERE id = $12 AND author_id = $13
 	RETURNING extract(epoch from created_at)`
 
-	tx.Query(q, title, cutTitle, entry.Content, entry.CutContent, entry.EditContent, hasCut,
-		entry.WordCount, privacy, isVotable, inLive, category, entryID, userID).Scan(&entry.CreatedAt)
+	tx.Query(q, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent, entry.HasCut,
+		entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category, entryID, userID).
+		Scan(&entry.CreatedAt)
 
+	entry.ID = entryID
+	entry.Rating.ID = entryID
 	watchings.AddWatching(tx, userID, entry.ID)
 
-	author := users.LoadUserByID(srv, tx, userID)
-	entry.Author = author
-	entry.Rating.ID = entry.ID
-
-	return &entry
+	return entry
 }
 
 func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool {
