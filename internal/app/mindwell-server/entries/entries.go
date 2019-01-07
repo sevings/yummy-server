@@ -98,16 +98,7 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
-	if privacy == "followers" {
-		privacy = models.EntryPrivacySome //! \todo add users to list
-	}
-
-	if privacy == models.EntryPrivacyMe {
-		isVotable = false
-		inLive = false
-	}
-
+func NewEntry(title, content string) *models.Entry {
 	title = strings.TrimSpace(title)
 	title = bluemonday.StrictPolicy().Sanitize(title)
 
@@ -128,7 +119,6 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, c
 	}
 
 	entry := models.Entry{
-		Author:      users.LoadUserByID(srv, tx, userID),
 		Title:       title,
 		CutTitle:    cutTitle,
 		Content:     md.RenderToString([]byte(content)),
@@ -136,16 +126,33 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, c
 		EditContent: content,
 		HasCut:      hasCut,
 		WordCount:   wordCount(content, title),
-		Privacy:     privacy,
-		IsWatching:  true,
-		InLive:      inLive,
-		Rating: &models.Rating{
-			Vote:      models.RatingVoteBan,
-			IsVotable: isVotable,
-		},
 	}
 
 	return &entry
+}
+
+func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+	if privacy == "followers" {
+		privacy = models.EntryPrivacySome //! \todo add users to list
+	}
+
+	if privacy == models.EntryPrivacyMe {
+		isVotable = false
+		inLive = false
+	}
+
+	entry := NewEntry(title, content)
+
+	entry.Author = users.LoadUserByID(srv, tx, userID)
+	entry.Privacy = privacy
+	entry.IsWatching = true
+	entry.InLive = inLive
+	entry.Rating = &models.Rating{
+		Vote:      models.RatingVoteBan,
+		IsVotable: isVotable,
+	}
+
+	return entry
 }
 
 func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {

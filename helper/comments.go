@@ -3,7 +3,6 @@ package helper
 import (
 	"database/sql"
 	"log"
-	"strings"
 
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 )
@@ -28,29 +27,12 @@ func UpdateComments(tx *sql.Tx) {
 
 	log.Printf("Updating %d comments...\n", len(cmts))
 
-	htmlEsc := strings.NewReplacer(
-		"&lt;", "<",
-		"&gt;", ">",
-		"&amp;", "&",
-		"&quot;", "\"",
-		"&#34;", "\"",
-		"&#034;", "\"",
-		"&#39;", "'",
-		"&#039;", "'",
-	)
-
 	for _, cmt := range cmts {
-		text := htmlEsc.Replace(cmt.text)
-		html := comments.HtmlContent(text)
-		_, err = tx.Exec("UPDATE comments SET content = $2, edit_content = $3 WHERE id = $1", cmt.id, html, text)
+		html := comments.HtmlContent(cmt.text)
+		_, err = tx.Exec("UPDATE comments SET content = $2 WHERE id = $1", cmt.id, html)
 		if err != nil {
 			log.Println(err)
 		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Println(err)
 	}
 
 	log.Println("Completed.")

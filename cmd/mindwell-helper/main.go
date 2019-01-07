@@ -8,9 +8,10 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
-const admArg = "--adm"
-const commentsArg = "--comments"
-const helpArg = "--help"
+const admArg = "adm"
+const commentsArg = "comments"
+const entriesArg = "entries"
+const helpArg = "help"
 
 func printHelp() {
 	log.Printf(
@@ -18,8 +19,8 @@ func printHelp() {
 Usage: mindwell-helper [option]
 
 Options are:
-
-%s	- update comments.
+%s	- update comments content.
+%s	- update entries title and content.
 %s		- set grandfathers in adm and sent emails to them.
 %s		- print this help message.
 `, commentsArg, admArg, helpArg)
@@ -56,6 +57,8 @@ func main() {
 		switch arg {
 		case commentsArg:
 			helper.UpdateComments(tx)
+		case entriesArg:
+			helper.UpdateEntries(tx)
 		case admArg:
 			helper.UpdateAdm(tx, mail)
 		case helpArg:
@@ -63,5 +66,10 @@ func main() {
 		default:
 			log.Printf("Unknown argument: %s\n", arg)
 		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Println(err)
 	}
 }

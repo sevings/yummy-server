@@ -140,12 +140,6 @@ func UpdateAdm(tx *sql.Tx, mail *utils.Postman) {
 		return
 	}
 
-	err = tx.Commit()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	for _, usr := range users {
 		mail.SendAdm(usr.email, usr.name, usr.gender)
 	}
