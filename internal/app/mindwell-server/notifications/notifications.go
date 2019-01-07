@@ -51,7 +51,7 @@ func newNotificationsReader(srv *utils.MindwellServer) func(notifications.PutNot
 					break
 				}
 
-				srv.Ntf.NotifyRead(uID.ID, id)
+				srv.Ntf.NotifyRead(uID.Name, id)
 			}
 
 			unread := unreadCount(tx, uID.ID)

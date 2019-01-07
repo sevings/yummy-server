@@ -560,14 +560,14 @@ func generateToken(claims jwt.MapClaims) string {
 
 func connectionToken(userID *models.UserID) string {
 	return generateToken(jwt.MapClaims{
-		"sub":  strconv.FormatInt(userID.ID, 10),
+		"sub":  userID.Name,
 		"info": fmt.Sprintf(`{"id":%d,"name":"%s"}`, userID.ID, userID.Name),
 	})
 }
 
 func privateChannelToken(userID *models.UserID, channel string) string {
 	return generateToken(jwt.MapClaims{
-		"client":  strconv.FormatInt(userID.ID, 10),
+		"client":  userID.Name,
 		"channel": channel,
 	})
 }

@@ -383,27 +383,27 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
 
 	const toQ = `
-		SELECT users.id, show_name, email, verified AND email_comments
+		SELECT users.name, show_name, email, verified AND email_comments
 		FROM users, watching 
 		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
 			AND users.id <> $2`
 
 	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
 
-	var toIDs []int64
-	var toID int64
+	var toNames []string
+	var toName string
 	var sendEmail bool
 	var toShowName, email string
-	for tx.Scan(&toID, &toShowName, &email, &sendEmail) {
+	for tx.Scan(&toName, &toShowName, &email, &sendEmail) {
 		if sendEmail {
 			srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
 		}
 
-		toIDs = append(toIDs, toID)
+		toNames = append(toNames, toName)
 	}
 
-	for _, id := range toIDs {
-		srv.Ntf.Notify(tx, id, cmt.ID, "comment")
+	for _, name := range toNames {
+		srv.Ntf.Notify(tx, cmt.ID, "comment", name)
 	}
 }
 

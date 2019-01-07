@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/centrifugal/gocent"
@@ -57,19 +56,20 @@ func NewNotifier(apiURL, apiKey string) *Notifier {
 	return ntf
 }
 
-func notificationsChannel(userID int64) string {
-	return fmt.Sprintf("notifications#%d", userID)
+func notificationsChannel(userName string) string {
+	return "notifications#" + userName
 }
 
-func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
+func (ntf *Notifier) Notify(tx *AutoTx, subjectID int64, tpe, user string) {
 	const q = `
 		INSERT INTO notifications(user_id, subject_id, type)
-		VALUES($1, $2, (SELECT id FROM notification_type WHERE type = $3))
+		VALUES((SELECT id from users WHERE lower(name) = lower($1)), 
+			$2, (SELECT id FROM notification_type WHERE type = $3))
 		RETURNING id
 	`
 
 	var id int64
-	tx.Query(q, userID, subjectID, tpe).Scan(&id)
+	tx.Query(q, user, subjectID, tpe).Scan(&id)
 
 	if ntf.ch != nil {
 		ntf.ch <- &message{
@@ -77,7 +77,7 @@ func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
 			Subj:  subjectID,
 			State: "new",
 			Type:  tpe,
-			ch:    notificationsChannel(userID),
+			ch:    notificationsChannel(user),
 		}
 	}
 }
@@ -88,16 +88,18 @@ func (ntf *Notifier) NotifyUpdate(tx *AutoTx, subjectID int64, tpe string) {
 	}
 
 	const q = `
-		SELECT id, user_id 
-		FROM notifications 
+		SELECT notifications.id, name 
+		FROM notifications, users
 		WHERE subject_id = $1 AND type = (SELECT id FROM notification_type WHERE type = $2)
+			AND user_id = users.id
 	`
 
 	tx.Query(q, subjectID, tpe)
 
 	for {
-		var id, userID int64
-		ok := tx.Scan(&id, &userID)
+		var id int64
+		var user string
+		ok := tx.Scan(&id, &user)
 		if !ok {
 			break
 		}
@@ -105,7 +107,7 @@ func (ntf *Notifier) NotifyUpdate(tx *AutoTx, subjectID int64, tpe string) {
 		ntf.ch <- &message{
 			ID:    id,
 			State: "updated",
-			ch:    notificationsChannel(userID),
+			ch:    notificationsChannel(user),
 		}
 	}
 }
@@ -114,14 +116,15 @@ func (ntf *Notifier) NotifyRemove(tx *AutoTx, subjectID int64, tpe string) {
 	const q = `
 		DELETE FROM notifications 
 		WHERE subject_id = $1 AND type = (SELECT id FROM notification_type WHERE type = $2)
-		RETURNING id, user_id
+		RETURNING id, (SELECT name FROM users WHERE id = user_id)
 	`
 
 	tx.Query(q, subjectID, tpe)
 
 	for {
-		var id, userID int64
-		ok := tx.Scan(&id, &userID)
+		var id int64
+		var user string
+		ok := tx.Scan(&id, &user)
 		if !ok {
 			break
 		}
@@ -133,12 +136,12 @@ func (ntf *Notifier) NotifyRemove(tx *AutoTx, subjectID int64, tpe string) {
 		ntf.ch <- &message{
 			ID:    id,
 			State: "removed",
-			ch:    notificationsChannel(userID),
+			ch:    notificationsChannel(user),
 		}
 	}
 }
 
-func (ntf *Notifier) NotifyRead(userID, ntfID int64) {
+func (ntf *Notifier) NotifyRead(user string, ntfID int64) {
 	if ntf.ch == nil {
 		return
 	}
@@ -146,6 +149,6 @@ func (ntf *Notifier) NotifyRead(userID, ntfID int64) {
 	ntf.ch <- &message{
 		ID:    ntfID,
 		State: "read",
-		ch:    notificationsChannel(userID),
+		ch:    notificationsChannel(user),
 	}
 }
