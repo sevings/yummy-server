@@ -105,4 +105,12 @@ func TestNotification(t *testing.T) {
 
 	checkReadNotifications(t, userIDs[0], 0, 0)
 	checkLoadNotifications(t, userIDs[0], 20, "", "", true, 0)
+
+	cID := postComment(userIDs[1], e.ID)
+	nots = checkLoadNotifications(t, userIDs[0], 20, "", "", true, 1)
+	checkLoadSingleNotification(t, userIDs[0], nots.Notifications[0], true)
+
+	checkDeleteComment(t, cID, userIDs[1], true)
+	checkLoadNotifications(t, userIDs[0], 20, "", "", true, 0)
+	checkLoadSingleNotification(t, userIDs[0], nots.Notifications[0], false)
 }

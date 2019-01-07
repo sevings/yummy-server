@@ -172,6 +172,8 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
+			srv.Ntf.NotifyUpdate(tx, params.ID, "comment")
+
 			return comments.NewPutCommentsIDOK().WithPayload(comment)
 		})
 	}
@@ -216,6 +218,8 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 				err := srv.NewError(nil)
 				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
+
+			srv.Ntf.NotifyRemove(tx, params.ID, "comment")
 
 			return comments.NewDeleteCommentsIDOK()
 		})

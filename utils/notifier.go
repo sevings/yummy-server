@@ -10,11 +10,11 @@ import (
 )
 
 type message struct {
-	ID   int64  `json:"id"`
-	Subj int64  `json:"subject,omitempty"`
-	Type string `json:"type,omitempty"`
-	Read bool   `json:"read,omitempty"`
-	ch   string
+	ID    int64  `json:"id"`
+	Subj  int64  `json:"subject,omitempty"`
+	Type  string `json:"type,omitempty"`
+	State string `json:"state,omitempty"`
+	ch    string
 }
 
 type Notifier struct {
@@ -73,10 +73,67 @@ func (ntf *Notifier) Notify(tx *AutoTx, userID, subjectID int64, tpe string) {
 
 	if ntf.ch != nil {
 		ntf.ch <- &message{
-			ID:   id,
-			Subj: subjectID,
-			Type: tpe,
-			ch:   notificationsChannel(userID),
+			ID:    id,
+			Subj:  subjectID,
+			State: "new",
+			Type:  tpe,
+			ch:    notificationsChannel(userID),
+		}
+	}
+}
+
+func (ntf *Notifier) NotifyUpdate(tx *AutoTx, subjectID int64, tpe string) {
+	if ntf.ch == nil {
+		return
+	}
+
+	const q = `
+		SELECT id, user_id 
+		FROM notifications 
+		WHERE subject_id = $1 AND type = (SELECT id FROM notification_type WHERE type = $2)
+	`
+
+	tx.Query(q, subjectID, tpe)
+
+	for {
+		var id, userID int64
+		ok := tx.Scan(&id, &userID)
+		if !ok {
+			break
+		}
+
+		ntf.ch <- &message{
+			ID:    id,
+			State: "updated",
+			ch:    notificationsChannel(userID),
+		}
+	}
+}
+
+func (ntf *Notifier) NotifyRemove(tx *AutoTx, subjectID int64, tpe string) {
+	const q = `
+		DELETE FROM notifications 
+		WHERE subject_id = $1 AND type = (SELECT id FROM notification_type WHERE type = $2)
+		RETURNING id, user_id
+	`
+
+	tx.Query(q, subjectID, tpe)
+
+	for {
+		var id, userID int64
+		ok := tx.Scan(&id, &userID)
+		if !ok {
+			break
+		}
+
+		if ntf.ch == nil {
+			continue
+		}
+
+		ntf.ch <- &message{
+			ID:    id,
+			State: "removed",
+			ch:    notificationsChannel(userID),
 		}
 	}
 }
@@ -87,8 +144,8 @@ func (ntf *Notifier) NotifyRead(userID, ntfID int64) {
 	}
 
 	ntf.ch <- &message{
-		ID:   ntfID,
-		Read: true,
-		ch:   notificationsChannel(userID),
+		ID:    ntfID,
+		State: "read",
+		ch:    notificationsChannel(userID),
 	}
 }
