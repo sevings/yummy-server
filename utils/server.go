@@ -134,7 +134,8 @@ func (srv *MindwellServer) VerificationCode(email string) string {
 
 func (srv *MindwellServer) resetCode(email string, date int64) string {
 	salt := srv.ConfigString("server.mail_salt")
-	sum := sha256.Sum256([]byte(email + salt))
+	str := email + salt + strconv.FormatInt(date, 16)
+	sum := sha256.Sum256([]byte(str))
 	sha := hex.EncodeToString(sum[:])
 	return sha
 }
