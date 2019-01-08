@@ -33,7 +33,7 @@ var htmlEsc *strings.Replacer
 
 func init() {
 	imgRe = regexp.MustCompile(`(?i)^https?.+\.(?:png|jpg|jpeg|gif)(?:\?\S*)?$`)
-	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://\S+)`)
+	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://[a-zA-Z0-9\-\._~:/?#\[\]@!$&'\(\)*+,;=]+)`)
 	htmlEsc = strings.NewReplacer(
 		"<", "&lt;",
 		">", "&gt;",
@@ -41,6 +41,7 @@ func init() {
 		"\"", "&#34;",
 		"'", "&#39;",
 		"\n", "<br>",
+		"\r", "",
 	)
 }
 
