@@ -20,7 +20,7 @@ Usage: mindwell-helper [option]
 
 Options are:
 %s	- update comments content.
-%s	- update entries title and content.
+%s		- update entries title and content.
 %s		- set grandfathers in adm and sent emails to them.
 %s		- print this help message.
 `, commentsArg, entriesArg, admArg, helpArg)
