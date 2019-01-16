@@ -162,40 +162,6 @@ CREATE TRIGGER cnt_invited
     AFTER INSERT ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited();
 
-CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
-    WITH upd AS (
-        SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0)) / 5 AS karma
-        FROM mindwell.users
-        LEFT JOIN (
-            SELECT users.id, sum(entry_votes.vote) AS karma
-            FROM mindwell.entry_votes, mindwell.entries, mindwell.users
-            WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
-                AND entry_votes.entry_id = entries.id AND entries.author_id = users.id
-            GROUP BY users.id  
-        ) as ek ON users.id = ek.id
-        LEFT JOIN (
-            SELECT users.id, sum(comment_votes.vote) / 10 AS karma
-            FROM mindwell.comment_votes, mindwell.comments, mindwell.users
-            WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
-                AND comment_votes.comment_id = comments.id AND comments.author_id = users.id
-            GROUP BY users.id  
-        ) AS ck ON users.id = ck.id
-    )
-    UPDATE mindwell.users
-    SET karma = upd.karma
-    FROM upd
-    WHERE users.id = upd.id;
-
-    WITH upd AS (
-        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as rank
-        FROM mindwell.users
-    )
-    UPDATE mindwell.users
-    SET rank = upd.rank
-    FROM upd
-    WHERE users.id = upd.id;
-$$ LANGUAGE SQL;
-
 
 
 CREATE VIEW mindwell.short_users AS
@@ -1794,7 +1760,7 @@ CREATE OR REPLACE FUNCTION mindwell.comment_votes_del() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cnt_comment_votes_ins
-    AFTER INSERT ON mindwell.entry_votes
+    AFTER INSERT ON mindwell.comment_votes
     FOR EACH ROW 
     EXECUTE PROCEDURE mindwell.comment_votes_ins();
 
@@ -1930,6 +1896,40 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
             trunc(random() * wc.words)
         FROM inviters, wc
         ON CONFLICT (word1, word2, word3) DO NOTHING;
+$$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
+    WITH upd AS (
+        SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0)) / 5 AS karma
+        FROM mindwell.users
+        LEFT JOIN (
+            SELECT users.id, sum(entry_votes.vote) AS karma
+            FROM mindwell.entry_votes, mindwell.entries, mindwell.users
+            WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
+                AND entry_votes.entry_id = entries.id AND entries.author_id = users.id
+            GROUP BY users.id  
+        ) as ek ON users.id = ek.id
+        LEFT JOIN (
+            SELECT users.id, sum(comment_votes.vote) / 10 AS karma
+            FROM mindwell.comment_votes, mindwell.comments, mindwell.users
+            WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
+                AND comment_votes.comment_id = comments.id AND comments.author_id = users.id
+            GROUP BY users.id  
+        ) AS ck ON users.id = ck.id
+    )
+    UPDATE mindwell.users
+    SET karma = upd.karma
+    FROM upd
+    WHERE users.id = upd.id;
+
+    WITH upd AS (
+        SELECT id, row_number() OVER (ORDER BY karma DESC, created_at ASC) as rank
+        FROM mindwell.users
+    )
+    UPDATE mindwell.users
+    SET rank = upd.rank
+    FROM upd
+    WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
 
 
