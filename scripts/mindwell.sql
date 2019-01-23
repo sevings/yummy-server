@@ -1400,6 +1400,7 @@ CREATE TABLE "mindwell"."entry_votes" (
 	"user_id" Integer NOT NULL,
 	"entry_id" Integer NOT NULL,
     "vote" Real NOT NULL,
+    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "entry_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "entry_vote_entry_id" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_entry_vote" UNIQUE("user_id", "entry_id") );
@@ -1598,8 +1599,12 @@ CREATE TABLE "mindwell"."comments" (
  ;
 -- -------------------------------------------------------------
 
--- CREATE INDEX "index_entry_id" -------------------------------
+-- CREATE INDEX "index_comment_entry_id" -----------------------
 CREATE INDEX "index_comment_entry_id" ON "mindwell"."comments" USING btree( "entry_id" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_comment_date" ---------------------------
+CREATE INDEX "index_comment_date" ON "mindwell"."comments" USING btree( "created_at" );
 -- -------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION mindwell.inc_comments() RETURNS TRIGGER AS $$
@@ -1649,6 +1654,7 @@ CREATE TABLE "mindwell"."comment_votes" (
 	"user_id" Integer NOT NULL,
 	"comment_id" Integer NOT NULL,
     "vote" Real NOT NULL,
+    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT "comment_vote_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "comment_vote_comment_id" FOREIGN KEY("comment_id") REFERENCES "mindwell"."comments"("id") ON DELETE CASCADE,
     CONSTRAINT "unique_comment_vote" UNIQUE("user_id", "comment_id") );
@@ -1935,6 +1941,22 @@ CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
     FROM upd
     WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
+
+CREATE OR REPLACE FUNCTION ban_user(userName TEXT) RETURNS TEXT AS $$
+    BEGIN
+        UPDATE mindwell.users
+        SET api_key = (
+            SELECT array_to_string(array(
+                SELECT substr('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 
+                    trunc(random() * 62)::integer + 1, 1)
+                FROM generate_series(1, 32)), '')
+            ),
+            password_hash = '', verified = false
+        WHERE lower(users.name) = lower(userName);
+
+        RETURN (SELECT email FROM mindwell.users WHERE lower(name) = lower(userName));
+    END;
+$$ LANGUAGE plpgsql;
 
 
 
