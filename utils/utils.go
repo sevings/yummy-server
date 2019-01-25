@@ -7,8 +7,10 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
+	jwt "github.com/dgrijalva/jwt-go"
 	goconf "github.com/zpatrick/go-config"
 
 	"github.com/go-openapi/errors"
@@ -17,6 +19,8 @@ import (
 	// to use postgres
 	_ "github.com/lib/pq"
 )
+
+var errUnauthorized = errors.New(401, "Unauthorized")
 
 // LoadConfig creates app config from file
 func LoadConfig(fileName string) *goconf.Config {
@@ -54,25 +58,93 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 	return allowed
 }
 
-func NewKeyAuth(db *sql.DB) func(apiKey string) (*models.UserID, error) {
-	return func(apiKey string) (*models.UserID, error) {
-		const q = `
+func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {
+	const q = `
 			SELECT id, name
 			FROM users
 			WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
 
-		var user models.UserID
-		err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name)
-		if err != nil {
-			if err != sql.ErrNoRows {
-				log.Print(err)
-			}
-
-			return nil, errors.New(401, "Unauthorized")
+	var user models.UserID
+	err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Print(err)
 		}
 
-		return &user, nil
+		return nil, errUnauthorized
 	}
+
+	return &user, nil
+}
+
+func readUserID(secret []byte, tokenString string) (*models.UserID, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return secret, nil
+	})
+
+	if err != nil {
+		log.Println(err)
+		return nil, errUnauthorized
+	}
+
+	if !token.Valid {
+		log.Printf("Invalid token: %s\n", tokenString)
+		return nil, errUnauthorized
+
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		log.Printf("Error get claims: %s\n", tokenString)
+		return nil, errUnauthorized
+	}
+
+	now := time.Now().Unix()
+	exp := claims["exp"].(int64)
+	if exp > now {
+		return nil, errUnauthorized
+	}
+
+	id := models.UserID{
+		ID:   claims["id"].(int64),
+		Name: claims["name"].(string),
+	}
+
+	return &id, nil
+}
+
+func NewKeyAuth(db *sql.DB, secret []byte) func(apiKey string) (*models.UserID, error) {
+	return func(apiKey string) (*models.UserID, error) {
+		if len(apiKey) == 32 {
+			return loadUserID(db, apiKey)
+		}
+
+		return readUserID(secret, apiKey)
+	}
+}
+
+func BuildApiToken(secret []byte, userID *models.UserID) (string, int64) {
+	now := time.Now().Unix()
+	exp := now + 60*60*24*180
+	thru := now + 60*60
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"exp":  exp,
+		"thru": thru,
+		"id":   userID.ID,
+		"name": userID.Name,
+	})
+
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		log.Print(err)
+	}
+
+	return tokenString, exp
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

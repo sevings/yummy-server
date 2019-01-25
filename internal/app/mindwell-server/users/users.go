@@ -12,8 +12,6 @@ import (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
-	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB)
-
 	srv.API.MeGetMeHandler = me.GetMeHandlerFunc(newMeLoader(srv))
 	srv.API.MePutMeHandler = me.PutMeHandlerFunc(newMeEditor(srv))
 

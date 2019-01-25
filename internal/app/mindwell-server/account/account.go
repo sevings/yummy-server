@@ -22,11 +22,15 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
-var secret []byte
+var centSecret []byte
+var apiSecret []byte
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
-	secret = []byte(srv.ConfigString("centrifugo.secret"))
+	centSecret = []byte(srv.ConfigString("centrifugo.secret"))
+	apiSecret = []byte(srv.ConfigString("server.api_secret"))
+
+	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 
 	srv.API.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(srv))
 	srv.API.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(srv))
@@ -220,7 +224,6 @@ cover,
 css, background_color, text_color, 
 font_family, font_size, text_alignment, 
 email, verified, birthday,
-api_key, extract(epoch from valid_thru),
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
@@ -258,7 +261,6 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
-		&profile.Account.APIKey, &profile.Account.ValidThru,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
@@ -268,6 +270,13 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	profile.Design.TextColor = models.Color(textColor)
 	profile.Avatar = srv.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
+
+	token, thru := utils.BuildApiToken(apiSecret, &models.UserID{
+		ID:   profile.ID,
+		Name: profile.Name,
+	})
+	profile.Account.APIKey = token
+	profile.Account.ValidThru = float64(thru)
 
 	if bday.Valid {
 		profile.Birthday = bday.String
@@ -550,7 +559,7 @@ func newEmailSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSe
 
 func generateToken(claims jwt.MapClaims) string {
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	str, err := tok.SignedString(secret)
+	str, err := tok.SignedString(centSecret)
 	if err != nil {
 		log.Println(err)
 	}
