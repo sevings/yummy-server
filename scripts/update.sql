@@ -1,26 +1,49 @@
+DROP INDEX index_comment_date;
 
--- CREATE INDEX "index_comment_date" ---------------------------
-CREATE INDEX "index_comment_date" ON "mindwell"."comments" USING btree( "created_at" );
--- -------------------------------------------------------------
+ALTER TABLE entries
+ADD COLUMN "last_comment" Integer;
 
-CREATE OR REPLACE FUNCTION ban_user(userName TEXT) RETURNS TEXT AS $$
+ALTER TABLE entries
+ADD CONSTRAINT "entry_last_comment_id" FOREIGN KEY("last_comment") REFERENCES "mindwell"."comments"("id");
+
+CREATE OR REPLACE FUNCTION mindwell.set_last_comment_ins() RETURNS TRIGGER AS $$
     BEGIN
-        UPDATE mindwell.users
-        SET api_key = (
-            SELECT array_to_string(array(
-                SELECT substr('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 
-                    trunc(random() * 62)::integer + 1, 1)
-                FROM generate_series(1, 32)), '')
-            ),
-            password_hash = '', verified = false
-        WHERE lower(users.name) = lower(userName);
-
-        RETURN (SELECT email FROM mindwell.users WHERE lower(name) = lower(userName));
+        UPDATE mindwell.entries
+        SET last_comment = NEW.id 
+        WHERE id = NEW.entry_id;
+        
+        RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
 
-ALTER TABLE entry_votes
-ADD COLUMN "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL;
+CREATE TRIGGER last_comments_ins
+    AFTER INSERT ON mindwell.comments
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_last_comment_ins();
 
-ALTER TABLE comment_votes
-ADD COLUMN "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL;
+CREATE OR REPLACE FUNCTION mindwell.set_last_comment_del() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE mindwell.entries
+        SET last_comment = (
+            SELECT max(comments.id)
+            FROM comments
+            WHERE entry_id = OLD.entry_id AND id <> OLD.id
+        )
+        WHERE last_comment = OLD.id;
+        
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER last_comments_del
+    BEFORE DELETE ON mindwell.comments
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_last_comment_del();
+
+UPDATE entries
+SET last_comment = (
+    SELECT max(comments.id)
+    FROM comments
+    WHERE entry_id = entries.id
+)
+WHERE comments_count > 0;
+
+CREATE INDEX "index_last_comment_id" ON "mindwell"."entries" USING btree( "last_comment" );

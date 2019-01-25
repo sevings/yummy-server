@@ -1169,6 +1169,7 @@ CREATE TABLE "mindwell"."entries" (
     "weight_sum" Real DEFAULT 0 NOT NULL,
     "category" Integer NOT NULL,
 	"comments_count" Integer DEFAULT 0 NOT NULL,
+    "last_comment" Integer,
 	CONSTRAINT "unique_entry_id" PRIMARY KEY( "id" ),
     CONSTRAINT "entry_user_id" FOREIGN KEY("author_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "enum_entry_privacy" FOREIGN KEY("visible_for") REFERENCES "mindwell"."entry_privacy"("id"),
@@ -1194,6 +1195,10 @@ CREATE INDEX "index_entry_rating" ON "mindwell"."entries" USING btree( "rating" 
 
 -- CREATE INDEX "index_entry_word_count" -----------------------
 CREATE INDEX "index_entry_word_count" ON "mindwell"."entries" USING btree( "word_count" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_last_comment_id" ------------------------
+CREATE INDEX "index_last_comment_id" ON "mindwell"."entries" USING btree( "last_comment" );
 -- -------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION mindwell.inc_tlog_entries() RETURNS TRIGGER AS $$
@@ -1607,6 +1612,9 @@ CREATE INDEX "index_comment_entry_id" ON "mindwell"."comments" USING btree( "ent
 CREATE INDEX "index_comment_date" ON "mindwell"."comments" USING btree( "created_at" );
 -- -------------------------------------------------------------
 
+ALTER TABLE "mindwell"."entries"
+ADD CONSTRAINT "entry_last_comment_id" FOREIGN KEY("last_comment") REFERENCES "mindwell"."comments"("id");
+
 CREATE OR REPLACE FUNCTION mindwell.inc_comments() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.users
@@ -1646,6 +1654,38 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER cnt_comments_dec
     AFTER DELETE ON mindwell.comments
     FOR EACH ROW EXECUTE PROCEDURE mindwell.dec_comments();
+
+CREATE OR REPLACE FUNCTION mindwell.set_last_comment_ins() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE mindwell.entries
+        SET last_comment = NEW.id 
+        WHERE id = NEW.entry_id;
+        
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER last_comments_ins
+    AFTER INSERT ON mindwell.comments
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_last_comment_ins();
+
+CREATE OR REPLACE FUNCTION mindwell.set_last_comment_del() RETURNS TRIGGER AS $$
+    BEGIN
+        UPDATE mindwell.entries
+        SET last_comment = (
+            SELECT max(comments.id)
+            FROM comments
+            WHERE entry_id = OLD.entry_id AND id <> OLD.id
+        )
+        WHERE last_comment = OLD.id;
+        
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER last_comments_del
+    BEFORE DELETE ON mindwell.comments
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_last_comment_del();
 
 
 

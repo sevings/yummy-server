@@ -41,20 +41,12 @@ WHERE entry_privacy.type = 'all'
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
-const commentsFeedQueryStart = tlogFeedQueryStart + `,
-(
-	SELECT DISTINCT ON (entry_id) entry_id, created_at
-	FROM comments
-	ORDER BY entry_id, created_at DESC
-) AS comments`
-
 const commentsFeedQueryEnd = `
-	AND entries.id = comments.entry_id
-ORDER BY comments.created_at DESC
+ORDER BY last_comment DESC
 LIMIT $2
 `
 
-const liveCommentsFeedQuery = commentsFeedQueryStart + liveFeedQueryWhere + commentsFeedQueryEnd
+const liveCommentsFeedQuery = liveFeedQuery + commentsFeedQueryEnd
 
 const anonymousFeedQuery = `
 SELECT entries.id, extract(epoch from entries.created_at), 0, 
@@ -103,7 +95,7 @@ WHERE (users.id = $1
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
 
-const watchingFeedQuery = commentsFeedQueryStart + `,
+const watchingFeedQuery = tlogFeedQueryStart + `,
 watching
 WHERE (users.id = $1 
 		OR user_privacy.type = 'all' 

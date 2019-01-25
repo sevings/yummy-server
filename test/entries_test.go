@@ -596,11 +596,13 @@ func TestLoadLiveComments(t *testing.T) {
 	entries[5] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
 
 	// skip 4
-	postComment(userIDs[0], entries[5].ID)
-	postComment(userIDs[0], entries[0].ID)
-	postComment(userIDs[0], entries[3].ID)
-	postComment(userIDs[0], entries[1].ID)
-	postComment(userIDs[0], entries[2].ID)
+	comments := make([]int64, 5)
+
+	comments[0] = postComment(userIDs[0], entries[5].ID)
+	comments[1] = postComment(userIDs[0], entries[0].ID)
+	comments[2] = postComment(userIDs[0], entries[3].ID)
+	comments[3] = postComment(userIDs[0], entries[1].ID)
+	comments[4] = postComment(userIDs[0], entries[2].ID)
 
 	for _, e := range entries {
 		e.CommentCount = 1
@@ -624,6 +626,10 @@ func TestLoadLiveComments(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
+
+	checkDeleteComment(t, comments[0], userIDs[0], true)
+	checkDeleteComment(t, comments[3], userIDs[0], true)
+	checkLoadLive(t, userIDs[2], 10, "comments", "", "", 2)
 
 	esm.Clear()
 }
