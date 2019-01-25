@@ -224,6 +224,7 @@ cover,
 css, background_color, text_color, 
 font_family, font_size, text_alignment, 
 email, verified, birthday,
+api_key, extract(epoch from valid_thru),
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
@@ -261,6 +262,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
+		&profile.Account.APIKey, &profile.Account.ValidThru,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
@@ -271,12 +273,12 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	profile.Avatar = srv.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
-	token, thru := utils.BuildApiToken(apiSecret, &models.UserID{
-		ID:   profile.ID,
-		Name: profile.Name,
-	})
-	profile.Account.APIKey = token
-	profile.Account.ValidThru = float64(thru)
+	// token, thru := utils.BuildApiToken(apiSecret, &models.UserID{
+	// 	ID:   profile.ID,
+	// 	Name: profile.Name,
+	// })
+	// profile.Account.APIKey = token
+	// profile.Account.ValidThru = float64(thru)
 
 	if bday.Valid {
 		profile.Birthday = bday.String
