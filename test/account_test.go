@@ -301,7 +301,6 @@ func TestRegister(t *testing.T) {
 	req.False(user.ShowInTops)
 
 	acc := user.Account
-	req.Equal(32, len(acc.APIKey))
 	req.NotEmpty(acc.ValidThru)
 	req.True(acc.Verified)
 

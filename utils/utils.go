@@ -104,13 +104,13 @@ func readUserID(secret []byte, tokenString string) (*models.UserID, error) {
 	}
 
 	now := time.Now().Unix()
-	exp := claims["exp"].(int64)
-	if exp > now {
+	exp := int64(claims["exp"].(float64))
+	if exp < now {
 		return nil, errUnauthorized
 	}
 
 	id := models.UserID{
-		ID:   claims["id"].(int64),
+		ID:   int64(claims["id"].(float64)),
 		Name: claims["name"].(string),
 	}
 
