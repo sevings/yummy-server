@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION mindwell.set_last_comment_del() RETURNS TRIGGER AS $$
         )
         WHERE last_comment = OLD.id;
         
-        RETURN NULL;
+        RETURN OLD;
     END;
 $$ LANGUAGE plpgsql;
 

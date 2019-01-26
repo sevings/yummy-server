@@ -42,6 +42,7 @@ WHERE entry_privacy.type = 'all'
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
 const commentsFeedQueryEnd = `
+	AND entries.comments_count > 0
 ORDER BY last_comment DESC
 LIMIT $2
 `
