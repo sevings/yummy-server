@@ -389,7 +389,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
 
 	const toQ = `
-		SELECT users.name, show_name, email, verified AND email_comments
+		SELECT users.name, show_name, email, verified AND email_comments, telegram
 		FROM users, watching 
 		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
 			AND users.id <> $2`
@@ -400,9 +400,14 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 	var toName string
 	var sendEmail bool
 	var toShowName, email string
-	for tx.Scan(&toName, &toShowName, &email, &sendEmail) {
+	var tg sql.NullInt64
+	for tx.Scan(&toName, &toShowName, &email, &sendEmail, &tg) {
 		if sendEmail {
 			srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
+		}
+
+		if tg.Valid {
+			srv.Tg.SendNewComment(tg.Int64, cmt)
 		}
 
 		toNames = append(toNames, toName)

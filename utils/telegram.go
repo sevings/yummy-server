@@ -5,19 +5,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/sevings/mindwell-server/models"
 	"golang.org/x/net/proxy"
 )
 
 const errorText = "Что-то пошло не так…"
 
+type tgMsg struct {
+	chat int64
+	text string
+}
+
 type TelegramBot struct {
 	srv    *MindwellServer
 	api    *tgbotapi.BotAPI
 	secret []byte
+	url    string
+	send   chan *tgMsg
 }
 
 func connectToProxy(srv *MindwellServer) *http.Client {
@@ -47,6 +56,8 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	bot := &TelegramBot{
 		srv:    srv,
 		secret: []byte(srv.ConfigString("telegram.secret")),
+		url:    srv.ConfigString("server.base_url"),
+		send:   make(chan *tgMsg, 200),
 	}
 
 	proxy := connectToProxy(srv)
@@ -84,26 +95,33 @@ func (bot *TelegramBot) run() {
 		log.Print(err)
 	}
 
-	for upd := range updates {
-		if upd.Message == nil || !upd.Message.IsCommand() {
-			continue
-		}
+	for {
+		select {
+		case upd := <-updates:
+			if upd.Message == nil || !upd.Message.IsCommand() {
+				continue
+			}
 
-		var reply string
-		switch upd.Message.Command() {
-		case "login":
-			reply = bot.login(&upd)
-		case "logout":
-			reply = bot.logout(&upd)
-		case "help":
-			reply = bot.help(&upd)
-		default:
-			reply = bot.help(&upd)
-		}
+			var reply string
+			switch upd.Message.Command() {
+			case "login":
+				reply = bot.login(&upd)
+			case "logout":
+				reply = bot.logout(&upd)
+			case "help":
+				reply = bot.help(&upd)
+			default:
+				reply = bot.help(&upd)
+			}
 
-		msg := tgbotapi.NewMessage(upd.Message.Chat.ID, reply)
-		msg.DisableWebPagePreview = true
-		bot.api.Send(msg)
+			msg := tgbotapi.NewMessage(upd.Message.Chat.ID, reply)
+			msg.DisableWebPagePreview = true
+			bot.api.Send(msg)
+		case ntf := <-bot.send:
+			msg := tgbotapi.NewMessage(ntf.chat, ntf.text)
+			msg.DisableWebPagePreview = true
+			bot.api.Send(msg)
+		}
 	}
 }
 
@@ -204,7 +222,7 @@ func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
 		return errorText
 	}
 
-	return "Привет, " + name + "!. Теперь я буду отправлять тебе уведомления из Mindwell. " +
+	return "Привет, " + name + "! Теперь я буду отправлять тебе уведомления из Mindwell. " +
 		"Используй команду /logout, если захочешь прекратить."
 }
 
@@ -239,4 +257,16 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 		"Чтобы начать, скопируй ключ со страницы настроек https://mindwell.win/account/notifications. " +
 		"Отправь его мне, используя команду '/login <ключ>'. Так ты подтвердишь свой аккаунт.\n" +
 		"Чтобы я забыл твой номер в телеграме, введи '/logout'."
+}
+
+func (bot *TelegramBot) SendNewComment(chat int64, cmt *models.Comment) {
+	if bot.api == nil {
+		return
+	}
+
+	text := cmt.Author.ShowName + ": \n" +
+		"«" + cmt.EditContent + "».\n" +
+		bot.url + "/entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
+
+	bot.send <- &tgMsg{chat: chat, text: text}
 }
