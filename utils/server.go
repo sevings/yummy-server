@@ -19,6 +19,7 @@ import (
 
 type MailSender interface {
 	SendGreeting(address, name, code string)
+	SendPasswordChanged(address, name string)
 	SendResetPassword(address, name, gender, code string, date int64)
 	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)

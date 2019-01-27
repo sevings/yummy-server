@@ -385,6 +385,23 @@ func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Pos
 	return rows == 1
 }
 
+func sendPasswordChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) {
+	const q = `
+		SELECT email, show_name 
+		FROM users
+		WHERE id = $1 AND verified
+	`
+
+	var email, name string
+	tx.Query(q, userID.ID).Scan(&email, &name)
+
+	if tx.Error() == nil {
+		srv.Mail.SendPasswordChanged(email, name)
+	} else if tx.Error() != sql.ErrNoRows {
+		log.Print(tx.Error())
+	}
+}
+
 func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -398,6 +415,8 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 				err := srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
 				return account.NewPostAccountPasswordForbidden().WithPayload(err)
 			}
+
+			sendPasswordChanged(srv, tx, userID)
 
 			return account.NewPostAccountPasswordOK()
 		})

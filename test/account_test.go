@@ -132,7 +132,7 @@ func checkLogin(t *testing.T, user *models.AuthProfile, name, password string) {
 	require.Equal(t, user, body.Payload)
 }
 
-func changePassword(t *testing.T, userID *models.UserID, old, upd string, ok bool) {
+func changePassword(t *testing.T, userID *models.UserID, old, upd, email string, ok bool) {
 	params := account.PostAccountPasswordParams{
 		OldPassword: old,
 		NewPassword: upd,
@@ -143,6 +143,9 @@ func changePassword(t *testing.T, userID *models.UserID, old, upd string, ok boo
 	switch resp.(type) {
 	case *account.PostAccountPasswordOK:
 		require.True(t, ok)
+		if len(email) > 0 {
+			esm.CheckEmail(t, email)
+		}
 		return
 	case *account.PostAccountPasswordForbidden:
 		body := resp.(*account.PostAccountPasswordForbidden)
@@ -264,8 +267,8 @@ func TestRegister(t *testing.T) {
 	checkResetPassword(t, "testeMAil")
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, userID, "test123", "new123", true)
-	changePassword(t, userID, "test123", "new123", false)
+	changePassword(t, userID, "test123", "new123", "testemail", true)
+	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
 
 	req := require.New(t)
@@ -346,8 +349,8 @@ func TestRegister(t *testing.T) {
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, userID, "test123", "new123", true)
-	changePassword(t, userID, "test123", "new123", false)
+	changePassword(t, userID, "test123", "new123", "testemail2", true)
+	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
 
 	req.Equal(gender, user.Gender)

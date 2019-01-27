@@ -26,6 +26,10 @@ func (esm *EmailSenderMock) SendGreeting(address, name, code string) {
 	esm.Codes = append(esm.Codes, code)
 }
 
+func (esm *EmailSenderMock) SendPasswordChanged(address, name string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
 func (esm *EmailSenderMock) SendResetPassword(address, name, gender, code string, date int64) {
 	esm.Emails = append(esm.Emails, address)
 	esm.Codes = append(esm.Codes, code)
