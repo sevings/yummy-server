@@ -168,6 +168,13 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 		}
 	}
 
+	canVote := utils.CanVote(tx, userID)
+	if !canVote {
+		for _, e := range feed.Entries {
+			e.Rating.Vote = models.RatingVoteBan
+		}
+	}
+
 	return &feed
 }
 

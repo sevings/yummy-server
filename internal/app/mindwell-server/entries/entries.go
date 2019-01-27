@@ -356,7 +356,13 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		entry.EditContent = ""
 	}
 
-	rating.Vote = entryVoteStatus(author.ID, userID, vote)
+	canVote := utils.CanVote(tx, userID)
+	if canVote {
+		rating.Vote = entryVoteStatus(author.ID, userID, vote)
+	} else {
+		rating.Vote = models.RatingVoteBan
+	}
+
 	rating.ID = entry.ID
 	entry.Rating = &rating
 

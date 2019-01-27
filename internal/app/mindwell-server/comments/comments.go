@@ -78,9 +78,9 @@ const commentQuery = `
 		ON comments.id = votes.comment_id 
 `
 
-func commentVote(userID, authorID int64, vote sql.NullFloat64) string {
+func commentVote(userID, authorID int64, can bool, vote sql.NullFloat64) string {
 	switch {
-	case userID == authorID:
+	case userID == authorID || !can:
 		return models.RatingVoteBan
 	case !vote.Valid:
 		return models.RatingVoteNot
@@ -114,8 +114,10 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 		comment.EditContent = ""
 	}
 
+	canVote := utils.CanVote(tx, userID)
+	comment.Rating.Vote = commentVote(userID, comment.Author.ID, canVote, vote)
+
 	comment.Rating.ID = comment.ID
-	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 	comment.Author.Avatar = srv.NewAvatar(avatar)
 	return &comment
 }
@@ -231,6 +233,8 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
 	var list []*models.Comment
 
+	canVote := utils.CanVote(tx, userID)
+
 	before, err := strconv.ParseInt(beforeS, 10, 64)
 	if len(beforeS) > 0 && err != nil {
 		log.Printf("error parse before: %s", beforeS)
@@ -287,8 +291,9 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 			comment.EditContent = ""
 		}
 
+		comment.Rating.Vote = commentVote(userID, comment.Author.ID, canVote, vote)
+
 		comment.Rating.ID = comment.ID
-		comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 		comment.Author.Avatar = srv.NewAvatar(avatar)
 		list = append(list, &comment)
 	}
