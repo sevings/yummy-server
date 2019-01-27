@@ -48,6 +48,10 @@ func commentRating(tx *utils.AutoTx, userID, commentID int64) *models.Rating {
 }
 
 func canVoteForComment(tx *utils.AutoTx, userID, commentID int64) bool {
+	if !utils.CanVote(tx, userID) {
+		return false
+	}
+
 	const q = `
 		SELECT entry_id, author_id
 		FROM comments

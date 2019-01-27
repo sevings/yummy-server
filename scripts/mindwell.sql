@@ -111,6 +111,8 @@ CREATE TABLE "mindwell"."users" (
 	"background_color" Character( 7 ) DEFAULT '#ffffff' NOT NULL,
     "email_comments" Boolean NOT NULL DEFAULT FALSE,
     "email_followers" Boolean NOT NULL DEFAULT FALSE,
+    "invite_ban" Date DEFAULT CURRENT_DATE NOT NULL,
+    "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
     CONSTRAINT "enum_user_gender" FOREIGN KEY("gender") REFERENCES "mindwell"."gender"("id"),
     CONSTRAINT "enum_user_privacy" FOREIGN KEY("privacy") REFERENCES "mindwell"."user_privacy"("id"),
@@ -202,6 +204,8 @@ SELECT users.id,
     users.verified,
     users.api_key,
     users.valid_thru,
+    users.invite_ban,
+    users.vote_ban,
     users.avatar,
     users.cover,
     font_family.type AS font_family,
@@ -1935,6 +1939,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
                         AND entry_votes.vote > 0 AND entry_votes.user_id <> users.invited_by
                 ) >= 10
             )) AND age(last_invite) >= interval '14 days'
+            AND invite_ban <= CURRENT_DATE
         RETURNING users.id
     ), wc AS (
         SELECT COUNT(*) AS words FROM invite_words
@@ -1994,9 +1999,20 @@ CREATE OR REPLACE FUNCTION ban_user(userName TEXT) RETURNS TEXT AS $$
             password_hash = '', verified = false
         WHERE lower(users.name) = lower(userName);
 
-        RETURN (SELECT email FROM mindwell.users WHERE lower(name) = lower(userName));
+        RETURN (SELECT name FROM mindwell.users WHERE id = (
+            SELECT invited_by FROM users WHERE lower(name) = lower(userName)
+        ));
     END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION mindwell.ban_invite(userName Text) RETURNS VOID AS $$
+    DELETE FROM mindwell.invites
+    WHERE referrer_id = (SELECT id FROM users WHERE lower(name) = lower(userName));
+
+    UPDATE mindwell.users
+    SET invite_ban = CURRENT_DATE + interval '1 month'
+    WHERE lower(name) = lower(userName);
+$$ LANGUAGE SQL;
 
 
 

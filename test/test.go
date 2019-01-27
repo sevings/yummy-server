@@ -94,13 +94,30 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	// remove user restrictions
-	_, err := db.Exec("UPDATE users SET followers_count = 100")
+	removeUserRestrictions(db)
+
+	return userIDs, profiles
+}
+
+func removeUserRestrictions(db *sql.DB) {
+	_, err := db.Exec("UPDATE users SET followers_count = 100, vote_ban = CURRENT_DATE, invite_ban = CURRENT_DATE")
 	if err != nil {
 		log.Println(err)
 	}
+}
 
-	return userIDs, profiles
+func banVote(db *sql.DB, userID int64) {
+	_, err := db.Exec("UPDATE users SET vote_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func banInvite(db *sql.DB, userID int64) {
+	_, err := db.Exec("UPDATE users SET invite_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable, live bool) *models.Entry {

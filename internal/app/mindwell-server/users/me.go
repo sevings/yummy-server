@@ -3,6 +3,7 @@ package users
 import (
 	"database/sql"
 	"strings"
+	"time"
 
 	"github.com/sevings/mindwell-server/utils"
 
@@ -28,6 +29,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	css, background_color, text_color, 
 	font_family, font_size, text_alignment, 
 	birthday, email, verified,
+	extract(epoch from invite_ban), extract(epoch from vote_ban),
 	invited_by_id, 
 	invited_by_name, invited_by_show_name,
 	invited_by_is_online, 
@@ -40,6 +42,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	profile.Design = &models.Design{}
 	profile.Account = &models.AuthProfileAO1Account{}
 	profile.Counts = &models.FriendAO1Counts{}
+	profile.Ban = &models.AuthProfileAO1Ban{}
 
 	var backColor string
 	var textColor string
@@ -65,6 +68,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&bday, &profile.Account.Email, &profile.Account.Verified,
+		&profile.Ban.Invite, &profile.Ban.Vote,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
@@ -83,6 +87,16 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
+	}
+
+	now := float64(time.Now().Unix())
+
+	if profile.Ban.Invite <= now {
+		profile.Ban.Invite = 0
+	}
+
+	if profile.Ban.Vote <= now {
+		profile.Ban.Vote = 0
 	}
 
 	profile.Cover = srv.NewCover(profile.ID, cover)

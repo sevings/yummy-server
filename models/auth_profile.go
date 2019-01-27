@@ -20,6 +20,9 @@ type AuthProfile struct {
 	// account
 	Account *AuthProfileAO1Account `json:"account,omitempty"`
 
+	// ban
+	Ban *AuthProfileAO1Ban `json:"ban,omitempty"`
+
 	// birthday
 	Birthday string `json:"birthday,omitempty"`
 
@@ -40,6 +43,8 @@ func (m *AuthProfile) UnmarshalJSON(raw []byte) error {
 	var dataAO1 struct {
 		Account *AuthProfileAO1Account `json:"account,omitempty"`
 
+		Ban *AuthProfileAO1Ban `json:"ban,omitempty"`
+
 		Birthday string `json:"birthday,omitempty"`
 
 		ShowInTops bool `json:"showInTops,omitempty"`
@@ -49,6 +54,8 @@ func (m *AuthProfile) UnmarshalJSON(raw []byte) error {
 	}
 
 	m.Account = dataAO1.Account
+
+	m.Ban = dataAO1.Ban
 
 	m.Birthday = dataAO1.Birthday
 
@@ -70,12 +77,16 @@ func (m AuthProfile) MarshalJSON() ([]byte, error) {
 	var dataAO1 struct {
 		Account *AuthProfileAO1Account `json:"account,omitempty"`
 
+		Ban *AuthProfileAO1Ban `json:"ban,omitempty"`
+
 		Birthday string `json:"birthday,omitempty"`
 
 		ShowInTops bool `json:"showInTops,omitempty"`
 	}
 
 	dataAO1.Account = m.Account
+
+	dataAO1.Ban = m.Ban
 
 	dataAO1.Birthday = m.Birthday
 
@@ -103,6 +114,10 @@ func (m *AuthProfile) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateBan(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,6 +134,24 @@ func (m *AuthProfile) validateAccount(formats strfmt.Registry) error {
 		if err := m.Account.Validate(formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("account")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AuthProfile) validateBan(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Ban) { // not required
+		return nil
+	}
+
+	if m.Ban != nil {
+		if err := m.Ban.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ban")
 			}
 			return err
 		}
@@ -178,6 +211,40 @@ func (m *AuthProfileAO1Account) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *AuthProfileAO1Account) UnmarshalBinary(b []byte) error {
 	var res AuthProfileAO1Account
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// AuthProfileAO1Ban auth profile a o1 ban
+// swagger:model AuthProfileAO1Ban
+type AuthProfileAO1Ban struct {
+
+	// invite
+	Invite float64 `json:"invite,omitempty"`
+
+	// vote
+	Vote float64 `json:"vote,omitempty"`
+}
+
+// Validate validates this auth profile a o1 ban
+func (m *AuthProfileAO1Ban) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *AuthProfileAO1Ban) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *AuthProfileAO1Ban) UnmarshalBinary(b []byte) error {
+	var res AuthProfileAO1Ban
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -69,6 +69,10 @@ func newEntryVoteLoader(srv *utils.MindwellServer) func(votes.GetEntriesIDVotePa
 }
 
 func canVoteForEntry(tx *utils.AutoTx, userID, entryID int64) bool {
+	if !utils.CanVote(tx, userID) {
+		return false
+	}
+
 	const q = `
 	WITH allowed AS (
 		SELECT id, TRUE AS vote

@@ -224,6 +224,15 @@ definitions:
                 type: string
               verified:
                 type: boolean
+          ban:
+            type: object
+            properties:
+              invite:
+                type: number
+                format: double
+              vote:
+                type: number
+                format: double
         example:
           account:
             apiKey: 'blah-blah-blah'

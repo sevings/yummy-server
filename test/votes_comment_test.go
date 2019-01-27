@@ -88,4 +88,8 @@ func TestCommentVotes(t *testing.T) {
 
 	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, "")
 	checkUnvoteComment(t, userIDs[0], false, c.ID, 0)
+
+	banVote(db, userIDs[1].ID)
+	checkVoteForComment(t, userIDs[1], false, c.ID, 1, true, models.RatingVotePos)
+	removeUserRestrictions(db)
 }

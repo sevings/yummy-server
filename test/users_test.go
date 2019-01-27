@@ -27,21 +27,40 @@ func TestKeyAuth(t *testing.T) {
 }
 
 func TestGetMe(t *testing.T) {
-	load := api.MeGetMeHandler.Handle
 	req := require.New(t)
 
-	for i, user := range profiles {
+	get := func(i int) *models.AuthProfile {
+		load := api.MeGetMeHandler.Handle
 		resp := load(me.GetMeParams{}, userIDs[i])
 		body, ok := resp.(*me.GetMeOK)
 		if !ok {
 			t.Fatal("error get me")
 		}
 
-		me := body.Payload
+		return body.Payload
+	}
+
+	for i, user := range profiles {
+		me := get(i)
 
 		req.Equal(user.ID, me.ID)
 		req.Equal(user.Name, me.Name)
+
+		req.Zero(me.Ban.Invite)
+		req.Zero(me.Ban.Vote)
 	}
+
+	banInvite(db, profiles[0].ID)
+	me := get(0)
+	req.NotZero(me.Ban.Invite)
+	req.Zero(me.Ban.Vote)
+	removeUserRestrictions(db)
+
+	banVote(db, profiles[0].ID)
+	me = get(0)
+	req.Zero(me.Ban.Invite)
+	req.NotZero(me.Ban.Vote)
+	removeUserRestrictions(db)
 }
 
 func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profile) {

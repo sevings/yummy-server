@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 
@@ -225,6 +226,7 @@ css, background_color, text_color,
 font_family, font_size, text_alignment, 
 email, verified, birthday,
 api_key, extract(epoch from valid_thru),
+extract(epoch from invite_ban), extract(epoch from vote_ban),
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
@@ -237,6 +239,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	profile.Design = &models.Design{}
 	profile.Counts = &models.FriendAO1Counts{}
 	profile.Account = &models.AuthProfileAO1Account{}
+	profile.Ban = &models.AuthProfileAO1Ban{}
 
 	var backColor string
 	var textColor string
@@ -263,6 +266,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
 		&profile.Account.Email, &profile.Account.Verified, &bday,
 		&profile.Account.APIKey, &profile.Account.ValidThru,
+		&profile.Ban.Invite, &profile.Ban.Vote,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
@@ -287,6 +291,16 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	if age.Valid {
 		profile.AgeLowerBound = age.Int64 - age.Int64%5
 		profile.AgeUpperBound = profile.AgeLowerBound + 4
+	}
+
+	now := float64(time.Now().Unix())
+
+	if profile.Ban.Invite <= now {
+		profile.Ban.Invite = 0
+	}
+
+	if profile.Ban.Vote <= now {
+		profile.Ban.Vote = 0
 	}
 
 	profile.Cover = srv.NewCover(profile.ID, cover)

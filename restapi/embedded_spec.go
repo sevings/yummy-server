@@ -3163,6 +3163,19 @@ func init() {
                 }
               }
             },
+            "ban": {
+              "type": "object",
+              "properties": {
+                "invite": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "vote": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            },
             "birthday": {
               "type": "string",
               "format": "full-date"
@@ -7385,6 +7398,19 @@ func init() {
                 },
                 "verified": {
                   "type": "boolean"
+                }
+              }
+            },
+            "ban": {
+              "type": "object",
+              "properties": {
+                "invite": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "vote": {
+                  "type": "number",
+                  "format": "double"
                 }
               }
             },
