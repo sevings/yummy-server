@@ -862,6 +862,28 @@ paths:
             properties:
               token:
                 type: string
+  /account/subscribe/telegram:
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - account
+      responses:
+        200:
+          description: telegram login token 
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+    delete:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - account
+      responses:
+        204:
+          description: OK
   /notifications:
     get:
       security:

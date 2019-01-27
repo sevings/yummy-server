@@ -412,3 +412,25 @@ func TestConnectionToken(t *testing.T) {
 	data := body.Payload
 	req.NotEmpty(data.Token)
 }
+
+func TestTelegramToken(t *testing.T) {
+	load := api.AccountGetAccountSubscribeTelegramHandler.Handle
+	resp := load(account.GetAccountSubscribeTelegramParams{}, userIDs[1])
+	body, ok := resp.(*account.GetAccountSubscribeTelegramOK)
+
+	req := require.New(t)
+	req.True(ok)
+
+	data := body.Payload
+	req.NotEmpty(data.Token)
+	req.Equal(userIDs[1].ID, srv.Tg.VerifyToken(data.Token))
+}
+
+func TestTelegramLogout(t *testing.T) {
+	logout := api.AccountDeleteAccountSubscribeTelegramHandler.Handle
+	resp := logout(account.DeleteAccountSubscribeTelegramParams{}, userIDs[1])
+	_, ok := resp.(*account.DeleteAccountSubscribeTelegramNoContent)
+
+	req := require.New(t)
+	req.True(ok)
+}

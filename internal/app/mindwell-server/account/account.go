@@ -50,7 +50,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountGetAccountSettingsEmailHandler = account.GetAccountSettingsEmailHandlerFunc(newEmailSettingsLoader(srv))
 	srv.API.AccountPutAccountSettingsEmailHandler = account.PutAccountSettingsEmailHandlerFunc(newEmailSettingsEditor(srv))
 
-	srv.API.AccountGetAccountSubscribeTokenHandler = account.GetAccountSubscribeTokenHandlerFunc(newTokenGenerator(srv))
+	srv.API.AccountGetAccountSubscribeTokenHandler = account.GetAccountSubscribeTokenHandlerFunc(newConnectionTokenGenerator(srv))
+	srv.API.AccountGetAccountSubscribeTelegramHandler = account.GetAccountSubscribeTelegramHandlerFunc(newTelegramTokenGenerator(srv))
+	srv.API.AccountDeleteAccountSubscribeTelegramHandler = account.DeleteAccountSubscribeTelegramHandlerFunc(newTelegramDeleter(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -616,10 +618,29 @@ func privateChannelToken(userID *models.UserID, channel string) string {
 	})
 }
 
-func newTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeTokenParams, *models.UserID) middleware.Responder {
+func newConnectionTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeTokenParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountSubscribeTokenParams, userID *models.UserID) middleware.Responder {
 		tok := connectionToken(userID)
 		res := account.GetAccountSubscribeTokenOKBody{Token: tok}
 		return account.NewGetAccountSubscribeTokenOK().WithPayload(&res)
+	}
+}
+
+func newTelegramTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeTelegramParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountSubscribeTelegramParams, userID *models.UserID) middleware.Responder {
+		tok := srv.Tg.BuildToken(userID.ID)
+		res := account.GetAccountSubscribeTelegramOKBody{Token: tok}
+		return account.NewGetAccountSubscribeTelegramOK().WithPayload(&res)
+	}
+}
+
+func newTelegramDeleter(srv *utils.MindwellServer) func(account.DeleteAccountSubscribeTelegramParams, *models.UserID) middleware.Responder {
+	return func(params account.DeleteAccountSubscribeTelegramParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = "UPDATE users SET telegram = NULL WHERE id = $1"
+			tx.Exec(q, userID.ID)
+
+			return account.NewDeleteAccountSubscribeTelegramNoContent()
+		})
 	}
 }

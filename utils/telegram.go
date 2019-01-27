@@ -17,7 +17,7 @@ const errorText = "Что-то пошло не так…"
 type TelegramBot struct {
 	srv    *MindwellServer
 	api    *tgbotapi.BotAPI
-	secret string
+	secret []byte
 }
 
 func connectToProxy(srv *MindwellServer) *http.Client {
@@ -44,27 +44,31 @@ func connectToProxy(srv *MindwellServer) *http.Client {
 }
 
 func NewTelegramBot(srv *MindwellServer) *TelegramBot {
+	bot := &TelegramBot{
+		srv:    srv,
+		secret: []byte(srv.ConfigString("telegram.secret")),
+	}
+
 	proxy := connectToProxy(srv)
 	if proxy == nil {
-		return &TelegramBot{}
+		return bot
 	}
 
 	token := srv.ConfigString("telegram.token")
+	if len(token) == 0 {
+		return bot
+	}
+
 	api, err := tgbotapi.NewBotAPIWithClient(token, proxy)
 	if err != nil {
 		log.Print(err)
-		return &TelegramBot{}
+		return bot
 	}
 
+	bot.api = api
 	// api.Debug = true
 
 	log.Printf("Running Telegram bot %s", api.Self.UserName)
-
-	bot := &TelegramBot{
-		srv:    srv,
-		api:    api,
-		secret: srv.ConfigString("telegram.secret"),
-	}
 
 	go bot.run()
 
@@ -112,6 +116,10 @@ func (bot *TelegramBot) Stop() {
 }
 
 func (bot *TelegramBot) BuildToken(userID int64) string {
+	if len(bot.secret) == 0 {
+		return ""
+	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"exp": time.Now().Unix() + 60*60,
 		"id":  userID,
@@ -126,6 +134,10 @@ func (bot *TelegramBot) BuildToken(userID int64) string {
 }
 
 func (bot *TelegramBot) VerifyToken(tokenString string) int64 {
+	if len(bot.secret) == 0 {
+		return 0
+	}
+
 	if len(tokenString) == 0 {
 		return 0
 	}

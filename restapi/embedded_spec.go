@@ -465,6 +465,46 @@ func init() {
         }
       }
     },
+    "/account/subscribe/telegram": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram login token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/account/subscribe/token": {
       "get": {
         "security": [
@@ -4387,6 +4427,46 @@ func init() {
         "responses": {
           "200": {
             "description": "email notification settings has been updated"
+          }
+        }
+      }
+    },
+    "/account/subscribe/telegram": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram login token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
           }
         }
       }

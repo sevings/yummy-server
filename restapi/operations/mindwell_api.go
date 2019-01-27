@@ -55,6 +55,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		UrlformConsumer:       runtime.DiscardConsumer,
 		MultipartformConsumer: runtime.DiscardConsumer,
 		JSONProducer:          runtime.JSONProducer(),
+		AccountDeleteAccountSubscribeTelegramHandler: account.DeleteAccountSubscribeTelegramHandlerFunc(func(params account.DeleteAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountDeleteAccountSubscribeTelegram has not yet been implemented")
+		}),
 		CommentsDeleteCommentsIDHandler: comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsDeleteCommentsID has not yet been implemented")
 		}),
@@ -90,6 +93,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
+		}),
+		AccountGetAccountSubscribeTelegramHandler: account.GetAccountSubscribeTelegramHandlerFunc(func(params account.GetAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountGetAccountSubscribeTelegram has not yet been implemented")
 		}),
 		AccountGetAccountSubscribeTokenHandler: account.GetAccountSubscribeTokenHandlerFunc(func(params account.GetAccountSubscribeTokenParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSubscribeToken has not yet been implemented")
@@ -351,6 +357,8 @@ type MindwellAPI struct {
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
 
+	// AccountDeleteAccountSubscribeTelegramHandler sets the operation handler for the delete account subscribe telegram operation
+	AccountDeleteAccountSubscribeTelegramHandler account.DeleteAccountSubscribeTelegramHandler
 	// CommentsDeleteCommentsIDHandler sets the operation handler for the delete comments ID operation
 	CommentsDeleteCommentsIDHandler comments.DeleteCommentsIDHandler
 	// VotesDeleteCommentsIDVoteHandler sets the operation handler for the delete comments ID vote operation
@@ -375,6 +383,8 @@ type MindwellAPI struct {
 	AccountGetAccountNameNameHandler account.GetAccountNameNameHandler
 	// AccountGetAccountSettingsEmailHandler sets the operation handler for the get account settings email operation
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
+	// AccountGetAccountSubscribeTelegramHandler sets the operation handler for the get account subscribe telegram operation
+	AccountGetAccountSubscribeTelegramHandler account.GetAccountSubscribeTelegramHandler
 	// AccountGetAccountSubscribeTokenHandler sets the operation handler for the get account subscribe token operation
 	AccountGetAccountSubscribeTokenHandler account.GetAccountSubscribeTokenHandler
 	// AccountGetAccountVerificationEmailHandler sets the operation handler for the get account verification email operation
@@ -590,6 +600,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "XUserKeyAuth")
 	}
 
+	if o.AccountDeleteAccountSubscribeTelegramHandler == nil {
+		unregistered = append(unregistered, "account.DeleteAccountSubscribeTelegramHandler")
+	}
+
 	if o.CommentsDeleteCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.DeleteCommentsIDHandler")
 	}
@@ -636,6 +650,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
+	}
+
+	if o.AccountGetAccountSubscribeTelegramHandler == nil {
+		unregistered = append(unregistered, "account.GetAccountSubscribeTelegramHandler")
 	}
 
 	if o.AccountGetAccountSubscribeTokenHandler == nil {
@@ -1037,6 +1055,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
+	o.handlers["DELETE"]["/account/subscribe/telegram"] = account.NewDeleteAccountSubscribeTelegram(o.context, o.AccountDeleteAccountSubscribeTelegramHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
 	o.handlers["DELETE"]["/comments/{id}"] = comments.NewDeleteCommentsID(o.context, o.CommentsDeleteCommentsIDHandler)
 
 	if o.handlers["DELETE"] == nil {
@@ -1093,6 +1116,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/account/subscribe/telegram"] = account.NewGetAccountSubscribeTelegram(o.context, o.AccountGetAccountSubscribeTelegramHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
