@@ -113,6 +113,7 @@ CREATE TABLE "mindwell"."users" (
     "email_followers" Boolean NOT NULL DEFAULT FALSE,
     "invite_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
+    "telegram" Integer,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
     CONSTRAINT "enum_user_gender" FOREIGN KEY("gender") REFERENCES "mindwell"."gender"("id"),
     CONSTRAINT "enum_user_privacy" FOREIGN KEY("privacy") REFERENCES "mindwell"."user_privacy"("id"),
@@ -135,6 +136,10 @@ CREATE UNIQUE INDEX "index_user_email" ON "mindwell"."users" USING btree( lower(
 
 -- CREATE INDEX "index_token_user" -----------------------------
 CREATE UNIQUE INDEX "index_user_key" ON "mindwell"."users" USING btree( "api_key" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_telegram" -------------------------------
+CREATE UNIQUE INDEX "index_telegram" ON "mindwell"."users" USING btree( "telegram" );
 -- -------------------------------------------------------------
 
 -- CREATE INDEX "index_invited_by" -----------------------------

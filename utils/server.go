@@ -30,6 +30,7 @@ type MindwellServer struct {
 	API   *operations.MindwellAPI
 	Mail  MailSender
 	Ntf   *Notifier
+	Tg    *TelegramBot
 	cfg   *goconf.Config
 	local *i18n.Localizer
 	errs  map[string]*i18n.Message
@@ -64,6 +65,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	ntfURL := srv.ConfigString("centrifugo.api_url")
 	ntfKey := srv.ConfigString("centrifugo.api_key")
 	srv.Ntf = NewNotifier(ntfURL, ntfKey)
+	srv.Tg = NewTelegramBot(srv)
 
 	return srv
 }

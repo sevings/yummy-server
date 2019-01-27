@@ -74,7 +74,9 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	api.UrlformConsumer = runtime.DiscardConsumer
 	api.MultipartformConsumer = runtime.DiscardConsumer
 	api.JSONProducer = runtime.JSONProducer()
-	api.ServerShutdown = func() {}
+	api.ServerShutdown = func() {
+		srv.Tg.Stop()
+	}
 
 	return setupGlobalMiddleware(api.Serve(setupMiddlewares))
 }

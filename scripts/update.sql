@@ -195,3 +195,8 @@ SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
 FROM mindwell.long_users, mindwell.entries, mindwell.entry_privacy
 WHERE long_users.id = entries.author_id 
     AND entry_privacy.id = entries.visible_for;
+
+ALTER TABLE users
+ADD COLUMN "telegram" Integer;
+
+CREATE UNIQUE INDEX "index_telegram" ON "mindwell"."users" USING btree( "telegram" );
