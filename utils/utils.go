@@ -1,7 +1,9 @@
 package utils
 
 import (
+	crypto "crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"math/rand"
@@ -169,6 +171,17 @@ const (
 
 // GenerateString returns random string
 func GenerateString(length int) string {
+	bytesLen := length*6/8 + 1
+	data := make([]byte, bytesLen)
+	_, err := crypto.Read(data)
+	if err == nil {
+		str := base64.URLEncoding.EncodeToString(data)
+		return str[:length]
+	}
+
+	log.Print(err)
+
+	// fallback on error
 	b := make([]byte, length)
 	// A rand.Int63() generates 63 random bits, enough for letterIdxMax letters!
 	for i, cache, remain := len(b)-1, rand.Int63(), letterIdxMax; i >= 0; {

@@ -2,14 +2,13 @@ package utils
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/go-telegram-bot-api/telegram-bot-api"
+	cache "github.com/patrickmn/go-cache"
 	"github.com/sevings/mindwell-server/models"
 	"golang.org/x/net/proxy"
 )
@@ -24,8 +23,8 @@ type tgMsg struct {
 type TelegramBot struct {
 	srv    *MindwellServer
 	api    *tgbotapi.BotAPI
-	secret []byte
 	url    string
+	logins *cache.Cache
 	send   chan *tgMsg
 }
 
@@ -55,8 +54,8 @@ func connectToProxy(srv *MindwellServer) *http.Client {
 func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	bot := &TelegramBot{
 		srv:    srv,
-		secret: []byte(srv.ConfigString("telegram.secret")),
 		url:    srv.ConfigString("server.base_url"),
+		logins: cache.New(10*time.Minute, 10*time.Minute),
 		send:   make(chan *tgMsg, 200),
 	}
 
@@ -84,6 +83,13 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	go bot.run()
 
 	return bot
+}
+
+func newMessage(chat int64, text string) tgbotapi.MessageConfig {
+	msg := tgbotapi.NewMessage(chat, text)
+	msg.DisableWebPagePreview = true
+	msg.ParseMode = "Markdown"
+	return msg
 }
 
 func (bot *TelegramBot) run() {
@@ -114,12 +120,10 @@ func (bot *TelegramBot) run() {
 				reply = bot.help(&upd)
 			}
 
-			msg := tgbotapi.NewMessage(upd.Message.Chat.ID, reply)
-			msg.DisableWebPagePreview = true
+			msg := newMessage(upd.Message.Chat.ID, reply)
 			bot.api.Send(msg)
 		case ntf := <-bot.send:
-			msg := tgbotapi.NewMessage(ntf.chat, ntf.text)
-			msg.DisableWebPagePreview = true
+			msg := newMessage(ntf.chat, ntf.text)
 			bot.api.Send(msg)
 		}
 	}
@@ -134,66 +138,19 @@ func (bot *TelegramBot) Stop() {
 }
 
 func (bot *TelegramBot) BuildToken(userID int64) string {
-	if len(bot.secret) == 0 {
-		return ""
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp": time.Now().Unix() + 60*60,
-		"id":  userID,
-	})
-
-	tokenString, err := token.SignedString(bot.secret)
-	if err != nil {
-		log.Print(err)
-	}
-
-	return tokenString
+	token := GenerateString(8)
+	bot.logins.Set(token, userID, cache.DefaultExpiration)
+	return token
 }
 
-func (bot *TelegramBot) VerifyToken(tokenString string) int64 {
-	if len(bot.secret) == 0 {
+func (bot *TelegramBot) VerifyToken(token string) int64 {
+	userID, found := bot.logins.Get(token)
+	if !found {
 		return 0
 	}
 
-	if len(tokenString) == 0 {
-		return 0
-	}
-
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return bot.secret, nil
-	})
-
-	if err != nil {
-		log.Println(err)
-		return 0
-	}
-
-	if !token.Valid {
-		log.Printf("Invalid token: %s\n", tokenString)
-		return 0
-
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		log.Printf("Error get claims: %s\n", tokenString)
-		return 0
-	}
-
-	now := time.Now().Unix()
-	exp := int64(claims["exp"].(float64))
-	if exp < now {
-		return 0
-	}
-
-	id := claims["id"].(float64)
-
-	return int64(id)
+	bot.logins.Delete(token)
+	return userID.(int64)
 }
 
 func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
@@ -266,7 +223,7 @@ func (bot *TelegramBot) SendNewComment(chat int64, cmt *models.Comment) {
 
 	text := cmt.Author.ShowName + ": \n" +
 		"«" + cmt.EditContent + "».\n" +
-		bot.url + "/entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
+		bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
 	bot.send <- &tgMsg{chat: chat, text: text}
 }
