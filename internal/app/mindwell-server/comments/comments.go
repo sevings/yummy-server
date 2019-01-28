@@ -407,7 +407,7 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 		}
 
 		if tg.Valid {
-			srv.Tg.SendNewComment(tg.Int64, cmt)
+			srv.Tg.SendNewComment(tg.Int64, title, cmt)
 		}
 
 		toNames = append(toNames, toName)

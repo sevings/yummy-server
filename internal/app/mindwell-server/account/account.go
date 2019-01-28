@@ -389,18 +389,29 @@ func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Pos
 
 func sendPasswordChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) {
 	const q = `
-		SELECT email, show_name 
+		SELECT email, verified, show_name, telegram
 		FROM users
-		WHERE id = $1 AND verified
+		WHERE id = $1
 	`
 
 	var email, name string
-	tx.Query(q, userID.ID).Scan(&email, &name)
+	var verified bool
+	var tg sql.NullInt64
+	tx.Query(q, userID.ID).Scan(&email, &verified, &name, &tg)
 
-	if tx.Error() == nil {
+	if tx.Error() != nil {
+		if tx.Error() != sql.ErrNoRows {
+			log.Print(tx.Error())
+		}
+		return
+	}
+
+	if verified {
 		srv.Mail.SendPasswordChanged(email, name)
-	} else if tx.Error() != sql.ErrNoRows {
-		log.Print(tx.Error())
+	}
+
+	if tg.Valid {
+		srv.Tg.SendPasswordChanged(tg.Int64)
 	}
 }
 

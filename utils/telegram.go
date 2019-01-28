@@ -231,14 +231,54 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 		"Чтобы я забыл твой номер в телеграме, введи /logout."
 }
 
-func (bot *TelegramBot) SendNewComment(chat int64, cmt *models.Comment) {
+func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *models.Comment) {
 	if bot.api == nil {
 		return
 	}
 
-	text := cmt.Author.ShowName + ": \n" +
-		"«" + cmt.EditContent + "».\n" +
-		bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
+	link := bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
+
+	text := cmt.Author.ShowName + " пишет: \n" +
+		cmt.EditContent + "\n"
+
+	if len(entryTitle) == 0 {
+		text += "К [записи](" + link + ")"
+	} else {
+		text += "[" + entryTitle + "](" + link + ")"
+	}
+
+	bot.sendMessage(chat, text)
+}
+
+func (bot *TelegramBot) SendPasswordChanged(chat int64) {
+	if bot.api == nil {
+		return
+	}
+
+	const text = "Пароль к твоему тлогу был изменен."
+	bot.sendMessage(chat, text)
+}
+
+func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, fromGender string, toPrivate bool) {
+	if bot.api == nil {
+		return
+	}
+
+	var ending string
+	if fromGender == "female" {
+		ending = "ась"
+	} else {
+		ending = "ся"
+	}
+
+	link := "[" + fromShowName + "](" + bot.url + "users/" + fromName + ")"
+
+	var text string
+	if toPrivate {
+		text = link + " запрашивает доступ к чтению твоего тлога."
+	} else {
+		text = link + " подписал" + ending + " на твой тлог."
+	}
 
 	bot.sendMessage(chat, text)
 }
