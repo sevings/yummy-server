@@ -15,17 +15,13 @@ import (
 
 const errorText = "Что-то пошло не так…"
 
-type tgMsg struct {
-	chat int64
-	text string
-}
-
 type TelegramBot struct {
 	srv    *MindwellServer
 	api    *tgbotapi.BotAPI
 	url    string
 	logins *cache.Cache
-	send   chan *tgMsg
+	send   chan *tgbotapi.MessageConfig
+	stop   chan interface{}
 }
 
 func connectToProxy(srv *MindwellServer) *http.Client {
@@ -56,7 +52,8 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		srv:    srv,
 		url:    srv.ConfigString("server.base_url"),
 		logins: cache.New(10*time.Minute, 10*time.Minute),
-		send:   make(chan *tgMsg, 200),
+		send:   make(chan *tgbotapi.MessageConfig, 200),
+		stop:   make(chan interface{}),
 	}
 
 	proxy := connectToProxy(srv)
@@ -85,11 +82,11 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	return bot
 }
 
-func newMessage(chat int64, text string) tgbotapi.MessageConfig {
+func (bot *TelegramBot) sendMessage(chat int64, text string) {
 	msg := tgbotapi.NewMessage(chat, text)
 	msg.DisableWebPagePreview = true
 	msg.ParseMode = "Markdown"
-	return msg
+	bot.send <- &msg
 }
 
 func (bot *TelegramBot) run() {
@@ -103,13 +100,25 @@ func (bot *TelegramBot) run() {
 
 	for {
 		select {
+		case msg := <-bot.send:
+			_, err := bot.api.Send(msg)
+			if err != nil {
+				log.Println("Telegram: ", err)
+			}
+		case <-bot.stop:
+			return
 		case upd := <-updates:
 			if upd.Message == nil || !upd.Message.IsCommand() {
 				continue
 			}
 
+			cmd := upd.Message.Command()
+			log.Printf("Telegram: [%s] %s", upd.Message.From.UserName, cmd)
+
 			var reply string
-			switch upd.Message.Command() {
+			switch cmd {
+			case "start":
+				reply = bot.start(&upd)
 			case "login":
 				reply = bot.login(&upd)
 			case "logout":
@@ -117,14 +126,10 @@ func (bot *TelegramBot) run() {
 			case "help":
 				reply = bot.help(&upd)
 			default:
-				reply = bot.help(&upd)
+				reply = "Неизвестная команда. Попробуй /help."
 			}
 
-			msg := newMessage(upd.Message.Chat.ID, reply)
-			bot.api.Send(msg)
-		case ntf := <-bot.send:
-			msg := newMessage(ntf.chat, ntf.text)
-			bot.api.Send(msg)
+			bot.sendMessage(upd.Message.Chat.ID, reply)
 		}
 	}
 }
@@ -134,6 +139,7 @@ func (bot *TelegramBot) Stop() {
 		return
 	}
 
+	close(bot.stop)
 	bot.api.StopReceivingUpdates()
 }
 
@@ -153,6 +159,15 @@ func (bot *TelegramBot) VerifyToken(token string) int64 {
 	return userID.(int64)
 }
 
+func (bot *TelegramBot) start(upd *tgbotapi.Update) string {
+	token := upd.Message.CommandArguments()
+	if len(token) == 0 {
+		return bot.help(upd)
+	}
+
+	return bot.login(upd)
+}
+
 func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
 	if upd.Message.From == nil {
 		return errorText
@@ -162,7 +177,7 @@ func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
 	userID := bot.VerifyToken(token)
 
 	if userID == 0 {
-		return "Скопируй верный ключ со своей страницы настроек https://mindwell.win/account/notifications"
+		return "Скопируй верный ключ со [своей страницы настроек](https://mindwell.win/account/notifications)."
 	}
 
 	const q = `
@@ -211,9 +226,9 @@ func (bot *TelegramBot) logout(upd *tgbotapi.Update) string {
 
 func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 	return "Привет! Я могу отправлять тебе уведомления из Mindwell.\n" +
-		"Чтобы начать, скопируй ключ со страницы настроек https://mindwell.win/account/notifications. " +
-		"Отправь его мне, используя команду '/login <ключ>'. Так ты подтвердишь свой аккаунт.\n" +
-		"Чтобы я забыл твой номер в телеграме, введи '/logout'."
+		"Чтобы начать, скопируй ключ со [страницы настроек](https://mindwell.win/account/notifications). " +
+		"Отправь его мне, используя команду `/login <ключ>`. Так ты подтвердишь свой аккаунт.\n" +
+		"Чтобы я забыл твой номер в телеграме, введи /logout."
 }
 
 func (bot *TelegramBot) SendNewComment(chat int64, cmt *models.Comment) {
@@ -225,5 +240,5 @@ func (bot *TelegramBot) SendNewComment(chat int64, cmt *models.Comment) {
 		"«" + cmt.EditContent + "».\n" +
 		bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
-	bot.send <- &tgMsg{chat: chat, text: text}
+	bot.sendMessage(chat, text)
 }
