@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -15,6 +16,15 @@ import (
 
 const errorText = "Что-то пошло не так…"
 const unrecognisedText = "Неизвестная команда. Попробуй /help."
+
+var tgHtmlEsc *strings.Replacer = strings.NewReplacer(
+	"<", "&lt;",
+	">", "&gt;",
+	"&", "&amp;",
+	"\"", "&quot;",
+	"'", "&quot;",
+	"\r", "",
+)
 
 type TelegramBot struct {
 	srv    *MindwellServer
@@ -243,7 +253,7 @@ func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *model
 	link := bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
 	text := cmt.Author.ShowName + " пишет: \n" +
-		"«" + ReplaceToHtml(cmt.EditContent) + "»\n"
+		"«" + tgHtmlEsc.Replace(cmt.EditContent) + "»\n"
 
 	if len(entryTitle) == 0 {
 		text += `К <a href="` + link + `">записи</a>`
