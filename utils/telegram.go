@@ -85,7 +85,7 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 func (bot *TelegramBot) sendMessage(chat int64, text string) {
 	msg := tgbotapi.NewMessage(chat, text)
 	msg.DisableWebPagePreview = true
-	msg.ParseMode = "Markdown"
+	msg.ParseMode = "HTML"
 	bot.send <- &msg
 }
 
@@ -177,7 +177,7 @@ func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
 	userID := bot.VerifyToken(token)
 
 	if userID == 0 {
-		return "Скопируй верный ключ со [своей страницы настроек](https://mindwell.win/account/notifications)."
+		return `Скопируй верный ключ со <a href="` + bot.url + `account/notifications">своей страницы настроек</a>.`
 	}
 
 	const q = `
@@ -225,10 +225,10 @@ func (bot *TelegramBot) logout(upd *tgbotapi.Update) string {
 }
 
 func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
-	return "Привет! Я могу отправлять тебе уведомления из Mindwell.\n" +
-		"Чтобы начать, скопируй ключ со [страницы настроек](https://mindwell.win/account/notifications). " +
-		"Отправь его мне, используя команду `/login <ключ>`. Так ты подтвердишь свой аккаунт.\n" +
-		"Чтобы я забыл твой номер в телеграме, введи /logout."
+	return `Привет! Я могу отправлять тебе уведомления из Mindwell.
+Чтобы начать, скопируй ключ со <a href="` + bot.url + `account/notifications">страницы настроек</a>.
+Отправь его мне, используя команду <code>/login &lt;ключ&gt;</code>. Так ты подтвердишь свой аккаунт.
+Чтобы я забыл твой номер в Телеграме, введи /logout.`
 }
 
 func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *models.Comment) {
@@ -239,12 +239,12 @@ func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *model
 	link := bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
 	text := cmt.Author.ShowName + " пишет: \n" +
-		cmt.EditContent + "\n"
+		"«" + ReplaceToHtml(cmt.EditContent) + "»\n"
 
 	if len(entryTitle) == 0 {
-		text += "К [записи](" + link + ")"
+		text += `К <a href="` + link + `">записи</a>`
 	} else {
-		text += "[" + entryTitle + "](" + link + ")"
+		text += `<a href="` + link + `">` + entryTitle + `</a>`
 	}
 
 	bot.sendMessage(chat, text)
@@ -271,7 +271,8 @@ func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, from
 		ending = "ся"
 	}
 
-	link := "[" + fromShowName + "](" + bot.url + "users/" + fromName + ")"
+	// link := fmt.Sprintf(`<a href="%susers/%s">%s</a>`, bot.url, fromName, fromShowName)
+	link := `<a href="` + bot.url + `users/` + fromName + `">` + fromShowName + `</a>`
 
 	var text string
 	if toPrivate {

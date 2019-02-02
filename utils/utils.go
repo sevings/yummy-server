@@ -23,6 +23,15 @@ import (
 )
 
 var errUnauthorized = errors.New(401, "Unauthorized")
+var htmlEsc *strings.Replacer = strings.NewReplacer(
+	"<", "&lt;",
+	">", "&gt;",
+	"&", "&amp;",
+	"\"", "&#34;",
+	"'", "&#39;",
+	"\n", "<br>",
+	"\r", "",
+)
 
 // LoadConfig creates app config from file
 func LoadConfig(fileName string) *goconf.Config {
@@ -233,4 +242,8 @@ func ParseFloat(val string) float64 {
 
 func FormatFloat(val float64) string {
 	return strconv.FormatFloat(val, 'f', 6, 64)
+}
+
+func ReplaceToHtml(val string) string {
+	return htmlEsc.Replace(val)
 }
