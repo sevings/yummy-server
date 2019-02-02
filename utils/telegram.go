@@ -14,6 +14,7 @@ import (
 )
 
 const errorText = "Что-то пошло не так…"
+const unrecognisedText = "Неизвестная команда. Попробуй /help."
 
 type TelegramBot struct {
 	srv    *MindwellServer
@@ -126,7 +127,7 @@ func (bot *TelegramBot) run() {
 			case "help":
 				reply = bot.help(&upd)
 			default:
-				reply = "Неизвестная команда. Попробуй /help."
+				reply = unrecognisedText
 			}
 
 			bot.sendMessage(upd.Message.Chat.ID, reply)
@@ -162,7 +163,10 @@ func (bot *TelegramBot) VerifyToken(token string) int64 {
 func (bot *TelegramBot) start(upd *tgbotapi.Update) string {
 	token := upd.Message.CommandArguments()
 	if len(token) == 0 {
-		return bot.help(upd)
+		return `Привет! Я могу отправлять тебе уведомления из Mindwell.
+Чтобы начать, скопируй ключ со <a href="` + bot.url + `account/notifications">страницы настроек</a>.
+Отправь его мне, используя команду <code>/login &lt;ключ&gt;</code>. Так ты подтвердишь свой аккаунт.
+Чтобы я забыл твой номер в Телеграме, введи /logout.`
 	}
 
 	return bot.login(upd)
@@ -225,10 +229,10 @@ func (bot *TelegramBot) logout(upd *tgbotapi.Update) string {
 }
 
 func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
-	return `Привет! Я могу отправлять тебе уведомления из Mindwell.
-Чтобы начать, скопируй ключ со <a href="` + bot.url + `account/notifications">страницы настроек</a>.
-Отправь его мне, используя команду <code>/login &lt;ключ&gt;</code>. Так ты подтвердишь свой аккаунт.
-Чтобы я забыл твой номер в Телеграме, введи /logout.`
+	return `Я бот для получения уведомлений из Mindwell. Доступные команды:
+<code>/login &lt;ключ&gt;</code> - авторизоваться с использованием автоматически сгенерированного пароля. Его можно получить на <a href="` + bot.url + `account/notifications">странице настроек</a>.
+/logout - не получать больше уведомления на этот аккаунт.
+/help - вывести данную краткую справку.`
 }
 
 func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *models.Comment) {
@@ -271,7 +275,6 @@ func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, from
 		ending = "ся"
 	}
 
-	// link := fmt.Sprintf(`<a href="%susers/%s">%s</a>`, bot.url, fromName, fromShowName)
 	link := `<a href="` + bot.url + `users/` + fromName + `">` + fromShowName + `</a>`
 
 	var text string
