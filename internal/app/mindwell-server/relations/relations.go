@@ -98,7 +98,7 @@ func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRela
 	return func(params relations.DeleteRelationsFromNameParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			relation := relationship(tx, params.Name, uID.Name)
-			if relation.Relation != models.RelationshipRelationRequested {
+			if relation.Relation != models.RelationshipRelationRequested && relation.Relation != models.RelationshipRelationFollowed {
 				err := srv.StandardError("no_request")
 				return relations.NewDeleteRelationsFromNameForbidden().WithPayload(err)
 			}
