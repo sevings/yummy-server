@@ -195,7 +195,7 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 	var negKarma bool
 	var followersCount int64
 
-	const karmaQ = "SELECT karma < 0, followers_count FROM users WHERE id = $1"
+	const karmaQ = "SELECT karma < -1, followers_count FROM users WHERE id = $1"
 	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
 
 	if negKarma {
