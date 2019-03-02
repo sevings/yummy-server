@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/go-openapi/runtime"
+
+	models "github.com/sevings/mindwell-server/models"
 )
 
 // GetAdmStatOKCode is the HTTP code returned for type GetAdmStatOK
@@ -47,6 +49,50 @@ func (o *GetAdmStatOK) SetPayload(payload *GetAdmStatOKBody) {
 func (o *GetAdmStatOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
+// GetAdmStatGoneCode is the HTTP code returned for type GetAdmStatGone
+const GetAdmStatGoneCode int = 410
+
+/*GetAdmStatGone adm finished
+
+swagger:response getAdmStatGone
+*/
+type GetAdmStatGone struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewGetAdmStatGone creates GetAdmStatGone with default headers values
+func NewGetAdmStatGone() *GetAdmStatGone {
+
+	return &GetAdmStatGone{}
+}
+
+// WithPayload adds the payload to the get adm stat gone response
+func (o *GetAdmStatGone) WithPayload(payload *models.Error) *GetAdmStatGone {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the get adm stat gone response
+func (o *GetAdmStatGone) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *GetAdmStatGone) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(410)
 	if o.Payload != nil {
 		payload := o.Payload
 		if err := producer.Produce(rw, payload); err != nil {

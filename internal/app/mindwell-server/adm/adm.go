@@ -14,6 +14,7 @@ var finishedErr *models.Error
 var notRegErr *models.Error
 
 const regFinished = true
+const admFinished = true
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
@@ -94,6 +95,10 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 
 func newGrandsonStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonStatusParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmGrandsonStatusParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewGetAdmGrandsonStatusGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			status := adm.GetAdmGrandsonStatusOKBody{}
 
@@ -111,6 +116,10 @@ func newGrandsonStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonS
 
 func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonStatusParams, *models.UserID) middleware.Responder {
 	return func(params adm.PostAdmGrandsonStatusParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewPostAdmGrandsonStatusGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			tx.Exec("UPDATE adm SET received = $2 WHERE lower(name) = lower($1)", userID.Name, params.Received)
 
@@ -125,6 +134,10 @@ func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandso
 
 func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmGrandfatherParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewGetAdmGrandsonStatusGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			address := adm.GetAdmGrandfatherOKBody{}
 
@@ -154,6 +167,10 @@ func newGrandfatherLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherP
 
 func newGrandfatherStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandfatherStatusParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmGrandfatherStatusParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewGetAdmGrandfatherStatusGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			status := adm.GetAdmGrandfatherStatusOKBody{}
 
@@ -171,6 +188,10 @@ func newGrandfatherStatusLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandf
 
 func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandfatherStatusParams, *models.UserID) middleware.Responder {
 	return func(params adm.PostAdmGrandfatherStatusParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewPostAdmGrandfatherStatusGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			tx.Exec("UPDATE adm SET sent = $2 WHERE lower(grandfather) = lower($1)", userID.Name, params.Sent)
 
@@ -185,6 +206,10 @@ func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGran
 
 func newAdmStatLoader(srv *utils.MindwellServer) func(adm.GetAdmStatParams, *models.UserID) middleware.Responder {
 	return func(params adm.GetAdmStatParams, userID *models.UserID) middleware.Responder {
+		if admFinished {
+			return adm.NewGetAdmStatGone().WithPayload(finishedErr)
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			stat := adm.GetAdmStatOKBody{}
 

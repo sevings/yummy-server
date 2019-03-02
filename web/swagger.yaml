@@ -2222,6 +2222,10 @@ paths:
           description: you're not registered in adm
           schema:
             $ref: '#/definitions/Error'
+        410:
+          description: adm finished
+          schema:
+            $ref: '#/definitions/Error'
     post:
       security:
         - ApiKeyHeader: []
@@ -2239,6 +2243,10 @@ paths:
           description: OK
         403:
           description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
+        410:
+          description: adm finished
           schema:
             $ref: '#/definitions/Error'
   /adm/grandfather:
@@ -2269,6 +2277,10 @@ paths:
           description: you're not registered in adm
           schema:
             $ref: '#/definitions/Error'
+        410:
+          description: adm finished
+          schema:
+            $ref: '#/definitions/Error'
   /adm/grandfather/status:
     get:
       security:
@@ -2287,6 +2299,10 @@ paths:
                 type: boolean
         403:
           description: you're not registered in adm
+          schema:
+            $ref: '#/definitions/Error'
+        410:
+          description: adm finished
           schema:
             $ref: '#/definitions/Error'
     post:
@@ -2308,6 +2324,10 @@ paths:
           description: you're not registered in adm
           schema:
             $ref: '#/definitions/Error'
+        410:
+          description: adm finished
+          schema:
+            $ref: '#/definitions/Error'
   /adm/stat:
     get:
       security:
@@ -2326,6 +2346,10 @@ paths:
                 type: integer
               received:
                 type: integer
+        410:
+          description: adm finished
+          schema:
+            $ref: '#/definitions/Error'
   /images:
     post:
       security:

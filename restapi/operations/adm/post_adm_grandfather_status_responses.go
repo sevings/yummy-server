@@ -80,3 +80,47 @@ func (o *PostAdmGrandfatherStatusForbidden) WriteResponse(rw http.ResponseWriter
 		}
 	}
 }
+
+// PostAdmGrandfatherStatusGoneCode is the HTTP code returned for type PostAdmGrandfatherStatusGone
+const PostAdmGrandfatherStatusGoneCode int = 410
+
+/*PostAdmGrandfatherStatusGone adm finished
+
+swagger:response postAdmGrandfatherStatusGone
+*/
+type PostAdmGrandfatherStatusGone struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostAdmGrandfatherStatusGone creates PostAdmGrandfatherStatusGone with default headers values
+func NewPostAdmGrandfatherStatusGone() *PostAdmGrandfatherStatusGone {
+
+	return &PostAdmGrandfatherStatusGone{}
+}
+
+// WithPayload adds the payload to the post adm grandfather status gone response
+func (o *PostAdmGrandfatherStatusGone) WithPayload(payload *models.Error) *PostAdmGrandfatherStatusGone {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post adm grandfather status gone response
+func (o *PostAdmGrandfatherStatusGone) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostAdmGrandfatherStatusGone) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(410)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}

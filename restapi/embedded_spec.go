@@ -632,6 +632,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -666,6 +672,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -695,6 +707,12 @@ func init() {
           },
           "403": {
             "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "410": {
+            "description": "adm finished",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -845,6 +863,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -874,6 +898,12 @@ func init() {
           },
           "403": {
             "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "410": {
+            "description": "adm finished",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -907,6 +937,12 @@ func init() {
                   "type": "integer"
                 }
               }
+            }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
@@ -4598,6 +4634,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -4632,6 +4674,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -4661,6 +4709,12 @@ func init() {
           },
           "403": {
             "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "410": {
+            "description": "adm finished",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -4811,6 +4865,12 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       },
@@ -4840,6 +4900,12 @@ func init() {
           },
           "403": {
             "description": "you're not registered in adm",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "410": {
+            "description": "adm finished",
             "schema": {
               "$ref": "#/definitions/Error"
             }
@@ -4873,6 +4939,12 @@ func init() {
                   "type": "integer"
                 }
               }
+            }
+          },
+          "410": {
+            "description": "adm finished",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
