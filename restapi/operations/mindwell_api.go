@@ -223,6 +223,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		UsersGetUsersNameTlogHandler: users.GetUsersNameTlogHandlerFunc(func(params users.GetUsersNameTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameTlog has not yet been implemented")
 		}),
+		AccountPostAccountEmailHandler: account.PostAccountEmailHandlerFunc(func(params account.PostAccountEmailParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountPostAccountEmail has not yet been implemented")
+		}),
 		AccountPostAccountLoginHandler: account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPostAccountLogin has not yet been implemented")
 		}),
@@ -469,6 +472,8 @@ type MindwellAPI struct {
 	UsersGetUsersNameInvitedHandler users.GetUsersNameInvitedHandler
 	// UsersGetUsersNameTlogHandler sets the operation handler for the get users name tlog operation
 	UsersGetUsersNameTlogHandler users.GetUsersNameTlogHandler
+	// AccountPostAccountEmailHandler sets the operation handler for the post account email operation
+	AccountPostAccountEmailHandler account.PostAccountEmailHandler
 	// AccountPostAccountLoginHandler sets the operation handler for the post account login operation
 	AccountPostAccountLoginHandler account.PostAccountLoginHandler
 	// AccountPostAccountPasswordHandler sets the operation handler for the post account password operation
@@ -822,6 +827,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.UsersGetUsersNameTlogHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameTlogHandler")
+	}
+
+	if o.AccountPostAccountEmailHandler == nil {
+		unregistered = append(unregistered, "account.PostAccountEmailHandler")
 	}
 
 	if o.AccountPostAccountLoginHandler == nil {
@@ -1331,6 +1340,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/tlog"] = users.NewGetUsersNameTlog(o.context, o.UsersGetUsersNameTlogHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/account/email"] = account.NewPostAccountEmail(o.context, o.AccountPostAccountEmailHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)

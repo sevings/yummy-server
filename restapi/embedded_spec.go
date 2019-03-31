@@ -31,6 +31,57 @@ func init() {
   },
   "basePath": "/api/v1",
   "paths": {
+    "/account/email": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "summary": "set new email",
+        "parameters": [
+          {
+            "maxLength": 500,
+            "minLength": 6,
+            "type": "string",
+            "name": "email",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "email has been set"
+          },
+          "400": {
+            "description": "email is the same",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "password is invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/account/email/{email}": {
       "get": {
         "tags": [
@@ -4033,6 +4084,57 @@ func init() {
   },
   "basePath": "/api/v1",
   "paths": {
+    "/account/email": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "summary": "set new email",
+        "parameters": [
+          {
+            "maxLength": 500,
+            "minLength": 6,
+            "type": "string",
+            "name": "email",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "email has been set"
+          },
+          "400": {
+            "description": "email is the same",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "403": {
+            "description": "password is invalid",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/account/email/{email}": {
       "get": {
         "tags": [

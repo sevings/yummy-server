@@ -775,6 +775,39 @@ paths:
           description: old password is invalid
           schema:
             $ref: '#/definitions/Error'
+  /account/email:
+    post:
+      summary: set new email
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          type: string
+          name: email
+          minLength: 6
+          maxLength: 500
+          required: true
+        - in: formData
+          type: string
+          name: password
+          minLength: 6
+          maxLength: 100
+          required: true
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - account
+      responses:
+        200:
+          description: email has been set
+        400:
+          description: email is the same
+          schema:
+            $ref: '#/definitions/Error'         
+        403:
+          description: password is invalid
+          schema:
+            $ref: '#/definitions/Error'
   /account/recover:
     post:
       summary: request reset password email

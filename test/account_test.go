@@ -155,9 +155,36 @@ func changePassword(t *testing.T, userID *models.UserID, old, upd, email string,
 	}
 }
 
-func checkVerify(t *testing.T, userID *models.UserID, email string) {
-	esm.CheckEmail(t, email)
+func changeEmail(t *testing.T, userID *models.UserID, oldEmail, newEmail, password string, ok bool) {
+	params := account.PostAccountEmailParams{
+		Email:    newEmail,
+		Password: password,
+	}
 
+	req := require.New(t)
+
+	upd := api.AccountPostAccountEmailHandler.Handle
+	resp := upd(params, userID)
+	switch resp.(type) {
+	case *account.PostAccountEmailOK:
+		req.True(ok)
+		req.Equal(2, len(esm.Emails))
+		req.Equal(oldEmail, esm.Emails[0])
+		req.Equal(newEmail, esm.Emails[1])
+		req.Equal(1, len(esm.Codes))
+		esm.Clear()
+	case *account.PostAccountEmailForbidden:
+		body := resp.(*account.PostAccountEmailForbidden)
+		req.False(ok, body.Payload.Message)
+	case *account.PostAccountEmailBadRequest:
+		body := resp.(*account.PostAccountEmailBadRequest)
+		req.False(ok, body.Payload.Message)
+	default:
+		t.Fatalf("set email user %s", userID.Name)
+	}
+}
+
+func checkVerify(t *testing.T, userID *models.UserID, email string) {
 	request := api.AccountPostAccountVerificationHandler.Handle
 	resp := request(account.PostAccountVerificationParams{}, userID)
 	_, ok := resp.(*account.PostAccountVerificationOK)
@@ -261,6 +288,7 @@ func TestRegister(t *testing.T) {
 	checkLogin(t, user, params.Email, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
+	esm.CheckEmail(t, "testemail")
 	checkVerify(t, userID, "testemail")
 	user.Account.Verified = true
 	checkResetPassword(t, "testemail")
@@ -270,6 +298,15 @@ func TestRegister(t *testing.T) {
 	changePassword(t, userID, "test123", "new123", "testemail", true)
 	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
+
+	changeEmail(t, userID, "testemail", "tEsteMail", "new123", false)
+	changeEmail(t, userID, "testemail", "testemail0", "xvc", false)
+	changeEmail(t, userID, "testemail", "testemail0", "new123", true)
+	user.Account.Email = "testemail0"
+	user.Account.Verified = false
+	checkLogin(t, user, "testemail0", "new123")
+	checkVerify(t, userID, "testemail0")
+	user.Account.Verified = true
 
 	req := require.New(t)
 	req.Equal(params.Name, user.Name)
@@ -345,6 +382,7 @@ func TestRegister(t *testing.T) {
 	checkEmail(t, "testeMAil2", false)
 	checkLogin(t, user, params.Name, params.Password)
 
+	esm.CheckEmail(t, "testemail2")
 	checkVerify(t, userID, user.Account.Email)
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)

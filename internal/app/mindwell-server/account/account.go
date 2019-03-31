@@ -39,6 +39,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountPostAccountRegisterHandler = account.PostAccountRegisterHandlerFunc(newRegistrator(srv))
 	srv.API.AccountPostAccountLoginHandler = account.PostAccountLoginHandlerFunc(newLoginer(srv))
 	srv.API.AccountPostAccountPasswordHandler = account.PostAccountPasswordHandlerFunc(newPasswordUpdater(srv))
+	srv.API.AccountPostAccountEmailHandler = account.PostAccountEmailHandlerFunc(newEmailUpdater(srv))
 	srv.API.AccountGetAccountInvitesHandler = account.GetAccountInvitesHandlerFunc(newInvitesLoader(srv))
 
 	srv.API.AccountPostAccountVerificationHandler = account.PostAccountVerificationHandlerFunc(newVerificationSender(srv))
@@ -432,6 +433,90 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 			sendPasswordChanged(srv, tx, userID)
 
 			return account.NewPostAccountPasswordOK()
+		})
+	}
+}
+
+func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountEmailParams, userID *models.UserID) (bool, string) {
+	var oldEmail string
+	var verified bool
+	tx.Query("SELECT email, verified FROM users WHERE id = $1", userID.ID).Scan(&oldEmail, &verified)
+
+	if strings.ToLower(oldEmail) == strings.ToLower(params.Email) {
+		return false, oldEmail
+	}
+
+	if !verified {
+		oldEmail = ""
+	}
+
+	const q = `
+        update users
+        set email = $1, verified = false
+        where password_hash = $2 and id = $3`
+
+	hash := srv.PasswordHash(params.Password)
+	tx.Exec(q, params.Email, hash, userID.ID)
+
+	rows := tx.RowsAffected()
+
+	return rows == 1, oldEmail
+}
+
+func sendEmailChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, oldEmail, newEmail string) {
+	const q = `
+		SELECT show_name, telegram
+		FROM users
+		WHERE id = $1
+	`
+
+	var name string
+	var tg sql.NullInt64
+	tx.Query(q, userID.ID).Scan(&name, &tg)
+
+	if tx.Error() != nil {
+		if tx.Error() != sql.ErrNoRows {
+			log.Print(tx.Error())
+		}
+		return
+	}
+
+	if len(oldEmail) > 0 {
+		srv.Mail.SendEmailChanged(oldEmail, name)
+	}
+
+	code := srv.VerificationCode(newEmail)
+	srv.Mail.SendGreeting(newEmail, name, code)
+
+	if tg.Valid {
+		srv.Tg.SendEmailChanged(tg.Int64)
+	}
+}
+
+func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailParams, *models.UserID) middleware.Responder {
+	return func(params account.PostAccountEmailParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			ok, oldEmail := setEmail(srv, tx, params, userID)
+			if tx.Error() != nil {
+				err := srv.NewError(nil)
+				return account.NewPostAccountEmailForbidden().WithPayload(err)
+			}
+
+			if !ok {
+				var err *models.Error
+
+				if oldEmail == params.Email {
+					err = srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."})
+				} else {
+					err = srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
+				}
+
+				return account.NewPostAccountEmailForbidden().WithPayload(err)
+			}
+
+			sendEmailChanged(srv, tx, userID, oldEmail, params.Email)
+
+			return account.NewPostAccountEmailOK()
 		})
 	}
 }

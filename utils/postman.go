@@ -148,6 +148,19 @@ func (pm *Postman) SendPasswordChanged(address, name string) {
 	pm.send(email, address, subj, name)
 }
 
+func (pm *Postman) SendEmailChanged(address, name string) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"твой адрес почты был изменен.",
+			},
+		},
+	}
+
+	subj := "Изменение пароля"
+	pm.send(email, address, subj, name)
+}
+
 func (pm *Postman) SendResetPassword(address, name, gender, code string, date int64) {
 	var ending string
 	if gender == "female" {

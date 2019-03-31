@@ -273,6 +273,15 @@ func (bot *TelegramBot) SendPasswordChanged(chat int64) {
 	bot.sendMessage(chat, text)
 }
 
+func (bot *TelegramBot) SendEmailChanged(chat int64) {
+	if bot.api == nil {
+		return
+	}
+
+	const text = "Твой адрес почты был изменен."
+	bot.sendMessage(chat, text)
+}
+
 func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, fromGender string, toPrivate bool) {
 	if bot.api == nil {
 		return
