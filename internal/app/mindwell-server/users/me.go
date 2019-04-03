@@ -80,6 +80,8 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	profile.Avatar = srv.NewAvatar(avatar)
 	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
 
+	profile.Account.Email = utils.HideEmail(profile.Account.Email)
+
 	if bday.Valid {
 		profile.Birthday = bday.String
 	}

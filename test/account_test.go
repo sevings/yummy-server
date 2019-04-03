@@ -302,7 +302,7 @@ func TestRegister(t *testing.T) {
 	changeEmail(t, userID, "testemail", "tEsteMail", "new123", false)
 	changeEmail(t, userID, "testemail", "testemail0", "xvc", false)
 	changeEmail(t, userID, "testemail", "testemail0", "new123", true)
-	user.Account.Email = "testemail0"
+	user.Account.Email = ""
 	user.Account.Verified = false
 	checkLogin(t, user, "testemail0", "new123")
 	checkVerify(t, userID, "testemail0")
@@ -383,7 +383,7 @@ func TestRegister(t *testing.T) {
 	checkLogin(t, user, params.Name, params.Password)
 
 	esm.CheckEmail(t, "testemail2")
-	checkVerify(t, userID, user.Account.Email)
+	checkVerify(t, userID, "testemail2")
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
@@ -471,4 +471,15 @@ func TestTelegramLogout(t *testing.T) {
 
 	req := require.New(t)
 	req.True(ok)
+}
+
+func TestHideEmail(t *testing.T) {
+	he := utils.HideEmail
+	req := require.New(t)
+
+	req.Equal("", he(""))
+	req.Equal("", he("mindwell.win"))
+	req.Equal("***@ml.win", he("s@ml.win"))
+	req.Equal("***@ml.win", he("sp@ml.win"))
+	req.Equal("s***t@mindwell.win", he("support@mindwell.win"))
 }

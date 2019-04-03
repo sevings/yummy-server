@@ -347,6 +347,8 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 			code := srv.VerificationCode(user.Account.Email)
 			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, code)
 
+			user.Account.Email = utils.HideEmail(user.Account.Email)
+
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})
 	}
@@ -366,6 +368,8 @@ func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) 
 				err := srv.NewError(&i18n.Message{ID: "invalid_name_or_password", Other: "Name or password is invalid."})
 				return account.NewPostAccountLoginBadRequest().WithPayload(err)
 			}
+
+			user.Account.Email = utils.HideEmail(user.Account.Email)
 
 			return account.NewPostAccountLoginOK().WithPayload(user)
 		})
@@ -442,7 +446,8 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
 	var verified bool
 	tx.Query("SELECT email, verified FROM users WHERE id = $1", userID.ID).Scan(&oldEmail, &verified)
 
-	if strings.ToLower(oldEmail) == strings.ToLower(params.Email) {
+	newEmail := strings.TrimSpace(params.Email)
+	if strings.ToLower(oldEmail) == strings.ToLower(newEmail) {
 		return srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."}), oldEmail
 	}
 
@@ -450,7 +455,7 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
 		oldEmail = ""
 	}
 
-	if !isEmailFree(tx, params.Email) {
+	if !isEmailFree(tx, newEmail) {
 		return srv.NewError(&i18n.Message{ID: "email_is_used", Other: "Email is already used."}), oldEmail
 	}
 
@@ -460,7 +465,7 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
         where password_hash = $2 and id = $3`
 
 	hash := srv.PasswordHash(params.Password)
-	tx.Exec(q, params.Email, hash, userID.ID)
+	tx.Exec(q, newEmail, hash, userID.ID)
 
 	if tx.RowsAffected() < 1 {
 		return srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."}), oldEmail

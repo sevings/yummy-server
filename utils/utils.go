@@ -247,3 +247,17 @@ func FormatFloat(val float64) string {
 func ReplaceToHtml(val string) string {
 	return htmlEsc.Replace(val)
 }
+
+func HideEmail(email string) string {
+	nameLen := strings.LastIndex(email, "@")
+
+	if nameLen < 0 {
+		return ""
+	}
+
+	if nameLen < 3 {
+		return "***" + email[nameLen:]
+	}
+
+	return email[:1] + "***" + email[nameLen-1:]
+}
