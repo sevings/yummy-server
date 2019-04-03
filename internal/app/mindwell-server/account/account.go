@@ -437,17 +437,21 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 	}
 }
 
-func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountEmailParams, userID *models.UserID) (bool, string) {
+func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountEmailParams, userID *models.UserID) (*models.Error, string) {
 	var oldEmail string
 	var verified bool
 	tx.Query("SELECT email, verified FROM users WHERE id = $1", userID.ID).Scan(&oldEmail, &verified)
 
 	if strings.ToLower(oldEmail) == strings.ToLower(params.Email) {
-		return false, oldEmail
+		return srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."}), oldEmail
 	}
 
 	if !verified {
 		oldEmail = ""
+	}
+
+	if !isEmailFree(tx, params.Email) {
+		return srv.NewError(&i18n.Message{ID: "email_is_used", Other: "Email is already used."}), oldEmail
 	}
 
 	const q = `
@@ -458,9 +462,11 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
 	hash := srv.PasswordHash(params.Password)
 	tx.Exec(q, params.Email, hash, userID.ID)
 
-	rows := tx.RowsAffected()
+	if tx.RowsAffected() < 1 {
+		return srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."}), oldEmail
+	}
 
-	return rows == 1, oldEmail
+	return nil, oldEmail
 }
 
 func sendEmailChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, oldEmail, newEmail string) {
@@ -496,21 +502,14 @@ func sendEmailChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountEmailParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			ok, oldEmail := setEmail(srv, tx, params, userID)
+			err, oldEmail := setEmail(srv, tx, params, userID)
+
 			if tx.Error() != nil {
-				err := srv.NewError(nil)
+				err = srv.NewError(nil)
 				return account.NewPostAccountEmailForbidden().WithPayload(err)
 			}
 
-			if !ok {
-				var err *models.Error
-
-				if oldEmail == params.Email {
-					err = srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."})
-				} else {
-					err = srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
-				}
-
+			if err != nil {
 				return account.NewPostAccountEmailForbidden().WithPayload(err)
 			}
 
