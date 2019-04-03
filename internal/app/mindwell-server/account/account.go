@@ -316,6 +316,10 @@ const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Name = strings.TrimSpace(params.Name)
+			params.Password = strings.TrimSpace(params.Password)
+			params.Email = strings.TrimSpace(params.Email)
+
 			if ok := isEmailFree(tx, params.Email); !ok {
 				err := srv.NewError(&i18n.Message{ID: "email_is_not_free", Other: "Email is not free."})
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
@@ -362,6 +366,9 @@ const authProfileQueryByPassword = authProfileQuery + `
 func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) middleware.Responder {
 	return func(params account.PostAccountLoginParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Name = strings.TrimSpace(params.Name)
+			params.Password = strings.TrimSpace(params.Password)
+
 			hash := srv.PasswordHash(params.Password)
 			user := loadAuthProfile(srv, tx, authProfileQueryByPassword, params.Name, hash)
 			if tx.Error() != nil {
@@ -423,6 +430,9 @@ func sendPasswordChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mo
 func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.NewPassword = strings.TrimSpace(params.NewPassword)
+			params.OldPassword = strings.TrimSpace(params.OldPassword)
+
 			ok := setPassword(srv, tx, params, userID)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
@@ -507,6 +517,9 @@ func sendEmailChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountEmailParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Email = strings.TrimSpace(params.Email)
+			params.Password = strings.TrimSpace(params.Password)
+
 			err, oldEmail := setEmail(srv, tx, params, userID)
 
 			if tx.Error() != nil {
@@ -598,6 +611,9 @@ func newVerificationSender(srv *utils.MindwellServer) func(account.PostAccountVe
 func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerificationEmailParams) middleware.Responder {
 	return func(params account.GetAccountVerificationEmailParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Email = strings.TrimSpace(params.Email)
+			params.Code = strings.TrimSpace(params.Code)
+
 			code := srv.VerificationCode(params.Email)
 			if params.Code != code {
 				return account.NewGetAccountVerificationEmailBadRequest()
@@ -614,6 +630,8 @@ func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerifica
 func newResetPasswordSender(srv *utils.MindwellServer) func(account.PostAccountRecoverParams) middleware.Responder {
 	return func(params account.PostAccountRecoverParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Email = strings.TrimSpace(params.Email)
+
 			const q = `
 				SELECT show_name, gender.type 
 				FROM users, gender 
@@ -655,6 +673,10 @@ func resetPassword(srv *utils.MindwellServer, tx *utils.AutoTx, email, password 
 func newPasswordResetter(srv *utils.MindwellServer) func(account.PostAccountRecoverPasswordParams) middleware.Responder {
 	return func(params account.PostAccountRecoverPasswordParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			params.Email = strings.TrimSpace(params.Email)
+			params.Password = strings.TrimSpace(params.Password)
+			params.Code = strings.TrimSpace(params.Code)
+
 			if !srv.CheckResetPasswordCode(params.Email, params.Code, params.Date) {
 				err := srv.NewError(&i18n.Message{ID: "invalid_code", Other: "Invalid reset link."})
 				return account.NewPostAccountRecoverPasswordBadRequest().WithPayload(err)
