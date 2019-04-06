@@ -46,3 +46,5 @@ ADD COLUMN "email_invites" Boolean NOT NULL DEFAULT FALSE;
 UPDATE users
 SET email_invites = TRUE
 WHERE email_comments AND email_followers;
+
+INSERT INTO "mindwell"."notification_type" VALUES(4, 'invite');

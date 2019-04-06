@@ -1847,6 +1847,7 @@ INSERT INTO "mindwell"."notification_type" VALUES(0, 'comment');
 INSERT INTO "mindwell"."notification_type" VALUES(1, 'follower');
 INSERT INTO "mindwell"."notification_type" VALUES(2, 'request');
 INSERT INTO "mindwell"."notification_type" VALUES(3, 'accept');
+INSERT INTO "mindwell"."notification_type" VALUES(4, 'invite');
 -- -------------------------------------------------------------
 
 

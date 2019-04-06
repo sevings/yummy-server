@@ -74,7 +74,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	srv.Ntf = NewNotifier(ntfURL, ntfKey)
 	srv.Tg = NewTelegramBot(srv)
 
-	srv.cron.AddFunc(gron.Every(xtime.Day).At("03:15"), func() { srv.giveInvites() })
+	srv.cron.AddFunc(gron.Every(xtime.Day).At("00:15"), func() { srv.giveInvites() })
 	srv.cron.Start()
 
 	return srv

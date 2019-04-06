@@ -82,6 +82,8 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64,
 		notif.Comment = comments.LoadComment(srv, tx, userID, not.subj)
 		notif.Entry = entries.LoadEntry(srv, tx, notif.Comment.EntryID, userID)
 		break
+	case "invite":
+		break
 	case "follower":
 		fallthrough
 	case "request":
