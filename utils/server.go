@@ -74,6 +74,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	srv.Ntf = NewNotifier(ntfURL, ntfKey)
 	srv.Tg = NewTelegramBot(srv)
 
+	srv.cron.AddFunc(gron.Every(xtime.Day).At("00:10"), func() { srv.recalcKarma() })
 	srv.cron.AddFunc(gron.Every(xtime.Day).At("00:15"), func() { srv.giveInvites() })
 	srv.cron.Start()
 
@@ -195,6 +196,15 @@ func (srv *MindwellServer) StandardError(name string) *models.Error {
 	return srv.NewError(msg)
 }
 
+func (srv *MindwellServer) recalcKarma() {
+	log.Println("Updating karma...")
+
+	_, err := srv.DB.Exec("SELECT recalc_karma()")
+	if err != nil {
+		log.Println(err)
+	}
+}
+
 func (srv *MindwellServer) giveInvites() {
 	srv.Transact(func(tx *AutoTx) middleware.Responder {
 		tx.Query("SELECT user_id FROM give_invites()")
@@ -228,7 +238,7 @@ func (srv *MindwellServer) giveInvites() {
 			}
 		}
 
-		log.Printf("Given %d new invites.\n", len(ids))
+		log.Printf("%d new invites given.\n", len(ids))
 
 		return nil
 	})
