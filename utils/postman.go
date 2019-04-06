@@ -269,6 +269,38 @@ func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender s
 	pm.send(email, address, subj, toShowName)
 }
 
+func (pm *Postman) SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string) {
+	var ending, pronoun string
+	if fromGender == "female" {
+		ending = "а"
+		pronoun = "её"
+	} else {
+		ending = ""
+		pronoun = "его"
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				fromShowName + " разрешил" + ending + " тебе читать свой тлог.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Ссылка на " + pronoun + " профиль: ",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  fromShowName,
+						Link:  pm.url + "users/" + fromName,
+					},
+				},
+			},
+		},
+	}
+
+	const subj = "Доступ открыт"
+	pm.send(email, address, subj, toShowName)
+}
+
 func (pm *Postman) SendNewInvite(address, name string) {
 	email := hermes.Email{
 		Body: hermes.Body{

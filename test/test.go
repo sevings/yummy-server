@@ -48,6 +48,10 @@ func (esm *EmailSenderMock) SendNewFollower(address, fromName, fromShowName, fro
 	esm.Emails = append(esm.Emails, address)
 }
 
+func (esm *EmailSenderMock) SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
 func (esm *EmailSenderMock) SendNewInvite(address, name string) {
 	esm.Emails = append(esm.Emails, address)
 }

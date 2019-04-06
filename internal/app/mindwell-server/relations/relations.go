@@ -79,6 +79,7 @@ func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelation
 			}
 
 			relation, _ = setRelationship(tx, params.Name, uID.Name, models.RelationshipRelationFollowed)
+			sendNewAccept(srv, tx, uID.Name, params.Name)
 
 			return relations.NewPutRelationsFromNameOK().WithPayload(relation)
 		})

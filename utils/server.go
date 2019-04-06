@@ -27,6 +27,7 @@ type MailSender interface {
 	SendResetPassword(address, name, gender, code string, date int64)
 	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
+	SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewInvite(address, name string)
 }
 

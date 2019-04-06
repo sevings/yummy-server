@@ -306,6 +306,24 @@ func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, from
 	bot.sendMessage(chat, text)
 }
 
+func (bot *TelegramBot) SendNewAccept(chat int64, fromName, fromShowName, fromGender string) {
+	if bot.api == nil {
+		return
+	}
+
+	var ending string
+	if fromGender == "female" {
+		ending = "а"
+	} else {
+		ending = ""
+	}
+
+	link := `<a href="` + bot.url + `users/` + fromName + `">` + fromShowName + `</a>`
+	text := link + " разрешил" + ending + " тебе читать свой тлог."
+
+	bot.sendMessage(chat, text)
+}
+
 func (bot *TelegramBot) SendNewInvite(chat int64) {
 	if bot.api == nil {
 		return

@@ -108,3 +108,35 @@ func sendNewFollower(srv *utils.MindwellServer, tx *utils.AutoTx, toPrivate bool
 		srv.Ntf.Notify(tx, fromID, "follower", to)
 	}
 }
+
+func sendNewAccept(srv *utils.MindwellServer, tx *utils.AutoTx, from, to string) {
+	const toQ = `
+		SELECT show_name, email, verified AND email_followers, telegram
+		FROM users 
+		WHERE lower(name) = lower($1)
+	`
+
+	var sendEmail bool
+	var toShowName, email string
+	var tg sql.NullInt64
+	tx.Query(toQ, to).Scan(&toShowName, &email, &sendEmail, &tg)
+
+	const fromQ = `
+		SELECT users.id, show_name, gender.type 
+		FROM users, gender 
+		WHERE lower(users.name) = lower($1) AND users.gender = gender.id`
+
+	var fromID int64
+	var fromShowName, fromGender string
+	tx.Query(fromQ, from).Scan(&fromID, &fromShowName, &fromGender)
+
+	if sendEmail {
+		srv.Mail.SendNewAccept(email, from, fromShowName, fromGender, toShowName)
+	}
+
+	if tg.Valid {
+		srv.Tg.SendNewAccept(tg.Int64, from, fromShowName, fromGender)
+	}
+
+	srv.Ntf.Notify(tx, fromID, "accept", to)
+}
