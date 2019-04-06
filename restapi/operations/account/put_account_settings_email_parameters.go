@@ -25,12 +25,15 @@ func NewPutAccountSettingsEmailParams() PutAccountSettingsEmailParams {
 
 		commentsDefault  = bool(false)
 		followersDefault = bool(false)
+		invitesDefault   = bool(false)
 	)
 
 	return PutAccountSettingsEmailParams{
 		Comments: &commentsDefault,
 
 		Followers: &followersDefault,
+
+		Invites: &invitesDefault,
 	}
 }
 
@@ -53,6 +56,11 @@ type PutAccountSettingsEmailParams struct {
 	  Default: false
 	*/
 	Followers *bool
+	/*
+	  In: formData
+	  Default: false
+	*/
+	Invites *bool
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -80,6 +88,11 @@ func (o *PutAccountSettingsEmailParams) BindRequest(r *http.Request, route *midd
 
 	fdFollowers, fdhkFollowers, _ := fds.GetOK("followers")
 	if err := o.bindFollowers(fdFollowers, fdhkFollowers, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdInvites, fdhkInvites, _ := fds.GetOK("invites")
+	if err := o.bindInvites(fdInvites, fdhkInvites, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -131,6 +144,29 @@ func (o *PutAccountSettingsEmailParams) bindFollowers(rawData []string, hasKey b
 		return errors.InvalidType("followers", "formData", "bool", raw)
 	}
 	o.Followers = &value
+
+	return nil
+}
+
+// bindInvites binds and validates parameter Invites from formData.
+func (o *PutAccountSettingsEmailParams) bindInvites(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPutAccountSettingsEmailParams()
+		return nil
+	}
+
+	value, err := swag.ConvertBool(raw)
+	if err != nil {
+		return errors.InvalidType("invites", "formData", "bool", raw)
+	}
+	o.Invites = &value
 
 	return nil
 }

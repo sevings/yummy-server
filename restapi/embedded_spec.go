@@ -477,6 +477,9 @@ func init() {
                 },
                 "followers": {
                   "type": "boolean"
+                },
+                "invites": {
+                  "type": "boolean"
                 }
               }
             }
@@ -506,6 +509,12 @@ func init() {
             "type": "boolean",
             "default": false,
             "name": "followers",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "invites",
             "in": "formData"
           }
         ],
@@ -4530,6 +4539,9 @@ func init() {
                 },
                 "followers": {
                   "type": "boolean"
+                },
+                "invites": {
+                  "type": "boolean"
                 }
               }
             }
@@ -4559,6 +4571,12 @@ func init() {
             "type": "boolean",
             "default": false,
             "name": "followers",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "invites",
             "in": "formData"
           }
         ],

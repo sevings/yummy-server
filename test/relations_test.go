@@ -132,12 +132,12 @@ func TestRelationship(t *testing.T) {
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkUpdateEmailSettings(t, userIDs[2], true, false)
+	checkUpdateEmailSettings(t, userIDs[2], true, false, false)
 	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
 
-	checkUpdateEmailSettings(t, userIDs[2], true, true)
+	checkUpdateEmailSettings(t, userIDs[2], true, true, false)
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)

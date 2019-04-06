@@ -697,8 +697,8 @@ func newEmailSettingsLoader(srv *utils.MindwellServer) func(account.GetAccountSe
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			settings := account.GetAccountSettingsEmailOKBody{}
 
-			const q = "SELECT email_comments, email_followers from users where id = $1"
-			tx.Query(q, userID.ID).Scan(&settings.Comments, &settings.Followers)
+			const q = "SELECT email_comments, email_followers, email_invites from users where id = $1"
+			tx.Query(q, userID.ID).Scan(&settings.Comments, &settings.Followers, &settings.Invites)
 
 			return account.NewGetAccountSettingsEmailOK().WithPayload(&settings)
 		})
@@ -708,8 +708,8 @@ func newEmailSettingsLoader(srv *utils.MindwellServer) func(account.GetAccountSe
 func newEmailSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSettingsEmailParams, *models.UserID) middleware.Responder {
 	return func(params account.PutAccountSettingsEmailParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			const q = "UPDATE users SET email_comments = $2, email_followers = $3 where id = $1"
-			tx.Exec(q, userID.ID, *params.Comments, *params.Followers)
+			const q = "UPDATE users SET email_comments = $2, email_followers = $3, email_invites = $4 where id = $1"
+			tx.Exec(q, userID.ID, *params.Comments, *params.Followers, *params.Invites)
 
 			return account.NewPutAccountSettingsEmailOK()
 		})

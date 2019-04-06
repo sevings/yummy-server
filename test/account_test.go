@@ -410,18 +410,20 @@ func getEmailSettings(t *testing.T, userID *models.UserID) *account.GetAccountSe
 	return body.Payload
 }
 
-func checkEmailSettings(t *testing.T, userID *models.UserID, comments, followers bool) {
+func checkEmailSettings(t *testing.T, userID *models.UserID, comments, followers, invites bool) {
 	settings := getEmailSettings(t, userID)
 	require.Equal(t, comments, settings.Comments)
 	require.Equal(t, followers, settings.Followers)
+	require.Equal(t, invites, settings.Invites)
 }
 
-func checkUpdateEmailSettings(t *testing.T, userID *models.UserID, comments, followers bool) {
+func checkUpdateEmailSettings(t *testing.T, userID *models.UserID, comments, followers, invites bool) {
 	load := api.AccountPutAccountSettingsEmailHandler.Handle
 
 	settings := account.PutAccountSettingsEmailParams{
 		Comments:  &comments,
 		Followers: &followers,
+		Invites:   &invites,
 	}
 
 	resp := load(settings, userID)
@@ -429,14 +431,14 @@ func checkUpdateEmailSettings(t *testing.T, userID *models.UserID, comments, fol
 
 	require.True(t, ok, "user %d", userID.ID)
 
-	checkEmailSettings(t, userID, comments, followers)
+	checkEmailSettings(t, userID, comments, followers, invites)
 }
 
 func TestEmailSettings(t *testing.T) {
-	checkEmailSettings(t, userIDs[0], false, false)
-	checkUpdateEmailSettings(t, userIDs[0], true, false)
-	checkUpdateEmailSettings(t, userIDs[0], false, false)
-	checkUpdateEmailSettings(t, userIDs[0], true, true)
+	checkEmailSettings(t, userIDs[0], false, false, false)
+	checkUpdateEmailSettings(t, userIDs[0], true, false, false)
+	checkUpdateEmailSettings(t, userIDs[0], false, false, true)
+	checkUpdateEmailSettings(t, userIDs[0], true, true, false)
 }
 
 func TestConnectionToken(t *testing.T) {

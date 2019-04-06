@@ -727,6 +727,8 @@ paths:
                 type: boolean
               followers:
                 type: boolean
+              invites:
+                type: boolean
     put:
       security:
         - ApiKeyHeader: []
@@ -742,6 +744,10 @@ paths:
         - in: formData
           type: boolean
           name: followers
+          default: false
+        - in: formData
+          type: boolean
+          name: invites
           default: false
       responses:
         200:

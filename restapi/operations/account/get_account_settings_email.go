@@ -83,6 +83,9 @@ type GetAccountSettingsEmailOKBody struct {
 
 	// followers
 	Followers bool `json:"followers,omitempty"`
+
+	// invites
+	Invites bool `json:"invites,omitempty"`
 }
 
 // Validate validates this get account settings email o k body
