@@ -269,6 +269,29 @@ func (pm *Postman) SendNewFollower(address, fromName, fromShowName, fromGender s
 	pm.send(email, address, subj, toShowName)
 }
 
+func (pm *Postman) SendNewInvite(address, name string) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"У тебя появилось новое приглашение! Используй его с умом.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Посмотреть доступные приглашения можно в настройках:",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Приглашения",
+						Link:  pm.url + "account/invites",
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Новое приглашение"
+	pm.send(email, address, subj, name)
+}
+
 func (pm *Postman) SendAdm(address, name, gender string) {
 	var ending string
 	if gender == "female" {

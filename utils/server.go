@@ -8,9 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/roylee0704/gron/xtime"
+
 	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/roylee0704/gron"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	goconf "github.com/zpatrick/go-config"
@@ -24,6 +27,7 @@ type MailSender interface {
 	SendResetPassword(address, name, gender, code string, date int64)
 	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
+	SendNewInvite(address, name string)
 }
 
 type MindwellServer struct {
@@ -34,6 +38,7 @@ type MindwellServer struct {
 	Tg    *TelegramBot
 	cfg   *goconf.Config
 	local *i18n.Localizer
+	cron  *gron.Cron
 	errs  map[string]*i18n.Message
 }
 
@@ -55,6 +60,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		API:   api,
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
+		cron:  gron.New(),
 		errs: map[string]*i18n.Message{
 			"no_entry":   &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
 			"no_comment": &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
@@ -67,6 +73,9 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	ntfKey := srv.ConfigString("centrifugo.api_key")
 	srv.Ntf = NewNotifier(ntfURL, ntfKey)
 	srv.Tg = NewTelegramBot(srv)
+
+	srv.cron.AddFunc(gron.Every(xtime.Day).At("03:15"), func() { srv.giveInvites() })
+	srv.cron.Start()
 
 	return srv
 }
@@ -184,4 +193,43 @@ func (srv *MindwellServer) StandardError(name string) *models.Error {
 	}
 
 	return srv.NewError(msg)
+}
+
+func (srv *MindwellServer) giveInvites() {
+	srv.Transact(func(tx *AutoTx) middleware.Responder {
+		tx.Query("SELECT user_id FROM give_invites()")
+
+		var ids []int
+		for {
+			var id int
+			if !tx.Scan(&id) {
+				break
+			}
+
+			ids = append(ids, id)
+		}
+
+		for _, id := range ids {
+			var email, name, showName string
+			var sendEmail bool
+			var tg sql.NullInt64
+
+			tx.Query("SELECT email, name, show_name, verified AND email_invites, telegram FROM users WHERE id = $1", id)
+			tx.Scan(&email, &name, &showName, &sendEmail, &tg)
+
+			srv.Ntf.Notify(tx, 0, "invite", name)
+
+			if tg.Valid {
+				srv.Tg.SendNewInvite(tg.Int64)
+			}
+
+			if sendEmail {
+				srv.Mail.SendNewInvite(email, showName)
+			}
+		}
+
+		log.Printf("Given %d new invites.\n", len(ids))
+
+		return nil
+	})
 }

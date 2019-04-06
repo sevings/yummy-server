@@ -305,3 +305,12 @@ func (bot *TelegramBot) SendNewFollower(chat int64, fromName, fromShowName, from
 
 	bot.sendMessage(chat, text)
 }
+
+func (bot *TelegramBot) SendNewInvite(chat int64) {
+	if bot.api == nil {
+		return
+	}
+
+	text := `У тебя в настройках <a href="` + bot.url + `account/invites">появилось новое приглашение</a>! Используй его с умом.`
+	bot.sendMessage(chat, text)
+}

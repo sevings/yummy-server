@@ -111,6 +111,7 @@ CREATE TABLE "mindwell"."users" (
 	"background_color" Character( 7 ) DEFAULT '#ffffff' NOT NULL,
     "email_comments" Boolean NOT NULL DEFAULT FALSE,
     "email_followers" Boolean NOT NULL DEFAULT FALSE,
+    "email_invites" Boolean NOT NULL DEFAULT FALSE,
     "invite_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
     "telegram" Integer,
@@ -1919,7 +1920,7 @@ CREATE INDEX "index_image_size_id" ON "mindwell"."image_sizes" USING btree( "ima
 
 
 
-CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION give_invites() RETURNS TABLE(user_id int) AS $$
     WITH inviters AS (
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
@@ -1955,7 +1956,8 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS VOID AS $$
             trunc(random() * wc.words),
             trunc(random() * wc.words)
         FROM inviters, wc
-        ON CONFLICT (word1, word2, word3) DO NOTHING;
+        ON CONFLICT (word1, word2, word3) DO NOTHING
+    RETURNING referrer_id;
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
