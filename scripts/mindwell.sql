@@ -114,6 +114,7 @@ CREATE TABLE "mindwell"."users" (
     "email_invites" Boolean NOT NULL DEFAULT FALSE,
     "invite_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
+    "comment_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "telegram" Integer,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
     CONSTRAINT "enum_user_gender" FOREIGN KEY("gender") REFERENCES "mindwell"."gender"("id"),

@@ -336,6 +336,26 @@ func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesI
 	}
 }
 
+func canPostComment(tx *utils.AutoTx, userID, entryID int64) bool {
+	const q = `
+		SELECT author_id
+		FROM entries
+		WHERE id = $1
+	`
+
+	var authorID int64
+	tx.Query(q, entryID).Scan(&authorID)
+	if authorID == userID {
+		return true
+	}
+
+	if !utils.CanComment(tx, userID) {
+		return false
+	}
+
+	return utils.CanViewEntry(tx, userID, entryID)
+}
+
 func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
 	const q = `
 		INSERT INTO comments (author_id, entry_id, content, edit_content)
@@ -412,9 +432,9 @@ func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDComm
 	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			userID := uID.ID
-			canView := utils.CanViewEntry(tx, userID, params.ID)
-			if !canView {
-				err := srv.StandardError("no_entry")
+			allowed := canPostComment(tx, userID, params.ID)
+			if !allowed {
+				err := srv.NewError(&i18n.Message{ID: "cant_comment", Other: "You can't comment this entry."})
 				return comments.NewPostEntriesIDCommentsNotFound().WithPayload(err)
 			}
 

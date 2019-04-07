@@ -129,7 +129,11 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 }
 
 func removeUserRestrictions(db *sql.DB) {
-	_, err := db.Exec("UPDATE users SET followers_count = 100, vote_ban = CURRENT_DATE, invite_ban = CURRENT_DATE")
+	_, err := db.Exec(`UPDATE users 
+	SET followers_count = 100, 
+		vote_ban = CURRENT_DATE, 
+		invite_ban = CURRENT_DATE, 
+		comment_ban = CURRENT_DATE`)
 	if err != nil {
 		log.Println(err)
 	}
@@ -144,6 +148,13 @@ func banVote(db *sql.DB, userID int64) {
 
 func banInvite(db *sql.DB, userID int64) {
 	_, err := db.Exec("UPDATE users SET invite_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func banComment(db *sql.DB, userID int64) {
+	_, err := db.Exec("UPDATE users SET comment_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
 	if err != nil {
 		log.Println(err)
 	}

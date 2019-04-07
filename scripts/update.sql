@@ -1,0 +1,2 @@
+ALTER TABLE users 
+ADD COLUMN "comment_ban" Date DEFAULT CURRENT_DATE NOT NULL;

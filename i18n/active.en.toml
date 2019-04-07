@@ -1,5 +1,6 @@
 adm_reg_finished = "ADM registration finished."
 already_verified = "Your email had been verified earlier."
+cant_comment = "You can't comment this entry."
 cant_vote = "You are not allowed to vote for this entry."
 delete_not_your_comment = "You can't delete someone else's comments."
 delete_not_your_entry = "You can't delete someone else's entries."

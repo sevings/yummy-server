@@ -82,6 +82,19 @@ func CanVote(tx *AutoTx, userID int64) bool {
 	return allowed
 }
 
+func CanComment(tx *AutoTx, userID int64) bool {
+	const q = `
+		SELECT comment_ban <= CURRENT_DATE
+		FROM users
+		WHERE id = $1
+	`
+
+	var allowed bool
+	tx.Query(q, userID).Scan(&allowed)
+
+	return allowed
+}
+
 func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {
 	const q = `
 			SELECT id, name

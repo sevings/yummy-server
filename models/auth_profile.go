@@ -222,6 +222,9 @@ func (m *AuthProfileAO1Account) UnmarshalBinary(b []byte) error {
 // swagger:model AuthProfileAO1Ban
 type AuthProfileAO1Ban struct {
 
+	// comment
+	Comment float64 `json:"comment,omitempty"`
+
 	// invite
 	Invite float64 `json:"invite,omitempty"`
 

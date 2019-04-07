@@ -3302,6 +3302,10 @@ func init() {
             "ban": {
               "type": "object",
               "properties": {
+                "comment": {
+                  "type": "number",
+                  "format": "double"
+                },
                 "invite": {
                   "type": "number",
                   "format": "double"
@@ -7678,6 +7682,10 @@ func init() {
             "ban": {
               "type": "object",
               "properties": {
+                "comment": {
+                  "type": "number",
+                  "format": "double"
+                },
                 "invite": {
                   "type": "number",
                   "format": "double"

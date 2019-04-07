@@ -233,6 +233,9 @@ definitions:
               vote:
                 type: number
                 format: double
+              comment:
+                type: number
+                format: double
         example:
           account:
             apiKey: 'blah-blah-blah'
