@@ -3777,7 +3777,9 @@ func init() {
             "comment",
             "follower",
             "request",
-            "accept"
+            "accept",
+            "invite",
+            "welcome"
           ]
         },
         "user": {
@@ -8151,7 +8153,9 @@ func init() {
             "comment",
             "follower",
             "request",
-            "accept"
+            "accept",
+            "invite",
+            "welcome"
           ]
         },
         "user": {

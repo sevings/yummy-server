@@ -78,19 +78,19 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64,
 	}
 
 	switch not.tpe {
-	case "comment":
+	case models.NotificationTypeComment:
 		notif.Comment = comments.LoadComment(srv, tx, userID, not.subj)
 		notif.Entry = entries.LoadEntry(srv, tx, notif.Comment.EntryID, userID)
 		break
-	case "invite":
+	case models.NotificationTypeInvite:
 		break
-	case "follower":
+	case models.NotificationTypeFollower:
 		fallthrough
-	case "request":
+	case models.NotificationTypeRequest:
 		fallthrough
-	case "accept":
+	case models.NotificationTypeAccept:
 		fallthrough
-	case "welcome":
+	case models.NotificationTypeWelcome:
 		notif.User = users.LoadUserByID(srv, tx, not.subj)
 		break
 	default:
