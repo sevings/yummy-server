@@ -313,6 +313,38 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
+func sendNewWelcome(srv *utils.MindwellServer, tx *utils.AutoTx, from string, toID int64) {
+	const toQ = `
+		SELECT name, show_name, email, verified AND email_followers, telegram
+		FROM users 
+		WHERE id = $1
+	`
+
+	var sendEmail bool
+	var to, toShowName, email string
+	var tg sql.NullInt64
+	tx.Query(toQ, toID).Scan(&to, &toShowName, &email, &sendEmail, &tg)
+
+	const fromQ = `
+		SELECT users.id, show_name, gender.type 
+		FROM users, gender 
+		WHERE lower(users.name) = lower($1) AND users.gender = gender.id`
+
+	var fromID int64
+	var fromShowName, fromGender string
+	tx.Query(fromQ, from).Scan(&fromID, &fromShowName, &fromGender)
+
+	if sendEmail {
+		srv.Mail.SendNewWelcome(email, from, fromShowName, fromGender, toShowName)
+	}
+
+	if tg.Valid {
+		srv.Tg.SendNewWelcome(tg.Int64, from, fromShowName, fromGender)
+	}
+
+	srv.Ntf.Notify(tx, fromID, "welcome", to)
+}
+
 func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -352,6 +384,8 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, code)
 
 			user.Account.Email = utils.HideEmail(user.Account.Email)
+
+			sendNewWelcome(srv, tx, params.Name, ref)
 
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})

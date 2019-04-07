@@ -301,6 +301,38 @@ func (pm *Postman) SendNewAccept(address, fromName, fromShowName, fromGender, to
 	pm.send(email, address, subj, toShowName)
 }
 
+func (pm *Postman) SendNewWelcome(address, fromName, fromShowName, fromGender, toShowName string) {
+	var ending, pronoun string
+	if fromGender == "female" {
+		ending = "ась"
+		pronoun = "её"
+	} else {
+		ending = "ся"
+		pronoun = "его"
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				fromShowName + " зарегистрировал" + ending + " по твоему приглашению.",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Ссылка на " + pronoun + " профиль: ",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  fromShowName,
+						Link:  pm.url + "users/" + fromName,
+					},
+				},
+			},
+		},
+	}
+
+	const subj = "Приглашение использовано"
+	pm.send(email, address, subj, toShowName)
+}
+
 func (pm *Postman) SendNewInvite(address, name string) {
 	email := hermes.Email{
 		Body: hermes.Body{

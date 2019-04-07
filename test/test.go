@@ -52,6 +52,10 @@ func (esm *EmailSenderMock) SendNewAccept(address, fromName, fromShowName, fromG
 	esm.Emails = append(esm.Emails, address)
 }
 
+func (esm *EmailSenderMock) SendNewWelcome(address, fromName, fromShowName, fromGender, toShowName string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
 func (esm *EmailSenderMock) SendNewInvite(address, name string) {
 	esm.Emails = append(esm.Emails, address)
 }
@@ -60,6 +64,15 @@ func (esm *EmailSenderMock) CheckEmail(t *testing.T, email string) {
 	req := require.New(t)
 	req.Equal(1, len(esm.Emails))
 	req.Equal(email, esm.Emails[0])
+
+	esm.Clear()
+}
+
+func (esm *EmailSenderMock) CheckEmail2(t *testing.T, email0, email1 string) {
+	req := require.New(t)
+	req.Equal(2, len(esm.Emails))
+	req.Equal(email0, esm.Emails[0])
+	req.Equal(email1, esm.Emails[1])
 
 	esm.Clear()
 }

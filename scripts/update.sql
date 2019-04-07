@@ -48,3 +48,4 @@ SET email_invites = TRUE
 WHERE email_comments AND email_followers;
 
 INSERT INTO "mindwell"."notification_type" VALUES(4, 'invite');
+INSERT INTO "mindwell"."notification_type" VALUES(5, 'welcome');

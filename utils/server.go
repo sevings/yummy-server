@@ -28,6 +28,7 @@ type MailSender interface {
 	SendNewComment(address, fromGender, toShowName, entryTitle string, cmt *models.Comment)
 	SendNewFollower(address, fromName, fromShowName, fromGender string, toPrivate bool, toShowName string)
 	SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string)
+	SendNewWelcome(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewInvite(address, name string)
 }
 

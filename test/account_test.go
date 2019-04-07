@@ -57,14 +57,17 @@ func TestMain(m *testing.M) {
 
 	userIDs, profiles = registerTestUsers(db)
 
-	if len(esm.Emails) != 3 {
+	if len(esm.Emails) != 6 {
 		log.Fatal("Email count")
 	}
 
-	for i := 0; i < 3; i++ {
-		email := "test" + strconv.Itoa(i) + "@example.com"
+	for i := 0; i < 6; i = i + 2 {
+		email := "test" + strconv.Itoa(i/2) + "@example.com"
 		if esm.Emails[i] != email {
 			log.Fatal("Greeting has not sent to ", email)
+		}
+		if esm.Emails[i+1] != "" {
+			log.Fatal("Welcome has not sent")
 		}
 	}
 
@@ -168,11 +171,8 @@ func changeEmail(t *testing.T, userID *models.UserID, oldEmail, newEmail, passwo
 	switch resp.(type) {
 	case *account.PostAccountEmailOK:
 		req.True(ok)
-		req.Equal(2, len(esm.Emails))
-		req.Equal(oldEmail, esm.Emails[0])
-		req.Equal(newEmail, esm.Emails[1])
 		req.Equal(1, len(esm.Codes))
-		esm.Clear()
+		esm.CheckEmail2(t, oldEmail, newEmail)
 	case *account.PostAccountEmailForbidden:
 		body := resp.(*account.PostAccountEmailForbidden)
 		req.False(ok, body.Payload.Message)
@@ -288,7 +288,7 @@ func TestRegister(t *testing.T) {
 	checkLogin(t, user, params.Email, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
-	esm.CheckEmail(t, "testemail")
+	esm.CheckEmail2(t, "testemail", "")
 	checkVerify(t, userID, "testemail")
 	user.Account.Verified = true
 	checkResetPassword(t, "testemail")
@@ -382,7 +382,7 @@ func TestRegister(t *testing.T) {
 	checkEmail(t, "testeMAil2", false)
 	checkLogin(t, user, params.Name, params.Password)
 
-	esm.CheckEmail(t, "testemail2")
+	esm.CheckEmail2(t, "testemail2", "")
 	checkVerify(t, userID, "testemail2")
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)

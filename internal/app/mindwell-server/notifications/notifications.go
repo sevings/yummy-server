@@ -89,6 +89,8 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64,
 	case "request":
 		fallthrough
 	case "accept":
+		fallthrough
+	case "welcome":
 		notif.User = users.LoadUserByID(srv, tx, not.subj)
 		break
 	default:
