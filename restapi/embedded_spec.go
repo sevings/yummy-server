@@ -3995,14 +3995,41 @@ func init() {
     "UserID": {
       "type": "object",
       "properties": {
+        "ban": {
+          "type": "object",
+          "properties": {
+            "comment": {
+              "type": "boolean"
+            },
+            "invite": {
+              "type": "boolean"
+            },
+            "live": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
+        },
+        "followersCount": {
+          "type": "integer",
+          "format": "int64"
+        },
         "id": {
           "type": "integer",
           "format": "int64"
+        },
+        "isInvited": {
+          "type": "boolean"
         },
         "name": {
           "type": "string",
           "maxLength": 20,
           "minLength": 1
+        },
+        "negKarma": {
+          "type": "boolean"
         }
       }
     },
@@ -8379,14 +8406,41 @@ func init() {
     "UserID": {
       "type": "object",
       "properties": {
+        "ban": {
+          "type": "object",
+          "properties": {
+            "comment": {
+              "type": "boolean"
+            },
+            "invite": {
+              "type": "boolean"
+            },
+            "live": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
+        },
+        "followersCount": {
+          "type": "integer",
+          "format": "int64"
+        },
         "id": {
           "type": "integer",
           "format": "int64"
+        },
+        "isInvited": {
+          "type": "boolean"
         },
         "name": {
           "type": "string",
           "maxLength": 20,
           "minLength": 1
+        },
+        "negKarma": {
+          "type": "boolean"
         }
       }
     },

@@ -19,6 +19,24 @@ definitions:
         type: string
         minLength: 1
         maxLength: 20
+      negKarma:
+        type: boolean
+      followersCount:
+        type: integer
+        format: int64
+      isInvited:
+        type: boolean
+      ban:
+        type: object
+        properties:
+          invite:
+            type: boolean
+          vote:
+            type: boolean
+          comment:
+            type: boolean
+          live:
+            type: boolean
   Error:
     type: object
     properties:

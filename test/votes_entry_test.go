@@ -117,7 +117,7 @@ func TestEntryVotes(t *testing.T) {
 	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, "")
 	checkUnvoteEntry(t, userIDs[2], false, e.ID, -1)
 
-	banVote(db, userIDs[1].ID)
+	banVote(db, userIDs[1])
 	checkVoteForEntry(t, userIDs[1], false, e.ID, 1, true, models.RatingVotePos)
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 }

@@ -192,17 +192,11 @@ func allowedInLive(followersCount, entryCount int64) bool {
 }
 
 func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.Error {
-	if !utils.CanPostInLive(tx, userID.ID) {
+	if userID.Ban.Live {
 		return srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You're not allowed to post in live."})
 	}
 
-	var negKarma bool
-	var followersCount int64
-
-	const karmaQ = "SELECT karma < -1, followers_count FROM users WHERE id = $1"
-	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
-
-	if negKarma {
+	if userID.NegKarma {
 		return srv.NewError(&i18n.Message{ID: "post_in_live_karma", Other: "You're not allowed to post in live."})
 	}
 
@@ -212,7 +206,7 @@ func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	`
 	tx.Query(countQ, userID.ID).Scan(&entryCount)
 
-	if !allowedInLive(followersCount, entryCount) {
+	if !allowedInLive(userID.FollowersCount, entryCount) {
 		return srv.NewError(&i18n.Message{ID: "post_in_live_followers", Other: "You can't post in live anymore today."})
 	}
 
@@ -220,16 +214,16 @@ func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 }
 
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
-	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
+	return func(params me.PostMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
-				err := canPostInLive(srv, tx, uID)
+				err := canPostInLive(srv, tx, userID)
 				if err != nil {
 					return me.NewPostMeTlogForbidden().WithPayload(err)
 				}
 			}
 
-			entry := createEntry(srv, tx, uID.ID,
+			entry := createEntry(srv, tx, userID.ID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
 			if tx.Error() != nil {
@@ -276,17 +270,11 @@ func canEditInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		return nil
 	}
 
-	if !utils.CanPostInLive(tx, userID.ID) {
+	if userID.Ban.Live {
 		return srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You are not allowed to post in live."})
 	}
 
-	var negKarma bool
-	var followersCount int64
-
-	const karmaQ = "SELECT karma < 0, followers_count FROM users WHERE id = $1"
-	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
-
-	if negKarma {
+	if userID.NegKarma {
 		return srv.NewError(&i18n.Message{ID: "edit_in_live_karma", Other: "You are not allowed to post in live."})
 	}
 
@@ -305,7 +293,7 @@ func canEditInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	`
 	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount)
 
-	if !allowedInLive(followersCount, entryCount) {
+	if !allowedInLive(userID.FollowersCount, entryCount) {
 		return srv.NewError(&i18n.Message{ID: "edit_in_live_followers", Other: "You can't post in live anymore on this day."})
 	}
 
@@ -335,9 +323,9 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 	}
 }
 
-func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
+func entryVoteStatus(authorID int64, userID *models.UserID, vote sql.NullFloat64) string {
 	switch {
-	case authorID == userID:
+	case authorID == userID.ID || userID.Ban.Vote:
 		return models.RatingVoteBan
 	case !vote.Valid:
 		return models.RatingVoteNot
@@ -348,7 +336,7 @@ func entryVoteStatus(authorID, userID int64, vote sql.NullFloat64) string {
 	}
 }
 
-func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) *models.Entry {
+func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userID *models.UserID) *models.Entry {
 	const q = tlogFeedQueryStart + `
 		WHERE entries.id = $2
 			AND (entries.author_id = $1
@@ -362,7 +350,7 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	var vote sql.NullFloat64
 	var avatar string
 	var rating models.Rating
-	tx.Query(q, userID, entryID).Scan(&entry.ID, &entry.CreatedAt,
+	tx.Query(q, userID.ID, entryID).Scan(&entry.ID, &entry.CreatedAt,
 		&rating.Rating, &rating.UpCount, &rating.DownCount,
 		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 		&entry.HasCut, &entry.WordCount, &entry.Privacy,
@@ -372,16 +360,11 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 		&avatar,
 		&vote, &entry.IsFavorited, &entry.IsWatching)
 
-	if author.ID != userID {
+	if author.ID != userID.ID {
 		entry.EditContent = ""
 	}
 
-	canVote := utils.CanVote(tx, userID)
-	if canVote {
-		rating.Vote = entryVoteStatus(author.ID, userID, vote)
-	} else {
-		rating.Vote = models.RatingVoteBan
-	}
+	rating.Vote = entryVoteStatus(author.ID, userID, vote)
 
 	rating.ID = entry.ID
 	entry.Rating = &rating
@@ -396,9 +379,9 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 }
 
 func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {
-	return func(params entries.GetEntriesIDParams, uID *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entry := LoadEntry(srv, tx, params.ID, uID.ID)
+			entry := LoadEntry(srv, tx, params.ID, userID)
 
 			if entry.ID == 0 {
 				err := srv.StandardError("no_entry")

@@ -68,9 +68,9 @@ const commentQuery = `
 		ON comments.id = votes.comment_id 
 `
 
-func commentVote(userID, authorID int64, can bool, vote sql.NullFloat64) string {
+func commentVote(userID *models.UserID, authorID int64, vote sql.NullFloat64) string {
 	switch {
-	case userID == authorID || !can:
+	case userID.ID == authorID || userID.Ban.Vote:
 		return models.RatingVoteBan
 	case !vote.Valid:
 		return models.RatingVoteNot
@@ -81,7 +81,7 @@ func commentVote(userID, authorID int64, can bool, vote sql.NullFloat64) string 
 	}
 }
 
-func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID int64) *models.Comment {
+func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
 	var vote sql.NullFloat64
@@ -93,7 +93,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 		},
 	}
 
-	tx.Query(q, userID, commentID).Scan(&comment.ID, &comment.EntryID,
+	tx.Query(q, userID.ID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
 		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
@@ -104,8 +104,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 		comment.EditContent = ""
 	}
 
-	canVote := utils.CanVote(tx, userID)
-	comment.Rating.Vote = commentVote(userID, comment.Author.ID, canVote, vote)
+	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 
 	comment.Rating.ID = comment.ID
 	comment.Author.Avatar = srv.NewAvatar(avatar)
@@ -113,16 +112,15 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID, commentID 
 }
 
 func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDParams, *models.UserID) middleware.Responder {
-	return func(params comments.GetCommentsIDParams, uID *models.UserID) middleware.Responder {
+	return func(params comments.GetCommentsIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
 			comment := LoadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
-			canView := utils.CanViewEntry(tx, userID, comment.EntryID)
+			canView := utils.CanViewEntry(tx, userID.ID, comment.EntryID)
 			if !canView {
 				err := srv.StandardError("no_entry")
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
@@ -143,16 +141,15 @@ func editComment(tx *utils.AutoTx, comment *models.Comment) {
 }
 
 func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
-	return func(params comments.PutCommentsIDParams, uID *models.UserID) middleware.Responder {
+	return func(params comments.PutCommentsIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
 			comment := LoadComment(srv, tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.StandardError("no_comment")
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
-			if comment.Author.ID != userID {
+			if comment.Author.ID != userID.ID {
 				err := srv.NewError(&i18n.Message{ID: "edit_not_your_comment", Other: "You can't edit someone else's comments."})
 				return comments.NewGetCommentsIDForbidden().WithPayload(err)
 			}
@@ -220,10 +217,8 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 }
 
 // LoadEntryComments loads comments for entry.
-func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
+func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, entryID, limit int64, afterS, beforeS string) *models.CommentList {
 	var list []*models.Comment
-
-	canVote := utils.CanVote(tx, userID)
 
 	before, err := strconv.ParseInt(beforeS, 10, 64)
 	if len(beforeS) > 0 && err != nil {
@@ -241,21 +236,21 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 			ORDER BY comments.id ASC
 			LIMIT $4`
 
-		tx.Query(q, userID, entryID, after, limit)
+		tx.Query(q, userID.ID, entryID, after, limit)
 	} else if before > 0 {
 		const q = commentQuery + `
 			WHERE entry_id = $2 AND comments.id < $3
 			ORDER BY comments.id DESC
 			LIMIT $4`
 
-		tx.Query(q, userID, entryID, before, limit)
+		tx.Query(q, userID.ID, entryID, before, limit)
 	} else {
 		const q = commentQuery + `
 			WHERE entry_id = $2
 			ORDER BY comments.id DESC
 			LIMIT $3`
 
-		tx.Query(q, userID, entryID, limit)
+		tx.Query(q, userID.ID, entryID, limit)
 	}
 
 	for {
@@ -281,7 +276,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 			comment.EditContent = ""
 		}
 
-		comment.Rating.Vote = commentVote(userID, comment.Author.ID, canVote, vote)
+		comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
 
 		comment.Rating.ID = comment.ID
 		comment.Author.Avatar = srv.NewAvatar(avatar)
@@ -316,10 +311,9 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID, entr
 }
 
 func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {
-	return func(params comments.GetEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
+	return func(params comments.GetEntriesIDCommentsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			canView := utils.CanViewEntry(tx, userID, params.ID)
+			canView := utils.CanViewEntry(tx, userID.ID, params.ID)
 			if !canView {
 				err := srv.StandardError("no_entry")
 				return comments.NewGetEntriesIDCommentsNotFound().WithPayload(err)
@@ -336,7 +330,7 @@ func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesI
 	}
 }
 
-func canPostComment(tx *utils.AutoTx, userID, entryID int64) bool {
+func canPostComment(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool {
 	const q = `
 		SELECT author_id
 		FROM entries
@@ -345,15 +339,15 @@ func canPostComment(tx *utils.AutoTx, userID, entryID int64) bool {
 
 	var authorID int64
 	tx.Query(q, entryID).Scan(&authorID)
-	if authorID == userID {
+	if authorID == userID.ID {
 		return true
 	}
 
-	if !utils.CanComment(tx, userID) {
+	if userID.Ban.Comment {
 		return false
 	}
 
-	return utils.CanViewEntry(tx, userID, entryID)
+	return utils.CanViewEntry(tx, userID.ID, entryID)
 }
 
 func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
@@ -429,16 +423,15 @@ func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.C
 }
 
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
-	return func(params comments.PostEntriesIDCommentsParams, uID *models.UserID) middleware.Responder {
+	return func(params comments.PostEntriesIDCommentsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
 			allowed := canPostComment(tx, userID, params.ID)
 			if !allowed {
 				err := srv.NewError(&i18n.Message{ID: "cant_comment", Other: "You can't comment this entry."})
 				return comments.NewPostEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
-			user := users.LoadUserByID(srv, tx, userID)
+			user := users.LoadUserByID(srv, tx, userID.ID)
 			comment := postComment(tx, user, params.ID, params.Content)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)

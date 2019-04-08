@@ -121,13 +121,13 @@ func TestOpenComments(t *testing.T) {
 	checkEditComment(t, id, "edited comment", entry.ID, true, profiles[1], userIDs[1])
 	checkEntryWatching(t, userIDs[1], entry.ID, true, true)
 
-	banComment(db, userIDs[0].ID)
+	banComment(db, userIDs[0])
 	checkPostComment(t, entry.ID, "blabla", true, profiles[0], userIDs[0])
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
-	banComment(db, userIDs[1].ID)
+	banComment(db, userIDs[1])
 	checkPostComment(t, entry.ID, "blabla", false, profiles[1], userIDs[1])
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
 	checkDeleteEntry(t, entry.ID, userIDs[0], true)
 }

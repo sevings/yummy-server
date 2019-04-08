@@ -69,53 +69,18 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 	return allowed
 }
 
-func CanVote(tx *AutoTx, userID int64) bool {
-	const q = `
-		SELECT vote_ban <= CURRENT_DATE
-		FROM users
-		WHERE id = $1
-	`
-
-	var allowed bool
-	tx.Query(q, userID).Scan(&allowed)
-
-	return allowed
-}
-
-func CanComment(tx *AutoTx, userID int64) bool {
-	const q = `
-		SELECT comment_ban <= CURRENT_DATE
-		FROM users
-		WHERE id = $1
-	`
-
-	var allowed bool
-	tx.Query(q, userID).Scan(&allowed)
-
-	return allowed
-}
-
-func CanPostInLive(tx *AutoTx, userID int64) bool {
-	const q = `
-		SELECT live_ban <= CURRENT_DATE
-		FROM users
-		WHERE id = $1
-	`
-
-	var allowed bool
-	tx.Query(q, userID).Scan(&allowed)
-
-	return allowed
-}
-
 func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {
 	const q = `
-			SELECT id, name
+			SELECT id, name, followers_count, invited_by is not null, karma < -1,
+				invite_ban > CURRENT_DATE, vote_ban > CURRENT_DATE, 
+				comment_ban > CURRENT_DATE, live_ban > CURRENT_DATE
 			FROM users
 			WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
 
 	var user models.UserID
-	err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name)
+	user.Ban = &models.UserIDBan{}
+	err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name, &user.FollowersCount, &user.IsInvited, &user.NegKarma,
+		&user.Ban.Invite, &user.Ban.Vote, &user.Ban.Comment, &user.Ban.Live)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			log.Print(err)

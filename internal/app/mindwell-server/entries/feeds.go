@@ -127,7 +127,7 @@ WHERE favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))
 
 const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
 
-func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse bool) *models.Feed {
+func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, reverse bool) *models.Feed {
 	feed := models.Feed{}
 
 	for {
@@ -149,7 +149,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 			break
 		}
 
-		if author.ID != userID {
+		if author.ID != userID.ID {
 			entry.EditContent = ""
 		}
 
@@ -165,13 +165,6 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 		list := feed.Entries
 		for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
 			list[i], list[j] = list[j], list[i]
-		}
-	}
-
-	canVote := utils.CanVote(tx, userID)
-	if !canVote {
-		for _, e := range feed.Entries {
-			e.Rating.Vote = models.RatingVoteBan
 		}
 	}
 
@@ -193,7 +186,7 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		tx.Query(q, userID.ID, limit)
 	}
 
-	feed := loadFeed(srv, tx, userID.ID, after > 0)
+	feed := loadFeed(srv, tx, userID, after > 0)
 
 	if len(feed.Entries) == 0 {
 		return feed
@@ -231,7 +224,7 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 
 func loadLiveCommentsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
 	tx.Query(liveCommentsFeedQuery, userID.ID, limit)
-	return loadFeed(srv, tx, userID.ID, false)
+	return loadFeed(srv, tx, userID, false)
 }
 
 func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams, *models.UserID) middleware.Responder {
@@ -278,7 +271,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		interval + "' ORDER BY entries.rating DESC LIMIT $2) AS feed ORDER BY feed.created_at DESC"
 	tx.Query(q, userID.ID, limit)
 
-	feed := loadFeed(srv, tx, userID.ID, false)
+	feed := loadFeed(srv, tx, userID, false)
 
 	return feed
 }
@@ -311,7 +304,7 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		tx.Query(q, userID.ID, tlog, limit)
 	}
 
-	feed := loadFeed(srv, tx, userID.ID, after > 0)
+	feed := loadFeed(srv, tx, userID, after > 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -390,7 +383,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 		tx.Query(q, userID.ID, limit)
 	}
 
-	feed := loadFeed(srv, tx, userID.ID, after > 0)
+	feed := loadFeed(srv, tx, userID, after > 0)
 
 	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
 
@@ -465,7 +458,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 		tx.Query(q, userID.ID, limit)
 	}
 
-	feed := loadFeed(srv, tx, userID.ID, after > 0)
+	feed := loadFeed(srv, tx, userID, after > 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -537,7 +530,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		tx.Query(q, userID.ID, tlog, limit)
 	}
 
-	feed := loadFeed(srv, tx, userID.ID, after > 0)
+	feed := loadFeed(srv, tx, userID, after > 0)
 
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
@@ -633,7 +626,7 @@ func newMyFavoritesLoader(srv *utils.MindwellServer) func(me.GetMeFavoritesParam
 
 func loadWatchingFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
 	tx.Query(watchingFeedQuery, userID.ID, limit)
-	return loadFeed(srv, tx, userID.ID, false)
+	return loadFeed(srv, tx, userID, false)
 }
 
 func newWatchingLoader(srv *utils.MindwellServer) func(entries.GetEntriesWatchingParams, *models.UserID) middleware.Responder {

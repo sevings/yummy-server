@@ -174,6 +174,7 @@ func TestLiveRestrictions(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 
+	userIDs[0].FollowersCount = 4
 	_, err := db.Exec("UPDATE users SET followers_count = 4 WHERE id = $1", userIDs[0].ID)
 	if err != nil {
 		log.Println(err)
@@ -216,7 +217,7 @@ func TestLiveRestrictions(t *testing.T) {
 	editParams.ID = e1
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], false, 1)
 
-	banLive(db, userIDs[0].ID)
+	banLive(db, userIDs[0])
 	editParams.ID = e0
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
 	live = false

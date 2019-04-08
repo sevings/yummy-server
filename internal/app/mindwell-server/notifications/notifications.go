@@ -69,7 +69,7 @@ type notice struct {
 	read bool
 }
 
-func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, not *notice) *models.Notification {
+func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, not *notice) *models.Notification {
 	notif := models.Notification{
 		ID:        not.id,
 		CreatedAt: not.at,
@@ -100,7 +100,7 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64,
 	return &notif
 }
 
-func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse bool) *models.NotificationList {
+func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, reverse bool) *models.NotificationList {
 	var notices []notice
 	for {
 		var not notice
@@ -113,7 +113,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, reverse
 	}
 
 	feed := models.NotificationList{}
-	feed.UnreadCount = unreadCount(tx, userID)
+	feed.UnreadCount = unreadCount(tx, userID.ID)
 
 	for _, not := range notices {
 		notif := loadNotification(srv, tx, userID, &not)
@@ -156,7 +156,7 @@ func newNotificationsLoader(srv *utils.MindwellServer) func(notifications.GetNot
 				tx.Query(q, userID.ID, *params.Limit)
 			}
 
-			feed := loadFeed(srv, tx, userID.ID, after > 0)
+			feed := loadFeed(srv, tx, userID, after > 0)
 
 			if len(feed.Notifications) == 0 {
 				return notifications.NewGetNotificationsOK().WithPayload(feed)
@@ -204,7 +204,7 @@ func newSingleNotificationLoader(srv *utils.MindwellServer) func(notifications.G
 				return notifications.NewGetNotificationsIDNotFound().WithPayload(err)
 			}
 
-			ntf := loadNotification(srv, tx, userID.ID, &not)
+			ntf := loadNotification(srv, tx, userID, &not)
 			return notifications.NewGetNotificationsIDOK().WithPayload(ntf)
 		})
 	}

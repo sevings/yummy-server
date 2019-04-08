@@ -52,32 +52,32 @@ func TestGetMe(t *testing.T) {
 		req.Zero(me.Ban.Live)
 	}
 
-	banInvite(db, profiles[0].ID)
+	banInvite(db, userIDs[0])
 	me := get(0)
 	req.NotZero(me.Ban.Invite)
 	req.Zero(me.Ban.Vote)
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
-	banVote(db, profiles[0].ID)
+	banVote(db, userIDs[0])
 	me = get(0)
 	req.Zero(me.Ban.Invite)
 	req.NotZero(me.Ban.Vote)
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
-	banComment(db, profiles[0].ID)
+	banComment(db, userIDs[0])
 	me = get(0)
 	req.Zero(me.Ban.Invite)
 	req.Zero(me.Ban.Vote)
 	req.NotZero(me.Ban.Comment)
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
-	banLive(db, profiles[0].ID)
+	banLive(db, userIDs[0])
 	me = get(0)
 	req.Zero(me.Ban.Invite)
 	req.Zero(me.Ban.Vote)
 	req.Zero(me.Ban.Comment)
 	req.NotZero(me.Ban.Live)
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 }
 
 func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profile) {

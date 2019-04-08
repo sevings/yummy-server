@@ -103,8 +103,17 @@ func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	}
 
 	userID := models.UserID{
-		ID:   body.Payload.ID,
-		Name: body.Payload.Name,
+		ID:             body.Payload.ID,
+		Name:           body.Payload.Name,
+		IsInvited:      true,
+		NegKarma:       false,
+		FollowersCount: 0,
+		Ban: &models.UserIDBan{
+			Invite:  false,
+			Comment: false,
+			Live:    false,
+			Vote:    true,
+		},
 	}
 	return &userID, body.Payload
 }
@@ -123,12 +132,12 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	removeUserRestrictions(db)
+	removeUserRestrictions(db, userIDs)
 
 	return userIDs, profiles
 }
 
-func removeUserRestrictions(db *sql.DB) {
+func removeUserRestrictions(db *sql.DB, userIDs []*models.UserID) {
 	_, err := db.Exec(`UPDATE users 
 	SET followers_count = 100, 
 		vote_ban = CURRENT_DATE, 
@@ -138,34 +147,50 @@ func removeUserRestrictions(db *sql.DB) {
 	if err != nil {
 		log.Println(err)
 	}
-}
 
-func banVote(db *sql.DB, userID int64) {
-	_, err := db.Exec("UPDATE users SET vote_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
-	if err != nil {
-		log.Println(err)
+	for _, user := range userIDs {
+		user.FollowersCount = 100
+		user.Ban.Invite = false
+		user.Ban.Comment = false
+		user.Ban.Live = false
+		user.Ban.Vote = false
 	}
 }
 
-func banInvite(db *sql.DB, userID int64) {
-	_, err := db.Exec("UPDATE users SET invite_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+func banVote(db *sql.DB, userID *models.UserID) {
+	_, err := db.Exec("UPDATE users SET vote_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID.ID)
 	if err != nil {
 		log.Println(err)
 	}
+
+	userID.Ban.Vote = true
 }
 
-func banComment(db *sql.DB, userID int64) {
-	_, err := db.Exec("UPDATE users SET comment_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+func banInvite(db *sql.DB, userID *models.UserID) {
+	_, err := db.Exec("UPDATE users SET invite_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID.ID)
 	if err != nil {
 		log.Println(err)
 	}
+
+	userID.Ban.Invite = true
 }
 
-func banLive(db *sql.DB, userID int64) {
-	_, err := db.Exec("UPDATE users SET live_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+func banComment(db *sql.DB, userID *models.UserID) {
+	_, err := db.Exec("UPDATE users SET comment_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID.ID)
 	if err != nil {
 		log.Println(err)
 	}
+
+	userID.Ban.Comment = true
+}
+
+func banLive(db *sql.DB, userID *models.UserID) {
+	_, err := db.Exec("UPDATE users SET live_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID.ID)
+	if err != nil {
+		log.Println(err)
+	}
+
+	userID.Ban.Live = true
 }
 
 func createTlogEntry(t *testing.T, id *models.UserID, privacy string, votable, live bool) *models.Entry {
