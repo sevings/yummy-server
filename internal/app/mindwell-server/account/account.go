@@ -230,6 +230,7 @@ font_family, font_size, text_alignment,
 email, verified, birthday,
 api_key, extract(epoch from valid_thru),
 extract(epoch from invite_ban), extract(epoch from vote_ban),
+extract(epoch from comment_ban), extract(epoch from live_ban),
 invited_by_id, 
 invited_by_name, invited_by_show_name,
 invited_by_is_online, 
@@ -270,6 +271,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Account.Email, &profile.Account.Verified, &bday,
 		&profile.Account.APIKey, &profile.Account.ValidThru,
 		&profile.Ban.Invite, &profile.Ban.Vote,
+		&profile.Ban.Comment, &profile.Ban.Live,
 		&profile.InvitedBy.ID,
 		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
 		&profile.InvitedBy.IsOnline,
@@ -304,6 +306,14 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 	if profile.Ban.Vote <= now {
 		profile.Ban.Vote = 0
+	}
+
+	if profile.Ban.Comment <= now {
+		profile.Ban.Comment = 0
+	}
+
+	if profile.Ban.Live <= now {
+		profile.Ban.Live = 0
 	}
 
 	profile.Cover = srv.NewCover(profile.ID, cover)

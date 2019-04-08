@@ -228,6 +228,9 @@ type AuthProfileAO1Ban struct {
 	// invite
 	Invite float64 `json:"invite,omitempty"`
 
+	// live
+	Live float64 `json:"live,omitempty"`
+
 	// vote
 	Vote float64 `json:"vote,omitempty"`
 }

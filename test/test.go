@@ -133,7 +133,8 @@ func removeUserRestrictions(db *sql.DB) {
 	SET followers_count = 100, 
 		vote_ban = CURRENT_DATE, 
 		invite_ban = CURRENT_DATE, 
-		comment_ban = CURRENT_DATE`)
+		comment_ban = CURRENT_DATE,
+		live_ban = CURRENT_DATE`)
 	if err != nil {
 		log.Println(err)
 	}
@@ -155,6 +156,13 @@ func banInvite(db *sql.DB, userID int64) {
 
 func banComment(db *sql.DB, userID int64) {
 	_, err := db.Exec("UPDATE users SET comment_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func banLive(db *sql.DB, userID int64) {
+	_, err := db.Exec("UPDATE users SET live_ban = CURRENT_DATE + interval '1 day' WHERE id = $1", userID)
 	if err != nil {
 		log.Println(err)
 	}

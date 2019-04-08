@@ -216,6 +216,17 @@ func TestLiveRestrictions(t *testing.T) {
 	editParams.ID = e1
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], false, 1)
 
+	banLive(db, userIDs[0].ID)
+	editParams.ID = e0
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+	live = false
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+	editParams.ID = e1
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 1)
+	live = true
+	checkPostEntry(t, postParams, profiles[0], userIDs[0], false, 3)
+	checkEditEntry(t, editParams, profiles[0], userIDs[0], false, 1)
+
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 }

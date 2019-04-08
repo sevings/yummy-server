@@ -191,7 +191,11 @@ func allowedInLive(followersCount, entryCount int64) bool {
 	}
 }
 
-func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
+func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.Error {
+	if !utils.CanPostInLive(tx, userID.ID) {
+		return srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You're not allowed to post in live."})
+	}
+
 	var negKarma bool
 	var followersCount int64
 
@@ -199,7 +203,7 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
 
 	if negKarma {
-		return false
+		return srv.NewError(&i18n.Message{ID: "post_in_live_karma", Other: "You're not allowed to post in live."})
 	}
 
 	var entryCount int64
@@ -208,15 +212,21 @@ func canPostInLive(tx *utils.AutoTx, userID *models.UserID) bool {
 	`
 	tx.Query(countQ, userID.ID).Scan(&entryCount)
 
-	return allowedInLive(followersCount, entryCount)
+	if !allowedInLive(followersCount, entryCount) {
+		return srv.NewError(&i18n.Message{ID: "post_in_live_followers", Other: "You can't post in live anymore today."})
+	}
+
+	return nil
 }
 
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.PostMeTlogParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			if *params.InLive && params.Privacy == models.EntryPrivacyAll && !canPostInLive(tx, uID) {
-				err := srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You can't post in live anymore today."})
-				return me.NewPostMeTlogForbidden().WithPayload(err)
+			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
+				err := canPostInLive(srv, tx, uID)
+				if err != nil {
+					return me.NewPostMeTlogForbidden().WithPayload(err)
+				}
 			}
 
 			entry := createEntry(srv, tx, uID.ID,
@@ -258,12 +268,16 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	return entry
 }
 
-func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool {
+func canEditInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, entryID int64) *models.Error {
 	var inLive bool
 	const entryQ = "SELECT in_live FROM entries WHERE id = $1"
 	tx.Query(entryQ, entryID).Scan(&inLive)
 	if inLive {
-		return true
+		return nil
+	}
+
+	if !utils.CanPostInLive(tx, userID.ID) {
+		return srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You are not allowed to post in live."})
 	}
 
 	var negKarma bool
@@ -273,7 +287,7 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 	tx.Query(karmaQ, userID.ID).Scan(&negKarma, &followersCount)
 
 	if negKarma {
-		return false
+		return srv.NewError(&i18n.Message{ID: "edit_in_live_karma", Other: "You are not allowed to post in live."})
 	}
 
 	var entryCount int64
@@ -291,15 +305,21 @@ func canEditInLive(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool 
 	`
 	tx.Query(countQ, userID.ID, entryID).Scan(&entryCount)
 
-	return allowedInLive(followersCount, entryCount)
+	if !allowedInLive(followersCount, entryCount) {
+		return srv.NewError(&i18n.Message{ID: "edit_in_live_followers", Other: "You can't post in live anymore on this day."})
+	}
+
+	return nil
 }
 
 func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.PutEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			if *params.InLive && params.Privacy == models.EntryPrivacyAll && !canEditInLive(tx, uID, params.ID) {
-				err := srv.NewError(&i18n.Message{ID: "edit_in_live", Other: "You can't post in live anymore on this day."})
-				return entries.NewPutEntriesIDForbidden().WithPayload(err)
+			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
+				err := canEditInLive(srv, tx, uID, params.ID)
+				if err != nil {
+					return entries.NewPutEntriesIDForbidden().WithPayload(err)
+				}
 			}
 
 			entry := editEntry(srv, tx, params.ID, uID.ID,

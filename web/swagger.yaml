@@ -236,6 +236,9 @@ definitions:
               comment:
                 type: number
                 format: double
+              live:
+                type: number
+                format: double
         example:
           account:
             apiKey: 'blah-blah-blah'

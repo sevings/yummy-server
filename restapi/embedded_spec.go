@@ -3310,6 +3310,10 @@ func init() {
                   "type": "number",
                   "format": "double"
                 },
+                "live": {
+                  "type": "number",
+                  "format": "double"
+                },
                 "vote": {
                   "type": "number",
                   "format": "double"
@@ -7687,6 +7691,10 @@ func init() {
                   "format": "double"
                 },
                 "invite": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "live": {
                   "type": "number",
                   "format": "double"
                 },

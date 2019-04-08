@@ -48,6 +48,8 @@ func TestGetMe(t *testing.T) {
 
 		req.Zero(me.Ban.Invite)
 		req.Zero(me.Ban.Vote)
+		req.Zero(me.Ban.Comment)
+		req.Zero(me.Ban.Live)
 	}
 
 	banInvite(db, profiles[0].ID)
@@ -60,6 +62,21 @@ func TestGetMe(t *testing.T) {
 	me = get(0)
 	req.Zero(me.Ban.Invite)
 	req.NotZero(me.Ban.Vote)
+	removeUserRestrictions(db)
+
+	banComment(db, profiles[0].ID)
+	me = get(0)
+	req.Zero(me.Ban.Invite)
+	req.Zero(me.Ban.Vote)
+	req.NotZero(me.Ban.Comment)
+	removeUserRestrictions(db)
+
+	banLive(db, profiles[0].ID)
+	me = get(0)
+	req.Zero(me.Ban.Invite)
+	req.Zero(me.Ban.Vote)
+	req.Zero(me.Ban.Comment)
+	req.NotZero(me.Ban.Live)
 	removeUserRestrictions(db)
 }
 
