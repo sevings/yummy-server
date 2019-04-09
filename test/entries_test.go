@@ -66,7 +66,7 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(canEdit, rights.Edit)
 	req.Equal(canEdit, rights.Delete)
 	req.Equal(true, rights.Comment)
-	req.Equal(!canEdit, rights.Vote)
+	req.Equal(!canEdit && rating.IsVotable, rights.Vote)
 }
 
 func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success bool,
@@ -617,6 +617,13 @@ func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
 	req.Equal(exp.VisibleFor, act.VisibleFor)
 	req.Equal(exp.WordCount, act.WordCount)
 
+	req.Equal(exp.ID, exp.Rating.ID)
+	req.Equal(exp.Rating.ID, act.Rating.ID)
+	req.Equal(exp.Rating.DownCount, act.Rating.DownCount)
+	req.Equal(exp.Rating.UpCount, act.Rating.UpCount)
+	req.Equal(exp.Rating.Rating, act.Rating.Rating)
+	req.Equal(exp.Rating.IsVotable, act.Rating.IsVotable)
+
 	if exp.Author.ID == user.ID {
 		req.NotEmpty(act.EditContent)
 	} else {
@@ -627,7 +634,7 @@ func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
 	req.Equal(act.Author.ID == user.ID, rights.Edit)
 	req.Equal(act.Author.ID == user.ID, rights.Delete)
 	req.Equal(act.Author.ID == user.ID || !user.Ban.Comment, rights.Comment)
-	req.Equal(act.Author.ID != user.ID && !user.Ban.Vote, rights.Vote)
+	req.Equal(act.Author.ID != user.ID && !user.Ban.Vote && act.Rating.IsVotable, rights.Vote)
 }
 
 func TestLoadLiveComments(t *testing.T) {
