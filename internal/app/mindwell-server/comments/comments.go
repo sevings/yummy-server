@@ -58,7 +58,7 @@ func HtmlContent(content string) string {
 const commentQuery = `
 	SELECT comments.id, entry_id,
 		extract(epoch from created_at), content, edit_content, rating,
-		up_votes, down_votes, votes.vote, author_id = $1,
+		up_votes, down_votes, votes.vote,
 		author_id, name, show_name, 
 		is_online,
 		avatar
@@ -81,6 +81,14 @@ func commentVote(userID *models.UserID, authorID int64, vote sql.NullFloat64) st
 	}
 }
 
+func setCommentRights(comment *models.Comment, userID *models.UserID) {
+	comment.Rights = &models.CommentRights{
+		Edit:   comment.Author.ID == userID.ID,
+		Delete: comment.Author.ID == userID.ID,
+		Vote:   comment.Author.ID != userID.ID && !userID.Ban.Vote,
+	}
+}
+
 func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
@@ -95,19 +103,22 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 
 	tx.Query(q, userID.ID, commentID).Scan(&comment.ID, &comment.EntryID,
 		&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
-		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
+		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
 		&avatar)
 
-	if !comment.IsMine {
+	setCommentRights(&comment, userID)
+
+	if !comment.Rights.Edit {
 		comment.EditContent = ""
 	}
 
 	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
-
 	comment.Rating.ID = comment.ID
+
 	comment.Author.Avatar = srv.NewAvatar(avatar)
+
 	return &comment
 }
 
@@ -264,7 +275,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
 			&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
-			&comment.Rating.UpCount, &comment.Rating.DownCount, &vote, &comment.IsMine,
+			&comment.Rating.UpCount, &comment.Rating.DownCount, &vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
 			&avatar)
@@ -272,7 +283,9 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			break
 		}
 
-		if !comment.IsMine {
+		setCommentRights(&comment, userID)
+
+		if !comment.Rights.Edit {
 			comment.EditContent = ""
 		}
 
@@ -361,10 +374,14 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 		Content:     HtmlContent(content),
 		EditContent: content,
 		EntryID:     entryID,
-		IsMine:      true,
 		Rating: &models.Rating{
 			IsVotable: true,
 			Vote:      models.RatingVoteBan,
+		},
+		Rights: &models.CommentRights{
+			Edit:   true,
+			Delete: true,
+			Vote:   false,
 		},
 	}
 

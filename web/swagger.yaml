@@ -414,8 +414,15 @@ definitions:
         type: string
       rating:
         $ref: '#/definitions/Rating'
-      isMine:
-        type: boolean
+      rights:
+        type: object
+        properties:
+          edit:
+            type: boolean
+          delete:
+            type: boolean
+          vote:
+            type: boolean
     example:
       id: 999
       entryId: 152

@@ -3385,11 +3385,22 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
-        "isMine": {
-          "type": "boolean"
-        },
         "rating": {
           "$ref": "#/definitions/Rating"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
         }
       },
       "example": {
@@ -7813,11 +7824,22 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
-        "isMine": {
-          "type": "boolean"
-        },
         "rating": {
           "$ref": "#/definitions/Rating"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
         }
       },
       "example": {

@@ -9,13 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func checkComment(t *testing.T, cmt *models.Comment, entryID int64, mine bool, author *models.AuthProfile, content string) {
+func checkComment(t *testing.T, cmt *models.Comment, entryID int64, userID *models.UserID, author *models.AuthProfile, content string) {
 	req := require.New(t)
 
 	req.Equal(entryID, cmt.EntryID)
 	req.Equal("<p>"+content+"</p>", cmt.Content)
 	req.Equal(content, cmt.EditContent)
-	req.Equal(mine, cmt.IsMine)
 
 	req.Equal(author.ID, cmt.Author.ID)
 	req.Equal(author.Name, cmt.Author.Name)
@@ -29,11 +28,15 @@ func checkComment(t *testing.T, cmt *models.Comment, entryID int64, mine bool, a
 	req.Zero(cmt.Rating.UpCount)
 	req.Zero(cmt.Rating.DownCount)
 
-	if mine {
+	if userID.ID == author.ID {
 		req.Equal(models.RatingVoteBan, cmt.Rating.Vote)
 	} else {
 		req.Equal(models.RatingVoteNot, cmt.Rating.Vote)
 	}
+
+	req.Equal(userID.ID == author.ID, cmt.Rights.Edit)
+	req.Equal(userID.ID == author.ID, cmt.Rights.Delete)
+	req.Equal(userID.ID != author.ID && !userID.Ban.Vote, cmt.Rights.Vote)
 }
 
 func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, success bool,
@@ -48,7 +51,7 @@ func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, succ
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, entryID, author.ID == userID.ID, author, content)
+	checkComment(t, cmt, entryID, userID, author, content)
 }
 
 func checkPostComment(t *testing.T,
@@ -69,7 +72,7 @@ func checkPostComment(t *testing.T,
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, params.ID, true, author, params.Content)
+	checkComment(t, cmt, params.ID, id, author, params.Content)
 
 	checkLoadComment(t, cmt.ID, id, true, author, params.ID, params.Content)
 
@@ -94,7 +97,7 @@ func checkEditComment(t *testing.T,
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, entryID, true, author, content)
+	checkComment(t, cmt, entryID, id, author, content)
 
 	checkLoadComment(t, commentID, id, true, author, entryID, content)
 }
