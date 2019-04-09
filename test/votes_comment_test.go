@@ -9,7 +9,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 )
 
-func checkCommentVote(t *testing.T, user *models.UserID, commentID, cVotes int64, vote string) {
+func checkCommentVote(t *testing.T, user *models.UserID, commentID, cVotes int64, vote int64) {
 	load := api.VotesGetCommentsIDVoteHandler.Handle
 	params := votes.GetCommentsIDVoteParams{
 		ID: commentID,
@@ -26,7 +26,7 @@ func checkCommentVote(t *testing.T, user *models.UserID, commentID, cVotes int64
 	req.Equal(vote, status.Vote)
 }
 
-func checkVoteForComment(t *testing.T, user *models.UserID, success bool, commentID, cVotes int64, positive bool, vote string) {
+func checkVoteForComment(t *testing.T, user *models.UserID, success bool, commentID, cVotes int64, positive bool, vote int64) {
 	put := api.VotesPutCommentsIDVoteHandler.Handle
 	params := votes.PutCommentsIDVoteParams{
 		ID:       commentID,
@@ -64,32 +64,32 @@ func checkUnvoteComment(t *testing.T, user *models.UserID, success bool, comment
 	req.Equal(commentID, status.ID)
 	req.True(status.IsVotable)
 	req.Equal(cVotes, status.UpCount-status.DownCount)
-	req.Equal(models.RatingVoteNot, status.Vote)
+	req.Equal(int64(0), status.Vote)
 }
 
 func TestCommentVotes(t *testing.T) {
 	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, false)
 	c := createComment(t, userIDs[0], e.ID)
 
-	checkCommentVote(t, userIDs[0], c.ID, 0, models.RatingVoteBan)
-	checkCommentVote(t, userIDs[1], c.ID, 0, models.RatingVoteNot)
+	checkCommentVote(t, userIDs[0], c.ID, 0, 0)
+	checkCommentVote(t, userIDs[1], c.ID, 0, 0)
 
-	checkVoteForComment(t, userIDs[1], true, c.ID, 1, true, models.RatingVotePos)
-	checkVoteForComment(t, userIDs[1], true, c.ID, -1, false, models.RatingVoteNeg)
-	checkVoteForComment(t, userIDs[2], true, c.ID, 0, true, models.RatingVotePos)
-	checkCommentVote(t, userIDs[1], c.ID, 0, models.RatingVoteNeg)
+	checkVoteForComment(t, userIDs[1], true, c.ID, 1, true, 1)
+	checkVoteForComment(t, userIDs[1], true, c.ID, -1, false, -1)
+	checkVoteForComment(t, userIDs[2], true, c.ID, 0, true, 1)
+	checkCommentVote(t, userIDs[1], c.ID, 0, -1)
 
 	checkUnvoteComment(t, userIDs[2], true, c.ID, -1)
-	checkCommentVote(t, userIDs[2], c.ID, -1, models.RatingVoteNot)
+	checkCommentVote(t, userIDs[2], c.ID, -1, 0)
 	checkUnvoteComment(t, userIDs[2], false, c.ID, -1)
 
 	checkUnvoteComment(t, userIDs[1], true, c.ID, 0)
-	checkCommentVote(t, userIDs[1], c.ID, 0, models.RatingVoteNot)
+	checkCommentVote(t, userIDs[1], c.ID, 0, 0)
 
-	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, "")
+	checkVoteForComment(t, userIDs[0], false, c.ID, 0, false, 0)
 	checkUnvoteComment(t, userIDs[0], false, c.ID, 0)
 
 	banVote(db, userIDs[1])
-	checkVoteForComment(t, userIDs[1], false, c.ID, 1, true, models.RatingVotePos)
+	checkVoteForComment(t, userIDs[1], false, c.ID, 1, true, 1)
 	removeUserRestrictions(db, userIDs)
 }

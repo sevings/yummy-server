@@ -34,14 +34,12 @@ func entryRating(tx *utils.AutoTx, userID, entryID int64) *models.Rating {
 		&status.Rating, &status.UpCount, &status.DownCount, &vote)
 
 	switch {
-	case authorID == userID || !votable || privacy == models.EntryPrivacyAnonymous:
-		status.Vote = models.RatingVoteBan
 	case !vote.Valid:
-		status.Vote = models.RatingVoteNot
+		status.Vote = 0
 	case vote.Float64 > 0:
-		status.Vote = models.RatingVotePos
+		status.Vote = 1
 	default:
-		status.Vote = models.RatingVoteNeg
+		status.Vote = -1
 	}
 
 	return &status
@@ -138,9 +136,9 @@ func voteForEntry(tx *utils.AutoTx, userID, entryID int64, positive bool) *model
 
 	switch {
 	case positive:
-		rating.Vote = models.RatingVotePos
+		rating.Vote = 1
 	default:
-		rating.Vote = models.RatingVoteNeg
+		rating.Vote = -1
 	}
 
 	return rating
@@ -182,7 +180,7 @@ func unvoteEntry(tx *utils.AutoTx, userID, entryID int64) (*models.Rating, bool)
 	}
 
 	rating := loadEntryRating(tx, entryID)
-	rating.Vote = models.RatingVoteNot
+	rating.Vote = 0
 
 	return rating, true
 }

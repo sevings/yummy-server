@@ -10,7 +10,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 )
 
-func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes int64, vote string) {
+func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes, vote int64) {
 	load := api.VotesGetEntriesIDVoteHandler.Handle
 	params := votes.GetEntriesIDVoteParams{
 		ID: entryID,
@@ -25,7 +25,7 @@ func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes int64, vo
 	req.Equal(vote, status.Vote)
 }
 
-func checkVoteForEntry(t *testing.T, user *models.UserID, success bool, entryID, eVotes int64, positive bool, vote string) {
+func checkVoteForEntry(t *testing.T, user *models.UserID, success bool, entryID, eVotes int64, positive bool, vote int64) {
 	put := api.VotesPutEntriesIDVoteHandler.Handle
 	params := votes.PutEntriesIDVoteParams{
 		ID:       entryID,
@@ -79,45 +79,45 @@ func checkUnvoteEntry(t *testing.T, user *models.UserID, success bool, entryID, 
 	status := body.Payload
 	req.Equal(entryID, status.ID)
 	req.Equal(eVotes, status.UpCount-status.DownCount)
-	req.Equal(models.RatingVoteNot, status.Vote)
+	req.Equal(int64(0), status.Vote)
 }
 
 func TestEntryVotes(t *testing.T) {
 	e := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, false)
-	checkEntryVote(t, userIDs[0], e.ID, 0, models.RatingVoteBan)
-	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteNot)
+	checkEntryVote(t, userIDs[0], e.ID, 0, 0)
+	checkEntryVote(t, userIDs[1], e.ID, 0, 0)
 
-	checkVoteForEntry(t, userIDs[1], true, e.ID, 1, true, models.RatingVotePos)
-	checkVoteForEntry(t, userIDs[1], true, e.ID, -1, false, models.RatingVoteNeg)
-	checkVoteForEntry(t, userIDs[2], true, e.ID, 0, true, models.RatingVotePos)
-	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteNeg)
+	checkVoteForEntry(t, userIDs[1], true, e.ID, 1, true, 1)
+	checkVoteForEntry(t, userIDs[1], true, e.ID, -1, false, -1)
+	checkVoteForEntry(t, userIDs[2], true, e.ID, 0, true, 1)
+	checkEntryVote(t, userIDs[1], e.ID, 0, -1)
 
 	checkUnvoteEntry(t, userIDs[2], true, e.ID, -1)
-	checkEntryVote(t, userIDs[2], e.ID, -1, models.RatingVoteNot)
+	checkEntryVote(t, userIDs[2], e.ID, -1, 0)
 	checkUnvoteEntry(t, userIDs[2], false, e.ID, -1)
 
 	checkUnvoteEntry(t, userIDs[1], true, e.ID, 0)
-	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteNot)
+	checkEntryVote(t, userIDs[1], e.ID, 0, 0)
 
-	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, "")
+	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, 0)
 	checkUnvoteEntry(t, userIDs[0], false, e.ID, 0)
 
 	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, false, false)
-	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteBan)
+	checkEntryVote(t, userIDs[1], e.ID, 0, 0)
 
-	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, "")
-	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, "")
+	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, 0)
+	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, 0)
 	checkUnvoteEntry(t, userIDs[2], false, e.ID, -1)
 
 	e = createTlogEntry(t, userIDs[0], models.EntryPrivacyAnonymous, true, false)
-	checkEntryVote(t, userIDs[0], e.ID, 0, models.RatingVoteBan)
-	checkEntryVote(t, userIDs[1], e.ID, 0, models.RatingVoteBan)
+	checkEntryVote(t, userIDs[0], e.ID, 0, 0)
+	checkEntryVote(t, userIDs[1], e.ID, 0, 0)
 
-	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, "")
-	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, "")
+	checkVoteForEntry(t, userIDs[0], false, e.ID, 0, false, 0)
+	checkVoteForEntry(t, userIDs[1], false, e.ID, 0, false, 0)
 	checkUnvoteEntry(t, userIDs[2], false, e.ID, -1)
 
 	banVote(db, userIDs[1])
-	checkVoteForEntry(t, userIDs[1], false, e.ID, 1, true, models.RatingVotePos)
+	checkVoteForEntry(t, userIDs[1], false, e.ID, 1, true, 1)
 	removeUserRestrictions(db, userIDs)
 }

@@ -6,8 +6,6 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	"encoding/json"
-
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -36,8 +34,7 @@ type Rating struct {
 	UpCount int64 `json:"upCount,omitempty"`
 
 	// vote
-	// Enum: [not pos neg ban]
-	Vote string `json:"vote,omitempty"`
+	Vote int64 `json:"vote,omitempty"`
 }
 
 // Validate validates this rating
@@ -45,10 +42,6 @@ func (m *Rating) Validate(formats strfmt.Registry) error {
 	var res []error
 
 	if err := m.validateID(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateVote(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -65,55 +58,6 @@ func (m *Rating) validateID(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var ratingTypeVotePropEnum []interface{}
-
-func init() {
-	var res []string
-	if err := json.Unmarshal([]byte(`["not","pos","neg","ban"]`), &res); err != nil {
-		panic(err)
-	}
-	for _, v := range res {
-		ratingTypeVotePropEnum = append(ratingTypeVotePropEnum, v)
-	}
-}
-
-const (
-
-	// RatingVoteNot captures enum value "not"
-	RatingVoteNot string = "not"
-
-	// RatingVotePos captures enum value "pos"
-	RatingVotePos string = "pos"
-
-	// RatingVoteNeg captures enum value "neg"
-	RatingVoteNeg string = "neg"
-
-	// RatingVoteBan captures enum value "ban"
-	RatingVoteBan string = "ban"
-)
-
-// prop value enum
-func (m *Rating) validateVoteEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, ratingTypeVotePropEnum); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (m *Rating) validateVote(formats strfmt.Registry) error {
-
-	if swag.IsZero(m.Vote) { // not required
-		return nil
-	}
-
-	// value enum
-	if err := m.validateVoteEnum("vote", "body", m.Vote); err != nil {
 		return err
 	}
 

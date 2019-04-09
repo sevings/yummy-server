@@ -27,12 +27,7 @@ func checkComment(t *testing.T, cmt *models.Comment, entryID int64, userID *mode
 	req.Zero(cmt.Rating.Rating)
 	req.Zero(cmt.Rating.UpCount)
 	req.Zero(cmt.Rating.DownCount)
-
-	if userID.ID == author.ID {
-		req.Equal(models.RatingVoteBan, cmt.Rating.Vote)
-	} else {
-		req.Equal(models.RatingVoteNot, cmt.Rating.Vote)
-	}
+	req.Zero(cmt.Rating.Vote)
 
 	req.Equal(userID.ID == author.ID, cmt.Rights.Edit)
 	req.Equal(userID.ID == author.ID, cmt.Rights.Delete)

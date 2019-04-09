@@ -153,7 +153,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 			entry.EditContent = ""
 		}
 
-		rating.Vote = entryVoteStatus(author.ID, userID, vote)
+		rating.Vote = entryVoteStatus(vote)
 		entry.Rating = &rating
 		rating.ID = entry.ID
 		author.Avatar = srv.NewAvatar(avatar)

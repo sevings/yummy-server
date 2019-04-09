@@ -362,8 +362,7 @@ definitions:
         type: number
         format: float
       vote:
-        type: string
-        enum: [not, pos, neg, ban]
+        type: integer
   FavoriteStatus:
     type: object
     properties:

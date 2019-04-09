@@ -3958,13 +3958,7 @@ func init() {
           "type": "integer"
         },
         "vote": {
-          "type": "string",
-          "enum": [
-            "not",
-            "pos",
-            "neg",
-            "ban"
-          ]
+          "type": "integer"
         }
       }
     },
@@ -8397,13 +8391,7 @@ func init() {
           "type": "integer"
         },
         "vote": {
-          "type": "string",
-          "enum": [
-            "not",
-            "pos",
-            "neg",
-            "ban"
-          ]
+          "type": "integer"
         }
       }
     },

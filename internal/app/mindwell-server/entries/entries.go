@@ -148,7 +148,6 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID,
 	entry.IsWatching = true
 	entry.InLive = inLive
 	entry.Rating = &models.Rating{
-		Vote:      models.RatingVoteBan,
 		IsVotable: isVotable,
 	}
 	entry.Rights = &models.EntryRights{
@@ -329,16 +328,14 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 	}
 }
 
-func entryVoteStatus(authorID int64, userID *models.UserID, vote sql.NullFloat64) string {
+func entryVoteStatus(vote sql.NullFloat64) int64 {
 	switch {
-	case authorID == userID.ID || userID.Ban.Vote:
-		return models.RatingVoteBan
 	case !vote.Valid:
-		return models.RatingVoteNot
+		return 0
 	case vote.Float64 > 0:
-		return models.RatingVotePos
+		return 1
 	default:
-		return models.RatingVoteNeg
+		return -1
 	}
 }
 
@@ -379,7 +376,7 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 		entry.EditContent = ""
 	}
 
-	rating.Vote = entryVoteStatus(author.ID, userID, vote)
+	rating.Vote = entryVoteStatus(vote)
 
 	rating.ID = entry.ID
 	entry.Rating = &rating

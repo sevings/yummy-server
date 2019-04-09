@@ -68,16 +68,14 @@ const commentQuery = `
 		ON comments.id = votes.comment_id 
 `
 
-func commentVote(userID *models.UserID, authorID int64, vote sql.NullFloat64) string {
+func commentVote(vote sql.NullFloat64) int64 {
 	switch {
-	case userID.ID == authorID || userID.Ban.Vote:
-		return models.RatingVoteBan
 	case !vote.Valid:
-		return models.RatingVoteNot
+		return 0
 	case vote.Float64 > 0:
-		return models.RatingVotePos
+		return 1
 	default:
-		return models.RatingVoteNeg
+		return -1
 	}
 }
 
@@ -114,7 +112,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 		comment.EditContent = ""
 	}
 
-	comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
+	comment.Rating.Vote = commentVote(vote)
 	comment.Rating.ID = comment.ID
 
 	comment.Author.Avatar = srv.NewAvatar(avatar)
@@ -289,7 +287,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			comment.EditContent = ""
 		}
 
-		comment.Rating.Vote = commentVote(userID, comment.Author.ID, vote)
+		comment.Rating.Vote = commentVote(vote)
 
 		comment.Rating.ID = comment.ID
 		comment.Author.Avatar = srv.NewAvatar(avatar)
@@ -376,7 +374,6 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 		EntryID:     entryID,
 		Rating: &models.Rating{
 			IsVotable: true,
-			Vote:      models.RatingVoteBan,
 		},
 		Rights: &models.CommentRights{
 			Edit:   true,
