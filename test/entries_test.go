@@ -61,6 +61,12 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(user.ShowName, author.ShowName)
 	req.Equal(user.IsOnline, author.IsOnline)
 	req.Equal(user.Avatar, author.Avatar)
+
+	rights := entry.Rights
+	req.Equal(canEdit, rights.Edit)
+	req.Equal(canEdit, rights.Delete)
+	req.Equal(true, rights.Comment)
+	req.Equal(!canEdit, rights.Vote)
 }
 
 func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success bool,
@@ -594,6 +600,36 @@ func TestLoadFavorites(t *testing.T) {
 	req.False(feed.HasAfter)
 }
 
+func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
+	req := require.New(t)
+
+	req.Equal(exp.ID, act.ID)
+	req.Equal(exp.Author, act.Author)
+	req.Equal(exp.CommentCount, act.CommentCount)
+	req.Equal(exp.Content, act.Content)
+	req.Equal(exp.CreatedAt, act.CreatedAt)
+	req.Equal(exp.CutContent, exp.CutContent)
+	req.Equal(exp.CutTitle, act.CutTitle)
+	req.Equal(exp.HasCut, act.HasCut)
+	req.Equal(exp.InLive, act.InLive)
+	req.Equal(exp.Privacy, act.Privacy)
+	req.Equal(exp.Title, act.Title)
+	req.Equal(exp.VisibleFor, act.VisibleFor)
+	req.Equal(exp.WordCount, act.WordCount)
+
+	if exp.Author.ID == user.ID {
+		req.NotEmpty(act.EditContent)
+	} else {
+		req.Empty(act.EditContent)
+	}
+
+	rights := act.Rights
+	req.Equal(act.Author.ID == user.ID, rights.Edit)
+	req.Equal(act.Author.ID == user.ID, rights.Delete)
+	req.Equal(act.Author.ID == user.ID || !user.Ban.Comment, rights.Comment)
+	req.Equal(act.Author.ID != user.ID && !user.Ban.Vote, rights.Vote)
+}
+
 func TestLoadLiveComments(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -625,16 +661,16 @@ func TestLoadLiveComments(t *testing.T) {
 
 	feed := checkLoadLive(t, userIDs[2], 10, "comments", "", "", 3)
 
-	req := require.New(t)
-	req.Equal(*entries[3], *feed.Entries[0])
-	req.Equal(*entries[0], *feed.Entries[1])
-	req.Equal(*entries[5], *feed.Entries[2])
+	compareEntries(t, entries[3], feed.Entries[0], userIDs[2])
+	compareEntries(t, entries[0], feed.Entries[1], userIDs[2])
+	compareEntries(t, entries[5], feed.Entries[2], userIDs[2])
 
+	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadLive(t, userIDs[2], 1, "comments", "", "", 1)
-	req.Equal(*entries[3], *feed.Entries[0])
+	compareEntries(t, entries[3], feed.Entries[0], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -692,15 +728,15 @@ func TestLoadWatching(t *testing.T) {
 	feed := checkLoadWatching(t, userIDs[2], 10, 3)
 
 	req := require.New(t)
-	req.Equal(*entries[1], *feed.Entries[0])
-	req.Equal(*entries[0], *feed.Entries[1])
-	req.Equal(*entries[3], *feed.Entries[2])
+	compareEntries(t, entries[1], feed.Entries[0], userIDs[2])
+	compareEntries(t, entries[0], feed.Entries[1], userIDs[2])
+	compareEntries(t, entries[3], feed.Entries[2], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadWatching(t, userIDs[2], 1, 1)
-	req.Equal(*entries[1], *feed.Entries[0])
+	compareEntries(t, entries[1], feed.Entries[0], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)

@@ -131,7 +131,7 @@ func NewEntry(title, content string) *models.Entry {
 	return &entry
 }
 
-func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -143,7 +143,7 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, c
 
 	entry := NewEntry(title, content)
 
-	entry.Author = users.LoadUserByID(srv, tx, userID)
+	entry.Author = users.LoadUserByID(srv, tx, userID.ID)
 	entry.Privacy = privacy
 	entry.IsWatching = true
 	entry.InLive = inLive
@@ -151,11 +151,17 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, c
 		Vote:      models.RatingVoteBan,
 		IsVotable: isVotable,
 	}
+	entry.Rights = &models.EntryRights{
+		Edit:    true,
+		Delete:  true,
+		Comment: true,
+		Vote:    false,
+	}
 
 	return entry
 }
 
-func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
 
 	category := entryCategory(entry)
@@ -168,12 +174,12 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, titl
 		$10, $11, (SELECT id from categories WHERE type = $12))
 	RETURNING id, extract(epoch from created_at)`
 
-	tx.Query(q, userID, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent,
+	tx.Query(q, userID.ID, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent,
 		entry.HasCut, entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category).
 		Scan(&entry.ID, &entry.CreatedAt)
 
 	entry.Rating.ID = entry.ID
-	watchings.AddWatching(tx, userID, entry.ID)
+	watchings.AddWatching(tx, userID.ID, entry.ID)
 
 	return entry
 }
@@ -223,7 +229,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 				}
 			}
 
-			entry := createEntry(srv, tx, userID.ID,
+			entry := createEntry(srv, tx, userID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
 			if tx.Error() != nil {
@@ -236,7 +242,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 	}
 }
 
-func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
 	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
 
 	category := entryCategory(entry)
@@ -252,12 +258,12 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int6
 	RETURNING extract(epoch from created_at)`
 
 	tx.Query(q, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent, entry.HasCut,
-		entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category, entryID, userID).
+		entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category, entryID, userID.ID).
 		Scan(&entry.CreatedAt)
 
 	entry.ID = entryID
 	entry.Rating.ID = entryID
-	watchings.AddWatching(tx, userID, entry.ID)
+	watchings.AddWatching(tx, userID.ID, entry.ID)
 
 	return entry
 }
@@ -310,7 +316,7 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 				}
 			}
 
-			entry := editEntry(srv, tx, params.ID, uID.ID,
+			entry := editEntry(srv, tx, params.ID, uID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
 			if tx.Error() != nil {
@@ -333,6 +339,15 @@ func entryVoteStatus(authorID int64, userID *models.UserID, vote sql.NullFloat64
 		return models.RatingVotePos
 	default:
 		return models.RatingVoteNeg
+	}
+}
+
+func setEntryRights(entry *models.Entry, userID *models.UserID) {
+	entry.Rights = &models.EntryRights{
+		Edit:    entry.Author.ID == userID.ID,
+		Delete:  entry.Author.ID == userID.ID,
+		Comment: entry.Author.ID == userID.ID || !userID.Ban.Comment,
+		Vote:    entry.Author.ID != userID.ID && !userID.Ban.Vote,
 	}
 }
 
@@ -374,6 +389,8 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 
 	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
 	entry.Comments = cmt
+
+	setEntryRights(&entry, userID)
 
 	return &entry
 }

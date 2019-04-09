@@ -158,6 +158,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 		rating.ID = entry.ID
 		author.Avatar = srv.NewAvatar(avatar)
 		entry.Author = &author
+		setEntryRights(&entry, userID)
 		feed.Entries = append(feed.Entries, &entry)
 	}
 

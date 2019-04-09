@@ -67,6 +67,9 @@ type Entry struct {
 	// rating
 	Rating *Rating `json:"rating,omitempty"`
 
+	// rights
+	Rights *EntryRights `json:"rights,omitempty"`
+
 	// title
 	Title string `json:"title,omitempty"`
 
@@ -98,6 +101,10 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateRating(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateRights(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -227,6 +234,24 @@ func (m *Entry) validateRating(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Entry) validateRights(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Rights) { // not required
+		return nil
+	}
+
+	if m.Rights != nil {
+		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
 
 	if swag.IsZero(m.VisibleFor) { // not required
@@ -263,6 +288,46 @@ func (m *Entry) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Entry) UnmarshalBinary(b []byte) error {
 	var res Entry
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// EntryRights entry rights
+// swagger:model EntryRights
+type EntryRights struct {
+
+	// comment
+	Comment bool `json:"comment,omitempty"`
+
+	// delete
+	Delete bool `json:"delete,omitempty"`
+
+	// edit
+	Edit bool `json:"edit,omitempty"`
+
+	// vote
+	Vote bool `json:"vote,omitempty"`
+}
+
+// Validate validates this entry rights
+func (m *EntryRights) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *EntryRights) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *EntryRights) UnmarshalBinary(b []byte) error {
+	var res EntryRights
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

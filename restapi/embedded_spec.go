@@ -3525,6 +3525,23 @@ func init() {
         "rating": {
           "$ref": "#/definitions/Rating"
         },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "comment": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
+        },
         "title": {
           "type": "string"
         },
@@ -7935,6 +7952,23 @@ func init() {
         },
         "rating": {
           "$ref": "#/definitions/Rating"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "comment": {
+              "type": "boolean"
+            },
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            },
+            "vote": {
+              "type": "boolean"
+            }
+          }
         },
         "title": {
           "type": "string"
