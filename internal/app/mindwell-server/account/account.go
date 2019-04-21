@@ -197,11 +197,16 @@ func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Post
 		params.City = &str
 	}
 
+	inviter := sql.NullInt64{
+		Valid: ref > 0,
+		Int64: ref,
+	}
+
 	avatar := generateAvatar(srv, params.Name, *params.Gender)
 
 	var user int64
 	tx.Query(q,
-		params.Name, params.Email, hash, ref, apiKey,
+		params.Name, params.Email, hash, inviter, apiKey,
 		*params.Gender,
 		*params.Country, *params.City, avatar).Scan(&user)
 
@@ -239,7 +244,6 @@ FROM long_users `
 
 func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, args ...interface{}) *models.AuthProfile {
 	var profile models.AuthProfile
-	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
 	profile.Counts = &models.FriendAO1Counts{}
 	profile.Account = &models.AuthProfileAO1Account{}
@@ -251,7 +255,11 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	var age sql.NullInt64
 	var bday sql.NullString
 	var avatar, cover string
-	var invitedAvatar string
+
+	var invitedByID sql.NullInt64
+	var invitedByName, invitedByShowName sql.NullString
+	var invitedByIsOnline sql.NullBool
+	var invitedByAvatar sql.NullString
 
 	tx.Query(query, args...)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
@@ -272,15 +280,24 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&profile.Account.APIKey, &profile.Account.ValidThru,
 		&profile.Ban.Invite, &profile.Ban.Vote,
 		&profile.Ban.Comment, &profile.Ban.Live,
-		&profile.InvitedBy.ID,
-		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
-		&profile.InvitedBy.IsOnline,
-		&invitedAvatar)
+		&invitedByID,
+		&invitedByName, &invitedByShowName,
+		&invitedByIsOnline,
+		&invitedByAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 	profile.Avatar = srv.NewAvatar(avatar)
-	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
+
+	if invitedByID.Valid {
+		profile.InvitedBy = &models.User{
+			ID:       invitedByID.Int64,
+			Name:     invitedByName.String,
+			ShowName: invitedByShowName.String,
+			IsOnline: invitedByIsOnline.Bool,
+			Avatar:   srv.NewAvatar(invitedByAvatar.String),
+		}
+	}
 
 	// token, thru := utils.BuildApiToken(apiSecret, &models.UserID{
 	// 	ID:   profile.ID,
@@ -372,10 +389,15 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
-			ref, ok := removeInvite(tx, params.Invite)
-			if !ok {
-				err := srv.NewError(&i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."})
-				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
+			var ref int64
+
+			if params.Invite != nil {
+				var ok bool
+				ref, ok = removeInvite(tx, *params.Invite)
+				if !ok {
+					err := srv.NewError(&i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."})
+					return account.NewPostAccountRegisterBadRequest().WithPayload(err)
+				}
 			}
 
 			id := createUser(srv, tx, params, ref)
@@ -395,7 +417,9 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 
 			user.Account.Email = utils.HideEmail(user.Account.Email)
 
-			sendNewWelcome(srv, tx, params.Name, ref)
+			if ref > 0 {
+				sendNewWelcome(srv, tx, params.Name, ref)
+			}
 
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})

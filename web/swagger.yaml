@@ -653,7 +653,6 @@ paths:
         - in: formData
           name: invite
           type: string
-          required: true
           maxLength: 100
         - in: formData
           name: birthday

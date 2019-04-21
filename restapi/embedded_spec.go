@@ -405,8 +405,7 @@ func init() {
             "maxLength": 100,
             "type": "string",
             "name": "invite",
-            "in": "formData",
-            "required": true
+            "in": "formData"
           },
           {
             "type": "string",
@@ -4526,8 +4525,7 @@ func init() {
             "maxLength": 100,
             "type": "string",
             "name": "invite",
-            "in": "formData",
-            "required": true
+            "in": "formData"
           },
           {
             "type": "string",

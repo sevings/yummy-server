@@ -33,9 +33,9 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 	query := usersQuerySelect + "FROM long_users "
 
 	if *params.Top == "rank" {
-		query += "ORDER BY rank ASC"
+		query += "WHERE invited_by IS NOT NULL ORDER BY rank ASC"
 	} else if *params.Top == "new" {
-		query += "ORDER BY created_at DESC"
+		query += "WHERE invited_by IS NOT NULL ORDER BY created_at DESC"
 	} else {
 		fmt.Printf("Unknown users top: %s\n", *params.Top)
 		return users.NewGetUsersOK() //.WithPayload(srv.NewError(nil))

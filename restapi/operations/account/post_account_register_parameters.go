@@ -75,11 +75,10 @@ type PostAccountRegisterParams struct {
 	*/
 	Gender *string
 	/*
-	  Required: true
 	  Max Length: 100
 	  In: formData
 	*/
-	Invite string
+	Invite *string
 	/*
 	  Required: true
 	  Max Length: 20
@@ -315,21 +314,18 @@ func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) erro
 
 // bindInvite binds and validates parameter Invite from formData.
 func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	if !hasKey {
-		return errors.Required("invite", "formData")
-	}
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
 	}
 
-	// Required: true
+	// Required: false
 
-	if err := validate.RequiredString("invite", "formData", raw); err != nil {
-		return err
+	if raw == "" { // empty values pass all other validations
+		return nil
 	}
 
-	o.Invite = raw
+	o.Invite = &raw
 
 	if err := o.validateInvite(formats); err != nil {
 		return err
@@ -341,7 +337,7 @@ func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, fo
 // validateInvite carries on validations for parameter Invite
 func (o *PostAccountRegisterParams) validateInvite(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("invite", "formData", o.Invite, 100); err != nil {
+	if err := validate.MaxLength("invite", "formData", (*o.Invite), 100); err != nil {
 		return err
 	}
 

@@ -57,7 +57,7 @@ func TestMain(m *testing.M) {
 
 	userIDs, profiles = registerTestUsers(db)
 
-	if len(esm.Emails) != 6 {
+	if len(esm.Emails) != 7 {
 		log.Fatal("Email count")
 	}
 
@@ -259,7 +259,7 @@ func TestRegister(t *testing.T) {
 		Name:     "testtest",
 		Email:    "testemail",
 		Password: "test123",
-		Invite:   invites[0],
+		Invite:   &invites[0],
 	}
 
 	register := api.AccountPostAccountRegisterHandler.Handle
@@ -344,7 +344,7 @@ func TestRegister(t *testing.T) {
 	req.NotEmpty(acc.ValidThru)
 	req.True(acc.Verified)
 
-	params.Invite = invites[1]
+	params.Invite = &invites[1]
 	resp = register(params)
 	_, ok = resp.(*account.PostAccountRegisterBadRequest)
 	req.True(ok)
@@ -363,10 +363,9 @@ func TestRegister(t *testing.T) {
 		City:     &city,
 		Country:  &country,
 		Birthday: &bday,
-		Invite:   "acknown acknown acknown",
 	}
 
-	params.Invite = invites[2]
+	params.Invite = &invites[2]
 	resp = register(params)
 	body, ok = resp.(*account.PostAccountRegisterCreated)
 	req.True(ok)
@@ -400,6 +399,37 @@ func TestRegister(t *testing.T) {
 	req.Equal("1992-01-06T00:00:00Z", user.Birthday)
 
 	req.NotEqual(acc.APIKey, user.Account.APIKey)
+
+	params = account.PostAccountRegisterParams{
+		Name:     "testtest3",
+		Email:    "testemail3",
+		Password: "test123",
+	}
+
+	resp = register(params)
+	body, ok = resp.(*account.PostAccountRegisterCreated)
+	req.True(ok)
+
+	user = body.Payload
+	userID = &models.UserID{
+		ID:   user.ID,
+		Name: user.Name,
+	}
+
+	req.Nil(user.InvitedBy)
+
+	checkName(t, "testtEst3", false)
+	checkEmail(t, "testeMAil3", false)
+	checkLogin(t, user, params.Name, params.Password)
+
+	esm.CheckEmail(t, "testemail3")
+	checkVerify(t, userID, "testemail3")
+	user.Account.Verified = true
+	checkLogin(t, user, params.Name, params.Password)
+
+	changePassword(t, userID, "test123", "new123", "testemail3", true)
+	changePassword(t, userID, "test123", "new123", "", false)
+	checkLogin(t, user, params.Name, "new123")
 }
 
 func getEmailSettings(t *testing.T, userID *models.UserID) *account.GetAccountSettingsEmailOKBody {

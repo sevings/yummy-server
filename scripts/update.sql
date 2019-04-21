@@ -55,13 +55,12 @@ SELECT users.id,
     short_users.show_name AS invited_by_show_name,
     short_users.is_online AS invited_by_is_online,
     short_users.avatar AS invited_by_avatar
-FROM mindwell.users, mindwell.short_users,
-    mindwell.gender, mindwell.user_privacy, mindwell.font_family, mindwell.alignment
-WHERE users.invited_by = short_users.id
-    AND users.gender = gender.id
-    AND users.privacy = user_privacy.id
-    AND users.font_family = font_family.id
-    AND users.text_alignment = alignment.id;
+FROM mindwell.users
+INNER JOIN mindwell.gender ON users.gender = gender.id
+INNER JOIN mindwell.user_privacy ON users.privacy = user_privacy.id
+INNER JOIN mindwell.font_family ON users.font_family = font_family.id
+INNER JOIN mindwell.alignment ON users.text_alignment = alignment.id
+LEFT JOIN mindwell.short_users ON users.invited_by = short_users.id;
 
 CREATE VIEW mindwell.feed AS
 SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
@@ -78,3 +77,6 @@ SELECT entries.id, entries.created_at, rating, up_votes, down_votes,
 FROM mindwell.long_users, mindwell.entries, mindwell.entry_privacy
 WHERE long_users.id = entries.author_id 
     AND entry_privacy.id = entries.visible_for;
+
+ALTER TABLE users 
+ALTER COLUMN invited_by DROP NOT NULL;

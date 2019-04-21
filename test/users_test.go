@@ -109,9 +109,9 @@ func TestGetUser(t *testing.T) {
 	get := api.UsersGetUsersNameHandler.Handle
 	for i, user := range profiles {
 		resp := get(users.GetUsersNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
-		body, ok := resp.(*users.GetUsersNameOK) // not GetUsersNameOK
+		body, ok := resp.(*users.GetUsersNameOK)
 		if !ok {
-			badBody, ok := resp.(*users.GetUsersNameNotFound) // not GetUsersNameNotFound
+			badBody, ok := resp.(*users.GetUsersNameNotFound)
 			if ok {
 				t.Fatal(badBody.Payload.Message)
 			}

@@ -310,7 +310,7 @@ func checkSearchUsers(t *testing.T, query string, size int) []*models.Friend {
 }
 
 func TestSearchUsers(t *testing.T) {
-	checkSearchUsers(t, "testo", 3)
+	checkSearchUsers(t, "testo", 4)
 	checkSearchUsers(t, "mind", 1)
 	checkSearchUsers(t, "psychotherapist", 0)
 }

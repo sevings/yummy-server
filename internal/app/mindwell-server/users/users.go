@@ -57,7 +57,6 @@ FROM long_users `
 
 func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, userID *models.UserID, arg interface{}) *models.Profile {
 	var profile models.Profile
-	profile.InvitedBy = &models.User{}
 	profile.Design = &models.Design{}
 	profile.Counts = &models.FriendAO1Counts{}
 
@@ -66,7 +65,11 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 	var age sql.NullInt64
 	var avatar, cover string
-	var invitedAvatar string
+
+	var invitedByID sql.NullInt64
+	var invitedByName, invitedByShowName sql.NullString
+	var invitedByIsOnline sql.NullBool
+	var invitedByAvatar sql.NullString
 
 	tx.Query(query, arg)
 	tx.Scan(&profile.ID, &profile.Name, &profile.ShowName,
@@ -83,16 +86,25 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
 		&profile.Design.FontFamily, &profile.Design.FontSize, &profile.Design.TextAlignment,
-		&profile.InvitedBy.ID,
-		&profile.InvitedBy.Name, &profile.InvitedBy.ShowName,
-		&profile.InvitedBy.IsOnline,
-		&invitedAvatar)
+		&invitedByID,
+		&invitedByName, &invitedByShowName,
+		&invitedByIsOnline,
+		&invitedByAvatar)
 
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
 	profile.Avatar = srv.NewAvatar(avatar)
-	profile.InvitedBy.Avatar = srv.NewAvatar(invitedAvatar)
+
+	if invitedByID.Valid {
+		profile.InvitedBy = &models.User{
+			ID:       invitedByID.Int64,
+			Name:     invitedByName.String,
+			ShowName: invitedByShowName.String,
+			IsOnline: invitedByIsOnline.Bool,
+			Avatar:   srv.NewAvatar(invitedByAvatar.String),
+		}
+	}
 
 	profile.Cover = srv.NewCover(profile.ID, cover)
 

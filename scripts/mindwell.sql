@@ -85,7 +85,7 @@ CREATE TABLE "mindwell"."users" (
 	"karma" Real DEFAULT 0 NOT NULL,
 	"created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"last_invite" Date DEFAULT CURRENT_DATE NOT NULL,
-    "invited_by" Integer NOT NULL,
+    "invited_by" Integer,
 	"birthday" Date,
 	"css" Text DEFAULT '' NOT NULL,
 	"entries_count" Integer DEFAULT 0 NOT NULL,

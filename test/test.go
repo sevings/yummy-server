@@ -84,11 +84,16 @@ func (esm *EmailSenderMock) Clear() {
 }
 
 func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
+	invite := inviteWord + " " + inviteWord + " " + inviteWord
 	params := account.PostAccountRegisterParams{
 		Name:     name,
 		Email:    name + "@example.com",
 		Password: "test123",
-		Invite:   inviteWord + " " + inviteWord + " " + inviteWord,
+		Invite:   &invite,
+	}
+
+	if len(inviteWord) == 0 {
+		params.Invite = nil
 	}
 
 	resp := api.AccountPostAccountRegisterHandler.Handle(params)
@@ -130,6 +135,12 @@ func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 		profiles = append(profiles, profile)
 
 		time.Sleep(10 * time.Millisecond)
+	}
+
+	{
+		id, profile := register("test3", "")
+		userIDs = append(userIDs, id)
+		profiles = append(profiles, profile)
 	}
 
 	removeUserRestrictions(db, userIDs)
