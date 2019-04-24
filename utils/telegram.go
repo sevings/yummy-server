@@ -350,3 +350,22 @@ func (bot *TelegramBot) SendNewInvite(chat int64) {
 	text := `У тебя в настройках <a href="` + bot.url + `account/invites">появилось новое приглашение</a>! Используй его с умом.`
 	bot.sendMessage(chat, text)
 }
+
+func (bot *TelegramBot) SendInvited(chat int64, fromName, fromShowName, fromGender string) {
+	if bot.api == nil {
+		return
+	}
+
+	var ending string
+	if fromGender == "female" {
+		ending = "а"
+	} else {
+		ending = ""
+	}
+
+	link := `<a href="` + bot.url + `users/` + fromName + `">` + fromShowName + `</a>`
+	text := link + " отправил" + ending + " тебе приглашение на Mindwell. " +
+		"Теперь тебе доступны все функции сайта (при отсутствии других ограничений)."
+
+	bot.sendMessage(chat, text)
+}

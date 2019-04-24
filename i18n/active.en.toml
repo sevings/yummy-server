@@ -1,4 +1,5 @@
 adm_reg_finished = "ADM registration finished."
+already_invited = "The user already has an invite."
 already_verified = "Your email had been verified earlier."
 cant_comment = "You can't comment this entry."
 cant_vote = "You are not allowed to vote for this entry."

@@ -2822,6 +2822,46 @@ func init() {
         }
       ]
     },
+    "/relations/invited/{name}": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "relations"
+        ],
+        "responses": {
+          "204": {
+            "description": "invited"
+          },
+          "403": {
+            "description": "invalid invite or the user is invited already",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        },
+        {
+          "type": "string",
+          "name": "invite",
+          "in": "query",
+          "required": true
+        }
+      ]
+    },
     "/relations/to/{name}": {
       "get": {
         "security": [
@@ -7142,6 +7182,51 @@ func init() {
           "type": "string",
           "name": "name",
           "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/relations/invited/{name}": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "relations"
+        ],
+        "responses": {
+          "204": {
+            "description": "invited"
+          },
+          "403": {
+            "description": "invalid invite or the user is invited already",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        },
+        {
+          "type": "string",
+          "name": "invite",
+          "in": "query",
           "required": true
         }
       ]

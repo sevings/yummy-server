@@ -265,6 +265,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePostMeTlog has not yet been implemented")
 		}),
+		RelationsPostRelationsInvitedNameHandler: relations.PostRelationsInvitedNameHandlerFunc(func(params relations.PostRelationsInvitedNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation RelationsPostRelationsInvitedName has not yet been implemented")
+		}),
 		AccountPutAccountSettingsEmailHandler: account.PutAccountSettingsEmailHandlerFunc(func(params account.PutAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPutAccountSettingsEmail has not yet been implemented")
 		}),
@@ -500,6 +503,8 @@ type MindwellAPI struct {
 	ImagesPostImagesHandler images.PostImagesHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
 	MePostMeTlogHandler me.PostMeTlogHandler
+	// RelationsPostRelationsInvitedNameHandler sets the operation handler for the post relations invited name operation
+	RelationsPostRelationsInvitedNameHandler relations.PostRelationsInvitedNameHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
 	AccountPutAccountSettingsEmailHandler account.PutAccountSettingsEmailHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
@@ -883,6 +888,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePostMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.PostMeTlogHandler")
+	}
+
+	if o.RelationsPostRelationsInvitedNameHandler == nil {
+		unregistered = append(unregistered, "relations.PostRelationsInvitedNameHandler")
 	}
 
 	if o.AccountPutAccountSettingsEmailHandler == nil {
@@ -1410,6 +1419,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/me/tlog"] = me.NewPostMeTlog(o.context, o.MePostMeTlogHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/relations/invited/{name}"] = relations.NewPostRelationsInvitedName(o.context, o.RelationsPostRelationsInvitedNameHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

@@ -1,6 +1,7 @@
 package test
 
 import (
+	"log"
 	"testing"
 
 	"github.com/sevings/mindwell-server/models"
@@ -150,4 +151,47 @@ func TestRelationship(t *testing.T) {
 	checkUnfollow(t, userIDs[0], userIDs[2])
 	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
+}
+
+func TestInvite(t *testing.T) {
+	req := require.New(t)
+
+	invite := func(name, inv string, from *models.UserID, success bool) {
+		post := api.RelationsPostRelationsInvitedNameHandler.Handle
+		params := relations.PostRelationsInvitedNameParams{
+			Invite: inv,
+			Name:   name,
+		}
+		resp := post(params, from)
+		_, ok := resp.(*relations.PostRelationsInvitedNameNoContent)
+		req.Equal(success, ok)
+	}
+
+	_, err := db.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)")
+	req.Nil(err)
+	if err != nil {
+		log.Println(err)
+	}
+
+	from := &models.UserID{
+		ID:   1,
+		Name: "Mindwell",
+	}
+
+	invite("test0", "acknown acknown acknown", from, false)
+	invite("fsdf", "acknown acknown acknown", from, false)
+	invite("test0", "", from, false)
+	invite("test0", "acknown acknown sd", from, false)
+	invite("test0", "acknown acknown acknown", userIDs[2], false)
+	invite("test3", "acknown acknown acknown", from, true)
+
+	if profiles[3].Account.Verified {
+		esm.CheckEmail(t, profiles[3].Account.Email)
+	} else {
+		req.Empty(esm.Emails)
+	}
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 }

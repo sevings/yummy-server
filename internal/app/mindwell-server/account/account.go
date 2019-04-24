@@ -395,7 +395,7 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				var ok bool
 				ref, ok = removeInvite(tx, *params.Invite)
 				if !ok {
-					err := srv.NewError(&i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."})
+					err := srv.StandardError("invalid_invite")
 					return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 				}
 			}

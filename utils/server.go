@@ -30,6 +30,7 @@ type MailSender interface {
 	SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewWelcome(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewInvite(address, name string)
+	SendInvited(address, fromShowName, fromGender, toShowName string)
 }
 
 type MindwellServer struct {
@@ -64,10 +65,11 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		local: i18n.NewLocalizer(bundle),
 		cron:  gron.New(),
 		errs: map[string]*i18n.Message{
-			"no_entry":   &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
-			"no_comment": &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
-			"no_tlog":    &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
-			"no_request": &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
+			"no_entry":       &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
+			"no_comment":     &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
+			"no_tlog":        &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
+			"no_request":     &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
+			"invalid_invite": &i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."},
 		},
 	}
 

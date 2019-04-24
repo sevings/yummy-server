@@ -80,3 +80,5 @@ WHERE long_users.id = entries.author_id
 
 ALTER TABLE users 
 ALTER COLUMN invited_by DROP NOT NULL;
+
+INSERT INTO "mindwell"."notification_type" VALUES(6, 'invited');

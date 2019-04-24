@@ -384,3 +384,24 @@ func (pm *Postman) SendAdm(address, name, gender string) {
 	subj := "Клуб анонимных Дедов Морозов"
 	pm.send(email, address, subj, name)
 }
+
+func (pm *Postman) SendInvited(address, fromShowName, fromGender, toShowName string) {
+	var ending string
+	if fromGender == "female" {
+		ending = "а"
+	} else {
+		ending = ""
+	}
+
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				fromShowName + " отправил" + ending + " тебе приглашение на Mindwell. " +
+					"Теперь тебе доступны все функции сайта (при отсутствии других ограничений).",
+			},
+		},
+	}
+
+	const subj = "Приглашение на Mindwell"
+	pm.send(email, address, subj, toShowName)
+}

@@ -18,6 +18,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.RelationsDeleteRelationsToNameHandler = relations.DeleteRelationsToNameHandlerFunc(newToRelationDeleter(srv))
 	srv.API.RelationsDeleteRelationsFromNameHandler = relations.DeleteRelationsFromNameHandlerFunc(newFromRelationDeleter(srv))
+
+	srv.API.RelationsPostRelationsInvitedNameHandler = relations.PostRelationsInvitedNameHandlerFunc(newInviter(srv))
 }
 
 func newToRelationLoader(srv *utils.MindwellServer) func(relations.GetRelationsToNameParams, *models.UserID) middleware.Responder {
@@ -106,6 +108,34 @@ func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRela
 
 			relation = removeRelationship(tx, params.Name, uID.Name)
 			return relations.NewDeleteRelationsFromNameOK().WithPayload(relation)
+		})
+	}
+}
+
+func newInviter(srv *utils.MindwellServer) func(relations.PostRelationsInvitedNameParams, *models.UserID) middleware.Responder {
+	return func(params relations.PostRelationsInvitedNameParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			exists, invited := isTlogExistsAndInvited(tx, params.Name)
+
+			if !exists {
+				err := srv.StandardError("no_tlog")
+				return relations.NewPostRelationsInvitedNameNotFound().WithPayload(err)
+			}
+
+			if invited {
+				err := srv.NewError(&i18n.Message{ID: "already_invited", Other: "The user already has an invite."})
+				return relations.NewPostRelationsInvitedNameForbidden().WithPayload(err)
+			}
+
+			if ok := removeInvite(tx, params.Invite, userID.ID); !ok {
+				err := srv.StandardError("invalid_invite")
+				return relations.NewPostRelationsInvitedNameForbidden().WithPayload(err)
+			}
+
+			setInvited(tx, userID.ID, params.Name)
+			sendInvited(srv, tx, userID.Name, params.Name)
+
+			return relations.NewPostRelationsInvitedNameNoContent()
 		})
 	}
 }

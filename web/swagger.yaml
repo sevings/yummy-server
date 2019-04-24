@@ -1671,6 +1671,29 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /relations/invited/{name}:
+    parameters:
+      - $ref: '#/parameters/pathName'
+      - in: query
+        name: invite
+        type: string
+        required: true
+    post:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - relations
+      responses:
+        204:
+          description: invited
+        403:
+          description: invalid invite or the user is invited already
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /entries/live:
     get:
       parameters:
