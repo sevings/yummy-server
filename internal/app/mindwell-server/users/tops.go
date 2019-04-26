@@ -36,6 +36,8 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 		query += "WHERE invited_by IS NOT NULL ORDER BY rank ASC"
 	} else if *params.Top == "new" {
 		query += "WHERE invited_by IS NOT NULL ORDER BY created_at DESC"
+	} else if *params.Top == "waiting" {
+		query += "WHERE invited_by IS NULL ORDER BY rank ASC"
 	} else {
 		fmt.Printf("Unknown users top: %s\n", *params.Top)
 		return users.NewGetUsersOK() //.WithPayload(srv.NewError(nil))

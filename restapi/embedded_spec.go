@@ -2973,7 +2973,8 @@ func init() {
           {
             "enum": [
               "new",
-              "rank"
+              "rank",
+              "waiting"
             ],
             "type": "string",
             "default": "new",
@@ -7347,7 +7348,8 @@ func init() {
           {
             "enum": [
               "new",
-              "rank"
+              "rank",
+              "waiting"
             ],
             "type": "string",
             "default": "new",

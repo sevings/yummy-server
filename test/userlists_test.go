@@ -289,6 +289,9 @@ func TestTopUsers(t *testing.T) {
 	req.Equal(int64(1), list[3].ID)
 
 	checkTopUsers(t, "rank", 4)
+
+	list = checkTopUsers(t, "waiting", 1)
+	req.Equal(userIDs[3].ID, list[0].ID)
 }
 
 func checkSearchUsers(t *testing.T, query string, size int) []*models.Friend {

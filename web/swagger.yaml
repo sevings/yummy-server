@@ -1030,7 +1030,7 @@ paths:
         - in: query
           name: top
           type: string
-          enum: [new, rank]
+          enum: [new, rank, waiting]
           default: new
         - in: query
           name: query
