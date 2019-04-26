@@ -776,6 +776,7 @@ paths:
         - account
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           type: boolean
@@ -797,6 +798,7 @@ paths:
       summary: change new password
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           type: string
@@ -826,6 +828,7 @@ paths:
       summary: set new email
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           type: string
@@ -859,6 +862,7 @@ paths:
       summary: request reset password email
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           name: email
@@ -1008,8 +1012,6 @@ paths:
           name: time
           type: number
           default: 0
-      consumes:
-        - application/x-www-form-urlencoded
       tags:
         - notifications
       responses:
@@ -1672,17 +1674,20 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   /relations/invited/{name}:
-    parameters:
-      - $ref: '#/parameters/pathName'
-      - in: query
-        name: invite
-        type: string
-        required: true
     post:
       security:
         - ApiKeyHeader: []
       tags:
         - relations
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
+      parameters:
+        - $ref: '#/parameters/pathName'
+        - in: formData
+          name: invite
+          type: string
+          required: true
       responses:
         204:
           description: invited
@@ -2267,6 +2272,7 @@ paths:
         - adm
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           name: postcode
@@ -2333,8 +2339,6 @@ paths:
         - ApiKeyHeader: []
       tags:
         - adm
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
         - in: query
           name: received
@@ -2412,8 +2416,6 @@ paths:
         - ApiKeyHeader: []
       tags:
         - adm
-      consumes:
-        - application/x-www-form-urlencoded
       parameters:
         - in: query
           name: sent

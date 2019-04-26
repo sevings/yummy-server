@@ -34,7 +34,7 @@ type PostRelationsInvitedNameParams struct {
 
 	/*
 	  Required: true
-	  In: query
+	  In: formData
 	*/
 	Invite string
 	/*
@@ -55,10 +55,17 @@ func (o *PostRelationsInvitedNameParams) BindRequest(r *http.Request, route *mid
 
 	o.HTTPRequest = r
 
-	qs := runtime.Values(r.URL.Query())
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		if err != http.ErrNotMultipart {
+			return errors.New(400, "%v", err)
+		} else if err := r.ParseForm(); err != nil {
+			return errors.New(400, "%v", err)
+		}
+	}
+	fds := runtime.Values(r.Form)
 
-	qInvite, qhkInvite, _ := qs.GetOK("invite")
-	if err := o.bindInvite(qInvite, qhkInvite, route.Formats); err != nil {
+	fdInvite, fdhkInvite, _ := fds.GetOK("invite")
+	if err := o.bindInvite(fdInvite, fdhkInvite, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -73,10 +80,10 @@ func (o *PostRelationsInvitedNameParams) BindRequest(r *http.Request, route *mid
 	return nil
 }
 
-// bindInvite binds and validates parameter Invite from query.
+// bindInvite binds and validates parameter Invite from formData.
 func (o *PostRelationsInvitedNameParams) bindInvite(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("invite", "query")
+		return errors.Required("invite", "formData")
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -84,8 +91,8 @@ func (o *PostRelationsInvitedNameParams) bindInvite(rawData []string, hasKey boo
 	}
 
 	// Required: true
-	// AllowEmptyValue: false
-	if err := validate.RequiredString("invite", "query", raw); err != nil {
+
+	if err := validate.RequiredString("invite", "formData", raw); err != nil {
 		return err
 	}
 

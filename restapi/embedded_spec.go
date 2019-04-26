@@ -39,7 +39,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -244,7 +245,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -284,7 +286,8 @@ func init() {
     "/account/recover": {
       "post": {
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -492,7 +495,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -746,9 +750,6 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
         "tags": [
           "adm"
         ],
@@ -831,7 +832,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "adm"
@@ -936,9 +938,6 @@ func init() {
           {
             "ApiKeyHeader": []
           }
-        ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "adm"
@@ -2669,9 +2668,6 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
         "tags": [
           "notifications"
         ],
@@ -2829,8 +2825,23 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
         "tags": [
           "relations"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/pathName"
+          },
+          {
+            "type": "string",
+            "name": "invite",
+            "in": "formData",
+            "required": true
+          }
         ],
         "responses": {
           "204": {
@@ -2849,18 +2860,7 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "$ref": "#/parameters/pathName"
-        },
-        {
-          "type": "string",
-          "name": "invite",
-          "in": "query",
-          "required": true
-        }
-      ]
+      }
     },
     "/relations/to/{name}": {
       "get": {
@@ -4199,7 +4199,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -4404,7 +4405,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -4444,7 +4446,8 @@ func init() {
     "/account/recover": {
       "post": {
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -4652,7 +4655,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -4906,9 +4910,6 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
         "tags": [
           "adm"
         ],
@@ -4991,7 +4992,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "adm"
@@ -5096,9 +5098,6 @@ func init() {
           {
             "ApiKeyHeader": []
           }
-        ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "adm"
@@ -7023,9 +7022,6 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
-        "consumes": [
-          "application/x-www-form-urlencoded"
-        ],
         "tags": [
           "notifications"
         ],
@@ -7193,8 +7189,28 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
         "tags": [
           "relations"
+        ],
+        "parameters": [
+          {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "invite",
+            "in": "formData",
+            "required": true
+          }
         ],
         "responses": {
           "204": {
@@ -7213,23 +7229,7 @@ func init() {
             }
           }
         }
-      },
-      "parameters": [
-        {
-          "maxLength": 20,
-          "minLength": 1,
-          "type": "string",
-          "name": "name",
-          "in": "path",
-          "required": true
-        },
-        {
-          "type": "string",
-          "name": "invite",
-          "in": "query",
-          "required": true
-        }
-      ]
+      }
     },
     "/relations/to/{name}": {
       "get": {

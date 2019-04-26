@@ -16,8 +16,6 @@ import (
 type PostRelationsInvitedNameURL struct {
 	Name string
 
-	Invite string
-
 	_basePath string
 	// avoid unkeyed usage
 	_ struct{}
@@ -56,15 +54,6 @@ func (o *PostRelationsInvitedNameURL) Build() (*url.URL, error) {
 		_basePath = "/api/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
-
-	qs := make(url.Values)
-
-	invite := o.Invite
-	if invite != "" {
-		qs.Set("invite", invite)
-	}
-
-	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }
