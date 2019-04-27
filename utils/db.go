@@ -165,32 +165,41 @@ func (tx *AutoTx) RowsAffected() int64 {
 	return cnt
 }
 
-// Transact wraps func in an SQL transaction.
-// Responder will be just passed through.
-func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.Responder {
+func NewAutoTx(db *sql.DB) *AutoTx {
 	tx, err := db.Begin()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	atx := &AutoTx{tx: tx}
-	resp := txFunc(atx)
+	return &AutoTx{tx: tx}
+}
+
+func (tx *AutoTx) Finish() {
 	p := recover()
-	atx.Close()
+	tx.Close()
+
+	var err error
 
 	if p != nil {
-		err = tx.Rollback()
-		log.Print("Recovered in Transact:", p)
-	} else if atx.Error() == nil || atx.Error() == sql.ErrNoRows {
-		err = tx.Commit()
+		err = tx.tx.Rollback()
+		log.Println(p, " (recovered by AutoTx)")
+	} else if tx.Error() == nil || tx.Error() == sql.ErrNoRows {
+		err = tx.tx.Commit()
 	} else {
-		log.Print(atx.Error())
-		err = tx.Rollback()
+		log.Println(tx.Error())
+		err = tx.tx.Rollback()
 	}
 
 	if err != nil {
-		log.Print(err)
+		log.Println(err)
 	}
+}
 
-	return resp
+// Transact wraps func in an SQL transaction.
+// Responder will be just passed through.
+func Transact(db *sql.DB, txFunc func(*AutoTx) middleware.Responder) middleware.Responder {
+	atx := NewAutoTx(db)
+	defer atx.Finish()
+
+	return txFunc(atx)
 }
