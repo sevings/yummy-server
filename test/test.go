@@ -114,7 +114,7 @@ func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	userID := models.UserID{
 		ID:             body.Payload.ID,
 		Name:           body.Payload.Name,
-		IsInvited:      true,
+		IsInvited:      params.Invite != nil,
 		NegKarma:       false,
 		FollowersCount: 0,
 		Ban: &models.UserIDBan{

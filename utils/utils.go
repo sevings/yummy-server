@@ -53,11 +53,13 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 		WHERE id = $2 AND (author_id = $1
 			OR ((entry_privacy = 'all' 
 				AND (author_privacy = 'all'
-					OR EXISTS(SELECT 1 FROM relation, relations, entries
+					OR (author_privacy = 'followers' 
+						AND EXISTS(SELECT 1 FROM relation, relations, entries
 							  WHERE from_id = $1 AND to_id = entries.author_id
-								  AND entries.id = $2
-						 		  AND relation.type = 'followed'
-						 		  AND relations.type = relation.id)))
+									AND entries.id = $2
+						 			AND relation.type = 'followed'
+									AND relations.type = relation.id))
+					OR (SELECT invited_by is not null from users where id = $1)))
 			OR (entry_privacy = 'some' 
 				AND EXISTS(SELECT 1 FROM entries_privacy
 					WHERE user_id = $1 AND entry_id = $2))

@@ -141,6 +141,16 @@ func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutMePar
 	compareUsers(t, user, profile)
 }
 
+func setUserPrivacy(t *testing.T, userID *models.UserID, privacy string) {
+	params := me.PutMeParams{
+		Privacy: privacy,
+	}
+	edit := api.MePutMeHandler.Handle
+	resp := edit(params, userID)
+	_, ok := resp.(*me.PutMeOK)
+	require.True(t, ok)
+}
+
 func TestEditProfile(t *testing.T) {
 	user := *profiles[0]
 	user.AgeLowerBound = 30

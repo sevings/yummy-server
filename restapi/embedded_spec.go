@@ -2162,6 +2162,7 @@ func init() {
           {
             "enum": [
               "all",
+              "invited",
               "followers"
             ],
             "type": "string",
@@ -6430,6 +6431,7 @@ func init() {
           {
             "enum": [
               "all",
+              "invited",
               "followers"
             ],
             "type": "string",

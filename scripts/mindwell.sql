@@ -23,6 +23,7 @@ CREATE TABLE "mindwell"."user_privacy" (
 
 INSERT INTO "mindwell"."user_privacy" VALUES(0, 'all');
 INSERT INTO "mindwell"."user_privacy" VALUES(1, 'followers');
+INSERT INTO "mindwell"."user_privacy" VALUES(2, 'invited');
 -- -------------------------------------------------------------
 
 

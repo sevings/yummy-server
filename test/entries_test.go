@@ -337,7 +337,7 @@ func TestLoadLive(t *testing.T) {
 	checkLoadLive(t, userIDs[0], 0, "entries", "", feed.NextAfter, 0)
 }
 
-func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
+func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after string, size int) *models.Feed {
 	params := users.GetUsersNameTlogParams{
 		Name:   tlog.Name,
 		Limit:  &limit,
@@ -348,8 +348,9 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, limit int64, before,
 	load := api.UsersGetUsersNameTlogHandler.Handle
 	resp := load(params, user)
 	body, ok := resp.(*users.GetUsersNameTlogOK)
+	require.Equal(t, success, ok)
 	if !ok {
-		t.Fatal("error load tlog")
+		return nil
 	}
 
 	feed := body.Payload
@@ -367,7 +368,7 @@ func TestLoadTlog(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	feed := checkLoadTlog(t, userIDs[0], userIDs[1], 10, "", "", 2)
+	feed := checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", 2)
 	checkEntry(t, feed.Entries[0], profiles[0], false, 0, false, 3, models.EntryPrivacyAll, true, false, "", "test test test")
 	checkEntry(t, feed.Entries[1], profiles[0], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 
@@ -375,15 +376,15 @@ func TestLoadTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 10, "", "", 4)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", 4)
 	checkEntry(t, feed.Entries[0], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, false, "", "test test test")
 	checkEntry(t, feed.Entries[1], profiles[0], true, 0, true, 3, models.EntryPrivacyMe, false, false, "", "test test test")
 	checkEntry(t, feed.Entries[2], profiles[0], true, 0, true, 3, models.EntryPrivacySome, true, true, "", "test test test")
 	checkEntry(t, feed.Entries[3], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 
-	checkLoadTlog(t, userIDs[1], userIDs[0], 10, "", "", 0)
+	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", 0)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, "", "", 3)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", 3)
 	checkEntry(t, feed.Entries[0], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, false, "", "test test test")
 	checkEntry(t, feed.Entries[1], profiles[0], true, 0, true, 3, models.EntryPrivacyMe, false, false, "", "test test test")
 	checkEntry(t, feed.Entries[2], profiles[0], true, 0, true, 3, models.EntryPrivacySome, true, true, "", "test test test")
@@ -391,11 +392,18 @@ func TestLoadTlog(t *testing.T) {
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], 3, feed.NextBefore, "", 1)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, feed.NextBefore, "", 1)
 	checkEntry(t, feed.Entries[0], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
+
+	setUserPrivacy(t, userIDs[0], "invited")
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
 }
 
 func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {

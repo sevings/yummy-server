@@ -175,6 +175,10 @@ func IsOpenForMe(tx *utils.AutoTx, userID *models.UserID, name interface{}) bool
 		return true
 	}
 
+	if privacy == "invited" {
+		return userID.IsInvited
+	}
+
 	const relationQuery = `
 	SELECT relation.type
 	FROM users, relations, relation

@@ -1245,7 +1245,7 @@ paths:
         - in: formData
           name: privacy
           type: string
-          enum: [all, followers]
+          enum: [all, invited, followers]
           required: true
         - in: formData
           name: title
