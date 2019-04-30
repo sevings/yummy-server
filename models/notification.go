@@ -36,7 +36,7 @@ type Notification struct {
 	Read bool `json:"read,omitempty"`
 
 	// type
-	// Enum: [comment follower request accept invite welcome]
+	// Enum: [comment follower request accept invite welcome invited]
 	Type string `json:"type,omitempty"`
 
 	// user
@@ -126,7 +126,7 @@ var notificationTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["comment","follower","request","accept","invite","welcome"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["comment","follower","request","accept","invite","welcome","invited"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -153,6 +153,9 @@ const (
 
 	// NotificationTypeWelcome captures enum value "welcome"
 	NotificationTypeWelcome string = "welcome"
+
+	// NotificationTypeInvited captures enum value "invited"
+	NotificationTypeInvited string = "invited"
 )
 
 // prop value enum

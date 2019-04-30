@@ -3856,7 +3856,8 @@ func init() {
             "request",
             "accept",
             "invite",
-            "welcome"
+            "welcome",
+            "invited"
           ]
         },
         "user": {
@@ -8335,7 +8336,8 @@ func init() {
             "request",
             "accept",
             "invite",
-            "welcome"
+            "welcome",
+            "invited"
           ]
         },
         "user": {

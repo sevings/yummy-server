@@ -451,7 +451,7 @@ definitions:
         minimum: 1
       type: 
         type: string
-        enum: [comment, follower, request, accept, invite, welcome]
+        enum: [comment, follower, request, accept, invite, welcome, invited]
       read:
         type: boolean
       createdAt:

@@ -91,6 +91,8 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 	case models.NotificationTypeAccept:
 		fallthrough
 	case models.NotificationTypeWelcome:
+		fallthrough
+	case models.NotificationTypeInvited:
 		notif.User = users.LoadUserByID(srv, tx, not.subj)
 		break
 	default:
