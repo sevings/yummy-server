@@ -98,8 +98,21 @@ func removeInvite(tx *utils.AutoTx, invite string, userID int64) bool {
 
 func isTlogExistsAndInvited(tx *utils.AutoTx, name string) (bool, bool) {
 	var exists, invited bool
-	tx.Query("SELECT true, invited_by IS NOT NULL FROM users WHERE name = $1", name).Scan(&exists, &invited)
+	tx.Query("SELECT true, invited_by IS NOT NULL FROM users WHERE lower(name) = lower($1)", name).Scan(&exists, &invited)
 	return exists, invited
+}
+
+func canInvite(tx *utils.AutoTx, name string) bool {
+	q := `
+		SELECT count(distinct entry_votes.user_id) >= 3
+		FROM entries
+		INNER JOIN entry_votes ON entries.id = entry_id
+		WHERE entries.author_id = (SELECT id FROM users WHERE lower(name) = lower($1))
+	`
+
+	var allowed bool
+	tx.Query(q, name).Scan(&allowed)
+	return allowed
 }
 
 func setInvited(tx *utils.AutoTx, from int64, to string) {

@@ -178,6 +178,22 @@ func TestInvite(t *testing.T) {
 		Name: "Mindwell",
 	}
 
+	invite("test3", "acknown acknown acknown", from, false)
+
+	e1 := postEntry(userIDs[3], models.EntryPrivacyAll, false)
+	e2 := postEntry(userIDs[3], models.EntryPrivacyAll, false)
+	e3 := postEntry(userIDs[3], models.EntryPrivacyAll, false)
+
+	voteForEntry(userIDs[0], e1.ID)
+	voteForEntry(userIDs[0], e2.ID)
+	voteForEntry(userIDs[1], e1.ID)
+	voteForEntry(userIDs[1], e2.ID)
+	voteForEntry(userIDs[1], e3.ID)
+
+	invite("test3", "acknown acknown acknown", from, false)
+
+	voteForEntry(userIDs[2], e3.ID)
+
 	invite("test0", "acknown acknown acknown", from, false)
 	invite("fsdf", "acknown acknown acknown", from, false)
 	invite("test0", "", from, false)
