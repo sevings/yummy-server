@@ -155,6 +155,10 @@ func TestPostMyTlog(t *testing.T) {
 	id := checkPostEntry(t, params, profiles[0], userIDs[0], true, 5)
 	checkEntryWatching(t, userIDs[0], id, true, true)
 
+	checkPostEntry(t, params, profiles[3], userIDs[3], false, 5)
+	votable = true
+	id2 := checkPostEntry(t, params, profiles[3], userIDs[3], true, 5)
+
 	title = "title"
 	votable = false
 	live = false
@@ -171,9 +175,17 @@ func TestPostMyTlog(t *testing.T) {
 
 	checkLoadEntry(t, id, userIDs[1], false, nil, false, 0, false, 0, "", false, false, "", "")
 
+	editParams.ID = id2
+	editParams.Privacy = models.EntryPrivacyAll
+	checkEditEntry(t, editParams, profiles[3], userIDs[3], false, 2)
+	votable = true
+	checkEditEntry(t, editParams, profiles[3], userIDs[3], true, 2)
+
 	checkDeleteEntry(t, id, userIDs[1], false)
 	checkDeleteEntry(t, id, userIDs[0], true)
 	checkDeleteEntry(t, id, userIDs[0], false)
+
+	checkDeleteEntry(t, id2, userIDs[3], true)
 }
 
 func TestLiveRestrictions(t *testing.T) {

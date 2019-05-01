@@ -196,6 +196,14 @@ func allowedInLive(followersCount, entryCount int64) bool {
 	}
 }
 
+func allowedWithoutVoting(srv *utils.MindwellServer, userID *models.UserID) *models.Error {
+	if userID.IsInvited {
+		return nil
+	}
+
+	return srv.NewError(&i18n.Message{ID: "post_wo_voting", Other: "You're not allowed to post without voting."})
+}
+
 func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.Error {
 	if userID.Ban.Live {
 		return srv.NewError(&i18n.Message{ID: "post_in_live", Other: "You're not allowed to post in live."})
@@ -223,6 +231,13 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
 				err := canPostInLive(srv, tx, userID)
+				if err != nil {
+					return me.NewPostMeTlogForbidden().WithPayload(err)
+				}
+			}
+
+			if !*params.IsVotable {
+				err := allowedWithoutVoting(srv, userID)
 				if err != nil {
 					return me.NewPostMeTlogForbidden().WithPayload(err)
 				}
@@ -310,6 +325,13 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
 				err := canEditInLive(srv, tx, uID, params.ID)
+				if err != nil {
+					return entries.NewPutEntriesIDForbidden().WithPayload(err)
+				}
+			}
+
+			if !*params.IsVotable {
+				err := allowedWithoutVoting(srv, uID)
 				if err != nil {
 					return entries.NewPutEntriesIDForbidden().WithPayload(err)
 				}
