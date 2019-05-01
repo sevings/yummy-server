@@ -104,7 +104,7 @@ func isTlogExistsAndInvited(tx *utils.AutoTx, name string) (bool, bool) {
 
 func canInvite(tx *utils.AutoTx, name string) bool {
 	q := `
-		SELECT count(distinct entry_votes.user_id) >= 3
+		SELECT count(distinct entry_votes.user_id) >= 3 AND count(entry_votes.user_id) >= 5
 		FROM entries
 		INNER JOIN entry_votes ON entries.id = entry_id
 		WHERE entries.author_id = (SELECT id FROM users WHERE lower(name) = lower($1))
