@@ -283,13 +283,13 @@ func TestLoadLive(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 
-	postEntry(userIDs[0], models.EntryPrivacyAll, true)
+	postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
 	postEntry(userIDs[0], models.EntryPrivacySome, true)
 	postEntry(userIDs[1], models.EntryPrivacyMe, true)
-	postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
 	postEntry(userIDs[2], models.EntryPrivacyAll, false)
-	postEntry(userIDs[2], models.EntryPrivacyAll, true)
+	postEntry(userIDs[2], models.EntryPrivacyAll, true) // 0
 
 	feed := checkLoadLive(t, userIDs[0], 10, "entries", "", "", 3)
 	checkEntry(t, feed.Entries[0], profiles[2], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
@@ -335,6 +335,12 @@ func TestLoadLive(t *testing.T) {
 
 	checkLoadLive(t, userIDs[0], 1, "entries", "", feed.NextAfter, 0)
 	checkLoadLive(t, userIDs[0], 0, "entries", "", feed.NextAfter, 0)
+
+	setUserPrivacy(t, userIDs[0], "invited")
+	feed = checkLoadLive(t, userIDs[3], 10, "entries", "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[2], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	setUserPrivacy(t, userIDs[0], "all")
 }
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after string, size int) *models.Feed {
@@ -526,6 +532,12 @@ func TestLoadFriendsFeed(t *testing.T) {
 	checkEntry(t, feed.Entries[2], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
+
+	checkFollow(t, userIDs[3], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
+	setUserPrivacy(t, userIDs[1], "invited")
+	feed = checkLoadFriendsFeed(t, userIDs[3], 10, "", "", 0)
+	setUserPrivacy(t, userIDs[0], "all")
+	checkUnfollow(t, userIDs[3], userIDs[1])
 }
 
 func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, before, after string, size int) *models.Feed {

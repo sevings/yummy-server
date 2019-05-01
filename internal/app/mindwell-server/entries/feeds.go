@@ -35,8 +35,10 @@ LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes O
 
 const liveFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
-	AND user_privacy.type = 'all' 
 	AND in_live
+	AND (user_privacy.type = 'all' 
+		OR (user_privacy.type = 'invited' 
+			AND (SELECT invited_by is not null FROM users where id = $1)))
 `
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
@@ -92,6 +94,7 @@ WHERE (users.id = $1
 		OR (entry_privacy.type = 'some' 
 			AND (users.id = $1
 				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
+	AND (user_privacy.type != 'invited' OR (SELECT invited_by is not null FROM users where id = $1))
 `
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
@@ -202,9 +205,9 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		INNER JOIN users ON entries.author_id = users.id
 		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + liveFeedQueryWhere + " AND entries.created_at < to_timestamp($1))"
+	` + liveFeedQueryWhere + " AND entries.created_at < to_timestamp($2))"
 
-	tx.Query(beforeQuery, nextBefore)
+	tx.Query(beforeQuery, userID.ID, nextBefore)
 	tx.Scan(&feed.HasBefore)
 
 	const afterQuery = `SELECT EXISTS(
@@ -213,11 +216,11 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		INNER JOIN users ON entries.author_id = users.id
 		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + liveFeedQueryWhere + " AND entries.created_at > to_timestamp($1))"
+	` + liveFeedQueryWhere + " AND entries.created_at > to_timestamp($2))"
 
 	nextAfter := feed.Entries[0].CreatedAt
 	feed.NextAfter = utils.FormatFloat(nextAfter)
-	tx.Query(afterQuery, nextAfter)
+	tx.Query(afterQuery, userID.ID, nextAfter)
 	tx.Scan(&feed.HasAfter)
 
 	return feed
@@ -464,12 +467,13 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 	const scrollQ = `FROM entries
 		INNER JOIN users ON entries.author_id = users.id
 		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		INNER JOIN user_privacy ON users.privacy = user_privacy.id
 		` + friendsFeedQueryWhere + " AND entries.created_at"
 
 	if len(feed.Entries) == 0 {
 		if before > 0 {
 			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` >= to_timestamp($1)
+				` >= to_timestamp($2)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
 			tx.Query(afterQuery, userID.ID, before)
@@ -480,7 +484,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 
 		if after > 0 {
 			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` <= to_timestamp($1)
+				` <= to_timestamp($2)
 				ORDER BY entries.created_at DESC LIMIT 1`
 
 			tx.Query(beforeQuery, userID.ID, after)

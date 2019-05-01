@@ -8,7 +8,6 @@ import (
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
-	"github.com/sevings/mindwell-server/utils"
 )
 
 func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes, vote int64) {
@@ -124,7 +123,5 @@ func TestEntryVotes(t *testing.T) {
 
 	setUserPrivacy(t, userIDs[0], "invited")
 	checkVoteForEntry(t, userIDs[3], false, e.ID, 0, false, 0)
-
-	utils.ClearDatabase(db)
-	userIDs, profiles = registerTestUsers(db)
+	setUserPrivacy(t, userIDs[0], "all")
 }
