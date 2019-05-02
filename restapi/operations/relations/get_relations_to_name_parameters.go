@@ -35,6 +35,7 @@ type GetRelationsToNameParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
+	  Pattern: [a-zA-Z][a-zA-Z0-9\-_]*
 	  In: path
 	*/
 	Name string
@@ -87,6 +88,10 @@ func (o *GetRelationsToNameParams) validateName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("name", "path", o.Name, 20); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "path", o.Name, `[a-zA-Z][a-zA-Z0-9\-_]*`); err != nil {
 		return err
 	}
 

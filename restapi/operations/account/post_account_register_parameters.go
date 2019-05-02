@@ -66,6 +66,7 @@ type PostAccountRegisterParams struct {
 	/*
 	  Required: true
 	  Max Length: 500
+	  Pattern: .+@.+
 	  In: formData
 	*/
 	Email string
@@ -83,7 +84,7 @@ type PostAccountRegisterParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
-	  Pattern: [a-zA-Z][a-zA-Z0-9]*
+	  Pattern: [a-zA-Z][a-zA-Z0-9\-_]*
 	  In: formData
 	*/
 	Name string
@@ -276,6 +277,10 @@ func (o *PostAccountRegisterParams) validateEmail(formats strfmt.Registry) error
 		return err
 	}
 
+	if err := validate.Pattern("email", "formData", o.Email, `.+@.+`); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -380,7 +385,7 @@ func (o *PostAccountRegisterParams) validateName(formats strfmt.Registry) error 
 		return err
 	}
 
-	if err := validate.Pattern("name", "formData", o.Name, `[a-zA-Z][a-zA-Z0-9]*`); err != nil {
+	if err := validate.Pattern("name", "formData", o.Name, `[a-zA-Z][a-zA-Z0-9\-_]*`); err != nil {
 		return err
 	}
 

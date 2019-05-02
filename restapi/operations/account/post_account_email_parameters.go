@@ -35,7 +35,7 @@ type PostAccountEmailParams struct {
 	/*
 	  Required: true
 	  Max Length: 500
-	  Min Length: 6
+	  Pattern: .+@.+
 	  In: formData
 	*/
 	Email string
@@ -110,11 +110,11 @@ func (o *PostAccountEmailParams) bindEmail(rawData []string, hasKey bool, format
 // validateEmail carries on validations for parameter Email
 func (o *PostAccountEmailParams) validateEmail(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("email", "formData", o.Email, 6); err != nil {
+	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
+	if err := validate.Pattern("email", "formData", o.Email, `.+@.+`); err != nil {
 		return err
 	}
 

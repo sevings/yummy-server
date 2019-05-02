@@ -82,8 +82,8 @@ func checkEmail(t *testing.T, email string, free bool) {
 	body, ok := resp.(*account.GetAccountEmailEmailOK)
 
 	require.True(t, ok, email)
-	require.Equal(t, email, *body.Payload.Email)
-	require.Equal(t, free, *body.Payload.IsFree, email)
+	require.Equal(t, email, body.Payload.Email)
+	require.Equal(t, free, body.Payload.IsFree, email)
 }
 
 func TestCheckEmail(t *testing.T) {
@@ -96,8 +96,8 @@ func checkName(t *testing.T, name string, free bool) {
 	body, ok := resp.(*account.GetAccountNameNameOK)
 
 	require.True(t, ok, name)
-	require.Equal(t, name, *body.Payload.Name)
-	require.Equal(t, free, *body.Payload.IsFree, name)
+	require.Equal(t, name, body.Payload.Name)
+	require.Equal(t, free, body.Payload.IsFree, name)
 }
 
 func TestCheckName(t *testing.T) {

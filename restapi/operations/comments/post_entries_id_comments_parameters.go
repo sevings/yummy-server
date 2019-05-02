@@ -37,6 +37,7 @@ type PostEntriesIDCommentsParams struct {
 	  Required: true
 	  Max Length: 1000
 	  Min Length: 1
+	  Pattern: \s*\S+.*
 	  In: formData
 	*/
 	Content string
@@ -115,6 +116,10 @@ func (o *PostEntriesIDCommentsParams) validateContent(formats strfmt.Registry) e
 	}
 
 	if err := validate.MaxLength("content", "formData", o.Content, 1000); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("content", "formData", o.Content, `\s*\S+.*`); err != nil {
 		return err
 	}
 

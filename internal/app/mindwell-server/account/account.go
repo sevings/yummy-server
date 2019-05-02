@@ -73,7 +73,7 @@ func newEmailChecker(srv *utils.MindwellServer) func(account.GetAccountEmailEmai
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isEmailFree(tx, params.Email)
-			data := account.GetAccountEmailEmailOKBody{Email: &params.Email, IsFree: &free}
+			data := account.GetAccountEmailEmailOKBody{Email: params.Email, IsFree: free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
 		})
 	}
@@ -95,7 +95,7 @@ func newNameChecker(srv *utils.MindwellServer) func(account.GetAccountNameNamePa
 	return func(params account.GetAccountNameNameParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			free := isNameFree(tx, params.Name)
-			data := account.GetAccountNameNameOKBody{Name: &params.Name, IsFree: &free}
+			data := account.GetAccountNameNameOKBody{Name: params.Name, IsFree: free}
 			return account.NewGetAccountNameNameOK().WithPayload(&data)
 		})
 	}

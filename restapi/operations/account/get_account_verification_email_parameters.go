@@ -42,6 +42,7 @@ type GetAccountVerificationEmailParams struct {
 	/*
 	  Required: true
 	  Max Length: 500
+	  Pattern: .+@.+
 	  In: path
 	*/
 	Email string
@@ -136,6 +137,10 @@ func (o *GetAccountVerificationEmailParams) bindEmail(rawData []string, hasKey b
 func (o *GetAccountVerificationEmailParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "path", o.Email, 500); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("email", "path", o.Email, `.+@.+`); err != nil {
 		return err
 	}
 

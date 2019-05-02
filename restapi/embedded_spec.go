@@ -48,20 +48,10 @@ func init() {
         "summary": "set new email",
         "parameters": [
           {
-            "maxLength": 500,
-            "minLength": 6,
-            "type": "string",
-            "name": "email",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/formEmail"
           },
           {
-            "maxLength": 100,
-            "minLength": 6,
-            "type": "string",
-            "name": "password",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/password"
           }
         ],
         "responses": {
@@ -92,6 +82,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "path",
@@ -103,10 +94,6 @@ func init() {
             "description": "check result",
             "schema": {
               "type": "object",
-              "required": [
-                "email",
-                "isFree"
-              ],
               "properties": {
                 "email": {
                   "type": "string"
@@ -171,12 +158,7 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 500,
-            "minLength": 6,
-            "type": "string",
-            "name": "password",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/password"
           }
         ],
         "responses": {
@@ -203,12 +185,7 @@ func init() {
         "summary": "check if name is used",
         "parameters": [
           {
-            "maxLength": 20,
-            "minLength": 1,
-            "type": "string",
-            "name": "name",
-            "in": "path",
-            "required": true
+            "$ref": "#/parameters/pathName"
           }
         ],
         "responses": {
@@ -216,10 +193,6 @@ func init() {
             "description": "check result",
             "schema": {
               "type": "object",
-              "required": [
-                "name",
-                "isFree"
-              ],
               "properties": {
                 "isFree": {
                   "type": "boolean"
@@ -295,11 +268,7 @@ func init() {
         "summary": "request reset password email",
         "parameters": [
           {
-            "maxLength": 500,
-            "type": "string",
-            "name": "email",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/formEmail"
           }
         ],
         "responses": {
@@ -326,19 +295,10 @@ func init() {
         "summary": "reset password",
         "parameters": [
           {
-            "maxLength": 500,
-            "type": "string",
-            "name": "email",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/formEmail"
           },
           {
-            "maxLength": 100,
-            "minLength": 6,
-            "type": "string",
-            "name": "password",
-            "in": "formData",
-            "required": true
+            "$ref": "#/parameters/password"
           },
           {
             "type": "integer",
@@ -381,26 +341,17 @@ func init() {
         "summary": "register new account",
         "parameters": [
           {
+            "$ref": "#/parameters/formEmail"
+          },
+          {
+            "$ref": "#/parameters/password"
+          },
+          {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
             "type": "string",
             "name": "name",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "maxLength": 500,
-            "type": "string",
-            "name": "email",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "maxLength": 100,
-            "minLength": 6,
-            "type": "string",
-            "name": "password",
             "in": "formData",
             "required": true
           },
@@ -626,6 +577,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "path",
@@ -1054,6 +1006,7 @@ func init() {
           {
             "maxLength": 1000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -1391,6 +1344,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -1615,6 +1569,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -1769,6 +1724,7 @@ func init() {
           {
             "maxLength": 1000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -2137,6 +2093,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "showName",
             "in": "formData",
@@ -2569,6 +2526,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -2838,6 +2796,7 @@ func init() {
             "$ref": "#/parameters/pathName"
           },
           {
+            "pattern": "\\s*\\S+\\s+\\S+\\s+\\S+\\s*",
             "type": "string",
             "name": "invite",
             "in": "formData",
@@ -4124,6 +4083,14 @@ func init() {
       "name": "before",
       "in": "query"
     },
+    "formEmail": {
+      "maxLength": 500,
+      "pattern": ".+@.+",
+      "type": "string",
+      "name": "email",
+      "in": "formData",
+      "required": true
+    },
     "limit": {
       "maximum": 100,
       "minimum": 1,
@@ -4131,6 +4098,14 @@ func init() {
       "default": 30,
       "name": "limit",
       "in": "query"
+    },
+    "password": {
+      "maxLength": 100,
+      "minLength": 6,
+      "type": "string",
+      "name": "password",
+      "in": "formData",
+      "required": true
     },
     "pathId": {
       "minimum": 1,
@@ -4143,6 +4118,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
+      "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
       "type": "string",
       "name": "name",
       "in": "path",
@@ -4212,7 +4188,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
-            "minLength": 6,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "formData",
@@ -4255,6 +4231,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "path",
@@ -4266,10 +4243,6 @@ func init() {
             "description": "check result",
             "schema": {
               "type": "object",
-              "required": [
-                "email",
-                "isFree"
-              ],
               "properties": {
                 "email": {
                   "type": "string"
@@ -4334,7 +4307,7 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 500,
+            "maxLength": 100,
             "minLength": 6,
             "type": "string",
             "name": "password",
@@ -4368,6 +4341,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -4379,10 +4353,6 @@ func init() {
             "description": "check result",
             "schema": {
               "type": "object",
-              "required": [
-                "name",
-                "isFree"
-              ],
               "properties": {
                 "isFree": {
                   "type": "boolean"
@@ -4459,6 +4429,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "formData",
@@ -4490,6 +4461,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "formData",
@@ -4544,16 +4516,8 @@ func init() {
         "summary": "register new account",
         "parameters": [
           {
-            "maxLength": 20,
-            "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9]*",
-            "type": "string",
-            "name": "name",
-            "in": "formData",
-            "required": true
-          },
-          {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "formData",
@@ -4564,6 +4528,15 @@ func init() {
             "minLength": 6,
             "type": "string",
             "name": "password",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "type": "string",
+            "name": "name",
             "in": "formData",
             "required": true
           },
@@ -4789,6 +4762,7 @@ func init() {
         "parameters": [
           {
             "maxLength": 500,
+            "pattern": ".+@.+",
             "type": "string",
             "name": "email",
             "in": "path",
@@ -5217,6 +5191,7 @@ func init() {
           {
             "maxLength": 1000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -5578,6 +5553,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -5849,6 +5825,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -6019,6 +5996,7 @@ func init() {
           {
             "maxLength": 1000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -6407,6 +6385,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "showName",
             "in": "formData",
@@ -6915,6 +6894,7 @@ func init() {
           {
             "maxLength": 30000,
             "minLength": 1,
+            "pattern": "\\s*\\S+.*",
             "type": "string",
             "name": "content",
             "in": "formData",
@@ -7179,6 +7159,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7204,12 +7185,14 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
             "type": "string",
             "name": "name",
             "in": "path",
             "required": true
           },
           {
+            "pattern": "\\s*\\S+\\s+\\S+\\s+\\S+\\s*",
             "type": "string",
             "name": "invite",
             "in": "formData",
@@ -7330,6 +7313,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7420,6 +7404,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7478,6 +7463,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7536,6 +7522,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7594,6 +7581,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7652,6 +7640,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7710,6 +7699,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -7785,6 +7775,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -8604,6 +8595,14 @@ func init() {
       "name": "before",
       "in": "query"
     },
+    "formEmail": {
+      "maxLength": 500,
+      "pattern": ".+@.+",
+      "type": "string",
+      "name": "email",
+      "in": "formData",
+      "required": true
+    },
     "limit": {
       "maximum": 100,
       "minimum": 1,
@@ -8611,6 +8610,14 @@ func init() {
       "default": 30,
       "name": "limit",
       "in": "query"
+    },
+    "password": {
+      "maxLength": 100,
+      "minLength": 6,
+      "type": "string",
+      "name": "password",
+      "in": "formData",
+      "required": true
     },
     "pathId": {
       "minimum": 1,
@@ -8623,6 +8630,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
+      "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
       "type": "string",
       "name": "name",
       "in": "path",

@@ -48,6 +48,7 @@ type PostAccountRecoverPasswordParams struct {
 	/*
 	  Required: true
 	  Max Length: 500
+	  Pattern: .+@.+
 	  In: formData
 	*/
 	Email string
@@ -197,6 +198,10 @@ func (o *PostAccountRecoverPasswordParams) bindEmail(rawData []string, hasKey bo
 func (o *PostAccountRecoverPasswordParams) validateEmail(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("email", "formData", o.Email, 500); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("email", "formData", o.Email, `.+@.+`); err != nil {
 		return err
 	}
 

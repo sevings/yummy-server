@@ -102,6 +102,7 @@ type PutMeParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
+	  Pattern: \s*\S+.*
 	  In: formData
 	*/
 	ShowName string
@@ -414,6 +415,10 @@ func (o *PutMeParams) validateShowName(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("showName", "formData", o.ShowName, 20); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("showName", "formData", o.ShowName, `\s*\S+.*`); err != nil {
 		return err
 	}
 

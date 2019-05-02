@@ -53,6 +53,7 @@ type PostMeTlogParams struct {
 	  Required: true
 	  Max Length: 30000
 	  Min Length: 1
+	  Pattern: \s*\S+.*
 	  In: formData
 	*/
 	Content string
@@ -170,6 +171,10 @@ func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaxLength("content", "formData", o.Content, 30000); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("content", "formData", o.Content, `\s*\S+.*`); err != nil {
 		return err
 	}
 

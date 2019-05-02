@@ -34,6 +34,7 @@ type PostRelationsInvitedNameParams struct {
 
 	/*
 	  Required: true
+	  Pattern: \s*\S+\s+\S+\s+\S+\s*
 	  In: formData
 	*/
 	Invite string
@@ -41,6 +42,7 @@ type PostRelationsInvitedNameParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
+	  Pattern: [a-zA-Z][a-zA-Z0-9\-_]*
 	  In: path
 	*/
 	Name string
@@ -98,6 +100,20 @@ func (o *PostRelationsInvitedNameParams) bindInvite(rawData []string, hasKey boo
 
 	o.Invite = raw
 
+	if err := o.validateInvite(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateInvite carries on validations for parameter Invite
+func (o *PostRelationsInvitedNameParams) validateInvite(formats strfmt.Registry) error {
+
+	if err := validate.Pattern("invite", "formData", o.Invite, `\s*\S+\s+\S+\s+\S+\s*`); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -128,6 +144,10 @@ func (o *PostRelationsInvitedNameParams) validateName(formats strfmt.Registry) e
 	}
 
 	if err := validate.MaxLength("name", "path", o.Name, 20); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("name", "path", o.Name, `[a-zA-Z][a-zA-Z0-9\-_]*`); err != nil {
 		return err
 	}
 

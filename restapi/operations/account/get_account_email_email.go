@@ -8,11 +8,9 @@ package account
 import (
 	"net/http"
 
-	errors "github.com/go-openapi/errors"
 	middleware "github.com/go-openapi/runtime/middleware"
 	strfmt "github.com/go-openapi/strfmt"
 	swag "github.com/go-openapi/swag"
-	validate "github.com/go-openapi/validate"
 )
 
 // GetAccountEmailEmailHandlerFunc turns a function with the right signature into a get account email email handler
@@ -66,47 +64,14 @@ func (o *GetAccountEmailEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request
 type GetAccountEmailEmailOKBody struct {
 
 	// email
-	// Required: true
-	Email *string `json:"email"`
+	Email string `json:"email,omitempty"`
 
 	// is free
-	// Required: true
-	IsFree *bool `json:"isFree"`
+	IsFree bool `json:"isFree,omitempty"`
 }
 
 // Validate validates this get account email email o k body
 func (o *GetAccountEmailEmailOKBody) Validate(formats strfmt.Registry) error {
-	var res []error
-
-	if err := o.validateEmail(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := o.validateIsFree(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if len(res) > 0 {
-		return errors.CompositeValidationError(res...)
-	}
-	return nil
-}
-
-func (o *GetAccountEmailEmailOKBody) validateEmail(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAccountEmailEmailOK"+"."+"email", "body", o.Email); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (o *GetAccountEmailEmailOKBody) validateIsFree(formats strfmt.Registry) error {
-
-	if err := validate.Required("getAccountEmailEmailOK"+"."+"isFree", "body", o.IsFree); err != nil {
-		return err
-	}
-
 	return nil
 }
 

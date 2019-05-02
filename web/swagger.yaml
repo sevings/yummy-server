@@ -531,11 +531,26 @@ parameters:
     required: true
   pathName:
     in: path
-    name: 'name'
+    name: name
     type: string
     minLength: 1
     maxLength: 20
     required: true
+    pattern: "[a-zA-Z][a-zA-Z0-9\\-_]*"
+  formEmail:
+    in: formData
+    name: email
+    type: string
+    maxLength: 500
+    required: true
+    pattern: ".+@.+"
+  password:
+    in: formData
+    name: password
+    type: string
+    minLength: 6
+    maxLength: 100
+    required: true  
   limit:
     in: query
     name: limit
@@ -579,6 +594,7 @@ paths:
           type: string
           required: true
           maxLength: 500
+          pattern: ".+@.+"
       tags:
         - account
       responses:
@@ -591,9 +607,6 @@ paths:
                 type: string
               isFree:
                 type: boolean
-            required:
-              - email
-              - isFree
             example:
               email: mail@example.com
               isFree: true
@@ -601,12 +614,7 @@ paths:
     get:
       summary: check if name is used
       parameters:
-        - in: path
-          name: name
-          type: string
-          minLength: 1
-          maxLength: 20
-          required: true
+        - $ref: '#/parameters/pathName'
       tags:
         - account
       responses:
@@ -619,9 +627,6 @@ paths:
                 type: string
               isFree:
                 type: boolean
-            required:
-              - name
-              - isFree
             example:
               name: example
               isFree: false
@@ -632,24 +637,15 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
+        - $ref: '#/parameters/formEmail'
+        - $ref: '#/parameters/password'
         - in: formData
           name: name
           type: string
           minLength: 1
           maxLength: 20
           required: true
-          pattern: "[a-zA-Z][a-zA-Z0-9]*"
-        - in: formData
-          name: email
-          type: string
-          maxLength: 500
-          required: true
-        - in: formData
-          name: password
-          type: string
-          minLength: 6
-          maxLength: 100
-          required: true
+          pattern: "[a-zA-Z][a-zA-Z0-9\\-_]*"
         - in: formData
           name: invite
           type: string
@@ -696,12 +692,7 @@ paths:
           minLength: 1
           maxLength: 500
           required: true
-        - in: formData
-          name: password
-          type: string
-          minLength: 6
-          maxLength: 500
-          required: true
+        - $ref: '#/parameters/password'
       tags:
         - account
       responses:
@@ -736,6 +727,7 @@ paths:
           name: email
           maxLength: 500
           required: true
+          pattern: '.+@.+'
         - in: query
           type: string
           name: code
@@ -830,18 +822,8 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - in: formData
-          type: string
-          name: email
-          minLength: 6
-          maxLength: 500
-          required: true
-        - in: formData
-          type: string
-          name: password
-          minLength: 6
-          maxLength: 100
-          required: true
+        - $ref: '#/parameters/formEmail'
+        - $ref: '#/parameters/password'
       security:
         - ApiKeyHeader: []
       tags:
@@ -864,11 +846,7 @@ paths:
         - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
-        - in: formData
-          name: email
-          type: string
-          maxLength: 500
-          required: true
+        - $ref: '#/parameters/formEmail'
       tags:
         - account
       responses:
@@ -884,17 +862,8 @@ paths:
       consumes:
         - multipart/form-data
       parameters:
-        - in: formData
-          name: email
-          type: string
-          maxLength: 500
-          required: true
-        - in: formData
-          type: string
-          name: password
-          minLength: 6
-          maxLength: 100
-          required: true
+        - $ref: '#/parameters/formEmail'
+        - $ref: '#/parameters/password'
         - in: formData
           type: integer
           format: int64
@@ -1233,6 +1202,7 @@ paths:
           minLength: 1
           maxLength: 20
           required: true
+          pattern: "\\s*\\S+.*"
         - in: formData
           name: gender
           type: string
@@ -1433,6 +1403,7 @@ paths:
           required: true
           minLength: 1
           maxLength: 30000
+          pattern: "\\s*\\S+.*"
         - in: formData
           name: privacy
           type: string
@@ -1688,6 +1659,7 @@ paths:
           name: invite
           type: string
           required: true
+          pattern: "\\s*\\S+\\s+\\S+\\s+\\S+\\s*"
       responses:
         204:
           description: invited
@@ -1806,6 +1778,7 @@ paths:
           minLength: 1
           maxLength: 30000
           required: true
+          pattern: "\\s*\\S+.*"
         - in: formData
           name: anonymous_comments
           type: boolean
@@ -1856,6 +1829,7 @@ paths:
           required: true
           minLength: 1
           maxLength: 30000
+          pattern: "\\s*\\S+.*"
         - in: formData
           name: privacy
           type: string
@@ -2093,6 +2067,7 @@ paths:
           minLength: 1
           maxLength: 1000
           required: true
+          pattern: "\\s*\\S+.*"
       security:
         - ApiKeyHeader: []
       tags:
@@ -2142,6 +2117,7 @@ paths:
           minLength: 1
           maxLength: 1000
           required: true
+          pattern: "\\s*\\S+.*"
       security:
         - ApiKeyHeader: []
       tags:
