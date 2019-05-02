@@ -1,7 +1,6 @@
 package test
 
 import (
-	"log"
 	"testing"
 
 	"github.com/sevings/mindwell-server/models"
@@ -165,13 +164,7 @@ func TestInvite(t *testing.T) {
 		resp := post(params, from)
 		_, ok := resp.(*relations.PostRelationsInvitedNameNoContent)
 		req.Equal(success, ok)
-	}
-
-	_, err := db.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)")
-	req.Nil(err)
-	if err != nil {
-		log.Println(err)
-	}
+	} 
 
 	from := &models.UserID{
 		ID:   1,

@@ -647,10 +647,6 @@ paths:
           required: true
           pattern: "[a-zA-Z][a-zA-Z0-9\\-_]*"
         - in: formData
-          name: invite
-          type: string
-          maxLength: 100
-        - in: formData
           name: birthday
           type: string
           format: full-date

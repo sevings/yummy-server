@@ -57,17 +57,14 @@ func TestMain(m *testing.M) {
 
 	userIDs, profiles = registerTestUsers(db)
 
-	if len(esm.Emails) != 7 {
+	if len(esm.Emails) != 4 {
 		log.Fatal("Email count")
 	}
 
-	for i := 0; i < 6; i = i + 2 {
-		email := "test" + strconv.Itoa(i/2) + "@example.com"
+	for i := 0; i < 4; i++ {
+		email := "test" + strconv.Itoa(i) + "@example.com"
 		if esm.Emails[i] != email {
 			log.Fatal("Greeting has not sent to ", email)
-		}
-		if esm.Emails[i+1] != "" {
-			log.Fatal("Welcome has not sent")
 		}
 	}
 
@@ -235,31 +232,28 @@ func checkResetPassword(t *testing.T, email string) {
 	esm.Clear()
 }
 
-func TestRegister(t *testing.T) {
-	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1)")
-	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 2, 2, 2)")
-	db.Exec("INSERT INTO invites(referrer_id, word1, word2, word3) VALUES(1, 3, 3, 3)")
+func TestInvites(t *testing.T) {
+	utils.ClearDatabase(db)
 
 	inviter := &models.UserID{
 		ID:   1,
 		Name: "Mindwell",
 	}
 
-	checkInvites(t, inviter, 3)
+	checkInvites(t, inviter, 3)	
+
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
+}
+
+func TestRegister(t *testing.T) {
 	checkName(t, "testtEst", true)
 	checkEmail(t, "testeMAil", true)
-
-	invites := []string{
-		"acknown acknown acknown",
-		"aery aery aery",
-		"affectioned affectioned affectioned",
-	}
 
 	params := account.PostAccountRegisterParams{
 		Name:     "testtest",
 		Email:    "testemail",
 		Password: "test123",
-		Invite:   &invites[0],
 	}
 
 	register := api.AccountPostAccountRegisterHandler.Handle
@@ -280,7 +274,6 @@ func TestRegister(t *testing.T) {
 		Name: user.Name,
 	}
 
-	checkInvites(t, inviter, 2)
 	checkName(t, "testtEst", false)
 	checkEmail(t, "testeMAil", false)
 	checkLogin(t, user, params.Name, params.Password)
@@ -288,7 +281,7 @@ func TestRegister(t *testing.T) {
 	checkLogin(t, user, params.Email, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
-	esm.CheckEmail2(t, "testemail", "")
+	esm.CheckEmail(t, "testemail")
 	checkVerify(t, userID, "testemail")
 	user.Account.Verified = true
 	checkResetPassword(t, "testemail")
@@ -344,11 +337,9 @@ func TestRegister(t *testing.T) {
 	req.NotEmpty(acc.ValidThru)
 	req.True(acc.Verified)
 
-	params.Invite = &invites[1]
 	resp = register(params)
 	_, ok = resp.(*account.PostAccountRegisterBadRequest)
 	req.True(ok)
-	checkInvites(t, inviter, 2)
 
 	gender := "female"
 	city := "Moscow"
@@ -365,7 +356,6 @@ func TestRegister(t *testing.T) {
 		Birthday: &bday,
 	}
 
-	params.Invite = &invites[2]
 	resp = register(params)
 	body, ok = resp.(*account.PostAccountRegisterCreated)
 	req.True(ok)
@@ -376,12 +366,11 @@ func TestRegister(t *testing.T) {
 		Name: user.Name,
 	}
 
-	checkInvites(t, inviter, 1)
 	checkName(t, "testtEst2", false)
 	checkEmail(t, "testeMAil2", false)
 	checkLogin(t, user, params.Name, params.Password)
 
-	esm.CheckEmail2(t, "testemail2", "")
+	esm.CheckEmail(t, "testemail2")
 	checkVerify(t, userID, "testemail2")
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
@@ -430,6 +419,10 @@ func TestRegister(t *testing.T) {
 	changePassword(t, userID, "test123", "new123", "testemail3", true)
 	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 }
 
 func getEmailSettings(t *testing.T, userID *models.UserID) *account.GetAccountSettingsEmailOKBody {

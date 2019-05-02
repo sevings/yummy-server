@@ -76,11 +76,6 @@ type PostAccountRegisterParams struct {
 	*/
 	Gender *string
 	/*
-	  Max Length: 100
-	  In: formData
-	*/
-	Invite *string
-	/*
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
@@ -137,11 +132,6 @@ func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middlewa
 
 	fdGender, fdhkGender, _ := fds.GetOK("gender")
 	if err := o.bindGender(fdGender, fdhkGender, route.Formats); err != nil {
-		res = append(res, err)
-	}
-
-	fdInvite, fdhkInvite, _ := fds.GetOK("invite")
-	if err := o.bindInvite(fdInvite, fdhkInvite, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -311,38 +301,6 @@ func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, fo
 func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) error {
 
 	if err := validate.Enum("gender", "formData", *o.Gender, []interface{}{"not set", "male", "female"}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// bindInvite binds and validates parameter Invite from formData.
-func (o *PostAccountRegisterParams) bindInvite(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-
-	if raw == "" { // empty values pass all other validations
-		return nil
-	}
-
-	o.Invite = &raw
-
-	if err := o.validateInvite(formats); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateInvite carries on validations for parameter Invite
-func (o *PostAccountRegisterParams) validateInvite(formats strfmt.Registry) error {
-
-	if err := validate.MaxLength("invite", "formData", (*o.Invite), 100); err != nil {
 		return err
 	}
 

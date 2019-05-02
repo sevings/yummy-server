@@ -356,12 +356,6 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 100,
-            "type": "string",
-            "name": "invite",
-            "in": "formData"
-          },
-          {
             "type": "string",
             "format": "full-date",
             "name": "birthday",
@@ -4539,12 +4533,6 @@ func init() {
             "name": "name",
             "in": "formData",
             "required": true
-          },
-          {
-            "maxLength": 100,
-            "type": "string",
-            "name": "invite",
-            "in": "formData"
           },
           {
             "type": "string",

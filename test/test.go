@@ -52,10 +52,6 @@ func (esm *EmailSenderMock) SendNewAccept(address, fromName, fromShowName, fromG
 	esm.Emails = append(esm.Emails, address)
 }
 
-func (esm *EmailSenderMock) SendNewWelcome(address, fromName, fromShowName, fromGender, toShowName string) {
-	esm.Emails = append(esm.Emails, address)
-}
-
 func (esm *EmailSenderMock) SendNewInvite(address, name string) {
 	esm.Emails = append(esm.Emails, address)
 }
@@ -87,17 +83,11 @@ func (esm *EmailSenderMock) Clear() {
 	esm.Dates = nil
 }
 
-func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
-	invite := inviteWord + " " + inviteWord + " " + inviteWord
+func register(name string) (*models.UserID, *models.AuthProfile) {
 	params := account.PostAccountRegisterParams{
 		Name:     name,
 		Email:    name + "@example.com",
 		Password: "test123",
-		Invite:   &invite,
-	}
-
-	if len(inviteWord) == 0 {
-		params.Invite = nil
 	}
 
 	resp := api.AccountPostAccountRegisterHandler.Handle(params)
@@ -114,7 +104,7 @@ func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	userID := models.UserID{
 		ID:             body.Payload.ID,
 		Name:           body.Payload.Name,
-		IsInvited:      params.Invite != nil,
+		IsInvited:      false,
 		NegKarma:       false,
 		FollowersCount: 0,
 		Ban: &models.UserIDBan{
@@ -127,22 +117,47 @@ func register(name, inviteWord string) (*models.UserID, *models.AuthProfile) {
 	return &userID, body.Payload
 }
 
+func getMe(user *models.UserID) *models.AuthProfile {
+	load := api.MeGetMeHandler.Handle
+	resp := load(me.GetMeParams{}, user)
+	body, ok := resp.(*me.GetMeOK)
+	if !ok {
+		log.Fatal("error get me")
+	}
+
+	return body.Payload	
+}
+
 func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	var userIDs []*models.UserID
 	var profiles []*models.AuthProfile
 
-	inviteWords := []string{"acknown", "aery", "affectioned"}
+	inviter := getMe(&models.UserID{ID:1})
+	invitedBy := &models.User {
+		ID: inviter.ID,
+		Name: inviter.Name,
+		ShowName: inviter.ShowName,
+		Avatar: inviter.Avatar,
+	}
 
 	for i := 0; i < 3; i++ {
-		id, profile := register("test"+strconv.Itoa(i), inviteWords[i])
+		id, profile := register("test"+strconv.Itoa(i))
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
+
+		_, err := db.Exec("UPDATE users SET invited_by = 1 WHERE id = $1", id.ID)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		id.IsInvited = true
+		profile.InvitedBy = invitedBy
 
 		time.Sleep(10 * time.Millisecond)
 	}
 
 	{
-		id, profile := register("test3", "")
+		id, profile := register("test3")
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
 	}

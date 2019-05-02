@@ -168,18 +168,18 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 	return folder + fileName
 }
 
-func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountRegisterParams, ref int64) int64 {
+func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountRegisterParams) int64 {
 	hash := srv.PasswordHash(params.Password)
 	apiKey := utils.GenerateString(32)
 
 	const q = `
 		INSERT INTO users 
-		(name, show_name, email, password_hash, invited_by, api_key,
+		(name, show_name, email, password_hash, api_key,
 		gender, 
 		country, city, avatar)
-		values($1, $1, $2, $3, $4, $5, 
-			(select id from gender where type = $6), 
-			$7, $8, $9)
+		values($1, $1, $2, $3, $4,
+			(select id from gender where type = $5), 
+			$6, $7, $8)
 		RETURNING id`
 
 	if params.Gender == nil {
@@ -197,16 +197,11 @@ func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Post
 		params.City = &str
 	}
 
-	inviter := sql.NullInt64{
-		Valid: ref > 0,
-		Int64: ref,
-	}
-
 	avatar := generateAvatar(srv, params.Name, *params.Gender)
 
 	var user int64
 	tx.Query(q,
-		params.Name, params.Email, hash, inviter, apiKey,
+		params.Name, params.Email, hash, apiKey,
 		*params.Gender,
 		*params.Country, *params.City, avatar).Scan(&user)
 
@@ -340,38 +335,6 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
 
-func sendNewWelcome(srv *utils.MindwellServer, tx *utils.AutoTx, from string, toID int64) {
-	const toQ = `
-		SELECT name, show_name, email, verified AND email_followers, telegram
-		FROM users 
-		WHERE id = $1
-	`
-
-	var sendEmail bool
-	var to, toShowName, email string
-	var tg sql.NullInt64
-	tx.Query(toQ, toID).Scan(&to, &toShowName, &email, &sendEmail, &tg)
-
-	const fromQ = `
-		SELECT users.id, show_name, gender.type 
-		FROM users, gender 
-		WHERE lower(users.name) = lower($1) AND users.gender = gender.id`
-
-	var fromID int64
-	var fromShowName, fromGender string
-	tx.Query(fromQ, from).Scan(&fromID, &fromShowName, &fromGender)
-
-	if sendEmail {
-		srv.Mail.SendNewWelcome(email, from, fromShowName, fromGender, toShowName)
-	}
-
-	if tg.Valid {
-		srv.Tg.SendNewWelcome(tg.Int64, from, fromShowName, fromGender)
-	}
-
-	srv.Ntf.Notify(tx, fromID, "welcome", to)
-}
-
 func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -389,18 +352,7 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
-			var ref int64
-
-			if params.Invite != nil {
-				var ok bool
-				ref, ok = removeInvite(tx, *params.Invite)
-				if !ok {
-					err := srv.StandardError("invalid_invite")
-					return account.NewPostAccountRegisterBadRequest().WithPayload(err)
-				}
-			}
-
-			id := createUser(srv, tx, params, ref)
+			id := createUser(srv, tx, params)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
@@ -416,10 +368,6 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, code)
 
 			user.Account.Email = utils.HideEmail(user.Account.Email)
-
-			if ref > 0 {
-				sendNewWelcome(srv, tx, params.Name, ref)
-			}
 
 			return account.NewPostAccountRegisterCreated().WithPayload(user)
 		})
