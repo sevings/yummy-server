@@ -8,12 +8,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/roylee0704/gron/xtime"
-
 	"github.com/BurntSushi/toml"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/roylee0704/gron"
+	"github.com/carlescere/scheduler"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	goconf "github.com/zpatrick/go-config"
@@ -40,7 +38,6 @@ type MindwellServer struct {
 	Tg    *TelegramBot
 	cfg   *goconf.Config
 	local *i18n.Localizer
-	cron  *gron.Cron
 	errs  map[string]*i18n.Message
 }
 
@@ -62,7 +59,6 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		API:   api,
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
-		cron:  gron.New(),
 		errs: map[string]*i18n.Message{
 			"no_entry":       &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
 			"no_comment":     &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
@@ -77,9 +73,8 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	srv.Ntf = NewNotifier(ntfURL, ntfKey)
 	srv.Tg = NewTelegramBot(srv)
 
-	srv.cron.AddFunc(gron.Every(xtime.Day).At("00:10"), func() { srv.recalcKarma() })
-	srv.cron.AddFunc(gron.Every(xtime.Day).At("00:15"), func() { srv.giveInvites() })
-	srv.cron.Start()
+	scheduler.Every().Day().At("03:10").Run(func() { srv.recalcKarma() })
+	scheduler.Every().Day().At("03:15").Run(func() { srv.giveInvites() })
 
 	return srv
 }
