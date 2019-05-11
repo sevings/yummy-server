@@ -104,7 +104,7 @@ definitions:
             enum: [male, female, not set]
           privacy:
             type: string
-            enum: [all, followers]
+            enum: [all, followers, invited]
           title:
             type: string
             maxLength: 260

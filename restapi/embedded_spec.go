@@ -3679,7 +3679,8 @@ func init() {
               "type": "string",
               "enum": [
                 "all",
-                "followers"
+                "followers",
+                "invited"
               ]
             },
             "rank": {
@@ -8185,7 +8186,8 @@ func init() {
               "type": "string",
               "enum": [
                 "all",
-                "followers"
+                "followers",
+                "invited"
               ]
             },
             "rank": {
