@@ -30,14 +30,21 @@ func searchUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUs
 }
 
 func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUsersParams) middleware.Responder {
-	query := usersQuerySelect + "FROM long_users "
+	query := usersQuerySelect
 
 	if *params.Top == "rank" {
-		query += "WHERE invited_by IS NOT NULL ORDER BY rank ASC"
+		query += "FROM long_users WHERE invited_by IS NOT NULL ORDER BY rank ASC"
 	} else if *params.Top == "new" {
-		query += "WHERE invited_by IS NOT NULL ORDER BY created_at DESC"
+		query += "FROM long_users WHERE invited_by IS NOT NULL ORDER BY created_at DESC"
 	} else if *params.Top == "waiting" {
-		query += "WHERE invited_by IS NULL ORDER BY rank ASC"
+		query += `
+			FROM (
+				SELECT *, COALESCE((SELECT MAX(created_at) FROM entries WHERE author_id = long_users.id), '-infinity') AS last_entry
+				FROM long_users
+				WHERE invited_by IS NULL
+				ORDER BY last_entry DESC, created_at DESC
+			) as long_users
+		`
 	} else {
 		fmt.Printf("Unknown users top: %s\n", *params.Top)
 		return users.NewGetUsersOK() //.WithPayload(srv.NewError(nil))
