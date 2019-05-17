@@ -429,21 +429,35 @@ func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, 
 	}
 }
 
-func deleteEntry(tx *utils.AutoTx, entryID, userID int64) bool {
-	var authorID int64
-	tx.Query("SELECT author_id FROM entries WHERE id = $1", entryID).Scan(&authorID)
-	if authorID != userID {
+func deleteEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) bool {
+	var allowed bool
+	tx.Query("SELECT author_id = $2 FROM entries WHERE id = $1", entryID, userID).Scan(&allowed)
+	if !allowed {
 		return false
 	}
 
+	tx.Query("SELECT id FROM comments WHERE entry_id = $1", entryID)
+
+	commentIds := []int64{}
+
+	var id int64
+	for tx.Scan(&id) {
+		commentIds = append(commentIds, id)
+	}
+
+	for _, id := range commentIds {
+		srv.Ntf.NotifyRemove(tx, id, models.NotificationTypeComment)
+	}
+
 	tx.Exec("DELETE from entries WHERE id = $1", entryID)
+
 	return true
 }
 
 func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDParams, *models.UserID) middleware.Responder {
 	return func(params entries.DeleteEntriesIDParams, uID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			ok := deleteEntry(tx, params.ID, uID.ID)
+			ok := deleteEntry(srv, tx, params.ID, uID.ID)
 			if ok {
 				return entries.NewDeleteEntriesIDOK()
 			}

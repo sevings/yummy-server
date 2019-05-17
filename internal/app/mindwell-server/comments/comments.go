@@ -218,7 +218,7 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
 
-			srv.Ntf.NotifyRemove(tx, params.ID, "comment")
+			srv.Ntf.NotifyRemove(tx, params.ID, models.NotificationTypeComment)
 
 			return comments.NewDeleteCommentsIDOK()
 		})

@@ -38,3 +38,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS TABLE(user_id int) AS $$
         ON CONFLICT (word1, word2, word3) DO NOTHING
     RETURNING referrer_id;
 $$ LANGUAGE SQL;
+
+DELETE FROM notifications
+WHERE "type" = (SELECT id FROM notification_type WHERE "type" = 'comment')
+    AND NOT EXISTS(SELECT 1 FROM comments WHERE comments.id = subject_id);
