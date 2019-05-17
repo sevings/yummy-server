@@ -1954,6 +1954,7 @@ CREATE OR REPLACE FUNCTION give_invites() RETURNS TABLE(user_id int) AS $$
                 ) >= 10
             )) AND age(last_invite) >= interval '14 days'
             AND invite_ban <= CURRENT_DATE
+            AND invited_by IS NOT NULL
         RETURNING users.id
     ), wc AS (
         SELECT COUNT(*) AS words FROM invite_words
