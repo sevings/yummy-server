@@ -39,7 +39,16 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 	} else if *params.Top == "waiting" {
 		query += `
 			FROM (
-				SELECT *, COALESCE((SELECT MAX(created_at) FROM entries WHERE author_id = long_users.id), '-infinity') AS last_entry
+				SELECT *, COALESCE((
+					SELECT MAX(created_at) 
+					FROM entries 
+					INNER JOIN users ON entries.author_id = users.id
+					INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+					INNER JOIN user_privacy ON users.privacy = user_privacy.id
+					WHERE author_id = long_users.id 
+						AND entry_privacy.type = 'all' 
+						AND user_privacy.type = 'all' 
+				), '-infinity') AS last_entry
 				FROM long_users
 				WHERE invited_by IS NULL
 				ORDER BY last_entry DESC, created_at DESC
