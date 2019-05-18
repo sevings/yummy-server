@@ -25,9 +25,8 @@ func checkEntryVote(t *testing.T, user *models.UserID, entryID, eVotes, vote int
 	req.Equal(vote, status.Vote)
 }
 
-func voteForEntry(user *models.UserID, entryID int64) *models.Rating {
+func voteForEntry(user *models.UserID, entryID int64, pos bool) *models.Rating {
 	put := api.VotesPutEntriesIDVoteHandler.Handle
-	pos := true
 	params := votes.PutEntriesIDVoteParams{
 		ID:       entryID,
 		Positive: &pos,

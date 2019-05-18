@@ -177,15 +177,16 @@ func TestInvite(t *testing.T) {
 	e2 := postEntry(userIDs[3], models.EntryPrivacyAll, false)
 	e3 := postEntry(userIDs[3], models.EntryPrivacyAll, false)
 
-	voteForEntry(userIDs[0], e1.ID)
-	voteForEntry(userIDs[0], e2.ID)
-	voteForEntry(userIDs[1], e1.ID)
-	voteForEntry(userIDs[1], e2.ID)
-	voteForEntry(userIDs[1], e3.ID)
+	voteForEntry(userIDs[0], e1.ID, true)
+	voteForEntry(userIDs[0], e2.ID, true)
+	voteForEntry(userIDs[1], e1.ID, true)
+	voteForEntry(userIDs[1], e2.ID, true)
+	voteForEntry(userIDs[1], e3.ID, true)
+	voteForEntry(userIDs[2], e2.ID, false)
 
 	invite("test3", "acknown acknown acknown", from, false)
 
-	voteForEntry(userIDs[2], e3.ID)
+	voteForEntry(userIDs[2], e3.ID, true)
 
 	invite("test0", "acknown acknown acknown", from, false)
 	invite("fsdf", "acknown acknown acknown", from, false)

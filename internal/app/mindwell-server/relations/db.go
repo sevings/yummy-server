@@ -104,10 +104,23 @@ func isTlogExistsAndInvited(tx *utils.AutoTx, name string) (bool, bool) {
 
 func canInvite(tx *utils.AutoTx, name string) bool {
 	q := `
-		SELECT count(distinct entry_votes.user_id) >= 3 AND count(entry_votes.user_id) >= 5
-		FROM entries
-		INNER JOIN entry_votes ON entries.id = entry_id
-		WHERE entries.author_id = (SELECT id FROM users WHERE lower(name) = lower($1))
+		WITH tlog AS (
+			SELECT id, up_votes, down_votes
+			FROM entries
+			WHERE author_id = (SELECT id FROM users WHERE lower(name) = lower($1))
+		),
+		sumVotes AS (
+			SELECT sum(up_votes - down_votes) >= 5 AS ok
+			FROM tlog
+		),
+		countVotes AS (
+			SELECT count(distinct entry_votes.user_id) >= 3 AS ok
+			FROM tlog
+			INNER JOIN entry_votes ON tlog.id = entry_id
+			WHERE vote > 0
+		)
+		SELECT sumVotes.ok AND countVotes.ok
+		FROM sumVotes, countVotes
 	`
 
 	var allowed bool
