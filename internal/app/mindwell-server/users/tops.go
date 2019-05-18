@@ -40,7 +40,7 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 		query += `
 			FROM (
 				SELECT *, COALESCE((
-					SELECT MAX(created_at) 
+					SELECT MAX(entries.created_at) 
 					FROM entries 
 					INNER JOIN users ON entries.author_id = users.id
 					INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
