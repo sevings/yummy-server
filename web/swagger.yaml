@@ -857,6 +857,7 @@ paths:
       summary: reset password
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - $ref: '#/parameters/formEmail'
         - $ref: '#/parameters/password'

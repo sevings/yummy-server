@@ -287,7 +287,8 @@ func init() {
     "/account/recover/password": {
       "post": {
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
@@ -4447,7 +4448,8 @@ func init() {
     "/account/recover/password": {
       "post": {
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "account"
