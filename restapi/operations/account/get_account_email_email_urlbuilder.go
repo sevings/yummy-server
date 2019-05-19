@@ -46,7 +46,7 @@ func (o *GetAccountEmailEmailURL) Build() (*url.URL, error) {
 	if email != "" {
 		_path = strings.Replace(_path, "{email}", email, -1)
 	} else {
-		return nil, errors.New("Email is required on GetAccountEmailEmailURL")
+		return nil, errors.New("email is required on GetAccountEmailEmailURL")
 	}
 
 	_basePath := o._basePath

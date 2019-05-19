@@ -51,7 +51,7 @@ func (o *GetUsersNameFollowingsURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on GetUsersNameFollowingsURL")
+		return nil, errors.New("name is required on GetUsersNameFollowingsURL")
 	}
 
 	_basePath := o._basePath

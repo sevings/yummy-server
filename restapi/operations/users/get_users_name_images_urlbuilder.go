@@ -52,7 +52,7 @@ func (o *GetUsersNameImagesURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on GetUsersNameImagesURL")
+		return nil, errors.New("name is required on GetUsersNameImagesURL")
 	}
 
 	_basePath := o._basePath

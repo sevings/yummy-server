@@ -48,7 +48,7 @@ func (o *PutEntriesIDURL) Build() (*url.URL, error) {
 	if id != "" {
 		_path = strings.Replace(_path, "{id}", id, -1)
 	} else {
-		return nil, errors.New("ID is required on PutEntriesIDURL")
+		return nil, errors.New("id is required on PutEntriesIDURL")
 	}
 
 	_basePath := o._basePath

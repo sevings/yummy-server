@@ -46,7 +46,7 @@ func (o *PutRelationsFromNameURL) Build() (*url.URL, error) {
 	if name != "" {
 		_path = strings.Replace(_path, "{name}", name, -1)
 	} else {
-		return nil, errors.New("Name is required on PutRelationsFromNameURL")
+		return nil, errors.New("name is required on PutRelationsFromNameURL")
 	}
 
 	_basePath := o._basePath
