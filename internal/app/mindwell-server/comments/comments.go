@@ -171,7 +171,7 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
-			srv.Ntf.NotifyUpdate(tx, params.ID, "comment")
+			srv.Ntf.SendUpdateComment(tx, params.ID)
 
 			return comments.NewPutCommentsIDOK().WithPayload(comment)
 		})
@@ -218,7 +218,7 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
 
-			srv.Ntf.NotifyRemove(tx, params.ID, models.NotificationTypeComment)
+			srv.Ntf.SendRemoveComment(tx, params.ID)
 
 			return comments.NewDeleteCommentsIDOK()
 		})
@@ -390,52 +390,6 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 	return &comment
 }
 
-func notifyNewComment(srv *utils.MindwellServer, tx *utils.AutoTx, cmt *models.Comment) {
-	const titleQ = "SELECT title FROM entries WHERE id = $1"
-	var title string
-	tx.Query(titleQ, cmt.EntryID).Scan(&title)
-
-	title, _ = utils.CutText(title, "%.80s", 80)
-
-	const fromQ = `
-		SELECT gender.type 
-		FROM users, gender 
-		WHERE users.id = $1 AND users.gender = gender.id
-	`
-
-	var fromGender string
-	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
-
-	const toQ = `
-		SELECT users.name, show_name, email, verified AND email_comments, telegram
-		FROM users, watching 
-		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
-			AND users.id <> $2`
-
-	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
-
-	var toNames []string
-	var toName string
-	var sendEmail bool
-	var toShowName, email string
-	var tg sql.NullInt64
-	for tx.Scan(&toName, &toShowName, &email, &sendEmail, &tg) {
-		if sendEmail {
-			srv.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
-		}
-
-		if tg.Valid {
-			srv.Tg.SendNewComment(tg.Int64, title, cmt)
-		}
-
-		toNames = append(toNames, toName)
-	}
-
-	for _, name := range toNames {
-		srv.Ntf.Notify(tx, cmt.ID, "comment", name)
-	}
-}
-
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -452,7 +406,7 @@ func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDComm
 				return comments.NewPostEntriesIDCommentsNotFound().WithPayload(err)
 			}
 
-			notifyNewComment(srv, tx, comment)
+			srv.Ntf.SendNewComment(tx, comment)
 
 			return comments.NewPostEntriesIDCommentsCreated().WithPayload(comment)
 		})

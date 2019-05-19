@@ -63,7 +63,7 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 			}
 
 			if params.R == models.RelationshipRelationFollowed {
-				sendNewFollower(srv, tx, isPrivate, uID.Name, params.Name)
+				srv.Ntf.SendNewFollower(tx, isPrivate, uID.Name, params.Name)
 			}
 
 			return relations.NewPutRelationsToNameOK().WithPayload(relation)
@@ -81,7 +81,7 @@ func newFromRelationSetter(srv *utils.MindwellServer) func(relations.PutRelation
 			}
 
 			relation, _ = setRelationship(tx, params.Name, uID.Name, models.RelationshipRelationFollowed)
-			sendNewAccept(srv, tx, uID.Name, params.Name)
+			srv.Ntf.SendNewAccept(tx, uID.Name, params.Name)
 
 			return relations.NewPutRelationsFromNameOK().WithPayload(relation)
 		})
@@ -138,7 +138,7 @@ func newInviter(srv *utils.MindwellServer) func(relations.PostRelationsInvitedNa
 			}
 
 			setInvited(tx, userID.ID, params.Name)
-			sendInvited(srv, tx, userID.Name, params.Name)
+			srv.Ntf.SendInvited(tx, userID.Name, params.Name)
 
 			return relations.NewPostRelationsInvitedNameNoContent()
 		})

@@ -446,7 +446,7 @@ func deleteEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID in
 	}
 
 	for _, id := range commentIds {
-		srv.Ntf.NotifyRemove(tx, id, models.NotificationTypeComment)
+		srv.Ntf.SendRemoveComment(tx, id)
 	}
 
 	tx.Exec("DELETE from entries WHERE id = $1", entryID)

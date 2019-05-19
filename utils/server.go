@@ -33,9 +33,7 @@ type MailSender interface {
 type MindwellServer struct {
 	DB    *sql.DB
 	API   *operations.MindwellAPI
-	Mail  MailSender
-	Ntf   *Notifier
-	Tg    *TelegramBot
+	Ntf	  *CompositeNotifier
 	cfg   *goconf.Config
 	local *i18n.Localizer
 	errs  map[string]*i18n.Message
@@ -68,10 +66,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		},
 	}
 
-	ntfURL := srv.ConfigString("centrifugo.api_url")
-	ntfKey := srv.ConfigString("centrifugo.api_key")
-	srv.Ntf = NewNotifier(ntfURL, ntfKey)
-	srv.Tg = NewTelegramBot(srv)
+	srv.Ntf = NewCompositeNotifier(srv)
 
 	scheduler.Every().Day().At("03:10").Run(func() { srv.recalcKarma() })
 	scheduler.Every().Day().At("03:15").Run(func() { srv.giveInvites() })
@@ -218,22 +213,7 @@ func (srv *MindwellServer) giveInvites() {
 		}
 
 		for _, id := range ids {
-			var email, name, showName string
-			var sendEmail bool
-			var tg sql.NullInt64
-
-			tx.Query("SELECT email, name, show_name, verified AND email_invites, telegram FROM users WHERE id = $1", id)
-			tx.Scan(&email, &name, &showName, &sendEmail, &tg)
-
-			srv.Ntf.Notify(tx, 0, "invite", name)
-
-			if tg.Valid {
-				srv.Tg.SendNewInvite(tg.Int64)
-			}
-
-			if sendEmail {
-				srv.Mail.SendNewInvite(email, showName)
-			}
+			srv.Ntf.SendNewInvite(tx, id)
 		}
 
 		log.Printf("%d new invites given.\n", len(ids))

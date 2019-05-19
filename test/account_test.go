@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 	srv = utils.NewMindwellServer(api, "../configs/server")
 	db = srv.DB
 
-	srv.Mail = &esm
+	srv.Ntf.Mail = &esm
 
 	utils.ClearDatabase(db)
 
@@ -486,7 +486,7 @@ func TestTelegramToken(t *testing.T) {
 
 	data := body.Payload
 	req.NotEmpty(data.Token)
-	req.Equal(userIDs[1].ID, srv.Tg.VerifyToken(data.Token))
+	req.Equal(userIDs[1].ID, srv.Ntf.Tg.VerifyToken(data.Token))
 }
 
 func TestTelegramLogout(t *testing.T) {

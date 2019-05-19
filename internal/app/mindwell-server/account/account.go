@@ -364,8 +364,7 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
 			}
 
-			code := srv.VerificationCode(user.Account.Email)
-			srv.Mail.SendGreeting(user.Account.Email, user.ShowName, code)
+			srv.Ntf.SendGreeting(user.Account.Email, user.ShowName)
 
 			user.Account.Email = utils.HideEmail(user.Account.Email)
 
@@ -415,34 +414,6 @@ func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Pos
 	return rows == 1
 }
 
-func sendPasswordChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) {
-	const q = `
-		SELECT email, verified, show_name, telegram
-		FROM users
-		WHERE id = $1
-	`
-
-	var email, name string
-	var verified bool
-	var tg sql.NullInt64
-	tx.Query(q, userID.ID).Scan(&email, &verified, &name, &tg)
-
-	if tx.Error() != nil {
-		if tx.Error() != sql.ErrNoRows {
-			log.Print(tx.Error())
-		}
-		return
-	}
-
-	if verified {
-		srv.Mail.SendPasswordChanged(email, name)
-	}
-
-	if tg.Valid {
-		srv.Tg.SendPasswordChanged(tg.Int64)
-	}
-}
-
 func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPasswordParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountPasswordParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -459,8 +430,8 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 				err := srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
 				return account.NewPostAccountPasswordForbidden().WithPayload(err)
 			}
-
-			sendPasswordChanged(srv, tx, userID)
+ 
+		 srv.Ntf.SendPasswordChanged(tx, userID)
 
 			return account.NewPostAccountPasswordOK()
 		})
@@ -500,36 +471,6 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
 	return nil, oldEmail
 }
 
-func sendEmailChanged(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, oldEmail, newEmail string) {
-	const q = `
-		SELECT show_name, telegram
-		FROM users
-		WHERE id = $1
-	`
-
-	var name string
-	var tg sql.NullInt64
-	tx.Query(q, userID.ID).Scan(&name, &tg)
-
-	if tx.Error() != nil {
-		if tx.Error() != sql.ErrNoRows {
-			log.Print(tx.Error())
-		}
-		return
-	}
-
-	if len(oldEmail) > 0 {
-		srv.Mail.SendEmailChanged(oldEmail, name)
-	}
-
-	code := srv.VerificationCode(newEmail)
-	srv.Mail.SendGreeting(newEmail, name, code)
-
-	if tg.Valid {
-		srv.Tg.SendEmailChanged(tg.Int64)
-	}
-}
-
 func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailParams, *models.UserID) middleware.Responder {
 	return func(params account.PostAccountEmailParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -547,7 +488,7 @@ func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailPar
 				return account.NewPostAccountEmailForbidden().WithPayload(err)
 			}
 
-			sendEmailChanged(srv, tx, userID, oldEmail, params.Email)
+		  srv.Ntf.SendEmailChanged(tx, userID, oldEmail, params.Email)
 
 			return account.NewPostAccountEmailOK()
 		})
@@ -616,8 +557,7 @@ func newVerificationSender(srv *utils.MindwellServer) func(account.PostAccountVe
 				return account.NewPostAccountVerificationForbidden().WithPayload(err)
 			}
 
-			code := srv.VerificationCode(email)
-			srv.Mail.SendGreeting(email, name, code)
+			srv.Ntf.SendGreeting(email, name)
 
 			return account.NewPostAccountVerificationOK()
 		})
@@ -666,8 +606,7 @@ func newResetPasswordSender(srv *utils.MindwellServer) func(account.PostAccountR
 				return account.NewPostAccountRecoverBadRequest().WithPayload(err)
 			}
 
-			code, date := srv.ResetPasswordCode(params.Email)
-			srv.Mail.SendResetPassword(params.Email, name, gender, code, date)
+			srv.Ntf.SendResetPassword(params.Email, name, gender)
 
 			return account.NewPostAccountRecoverOK()
 		})
@@ -766,7 +705,7 @@ func newConnectionTokenGenerator(srv *utils.MindwellServer) func(account.GetAcco
 
 func newTelegramTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeTelegramParams, *models.UserID) middleware.Responder {
 	return func(params account.GetAccountSubscribeTelegramParams, userID *models.UserID) middleware.Responder {
-		tok := srv.Tg.BuildToken(userID.ID)
+		tok := srv.Ntf.Tg.BuildToken(userID.ID)
 		res := account.GetAccountSubscribeTelegramOKBody{Token: tok}
 		return account.NewGetAccountSubscribeTelegramOK().WithPayload(&res)
 	}
