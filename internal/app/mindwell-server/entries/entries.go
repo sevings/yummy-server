@@ -371,13 +371,11 @@ func setEntryRights(entry *models.Entry, userID *models.UserID) {
 }
 
 func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userID *models.UserID) *models.Entry {
-	const q = tlogFeedQueryStart + `
-		WHERE entries.id = $2
-			AND (entries.author_id = $1
-				OR entry_privacy.type = 'all' 
-				OR (entry_privacy.type = 'some' 
-					AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
-		`
+	if !utils.CanViewEntry(tx, userID.ID, entryID) {
+		return &models.Entry{}
+	}
+
+	const q = tlogFeedQueryStart + " WHERE entries.id = $2"
 
 	var entry models.Entry
 	var author models.User

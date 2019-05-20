@@ -380,6 +380,7 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit 
 func TestLoadTlog(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	postEntry(userIDs[0], models.EntryPrivacyAll, true)
 	postEntry(userIDs[0], models.EntryPrivacySome, true)
@@ -416,12 +417,26 @@ func TestLoadTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
+	setUserPrivacy(t, userIDs[0], "followers")
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+
+	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "")
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], "requested")
+	checkPermitFollow(t, userIDs[0], userIDs[1], true)
+
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
+
 	setUserPrivacy(t, userIDs[0], "invited")
 	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
 
+	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "")
+
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 }
 
 func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
