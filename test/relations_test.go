@@ -83,7 +83,7 @@ func checkPermitFollow(t *testing.T, user, from *models.UserID, success bool) {
 	}
 
 	status := body.Payload
-	req.Equal(user.ID, status.To)
+	req.Equal(user.Name, status.To)
 	req.Equal(params.Name, status.From)
 	req.Equal(models.RelationshipRelationFollowed, status.Relation)
 }

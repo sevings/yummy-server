@@ -819,3 +819,84 @@ func TestEntryHTML(t *testing.T) {
 
 	post(linkify("https://ya.ru"))
 }
+
+func TestCanViewEntry(t *testing.T) {
+	req := require.New(t)
+
+	check := func(userID, entryID int64, res bool) {
+		tx := utils.NewAutoTx(db)
+		defer tx.Finish()
+		req.Equal(res, utils.CanViewEntry(tx, userID, entryID))
+	}
+
+	e1 := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, true)
+	e2 := createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true, true)
+	e3 := createTlogEntry(t, userIDs[0], models.EntryPrivacyAnonymous, true, true)
+
+	check(userIDs[0].ID, e1.ID, true)
+	check(userIDs[0].ID, e2.ID, true)
+	check(userIDs[0].ID, e3.ID, true)
+
+	check(userIDs[1].ID, e1.ID, true)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	setUserPrivacy(t, userIDs[0], "followers")
+
+	check(userIDs[0].ID, e1.ID, true)
+	check(userIDs[0].ID, e2.ID, true)
+	check(userIDs[0].ID, e3.ID, true)
+
+	check(userIDs[1].ID, e1.ID, false)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], "requested")
+	checkPermitFollow(t, userIDs[0], userIDs[1], true)
+
+	check(userIDs[1].ID, e1.ID, true)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	setUserPrivacy(t, userIDs[0], "invited")
+
+	check(userIDs[1].ID, e1.ID, true)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	check(userIDs[2].ID, e1.ID, true)
+	check(userIDs[2].ID, e2.ID, false)
+	check(userIDs[2].ID, e3.ID, true)
+
+	check(userIDs[3].ID, e1.ID, false)
+	check(userIDs[3].ID, e2.ID, false)
+	check(userIDs[3].ID, e3.ID, true)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], "ignored")
+
+	check(userIDs[1].ID, e1.ID, false)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	setUserPrivacy(t, userIDs[0], "all")
+
+	check(userIDs[0].ID, e1.ID, true)
+	check(userIDs[0].ID, e2.ID, true)
+	check(userIDs[0].ID, e3.ID, true)
+
+	check(userIDs[1].ID, e1.ID, false)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	check(userIDs[2].ID, e1.ID, true)
+	check(userIDs[2].ID, e2.ID, false)
+	check(userIDs[2].ID, e3.ID, true)
+
+	check(userIDs[3].ID, e1.ID, true)
+	check(userIDs[3].ID, e2.ID, false)
+	check(userIDs[3].ID, e3.ID, true)
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
+}
