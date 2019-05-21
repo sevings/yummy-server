@@ -132,6 +132,24 @@ func (tx *AutoTx) Scan(dest ...interface{}) bool {
 	return true
 }
 
+func (tx *AutoTx) QueryBool(query string, args ...interface{}) bool {
+	var result bool
+	tx.Query(query, args...).Scan(&result)
+	return result
+}
+
+func (tx *AutoTx) QueryInt64(query string, args ...interface{}) int64 {
+	var result int64
+	tx.Query(query, args...).Scan(&result)
+	return result
+}
+
+func (tx *AutoTx) QueryString(query string, args ...interface{}) string {
+	var result string
+	tx.Query(query, args...).Scan(&result)
+	return result
+}
+
 func (tx *AutoTx) Close() {
 	if tx.rows != nil {
 		tx.rows.Close()

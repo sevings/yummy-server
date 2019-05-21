@@ -47,64 +47,12 @@ func LoadConfig(fileName string) *goconf.Config {
 
 // CanViewEntry returns true if the user is allowed to read the entry.
 func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
-	const entryQ = `
-		SELECT author_id, entry_privacy.type
-		FROM entries
-		INNER JOIN entry_privacy ON visible_for = entry_privacy.id
-		WHERE entries.id = $1
-	`
+	return tx.QueryBool("SELECT can_view_entry($1, $2)", userID, entryID)
+}
 
-	var authorID int64
-	var entryPrivacy string
-
-	tx.Query(entryQ, entryID).Scan(&authorID, &entryPrivacy)
-
-	if authorID == userID {
-		return true
-	}
-		 
-	if entryPrivacy == models.EntryPrivacyAnonymous {
-		return true
-	}
-
-	var toRelation string
-	tx.Query(`SELECT relation.type
-		FROM relations
-		INNER JOIN relation ON relation.id = relations.type
-		WHERE from_id = $1 AND to_id = $2`, 
-	 	authorID, userID).Scan(&toRelation)
-
-	if toRelation == models.RelationshipRelationIgnored {
-		return false
-	}
-	
-	var allowed bool
-
-	switch entryPrivacy {
-	case models.EntryPrivacyAll:
-		tx.Query(`SELECT true
-			FROM users
-			INNER JOIN user_privacy ON user_privacy.id = users.privacy
-			WHERE users.id = $2 AND (
-				user_privacy.type = 'all' OR (
-					user_privacy.type = 'followers' 
-					AND EXISTS(SELECT 1 FROM relation, relations
-						WHERE from_id = $1 AND to_id = $2
-							AND relation.type = 'followed'
-							AND relations.type = relation.id))
-				OR (user_privacy.type = 'invited' AND
-					(SELECT invited_by is not null FROM users WHERE id = $1)))`, 
-			userID, authorID).Scan(&allowed)
-		return allowed
-	case models.EntryPrivacySome:
-		tx.Query(`SELECT true 
-			FROM entries_privacy 
-			WHERE user_id = $1 AND entry_id = $2`, 
-			userID, entryID).Scan(&allowed)
-		return allowed
-	}
-
-	return false
+// IsOpenForMe returns true if you can see \param name tlog
+func IsOpenForMe(tx *AutoTx, userID *models.UserID, name interface{}) bool {
+	return tx.QueryBool("SELECT can_view_tlog($1, $2)", userID.ID, name)
 }
 
 func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {

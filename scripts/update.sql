@@ -49,7 +49,7 @@ CREATE OR REPLACE FUNCTION can_view_tlog(user_id INTEGER, tlog_id INTEGER) RETUR
             FROM users
             WHERE users.id = user_id;
 
-            RETURn is_nvited;
+            RETURN is_invited;
         WHEN 'followers' THEN
             SELECT relation.type = 'followed'
             INTO is_follower
@@ -59,8 +59,6 @@ CREATE OR REPLACE FUNCTION can_view_tlog(user_id INTEGER, tlog_id INTEGER) RETUR
 
             is_follower = COALESCE(is_follower, FALSE);
             RETURN is_follower;
-        ELSE
-            RETURN FALSE;
         END CASE;
 
         RETURN FALSE;
@@ -73,7 +71,6 @@ CREATE OR REPLACE FUNCTION can_view_entry(user_id INTEGER, entry_id INTEGER) RET
     DECLARE
         author_id INTEGER;
         entry_privacy TEXT;
-        allowed BOOLEAN;
     BEGIN
 		SELECT entries.author_id, entry_privacy.type
         INTO author_id, entry_privacy
@@ -81,12 +78,22 @@ CREATE OR REPLACE FUNCTION can_view_entry(user_id INTEGER, entry_id INTEGER) RET
 		INNER JOIN entry_privacy ON visible_for = entry_privacy.id
 		WHERE entries.id = entry_id;
 
+        RETURN (SELECT can_view_entry(user_id, entry_id, author_id, entry_privacy));
+    END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION can_view_entry(user_id INTEGER, entry_id INTEGER, author_id INTEGER, entry_privacy TEXT) RETURNS BOOLEAN AS $$
+    DECLARE
+        allowed BOOLEAN;
+    BEGIN
         IF author_id = user_id THEN 
             RETURN TRUE;
         END IF;
 
         IF entry_privacy = 'anonymous' THEN
-            RETURN TRUE:
+            RETURN TRUE;
         END IF;
 
         allowed = (SELECT can_view_tlog(user_id, author_id));
@@ -102,14 +109,12 @@ CREATE OR REPLACE FUNCTION can_view_entry(user_id INTEGER, entry_id INTEGER) RET
             SELECT TRUE
             INTO allowed
 			FROM entries_privacy 
-			WHERE entries_privacy.user_id = user_id 
-                AND entries_privacy.entry_id = entry_id;
+			WHERE entries_privacy.user_id = can_view_entry.user_id 
+                AND entries_privacy.entry_id = can_view_entry.entry_id;
             
             allowed = COALESCE(allowed, FALSE);
             RETURN allowed;
         WHEN 'me' THEN
-            RETURN FALSE;
-        ELSE
             RETURN FALSE;
         END CASE;
 

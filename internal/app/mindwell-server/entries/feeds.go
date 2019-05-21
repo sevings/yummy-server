@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/go-openapi/runtime/middleware"
-	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
@@ -99,8 +98,8 @@ WHERE (users.id = $1
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
 
-const watchingFeedQuery = tlogFeedQueryStart + `,
-watching
+const watchingFeedQuery = tlogFeedQueryStart + `
+INNER JOIN watching ON watching.entry_id = entries.id
 WHERE (users.id = $1 
 		OR user_privacy.type = 'all' 
 		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
@@ -110,7 +109,6 @@ WHERE (users.id = $1
 			AND (users.id = $1
 				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
 		OR (entry_privacy.type = 'me' AND users.id = $1))
-	AND watching.entry_id = entries.id
 	AND watching.user_id = $1
 ` + commentsFeedQueryEnd
 
@@ -360,7 +358,7 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			canView := utils.IsOpenForMe(tx, userID, params.Name)
 			if !canView {
 				err := srv.StandardError("no_tlog")
 				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
@@ -608,7 +606,7 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFavoritesParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameFavoritesParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			canView := usersImpl.IsOpenForMe(tx, userID, params.Name)
+			canView := utils.IsOpenForMe(tx, userID, params.Name)
 			if !canView {
 				err := srv.StandardError("no_tlog")
 				return users.NewGetUsersNameFavoritesNotFound().WithPayload(err)

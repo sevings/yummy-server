@@ -153,44 +153,6 @@ func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) st
 	return relation
 }
 
-// IsOpenForMe returns true if you can see \param name tlog
-func IsOpenForMe(tx *utils.AutoTx, userID *models.UserID, name interface{}) bool {
-	const privacyQuery = `
-		SELECT users.id, user_privacy.type
-		FROM users, user_privacy
-		WHERE users.privacy = user_privacy.id AND lower(users.name) = lower($1)`
-
-	var subjectID int64
-	var privacy string
-	tx.Query(privacyQuery, name).Scan(&subjectID, &privacy)
-	if tx.Error() != nil {
-		return false
-	}
-
-	if subjectID == userID.ID {
-		return true
-	}
-
-	if privacy == "all" {
-		return true
-	}
-
-	if privacy == "invited" {
-		return userID.IsInvited
-	}
-
-	const relationQuery = `
-	SELECT relation.type
-	FROM users, relations, relation
-	WHERE lower(users.name) = lower($2)
-		AND relations.from_id = $1
-		AND relations.to_id = users.id
-		AND relations.type = relation.id`
-
-	relation := relationship(tx, relationQuery, userID.ID, name)
-	return relation == models.RelationshipRelationFollowed
-}
-
 const usersQuerySelect = `
 SELECT long_users.id, name, show_name, gender,
 is_online, extract(epoch from last_seen_at), title, rank,
@@ -261,7 +223,7 @@ func loadRelatedUsers(srv *utils.MindwellServer, tx *utils.AutoTx, usersQuery, s
 func loadUsers(srv *utils.MindwellServer, usersQuery, subjectQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
 	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-		open := IsOpenForMe(tx, userID, args[0])
+		open := utils.IsOpenForMe(tx, userID, args[0])
 		if tx.Error() != nil {
 			err := srv.NewError(nil)
 			return users.NewGetUsersNameFollowersNotFound().WithPayload(err)
