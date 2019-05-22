@@ -32,13 +32,14 @@ INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 INNER JOIN user_privacy ON users.privacy = user_privacy.id
 LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id`
 
+const isInvitedQueryWhere = " (SELECT invited_by IS NOT NULL FROM users WHERE id = $1) "
+
 const liveFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
 	AND in_live
 	AND (user_privacy.type = 'all' 
 		OR (user_privacy.type = 'invited' 
-			AND (SELECT invited_by is not null FROM users where id = $1)))
-`
+			AND ` + isInvitedQueryWhere + "))"
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
@@ -67,10 +68,7 @@ ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3`
 
 const tlogFeedQueryWhere = `
 	WHERE lower(users.name) = lower($2)
-		AND (users.id = $1 OR entry_privacy.type = 'all' 
-			OR (entry_privacy.type = 'some' 
-				AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
-`
+		AND ` + isEntryOpenQueryWhere
 
 const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere
 
@@ -85,32 +83,38 @@ INNER JOIN users ON entries.author_id = users.id
 INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 ` + myTlogFeedQueryWhere
 
+const isEntryOpenQueryWhere = `
+(entry_privacy.type = 'all' 
+	OR (entry_privacy.type = 'some' 
+		AND (users.id = $1
+			OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
+`
+
 const friendsFeedQueryWhere = `
 WHERE (users.id = $1 
 		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
 			AND type = (SELECT id FROM relation WHERE type = 'followed')))
-	AND (entry_privacy.type = 'all' 
-		OR (entry_privacy.type = 'some' 
-			AND (users.id = $1
-				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
-	AND (user_privacy.type != 'invited' OR (SELECT invited_by is not null FROM users where id = $1))
-`
+	AND ` + isEntryOpenQueryWhere + `
+	AND (user_privacy.type != 'invited' OR` + isInvitedQueryWhere + ")"
 
 const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
 
+const canViewEntryQueryWhere = `
+(users.id = $1
+	OR (` + isEntryOpenQueryWhere + `
+	AND (user_privacy.type = 'all' 
+		OR (user_privacy.type = 'followers'
+			AND EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
+				AND type = (SELECT id FROM relation WHERE type = 'followed')))
+		OR (user_privacy.type = 'invited'
+			AND ` + isInvitedQueryWhere + `)
+	)))
+`
+
 const watchingFeedQuery = tlogFeedQueryStart + `
-INNER JOIN watching ON watching.entry_id = entries.id
-WHERE (users.id = $1 
-		OR user_privacy.type = 'all' 
-		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
-			AND type = (SELECT id FROM relation WHERE type = 'followed')))
-	AND (entry_privacy.type = 'all' 
-		OR (entry_privacy.type = 'some' 
-			AND (users.id = $1
-				OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
-		OR (entry_privacy.type = 'me' AND users.id = $1))
+INNER JOIN watching ON watching.entry_id = entries.id 
 	AND watching.user_id = $1
-` + commentsFeedQueryEnd
+WHERE ` + canViewEntryQueryWhere + commentsFeedQueryEnd
 
 const tlogFavoritesQueryStart = tlogFeedQueryStart + `
 	INNER JOIN favorites ON entries.id = favorites.entry_id
@@ -118,13 +122,7 @@ const tlogFavoritesQueryStart = tlogFeedQueryStart + `
 
 const tlogFavoritesQueryWhere = `
 WHERE favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))
-	AND (users.id = $1
-		OR ((entry_privacy.type = 'all' OR (entry_privacy.type = 'some' 
-			AND EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id)))
-		AND (user_privacy.type = 'all' OR (user_privacy.type = 'followers'
-			AND EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
-				AND type = (SELECT id FROM relation WHERE type = 'followed'))))))
-`
+AND ` + canViewEntryQueryWhere
 
 const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
 
