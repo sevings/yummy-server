@@ -645,6 +645,15 @@ func TestLoadFavorites(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
+
+	setUserPrivacy(t, userIDs[1], "invited")
+	e4 := postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	favoriteEntry(t, userIDs[0], e4.ID)
+
+	checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 4)
+	checkLoadFavorites(t, userIDs[3], userIDs[0], 10, "", "", 1)
+
+	setUserPrivacy(t, userIDs[1], "all")
 }
 
 func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
@@ -733,6 +742,11 @@ func TestLoadLiveComments(t *testing.T) {
 	checkDeleteComment(t, comments[3], userIDs[0], true)
 	checkLoadLive(t, userIDs[2], 10, "comments", "", "", 2)
 
+	checkLoadLive(t, userIDs[3], 10, "comments", "", "", 2)
+	setUserPrivacy(t, userIDs[1], "invited")
+	checkLoadLive(t, userIDs[3], 10, "comments", "", "", 1)
+	setUserPrivacy(t, userIDs[1], "all")
+
 	esm.Clear()
 }
 
@@ -794,6 +808,14 @@ func TestLoadWatching(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
+
+	postComment(userIDs[3], entries[0].ID)
+	postComment(userIDs[3], entries[1].ID)
+
+	checkLoadWatching(t, userIDs[3], 10, 2)
+	setUserPrivacy(t, userIDs[1], "invited")
+	checkLoadWatching(t, userIDs[3], 10, 1)
+	setUserPrivacy(t, userIDs[1], "all")
 
 	esm.Clear()
 }
