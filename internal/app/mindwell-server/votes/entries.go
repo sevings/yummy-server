@@ -71,34 +71,23 @@ func canVoteForEntry(tx *utils.AutoTx, userID *models.UserID, entryID int64) boo
 		return false
 	}
 
+	var authorID int64
+	var votable bool
+	var privacy string
+
 	const q = `
-	WITH allowed AS (
-		SELECT id, TRUE AS vote
-		FROM feed
-		WHERE id = $2 AND author_id <> $1 AND is_votable
-			AND ((entry_privacy = 'all' 
-				AND (author_privacy = 'all'
-					OR (author_privacy = 'followers' 
-						AND EXISTS(SELECT 1 FROM relation, relations, entries
-							WHERE from_id = $1 AND to_id = entries.author_id
-									AND entries.id = $2
-									AND relation.type = 'followed'
-									AND relations.type = relation.id))
-					OR (SELECT invited_by is not null from users where id = $1)))
-			OR (entry_privacy = 'some' 
-				AND EXISTS(SELECT 1 FROM entries_privacy
-					WHERE user_id = $1 AND entry_id = $2)))
-	)
-	SELECT entries.id, allowed.vote
-	FROM entries
-	LEFT JOIN allowed ON entries.id = allowed.id
-	WHERE entries.id = $2`
+		SELECT author_id, is_votable, entry_privacy.type
+		FROM entries
+		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
+		WHERE entries.id = $1
+	`
 
-	var id int64
-	var allowed sql.NullBool
-	tx.Query(q, userID.ID, entryID).Scan(&id, &allowed)
+	tx.Query(q, entryID).Scan(&authorID, &votable, &privacy)
+	if authorID == userID.ID || !votable || privacy == models.EntryPrivacyAnonymous {
+		return false
+	}
 
-	return allowed.Valid
+	return utils.CanViewEntry(tx, userID.ID, entryID)
 }
 
 func loadEntryRating(tx *utils.AutoTx, entryID int64) *models.Rating {
