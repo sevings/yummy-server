@@ -91,8 +91,8 @@ definitions:
         $ref: '#/definitions/Avatar'
     example:
       id: 1
-      name: 'binque'
-      showName: 'Бинк'
+      name: 'Mindwell'
+      showName: 'Майндвелл'
       isOnline: false
   Friend: 
     allOf:
@@ -260,9 +260,14 @@ definitions:
         example:
           account:
             apiKey: 'blah-blah-blah'
-            validThru: '1985-04-12T23:20:50.52Z'
+            validThru: 1531029717.333
             email: 'mail@example.com'
             verified: true
+          ban:
+            invite: 1531029717.333
+            vote: 1531029717.333
+            comment: 1531029717.333
+            live: 1531029717.333
   Entry:
     type: object
     properties:
@@ -327,9 +332,18 @@ definitions:
       content: '<p>some text with <b>html</b> tags</p>'
       editContent: 'some text with *html* tags'
       wordCount: 5
+      hasCut: false
       privacy: 'all'
       isVotable: true
+      inLive: true
       commentCount: 0
+      isFavorited: false
+      isWatching: true
+      rights:
+        edit: false
+        delete: false
+        comment: true
+        vote: true
   Feed:
     type: object
     properties:
@@ -426,7 +440,12 @@ definitions:
       id: 999
       entryId: 152
       createdAt: 1531029717.333
-      content: 'some multiline text \n without html'
+      content: 'some multiline text <br> with html'
+      editContent: 'some multiline text \n with html'
+      rights:
+        edit: true
+        delete: true
+        vote: false
   CommentList:
     type: object
     properties:

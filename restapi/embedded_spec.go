@@ -3327,8 +3327,14 @@ func init() {
             "account": {
               "apiKey": "blah-blah-blah",
               "email": "mail@example.com",
-              "validThru": "1985-04-12T23:20:50.52Z",
+              "validThru": 1531029717.333,
               "verified": true
+            },
+            "ban": {
+              "comment": 1531029717.333,
+              "invite": 1531029717.333,
+              "live": 1531029717.333,
+              "vote": 1531029717.333
             }
           }
         }
@@ -3399,10 +3405,16 @@ func init() {
         }
       },
       "example": {
-        "content": "some multiline text \\n without html",
+        "content": "some multiline text \u003cbr\u003e with html",
         "createdAt": 1531029717.333,
+        "editContent": "some multiline text \\n with html",
         "entryId": 152,
-        "id": 999
+        "id": 999,
+        "rights": {
+          "delete": true,
+          "edit": true,
+          "vote": false
+        }
       }
     },
     "CommentList": {
@@ -3566,10 +3578,20 @@ func init() {
         "content": "\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e",
         "createdAt": 1531029717.333,
         "editContent": "some text with *html* tags",
+        "hasCut": false,
         "id": 152,
+        "inLive": true,
+        "isFavorited": false,
         "isVotable": true,
+        "isWatching": true,
         "privacy": "all",
         "rating": -3,
+        "rights": {
+          "comment": true,
+          "delete": false,
+          "edit": false,
+          "vote": true
+        },
         "title": "example title",
         "wordCount": 5
       }
@@ -4007,8 +4029,8 @@ func init() {
       "example": {
         "id": 1,
         "isOnline": false,
-        "name": "binque",
-        "showName": "Бинк"
+        "name": "Mindwell",
+        "showName": "Майндвелл"
       }
     },
     "UserID": {
@@ -7835,8 +7857,14 @@ func init() {
             "account": {
               "apiKey": "blah-blah-blah",
               "email": "mail@example.com",
-              "validThru": "1985-04-12T23:20:50.52Z",
+              "validThru": 1531029717.333,
               "verified": true
+            },
+            "ban": {
+              "comment": 1531029717.333,
+              "invite": 1531029717.333,
+              "live": 1531029717.333,
+              "vote": 1531029717.333
             }
           }
         }
@@ -7907,10 +7935,16 @@ func init() {
         }
       },
       "example": {
-        "content": "some multiline text \\n without html",
+        "content": "some multiline text \u003cbr\u003e with html",
         "createdAt": 1531029717.333,
+        "editContent": "some multiline text \\n with html",
         "entryId": 152,
-        "id": 999
+        "id": 999,
+        "rights": {
+          "delete": true,
+          "edit": true,
+          "vote": false
+        }
       }
     },
     "CommentList": {
@@ -8074,10 +8108,20 @@ func init() {
         "content": "\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e",
         "createdAt": 1531029717.333,
         "editContent": "some text with *html* tags",
+        "hasCut": false,
         "id": 152,
+        "inLive": true,
+        "isFavorited": false,
         "isVotable": true,
+        "isWatching": true,
         "privacy": "all",
         "rating": -3,
+        "rights": {
+          "comment": true,
+          "delete": false,
+          "edit": false,
+          "vote": true
+        },
         "title": "example title",
         "wordCount": 5
       }
@@ -8515,8 +8559,8 @@ func init() {
       "example": {
         "id": 1,
         "isOnline": false,
-        "name": "binque",
-        "showName": "Бинк"
+        "name": "Mindwell",
+        "showName": "Майндвелл"
       }
     },
     "UserID": {
