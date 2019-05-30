@@ -77,10 +77,10 @@ func TestNotification(t *testing.T) {
 	ids[1] = postComment(userIDs[2], e.ID)
 
 	ids[2] = userIDs[1].ID
-	checkFollow(t, userIDs[1], userIDs[0], profiles[0], "followed")
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, true)
 
 	postComment(userIDs[0], e.ID)
-	checkFollow(t, userIDs[1], userIDs[2], profiles[2], "followed")
+	checkFollow(t, userIDs[1], userIDs[2], profiles[2], models.RelationshipRelationFollowed, true)
 
 	req := require.New(t)
 

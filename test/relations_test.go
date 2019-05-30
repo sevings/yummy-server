@@ -46,7 +46,7 @@ func checkRelation(t *testing.T, from, to *models.UserID, relation string) {
 	checkToRelation(t, to, from, relation)
 }
 
-func checkFollow(t *testing.T, user *models.UserID, toID *models.UserID, to *models.AuthProfile, relation string) {
+func checkFollow(t *testing.T, user *models.UserID, toID *models.UserID, to *models.AuthProfile, relation string, success bool) {
 	put := api.RelationsPutRelationsToNameHandler.Handle
 	params := relations.PutRelationsToNameParams{
 		Name: to.Name,
@@ -55,7 +55,10 @@ func checkFollow(t *testing.T, user *models.UserID, toID *models.UserID, to *mod
 	resp := put(params, user)
 	body, ok := resp.(*relations.PutRelationsToNameOK)
 	req := require.New(t)
-	req.True(ok)
+	req.Equal(success, ok)
+	if !ok {
+		return
+	}
 
 	status := body.Payload
 	req.Equal(params.Name, status.To)
@@ -128,28 +131,43 @@ func TestRelationship(t *testing.T) {
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
-	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed, true)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
 	checkUpdateEmailSettings(t, userIDs[2], true, false, false)
-	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationFollowed, true)
 	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationFollowed)
 	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
 
 	checkUpdateEmailSettings(t, userIDs[2], true, true, false)
 
-	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored)
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, true)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationFollowed)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, false)
+	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationIgnored, true)
+	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationIgnored)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationIgnored)
+
 	checkUnfollow(t, userIDs[0], userIDs[1])
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
-	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationIgnored)
 
 	checkUnfollow(t, userIDs[0], userIDs[2])
 	checkRelation(t, userIDs[0], userIDs[2], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[2], userIDs[0], models.RelationshipRelationNone)
+
+	checkUnfollow(t, userIDs[1], userIDs[0])
+	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
 }
 
 func TestInvite(t *testing.T) {

@@ -48,6 +48,14 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 				return relations.NewPutRelationsToNameForbidden().WithPayload(err)
 			}
 
+			if params.R == models.RelationshipRelationFollowed {
+				toRelation := relationship(tx, params.Name, uID.Name)
+				if toRelation.Relation == models.RelationshipRelationIgnored {
+					err := srv.NewError(&i18n.Message{ID: "relation_from_ignored", Other: "You can't follow this user."})
+					return relations.NewPutRelationsToNameForbidden().WithPayload(err)				
+				}
+			}
+
 			isPrivate := isPrivateTlog(tx, params.Name)
 			var relation *models.Relationship
 			var ok bool

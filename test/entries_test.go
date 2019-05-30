@@ -423,7 +423,7 @@ func TestLoadTlog(t *testing.T) {
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "")
 
-	checkFollow(t, userIDs[1], userIDs[0], profiles[0], "requested")
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
 	checkPermitFollow(t, userIDs[0], userIDs[1], true)
 
 	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
@@ -516,7 +516,7 @@ func TestLoadFriendsFeed(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
-	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationFollowed, true)
 
 	postEntry(userIDs[0], models.EntryPrivacyAll, true)
 	postEntry(userIDs[0], models.EntryPrivacySome, true)
@@ -560,7 +560,7 @@ func TestLoadFriendsFeed(t *testing.T) {
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
 
-	checkFollow(t, userIDs[3], userIDs[1], profiles[1], models.RelationshipRelationFollowed)
+	checkFollow(t, userIDs[3], userIDs[1], profiles[1], models.RelationshipRelationFollowed, true)
 	setUserPrivacy(t, userIDs[1], "invited")
 	feed = checkLoadFriendsFeed(t, userIDs[3], 10, "", "", 0)
 	setUserPrivacy(t, userIDs[0], "all")
@@ -888,7 +888,7 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[1].ID, e2.ID, false)
 	check(userIDs[1].ID, e3.ID, true)
 
-	checkFollow(t, userIDs[1], userIDs[0], profiles[0], "requested")
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
 	checkPermitFollow(t, userIDs[0], userIDs[1], true)
 
 	check(userIDs[1].ID, e1.ID, true)
@@ -909,7 +909,7 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[3].ID, e2.ID, false)
 	check(userIDs[3].ID, e3.ID, true)
 
-	checkFollow(t, userIDs[0], userIDs[1], profiles[1], "ignored")
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
 
 	check(userIDs[1].ID, e1.ID, false)
 	check(userIDs[1].ID, e2.ID, false)
