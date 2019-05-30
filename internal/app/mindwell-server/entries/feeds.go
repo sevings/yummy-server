@@ -34,12 +34,24 @@ LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes O
 
 const isInvitedQueryWhere = " (SELECT invited_by IS NOT NULL FROM users WHERE id = $1) "
 
+const isNotIgnoredQueryWhere = `
+(COALESCE((SELECT relation.type
+	FROM relations
+	INNER JOIN relation ON relations.type = relation.id
+	WHERE from_id = $1 AND to_id = author_id), 'none') <> 'ignored'
+AND COALESCE((SELECT relation.type
+	FROM relations
+	INNER JOIN relation ON relations.type = relation.id
+	WHERE from_id = author_id AND to_id = $1), 'none') <> 'ignored')
+`
+
 const liveFeedQueryWhere = `
 WHERE entry_privacy.type = 'all' 
 	AND in_live
 	AND (user_privacy.type = 'all' 
 		OR (user_privacy.type = 'invited' 
-			AND ` + isInvitedQueryWhere + "))"
+			AND ` + isInvitedQueryWhere + `))
+	AND ` + isNotIgnoredQueryWhere
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
@@ -109,7 +121,7 @@ const canViewEntryQueryWhere = `
 		OR (user_privacy.type = 'invited'
 			AND ` + isInvitedQueryWhere + `)
 	)))
-`
+	AND ` + isNotIgnoredQueryWhere
 
 const watchingFeedQuery = tlogFeedQueryStart + `
 INNER JOIN watching ON watching.entry_id = entries.id 

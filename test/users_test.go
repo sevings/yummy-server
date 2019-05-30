@@ -144,6 +144,7 @@ func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutMePar
 func setUserPrivacy(t *testing.T, userID *models.UserID, privacy string) {
 	params := me.PutMeParams{
 		Privacy: privacy,
+		ShowName: userID.Name,
 	}
 	edit := api.MePutMeHandler.Handle
 	resp := edit(params, userID)

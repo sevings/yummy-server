@@ -294,6 +294,7 @@ func checkLoadLive(t *testing.T, id *models.UserID, limit int64, section, before
 func TestLoadLive(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
@@ -353,6 +354,18 @@ func TestLoadLive(t *testing.T) {
 	checkEntry(t, feed.Entries[0], profiles[2], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 	checkEntry(t, feed.Entries[1], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 	setUserPrivacy(t, userIDs[0], "all")
+
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
+
+	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[2], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+
+	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+
+	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after string, size int) *models.Feed {
@@ -654,6 +667,15 @@ func TestLoadFavorites(t *testing.T) {
 	checkLoadFavorites(t, userIDs[3], userIDs[0], 10, "", "", 1)
 
 	setUserPrivacy(t, userIDs[1], "all")
+
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", 2)
+	favoriteEntry(t, userIDs[1], feed.Entries[0].ID)
+	favoriteEntry(t, userIDs[1], feed.Entries[1].ID)
+	favoriteEntry(t, userIDs[1], e4.ID)
+
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
+	checkLoadFavorites(t, userIDs[2], userIDs[1], 10, "", "", 1)
+	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
 func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
@@ -696,6 +718,7 @@ func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
 func TestLoadLiveComments(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	entries := make([]*models.Entry, 6)
 
@@ -747,7 +770,10 @@ func TestLoadLiveComments(t *testing.T) {
 	checkLoadLive(t, userIDs[3], 10, "comments", "", "", 1)
 	setUserPrivacy(t, userIDs[1], "all")
 
-	esm.Clear()
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
+	checkLoadLive(t, userIDs[0], 10, "comments", "", "", 1)
+	checkLoadLive(t, userIDs[1], 10, "comments", "", "", 1)
+	checkUnfollow(t, userIDs[0], userIDs[1])
 }
 
 func checkLoadWatching(t *testing.T, id *models.UserID, limit int64, size int) *models.Feed {
@@ -770,6 +796,7 @@ func checkLoadWatching(t *testing.T, id *models.UserID, limit int64, size int) *
 func TestLoadWatching(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 
 	entries := make([]*models.Entry, 4)
 
@@ -817,7 +844,13 @@ func TestLoadWatching(t *testing.T) {
 	checkLoadWatching(t, userIDs[3], 10, 1)
 	setUserPrivacy(t, userIDs[1], "all")
 
-	esm.Clear()
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
+	checkLoadWatching(t, userIDs[2], 10, 2)
+	checkUnfollow(t, userIDs[0], userIDs[2])
+
+	checkFollow(t, userIDs[2], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
+	checkLoadWatching(t, userIDs[2], 10, 1)
+	checkUnfollow(t, userIDs[2], userIDs[1])
 }
 
 func TestEntryHTML(t *testing.T) {
