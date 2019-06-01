@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 func TestKeyAuth(t *testing.T) {
@@ -183,4 +184,53 @@ func TestEditProfile(t *testing.T) {
 	user.Privacy = "all"
 	params.Privacy = user.Privacy
 	checkEditProfile(t, &user, params)
+}
+
+func TestIsOpenForMe(t *testing.T) {
+	req := require.New(t)
+
+	check := func(userID *models.UserID, name string, res bool) {
+		tx := utils.NewAutoTx(db)
+		defer tx.Finish()
+		req.Equal(res, utils.IsOpenForMe(tx, userID, name))
+	}
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, true)
+	check(userIDs[2], userIDs[0].Name, true)
+	check(userIDs[3], userIDs[0].Name, true)
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, true)
+	setUserPrivacy(t, userIDs[0], "followers")
+	checkFollow(t, userIDs[2], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, true)
+	check(userIDs[2], userIDs[0].Name, false)
+	check(userIDs[3], userIDs[0].Name, false)
+
+	setUserPrivacy(t, userIDs[0], "invited")
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, true)
+	check(userIDs[2], userIDs[0].Name, true)
+	check(userIDs[3], userIDs[0].Name, false)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, false)
+	check(userIDs[2], userIDs[0].Name, true)
+	check(userIDs[3], userIDs[0].Name, false)
+
+	setUserPrivacy(t, userIDs[0], "all")
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, false)
+	check(userIDs[2], userIDs[0].Name, true)
+	check(userIDs[3], userIDs[0].Name, true)
+
+	checkUnfollow(t, userIDs[0], userIDs[1])
+	checkUnfollow(t, userIDs[1], userIDs[0])
+	checkUnfollow(t, userIDs[2], userIDs[0])
 }

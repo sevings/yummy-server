@@ -447,6 +447,11 @@ func TestLoadTlog(t *testing.T) {
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "")
 
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
