@@ -21,7 +21,7 @@ import (
 type FriendList struct {
 
 	// relation
-	// Enum: [followers followings requested ignored invited]
+	// Enum: [followers followings requested ignored hidden invited]
 	Relation string `json:"relation,omitempty"`
 
 	// subject
@@ -57,7 +57,7 @@ var friendListTypeRelationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followers","followings","requested","ignored","invited"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followers","followings","requested","ignored","hidden","invited"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -78,6 +78,9 @@ const (
 
 	// FriendListRelationIgnored captures enum value "ignored"
 	FriendListRelationIgnored string = "ignored"
+
+	// FriendListRelationHidden captures enum value "hidden"
+	FriendListRelationHidden string = "hidden"
 
 	// FriendListRelationInvited captures enum value "invited"
 	FriendListRelationInvited string = "invited"

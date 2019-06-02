@@ -144,7 +144,7 @@ definitions:
         $ref: '#/definitions/User'
       relation:
         type: string
-        enum: [followers, followings, requested, ignored, invited]
+        enum: [followers, followings, requested, ignored, hidden, invited]
       users:
         type: array
         items:
@@ -178,10 +178,10 @@ definitions:
             properties:
               toMe:
                 type: string
-                enum: [followed, requested, ignored, none]
+                enum: [followed, requested, ignored, hidden, none]
               fromMe:
                 type: string
-                enum: [followed, requested, ignored, none]
+                enum: [followed, requested, ignored, hidden, none]
         example:
           gender: male
           isDaylog: false
@@ -404,7 +404,7 @@ definitions:
         type: string
       relation:
         type: string
-        enum: [followed, requested, ignored, none]
+        enum: [followed, requested, ignored, hidden, none]
   Comment:
     type: object
     properties:
@@ -1369,6 +1369,20 @@ paths:
           description: User list
           schema:
             $ref: '#/definitions/FriendList'
+  /me/hidden:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/skip'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: User list
+          schema:
+            $ref: '#/definitions/FriendList'
   /me/requested:
     get:
       parameters:
@@ -1572,7 +1586,7 @@ paths:
         - in: query
           name: r
           type: string
-          enum: [followed, ignored]
+          enum: [followed, ignored, hidden]
           required: true
       security:
         - ApiKeyHeader: []

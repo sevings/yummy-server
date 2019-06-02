@@ -168,6 +168,17 @@ func TestRelationship(t *testing.T) {
 	checkUnfollow(t, userIDs[1], userIDs[0])
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
+	
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
+	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationHidden)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, true)
+	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationHidden)
+	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationFollowed)
+
+	checkUnfollow(t, userIDs[0], userIDs[1])
+	checkUnfollow(t, userIDs[1], userIDs[0])
 }
 
 func TestInvite(t *testing.T) {

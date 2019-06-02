@@ -27,6 +27,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.UsersGetUsersNameInvitedHandler = users.GetUsersNameInvitedHandlerFunc(newInvitedLoader(srv))
 
 	srv.API.MeGetMeIgnoredHandler = me.GetMeIgnoredHandlerFunc(newMyIgnoredLoader(srv))
+	srv.API.MeGetMeHiddenHandler = me.GetMeHiddenHandlerFunc(newMyHiddenLoader(srv))
 	srv.API.MeGetMeRequestedHandler = me.GetMeRequestedHandlerFunc(newMyRequestedLoader(srv))
 
 	srv.API.MePutMeOnlineHandler = me.PutMeOnlineHandlerFunc(newMyOnlineSetter(srv))

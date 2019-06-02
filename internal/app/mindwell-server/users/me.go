@@ -247,6 +247,13 @@ func newMyIgnoredLoader(srv *utils.MindwellServer) func(me.GetMeIgnoredParams, *
 	}
 }
 
+func newMyHiddenLoader(srv *utils.MindwellServer) func(me.GetMeHiddenParams, *models.UserID) middleware.Responder {
+	return func(params me.GetMeHiddenParams, userID *models.UserID) middleware.Responder {
+		return loadRelatedToMeUsers(srv, userID, usersQueryFromName, models.FriendListRelationHidden,
+			models.RelationshipRelationHidden, *params.Limit, *params.Skip)
+	}
+}
+
 func newMyRequestedLoader(srv *utils.MindwellServer) func(me.GetMeRequestedParams, *models.UserID) middleware.Responder {
 	return func(params me.GetMeRequestedParams, userID *models.UserID) middleware.Responder {
 		return loadRelatedToMeUsers(srv, userID, usersQueryFromName, models.FriendListRelationRequested,

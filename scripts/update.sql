@@ -18,3 +18,5 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER relation_from_ignored
     AFTER INSERT OR UPDATE ON mindwell.relations
     FOR EACH ROW EXECUTE PROCEDURE mindwell.del_relation_from_ignored();
+
+INSERT INTO "mindwell"."relation" VALUES(4, 'hidden');

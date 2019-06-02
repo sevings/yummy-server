@@ -139,7 +139,7 @@ func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats 
 // validateR carries on validations for parameter R
 func (o *PutRelationsToNameParams) validateR(formats strfmt.Registry) error {
 
-	if err := validate.Enum("r", "query", o.R, []interface{}{"followed", "ignored"}); err != nil {
+	if err := validate.Enum("r", "query", o.R, []interface{}{"followed", "ignored", "hidden"}); err != nil {
 		return err
 	}
 

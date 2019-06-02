@@ -299,11 +299,11 @@ func (m *Profile) UnmarshalBinary(b []byte) error {
 type ProfileAO1Relations struct {
 
 	// from me
-	// Enum: [followed requested ignored none]
+	// Enum: [followed requested ignored hidden none]
 	FromMe string `json:"fromMe,omitempty"`
 
 	// to me
-	// Enum: [followed requested ignored none]
+	// Enum: [followed requested ignored hidden none]
 	ToMe string `json:"toMe,omitempty"`
 }
 
@@ -329,7 +329,7 @@ var profileAO1RelationsTypeFromMePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","hidden","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -347,6 +347,9 @@ const (
 
 	// ProfileAO1RelationsFromMeIgnored captures enum value "ignored"
 	ProfileAO1RelationsFromMeIgnored string = "ignored"
+
+	// ProfileAO1RelationsFromMeHidden captures enum value "hidden"
+	ProfileAO1RelationsFromMeHidden string = "hidden"
 
 	// ProfileAO1RelationsFromMeNone captures enum value "none"
 	ProfileAO1RelationsFromMeNone string = "none"
@@ -378,7 +381,7 @@ var profileAO1RelationsTypeToMePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","hidden","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -396,6 +399,9 @@ const (
 
 	// ProfileAO1RelationsToMeIgnored captures enum value "ignored"
 	ProfileAO1RelationsToMeIgnored string = "ignored"
+
+	// ProfileAO1RelationsToMeHidden captures enum value "hidden"
+	ProfileAO1RelationsToMeHidden string = "hidden"
 
 	// ProfileAO1RelationsToMeNone captures enum value "none"
 	ProfileAO1RelationsToMeNone string = "none"

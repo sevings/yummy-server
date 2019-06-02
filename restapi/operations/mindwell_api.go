@@ -172,6 +172,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeFollowingsHandler: me.GetMeFollowingsHandlerFunc(func(params me.GetMeFollowingsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeFollowings has not yet been implemented")
 		}),
+		MeGetMeHiddenHandler: me.GetMeHiddenHandlerFunc(func(params me.GetMeHiddenParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeHidden has not yet been implemented")
+		}),
 		MeGetMeIgnoredHandler: me.GetMeIgnoredHandlerFunc(func(params me.GetMeIgnoredParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeIgnored has not yet been implemented")
 		}),
@@ -441,6 +444,8 @@ type MindwellAPI struct {
 	MeGetMeFollowersHandler me.GetMeFollowersHandler
 	// MeGetMeFollowingsHandler sets the operation handler for the get me followings operation
 	MeGetMeFollowingsHandler me.GetMeFollowingsHandler
+	// MeGetMeHiddenHandler sets the operation handler for the get me hidden operation
+	MeGetMeHiddenHandler me.GetMeHiddenHandler
 	// MeGetMeIgnoredHandler sets the operation handler for the get me ignored operation
 	MeGetMeIgnoredHandler me.GetMeIgnoredHandler
 	// MeGetMeImagesHandler sets the operation handler for the get me images operation
@@ -764,6 +769,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MeGetMeFollowingsHandler == nil {
 		unregistered = append(unregistered, "me.GetMeFollowingsHandler")
+	}
+
+	if o.MeGetMeHiddenHandler == nil {
+		unregistered = append(unregistered, "me.GetMeHiddenHandler")
 	}
 
 	if o.MeGetMeIgnoredHandler == nil {
@@ -1264,6 +1273,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/followings"] = me.NewGetMeFollowings(o.context, o.MeGetMeFollowingsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/hidden"] = me.NewGetMeHidden(o.context, o.MeGetMeHiddenHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

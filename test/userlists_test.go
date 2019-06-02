@@ -68,6 +68,25 @@ func checkMyIgnored(t *testing.T, user *models.UserID, skip, limit int64, size i
 	return list.Users
 }
 
+func checkMyHidden(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
+	get := api.MeGetMeHiddenHandler.Handle
+	params := me.GetMeHiddenParams{
+		Skip:  &skip,
+		Limit: &limit,
+	}
+	resp := get(params, user)
+	body, ok := resp.(*me.GetMeFollowersOK)
+
+	require.True(t, ok)
+
+	list := body.Payload
+	require.Equal(t, size, len(list.Users))
+	require.Equal(t, user.ID, list.Subject.ID)
+	require.Equal(t, models.FriendListRelationHidden, list.Relation)
+
+	return list.Users
+}
+
 func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size int) []*models.Friend {
 	get := api.MeGetMeInvitedHandler.Handle
 	params := me.GetMeInvitedParams{
@@ -85,6 +104,19 @@ func checkMyInvited(t *testing.T, user *models.UserID, skip, limit int64, size i
 	require.Equal(t, models.FriendListRelationInvited, list.Relation)
 
 	return list.Users
+}
+
+func checkNameFollowersForbidden(t *testing.T, user *models.UserID, name string) {
+	get := api.UsersGetUsersNameFollowersHandler.Handle
+	params := users.GetUsersNameFollowersParams{
+		Skip:  new(int64),
+		Limit: new(int64),
+		Name:  name,
+	}
+	resp := get(params, user)
+	_, ok := resp.(*users.GetUsersNameFollowersForbidden)
+
+	require.True(t, ok)
 }
 
 func checkNameFollowers(t *testing.T, user *models.UserID, name string, skip, limit int64, size int) []*models.Friend {
@@ -234,6 +266,12 @@ func TestOpenFriendLists(t *testing.T) {
 	req.Equal(profiles[1].ID, list[1].ID)
 	req.Equal(profiles[0].ID, list[2].ID)
 	req.Equal(int64(1), list[3].ID)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationHidden, true)
+	checkMyHidden(t, userIDs[0], 0, 10, 2)
+	checkUnfollow(t, userIDs[0], userIDs[1])
+	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
 func TestPrivateFriendLists(t *testing.T) {
@@ -241,13 +279,7 @@ func TestPrivateFriendLists(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	checkFollow(t, userIDs[1], userIDs[2], profiles[2], models.RelationshipRelationFollowed, true)
 
-	profiles[2].Privacy = "followers"
-
-	params := me.PutMeParams{
-		Privacy:  profiles[2].Privacy,
-		ShowName: profiles[2].ShowName,
-	}
-	checkEditProfile(t, profiles[2], params)
+	setUserPrivacy(t, userIDs[2], "followers")
 
 	req := require.New(t)
 	var list []*models.Friend
@@ -262,6 +294,10 @@ func TestPrivateFriendLists(t *testing.T) {
 
 	checkUnfollow(t, userIDs[0], userIDs[2])
 	checkUnfollow(t, userIDs[1], userIDs[2])
+
+	checkNameFollowersForbidden(t, userIDs[0], userIDs[2].Name)
+
+	setUserPrivacy(t, userIDs[2], "all")
 }
 
 func checkTopUsers(t *testing.T, top string, size int) []*models.Friend {

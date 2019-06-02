@@ -1063,6 +1063,7 @@ INSERT INTO "mindwell"."relation" VALUES(0, 'followed');
 INSERT INTO "mindwell"."relation" VALUES(1, 'requested');
 INSERT INTO "mindwell"."relation" VALUES(2, 'cancelled');
 INSERT INTO "mindwell"."relation" VALUES(3, 'ignored');
+INSERT INTO "mindwell"."relation" VALUES(4, 'hidden');
 -- -------------------------------------------------------------
 
 

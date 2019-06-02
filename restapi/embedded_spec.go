@@ -2326,6 +2326,34 @@ func init() {
         }
       }
     },
+    "/me/hidden": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "schema": {
+              "$ref": "#/definitions/FriendList"
+            }
+          }
+        }
+      }
+    },
     "/me/ignored": {
       "get": {
         "security": [
@@ -2855,7 +2883,8 @@ func init() {
           {
             "enum": [
               "followed",
-              "ignored"
+              "ignored",
+              "hidden"
             ],
             "type": "string",
             "name": "r",
@@ -3728,6 +3757,7 @@ func init() {
             "followings",
             "requested",
             "ignored",
+            "hidden",
             "invited"
           ]
         },
@@ -3912,6 +3942,7 @@ func init() {
                     "followed",
                     "requested",
                     "ignored",
+                    "hidden",
                     "none"
                   ]
                 },
@@ -3921,6 +3952,7 @@ func init() {
                     "followed",
                     "requested",
                     "ignored",
+                    "hidden",
                     "none"
                   ]
                 }
@@ -3993,6 +4025,7 @@ func init() {
             "followed",
             "requested",
             "ignored",
+            "hidden",
             "none"
           ]
         },
@@ -6663,6 +6696,42 @@ func init() {
         }
       }
     },
+    "/me/hidden": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "default": 0,
+            "name": "skip",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User list",
+            "schema": {
+              "$ref": "#/definitions/FriendList"
+            }
+          }
+        }
+      }
+    },
     "/me/ignored": {
       "get": {
         "security": [
@@ -7269,7 +7338,8 @@ func init() {
           {
             "enum": [
               "followed",
-              "ignored"
+              "ignored",
+              "hidden"
             ],
             "type": "string",
             "name": "r",
@@ -8258,6 +8328,7 @@ func init() {
             "followings",
             "requested",
             "ignored",
+            "hidden",
             "invited"
           ]
         },
@@ -8442,6 +8513,7 @@ func init() {
                     "followed",
                     "requested",
                     "ignored",
+                    "hidden",
                     "none"
                   ]
                 },
@@ -8451,6 +8523,7 @@ func init() {
                     "followed",
                     "requested",
                     "ignored",
+                    "hidden",
                     "none"
                   ]
                 }
@@ -8523,6 +8596,7 @@ func init() {
             "followed",
             "requested",
             "ignored",
+            "hidden",
             "none"
           ]
         },

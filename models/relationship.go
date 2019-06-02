@@ -23,7 +23,7 @@ type Relationship struct {
 	From string `json:"from,omitempty"`
 
 	// relation
-	// Enum: [followed requested ignored none]
+	// Enum: [followed requested ignored hidden none]
 	Relation string `json:"relation,omitempty"`
 
 	// to
@@ -48,7 +48,7 @@ var relationshipTypeRelationPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["followed","requested","ignored","none"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["followed","requested","ignored","hidden","none"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -66,6 +66,9 @@ const (
 
 	// RelationshipRelationIgnored captures enum value "ignored"
 	RelationshipRelationIgnored string = "ignored"
+
+	// RelationshipRelationHidden captures enum value "hidden"
+	RelationshipRelationHidden string = "hidden"
 
 	// RelationshipRelationNone captures enum value "none"
 	RelationshipRelationNone string = "none"
