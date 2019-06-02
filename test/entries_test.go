@@ -366,6 +366,19 @@ func TestLoadLive(t *testing.T) {
 	checkEntry(t, feed.Entries[1], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
 
 	checkUnfollow(t, userIDs[0], userIDs[2])
+
+	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationHidden, true)
+
+	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", 3)
+	checkEntry(t, feed.Entries[0], profiles[2], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[2], profiles[0], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+
+	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", 2)
+	checkEntry(t, feed.Entries[0], profiles[1], false, 0, false, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+	checkEntry(t, feed.Entries[1], profiles[0], true, 0, true, 3, models.EntryPrivacyAll, true, true, "", "test test test")
+
+	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
 func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after string, size int) *models.Feed {
@@ -451,6 +464,9 @@ func TestLoadTlog(t *testing.T) {
 	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -779,6 +795,11 @@ func TestLoadLiveComments(t *testing.T) {
 	checkLoadLive(t, userIDs[0], 10, "comments", "", "", 1)
 	checkLoadLive(t, userIDs[1], 10, "comments", "", "", 1)
 	checkUnfollow(t, userIDs[0], userIDs[1])
+
+	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
+	checkLoadLive(t, userIDs[0], 10, "comments", "", "", 1)
+	checkLoadLive(t, userIDs[1], 10, "comments", "", "", 2)
+	checkUnfollow(t, userIDs[0], userIDs[1])
 }
 
 func checkLoadWatching(t *testing.T, id *models.UserID, limit int64, size int) *models.Feed {
@@ -855,6 +876,10 @@ func TestLoadWatching(t *testing.T) {
 
 	checkFollow(t, userIDs[2], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
 	checkLoadWatching(t, userIDs[2], 10, 1)
+	checkUnfollow(t, userIDs[2], userIDs[1])
+
+	checkFollow(t, userIDs[2], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
+	checkLoadWatching(t, userIDs[2], 10, 3)
 	checkUnfollow(t, userIDs[2], userIDs[1])
 }
 
