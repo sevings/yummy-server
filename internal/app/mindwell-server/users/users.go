@@ -136,12 +136,35 @@ func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID,
 				AND relations.to_id = $2
 				AND relations.type = relation.id`
 
-		profile.Relations = &models.ProfileAO1Relations{}
-		profile.Relations.FromMe = relationship(tx, relationQuery, userID.ID, profile.ID)
-		profile.Relations.ToMe = relationship(tx, relationQuery, profile.ID, userID.ID)
+		profile.Relations = &models.ProfileAO1Relations{
+			FromMe: relationship(tx, relationQuery, userID.ID, profile.ID),
+			ToMe:   relationship(tx, relationQuery, profile.ID, userID.ID),
+		}
+		profile.Relations.IsOpenForMe = isOpenForMe(profile, userID)
 
 		return result
 	})
+}
+
+func isOpenForMe(profile *models.Profile, me *models.UserID) bool {
+	if profile.ID == me.ID {
+		return true
+	}
+
+	if profile.Relations.ToMe == models.RelationshipRelationIgnored {
+		return false
+	}
+
+	switch profile.Privacy {
+	case "all":
+		return true
+	case "followers":
+		return profile.Relations.FromMe == models.RelationshipRelationFollowed
+	case "invited":
+		return me.IsInvited
+	}
+
+	return false
 }
 
 func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) string {

@@ -3946,6 +3946,9 @@ func init() {
                     "none"
                   ]
                 },
+                "isOpenForMe": {
+                  "type": "boolean"
+                },
                 "toMe": {
                   "type": "string",
                   "enum": [
@@ -8516,6 +8519,9 @@ func init() {
                     "hidden",
                     "none"
                   ]
+                },
+                "isOpenForMe": {
+                  "type": "boolean"
                 },
                 "toMe": {
                   "type": "string",

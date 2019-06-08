@@ -302,6 +302,9 @@ type ProfileAO1Relations struct {
 	// Enum: [followed requested ignored hidden none]
 	FromMe string `json:"fromMe,omitempty"`
 
+	// is open for me
+	IsOpenForMe bool `json:"isOpenForMe,omitempty"`
+
 	// to me
 	// Enum: [followed requested ignored hidden none]
 	ToMe string `json:"toMe,omitempty"`

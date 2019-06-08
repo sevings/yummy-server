@@ -176,6 +176,8 @@ definitions:
           relations:
             type: object
             properties:
+              isOpenForMe:
+                type: boolean
               toMe:
                 type: string
                 enum: [followed, requested, ignored, hidden, none]
