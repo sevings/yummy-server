@@ -516,11 +516,13 @@ definitions:
       id:
         type: integer
         format: int64
-      userId:
-        type: integer
-        format: int64
-      mimeType:
+      author:
+        $ref: '#/definitions/User'
+      type:
         type: string
+        enum: [jpeg, gif]
+      thumbnail:
+        $ref: '#/definitions/ImageSize'
       small: 
         $ref: '#/definitions/ImageSize'
       medium:
