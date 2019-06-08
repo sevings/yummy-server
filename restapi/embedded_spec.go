@@ -1346,6 +1346,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,
@@ -1581,6 +1583,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,
@@ -2640,6 +2644,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,
@@ -5715,6 +5721,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,
@@ -5997,6 +6005,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,
@@ -7181,6 +7191,8 @@ func init() {
             "required": true
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
             "type": "array",
             "items": {
               "minimum": 1,

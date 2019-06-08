@@ -1445,6 +1445,8 @@ paths:
         - in: formData
           name: images
           type: array
+          maxItems: 5
+          uniqueItems: true
           items:
             type: integer
             format: int64
@@ -1827,6 +1829,8 @@ paths:
         - in: formData
           name: images
           type: array
+          maxItems: 5
+          uniqueItems: true
           items:
             type: integer
             format: int64
@@ -1885,6 +1889,8 @@ paths:
         - in: formData
           name: images
           type: array
+          maxItems: 5
+          uniqueItems: true
           items:
             type: integer
             format: int64

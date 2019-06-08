@@ -58,6 +58,8 @@ type PostMeTlogParams struct {
 	*/
 	Content string
 	/*
+	  Max Items: 5
+	  Unique: true
 	  In: formData
 	*/
 	Images []int64
@@ -222,6 +224,27 @@ func (o *PostMeTlogParams) bindImages(rawData []string, hasKey bool, formats str
 	}
 
 	o.Images = imagesIR
+	if err := o.validateImages(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateImages carries on validations for parameter Images
+func (o *PostMeTlogParams) validateImages(formats strfmt.Registry) error {
+
+	imagesSize := int64(len(o.Images))
+
+	// maxItems: 5
+	if err := validate.MaxItems("images", "formData", imagesSize, 5); err != nil {
+		return err
+	}
+
+	// uniqueItems: true
+	if err := validate.UniqueItems("images", "formData", o.Images); err != nil {
+		return err
+	}
 
 	return nil
 }
