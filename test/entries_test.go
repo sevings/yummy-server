@@ -159,6 +159,15 @@ func TestPostMyTlog(t *testing.T) {
 	votable = true
 	id2 := checkPostEntry(t, params, profiles[3], userIDs[3], true, 5)
 
+	var images []int64
+	images = append(images, createImage(srv, db, userIDs[1]).ID)
+	images = append(images, createImage(srv, db, userIDs[1]).ID)
+	images = append(images, createImage(srv, db, userIDs[1]).ID)
+
+	params.Images = images
+	checkPostEntry(t, params, profiles[0], userIDs[0], false, 5)
+	id3 := checkPostEntry(t, params, profiles[1], userIDs[1], true, 5)
+
 	title = "title"
 	votable = false
 	live = false
@@ -181,11 +190,18 @@ func TestPostMyTlog(t *testing.T) {
 	votable = true
 	checkEditEntry(t, editParams, profiles[3], userIDs[3], true, 2)
 
+	images = images[1:]
+	images = append(images, createImage(srv, db, userIDs[1]).ID)
+	editParams.ID = id3
+	editParams.Images = images
+	checkEditEntry(t, editParams, profiles[1], userIDs[1], true, 2)
+
 	checkDeleteEntry(t, id, userIDs[1], false)
 	checkDeleteEntry(t, id, userIDs[0], true)
 	checkDeleteEntry(t, id, userIDs[0], false)
 
 	checkDeleteEntry(t, id2, userIDs[3], true)
+	checkDeleteEntry(t, id3, userIDs[1], true)
 }
 
 func TestLiveRestrictions(t *testing.T) {

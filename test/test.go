@@ -13,6 +13,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
+	"github.com/sevings/mindwell-server/utils"
 )
 
 type EmailSenderMock struct {
@@ -125,23 +126,23 @@ func getMe(user *models.UserID) *models.AuthProfile {
 		log.Fatal("error get me")
 	}
 
-	return body.Payload	
+	return body.Payload
 }
 
 func registerTestUsers(db *sql.DB) ([]*models.UserID, []*models.AuthProfile) {
 	var userIDs []*models.UserID
 	var profiles []*models.AuthProfile
 
-	inviter := getMe(&models.UserID{ID:1})
-	invitedBy := &models.User {
-		ID: inviter.ID,
-		Name: inviter.Name,
+	inviter := getMe(&models.UserID{ID: 1})
+	invitedBy := &models.User{
+		ID:       inviter.ID,
+		Name:     inviter.Name,
 		ShowName: inviter.ShowName,
-		Avatar: inviter.Avatar,
+		Avatar:   inviter.Avatar,
 	}
 
 	for i := 0; i < 3; i++ {
-		id, profile := register("test"+strconv.Itoa(i))
+		id, profile := register("test" + strconv.Itoa(i))
 		userIDs = append(userIDs, id)
 		profiles = append(profiles, profile)
 
@@ -252,4 +253,63 @@ func createComment(t *testing.T, id *models.UserID, entryID int64) *models.Comme
 	require.True(t, ok)
 
 	return body.Payload
+}
+
+func saveImage(db *sql.DB, userID int64, img *models.Image, fileName string) {
+	tx := utils.NewAutoTx(db)
+	defer tx.Finish()
+
+	tx.Query("INSERT INTO images(user_id, path, extension) VALUES($1, $2, $3) RETURNING id",
+		userID, fileName, img.Type)
+	tx.Scan(&img.ID)
+
+	saveImageSize := func(tx *utils.AutoTx, imageID, width, height int64, size string) {
+		const q = `
+		INSERT INTO image_sizes(image_id, size, width, height)
+		VALUES($1, (SELECT id FROM size WHERE type = $2), $3, $4)
+	`
+
+		tx.Exec(q, imageID, size, width, height)
+	}
+
+	saveImageSize(tx, img.ID, img.Thumbnail.Width, img.Thumbnail.Height, "thumbnail")
+	saveImageSize(tx, img.ID, img.Small.Width, img.Small.Height, "small")
+	saveImageSize(tx, img.ID, img.Medium.Width, img.Medium.Height, "medium")
+	saveImageSize(tx, img.ID, img.Large.Width, img.Large.Height, "large")
+}
+
+func createImage(srv *utils.MindwellServer, db *sql.DB, userID *models.UserID) *models.Image {
+	baseURL := srv.ConfigString("images.base_url")
+	path := "a/a/aaa.jpg"
+
+	img := &models.Image{
+		Author: &models.User{
+			ID:   userID.ID,
+			Name: userID.Name,
+		},
+		Type: "jpg",
+		Thumbnail: &models.ImageSize{
+			Width:  100,
+			Height: 100,
+			URL:    baseURL + "albums/thumbnails/" + path,
+		},
+		Small: &models.ImageSize{
+			Width:  200,
+			Height: 200,
+			URL:    baseURL + "albums/small/" + path,
+		},
+		Medium: &models.ImageSize{
+			Width:  300,
+			Height: 300,
+			URL:    baseURL + "albums/medium/" + path,
+		},
+		Large: &models.ImageSize{
+			Width:  400,
+			Height: 400,
+			URL:    baseURL + "albums/large/" + path,
+		},
+	}
+
+	saveImage(db, userID.ID, img, path)
+	return img
 }

@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
+	"github.com/carlescere/scheduler"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/carlescere/scheduler"
+	cache "github.com/patrickmn/go-cache"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations"
 	goconf "github.com/zpatrick/go-config"
@@ -33,7 +34,8 @@ type MailSender interface {
 type MindwellServer struct {
 	DB    *sql.DB
 	API   *operations.MindwellAPI
-	Ntf	  *CompositeNotifier
+	Ntf   *CompositeNotifier
+	Imgs  *cache.Cache
 	cfg   *goconf.Config
 	local *i18n.Localizer
 	errs  map[string]*i18n.Message
@@ -55,6 +57,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	srv := &MindwellServer{
 		DB:    db,
 		API:   api,
+		Imgs:  cache.New(2*24*time.Hour, 24*time.Hour),
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{

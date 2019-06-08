@@ -62,7 +62,7 @@ WHERE entry_privacy.type = 'all'
 	AND ` + isNotIgnoredQueryWhere + `
 	AND ` + relationToMeQuery + ` <> 'ignored'
 	AND ` + relationFromMeQuery + ` NOT IN ('ignored', 'hidden')
-`	
+`
 
 const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
 
@@ -182,6 +182,17 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 		entry.Author = &author
 		setEntryRights(&entry, userID)
 		feed.Entries = append(feed.Entries, &entry)
+	}
+
+	for _, entry := range feed.Entries {
+		var images []int64
+		var imageID int64
+		tx.Query("SELECT image_id from entry_images WHERE entry_id = $1", entry.ID)
+		for tx.Scan(&imageID) {
+			images = append(images, imageID)
+		}
+
+		loadEntryImages(srv, tx, entry, images)
 	}
 
 	if reverse {

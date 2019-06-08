@@ -6,15 +6,21 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"encoding/json"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // Image image
 // swagger:model Image
 type Image struct {
+
+	// author
+	Author *User `json:"author,omitempty"`
 
 	// id
 	ID int64 `json:"id,omitempty"`
@@ -25,19 +31,24 @@ type Image struct {
 	// medium
 	Medium *ImageSize `json:"medium,omitempty"`
 
-	// mime type
-	MimeType string `json:"mimeType,omitempty"`
-
 	// small
 	Small *ImageSize `json:"small,omitempty"`
 
-	// user Id
-	UserID int64 `json:"userId,omitempty"`
+	// thumbnail
+	Thumbnail *ImageSize `json:"thumbnail,omitempty"`
+
+	// type
+	// Enum: [jpg gif]
+	Type string `json:"type,omitempty"`
 }
 
 // Validate validates this image
 func (m *Image) Validate(formats strfmt.Registry) error {
 	var res []error
+
+	if err := m.validateAuthor(formats); err != nil {
+		res = append(res, err)
+	}
 
 	if err := m.validateLarge(formats); err != nil {
 		res = append(res, err)
@@ -51,9 +62,35 @@ func (m *Image) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateThumbnail(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *Image) validateAuthor(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Author) { // not required
+		return nil
+	}
+
+	if m.Author != nil {
+		if err := m.Author.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -106,6 +143,67 @@ func (m *Image) validateSmall(formats strfmt.Registry) error {
 			}
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *Image) validateThumbnail(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Thumbnail) { // not required
+		return nil
+	}
+
+	if m.Thumbnail != nil {
+		if err := m.Thumbnail.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("thumbnail")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+var imageTypeTypePropEnum []interface{}
+
+func init() {
+	var res []string
+	if err := json.Unmarshal([]byte(`["jpg","gif"]`), &res); err != nil {
+		panic(err)
+	}
+	for _, v := range res {
+		imageTypeTypePropEnum = append(imageTypeTypePropEnum, v)
+	}
+}
+
+const (
+
+	// ImageTypeJpg captures enum value "jpg"
+	ImageTypeJpg string = "jpg"
+
+	// ImageTypeGif captures enum value "gif"
+	ImageTypeGif string = "gif"
+)
+
+// prop value enum
+func (m *Image) validateTypeEnum(path, location string, value string) error {
+	if err := validate.Enum(path, location, value, imageTypeTypePropEnum); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *Image) validateType(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Type) { // not required
+		return nil
+	}
+
+	// value enum
+	if err := m.validateTypeEnum("type", "body", m.Type); err != nil {
+		return err
 	}
 
 	return nil

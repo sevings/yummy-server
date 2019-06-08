@@ -51,6 +51,9 @@ type Entry struct {
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
+	// images
+	Images []*Image `json:"images"`
+
 	// in live
 	InLive bool `json:"inLive,omitempty"`
 
@@ -93,6 +96,10 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateImages(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -162,6 +169,31 @@ func (m *Entry) validateID(formats strfmt.Registry) error {
 
 	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (m *Entry) validateImages(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Images) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.Images); i++ {
+		if swag.IsZero(m.Images[i]) { // not required
+			continue
+		}
+
+		if m.Images[i] != nil {
+			if err := m.Images[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("images" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

@@ -183,6 +183,28 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 	return entry
 }
 
+func loadEntryImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Entry, images []int64) {
+	for _, imageID := range images {
+		img := utils.LoadImage(srv, tx, imageID)
+		if img != nil {
+			entry.Images = append(entry.Images, img)
+		}
+	}
+}
+
+func attachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Entry, images []int64) {
+	if len(images) == 0 {
+		return
+	}
+
+	const q = "INSERT INTO entry_images(entry_id, image_id)	VALUES($1, $2)"
+	for _, imageID := range images {
+		tx.Exec(q, entry.ID, imageID)
+	}
+
+	loadEntryImages(srv, tx, entry, images)
+}
+
 func allowedInLive(followersCount, entryCount int64) bool {
 	switch {
 	case followersCount < 3:
@@ -226,6 +248,22 @@ func canPostInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	return nil
 }
 
+func checkImagesOwner(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64, images []int64) *models.Error {
+	for _, imageID := range images {
+		authorID := tx.QueryInt64("SELECT user_id FROM images WHERE id = $1", imageID)
+
+		if authorID == 0 {
+			return srv.NewError(&i18n.Message{ID: "attached_image_not_found", Other: "Attached image not found."})
+		}
+
+		if authorID != userID {
+			return srv.NewError(&i18n.Message{ID: "attach_not_your_image", Other: "You can attach only your own images."})
+		}
+	}
+
+	return nil
+}
+
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.PostMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -243,10 +281,17 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 				}
 			}
 
+			imageErr := checkImagesOwner(srv, tx, userID.ID, params.Images)
+			if imageErr != nil {
+				return me.NewPutMeCoverBadRequest().WithPayload(imageErr)
+			}
+
 			entry := createEntry(srv, tx, userID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
-			if tx.Error() != nil {
+			attachImages(srv, tx, entry, params.Images)
+
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(nil)
 				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
@@ -280,6 +325,21 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 	watchings.AddWatching(tx, userID.ID, entry.ID)
 
 	return entry
+}
+
+func reattachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Entry, images []int64) {
+	tx.Exec("DELETE FROM entry_images WHERE entry_id = $1", entry.ID)
+
+	if len(images) == 0 {
+		return
+	}
+
+	const q = "INSERT INTO entry_images(entry_id, image_id)	VALUES($1, $2)"
+	for _, imageID := range images {
+		tx.Exec(q, entry.ID, imageID)
+	}
+
+	loadEntryImages(srv, tx, entry, images)
 }
 
 func canEditInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, entryID int64) *models.Error {
@@ -340,7 +400,9 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 			entry := editEntry(srv, tx, params.ID, uID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
-			if tx.Error() != nil {
+			reattachImages(srv, tx, entry, params.Images)
+
+			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(&i18n.Message{ID: "edit_not_your_entry", Other: "You can't edit someone else's entries."})
 				return entries.NewPutEntriesIDForbidden().WithPayload(err)
 			}
