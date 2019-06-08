@@ -1909,7 +1909,7 @@ CREATE TABLE "mindwell"."images" (
 	"id" Serial NOT NULL,
     "user_id" Integer NOT NULL,
 	"path" Text NOT NULL,
-    "mime" Text NOT NULL,
+    "extension" Text NOT NULL,
     "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL);
  ;
 -- -------------------------------------------------------------
@@ -1928,6 +1928,7 @@ CREATE TABLE "mindwell"."size" (
 INSERT INTO "mindwell"."size" VALUES(0, 'small');
 INSERT INTO "mindwell"."size" VALUES(1, 'medium');
 INSERT INTO "mindwell"."size" VALUES(2, 'large');
+INSERT INTO "mindwell"."size" VALUES(3, 'thumbnail');
 -- -------------------------------------------------------------
 
 
@@ -1939,13 +1940,33 @@ CREATE TABLE "mindwell"."image_sizes" (
     "width" Integer NOT NULL,
     "height" Integer NOT NULL,
     CONSTRAINT "unique_image_size" PRIMARY KEY ("image_id", "size"),
-    CONSTRAINT "unique_image_id" FOREIGN KEY ("image_id") REFERENCES "mindwell"."images"("id"),
+    CONSTRAINT "unique_image_id" FOREIGN KEY ("image_id") REFERENCES "mindwell"."images"("id") ON DELETE CASCADE,
     CONSTRAINT "enum_image_size" FOREIGN KEY("size") REFERENCES "mindwell"."size"("id")
 );
 -- -------------------------------------------------------------
 
 -- CREATE INDEX "index_image_size_id" --------------------------
 CREATE INDEX "index_image_size_id" ON "mindwell"."image_sizes" USING btree( "image_id" );
+-- -------------------------------------------------------------
+
+
+
+-- CREATE TABLE "entry_images" ---------------------------------
+CREATE TABLE "mindwell"."entry_images" (
+    "entry_id" Integer NOT NULL,
+    "image_id" Integer NOT NULL,
+    CONSTRAINT "entry_images_entry" FOREIGN KEY("entry_id") REFERENCES "mindwell"."entries"("id") ON DELETE CASCADE,
+    CONSTRAINT "entry_images_image" FOREIGN KEY("image_id") REFERENCES "mindwell"."images"("id") ON DELETE CASCADE,
+    CONSTRAINT "unique_entry_image" UNIQUE("entry_id", "image_id") );
+;
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_entry_images_entry" ---------------------
+CREATE INDEX "index_entry_images_entry" ON "mindwell"."entry_images" USING btree( "entry_id" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_entry_images_image" ---------------------
+CREATE INDEX "index_entry_images_image" ON "mindwell"."entry_images" USING btree( "image_id" );
 -- -------------------------------------------------------------
 
 

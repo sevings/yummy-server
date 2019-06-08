@@ -296,6 +296,10 @@ definitions:
         type: string
       hasCut:
         type: boolean
+      images:
+        type: array
+        items:
+          $ref: '#/definitions/Image'
       wordCount:
         type: integer
       privacy:
@@ -520,7 +524,7 @@ definitions:
         $ref: '#/definitions/User'
       type:
         type: string
-        enum: [jpeg, gif]
+        enum: [jpg, gif]
       thumbnail:
         $ref: '#/definitions/ImageSize'
       small: 
@@ -1439,6 +1443,13 @@ paths:
           maxLength: 30000
           pattern: "\\s*\\S+.*"
         - in: formData
+          name: images
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 1
+        - in: formData
           name: privacy
           type: string
           enum: [all, followers, some, me]
@@ -1814,6 +1825,13 @@ paths:
           required: true
           pattern: "\\s*\\S+.*"
         - in: formData
+          name: images
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 1
+        - in: formData
           name: anonymous_comments
           type: boolean
           default: false
@@ -1864,6 +1882,13 @@ paths:
           minLength: 1
           maxLength: 30000
           pattern: "\\s*\\S+.*"
+        - in: formData
+          name: images
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 1
         - in: formData
           name: privacy
           type: string
@@ -2483,6 +2508,43 @@ paths:
             $ref: '#/definitions/Image'
         400:
           description: bad request
+          schema:
+            $ref: '#/definitions/Error'
+  /images/{id}:
+    parameters:
+      - $ref: '#/parameters/pathId'
+    get:
+      tags:
+        - images
+      security:
+        - ApiKeyHeader: []
+      responses:
+        200:
+          description: Image
+          schema:
+            $ref: '#/definitions/Image'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Image not found
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - images
+      security:
+        - ApiKeyHeader: []
+      responses:
+        204:
+          description: OK
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Image not found
           schema:
             $ref: '#/definitions/Error'
 produces:

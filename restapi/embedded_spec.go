@@ -1346,6 +1346,16 @@ func init() {
             "required": true
           },
           {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
+          },
+          {
             "type": "boolean",
             "default": false,
             "name": "anonymous_comments",
@@ -1569,6 +1579,16 @@ func init() {
             "name": "content",
             "in": "formData",
             "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
           },
           {
             "enum": [
@@ -2051,6 +2071,70 @@ func init() {
           }
         }
       }
+    },
+    "/images/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "images"
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "schema": {
+              "$ref": "#/definitions/Image"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "images"
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathId"
+        }
+      ]
     },
     "/me": {
       "get": {
@@ -2554,6 +2638,16 @@ func init() {
             "name": "content",
             "in": "formData",
             "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
           },
           {
             "enum": [
@@ -3551,6 +3645,12 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Image"
+          }
+        },
         "inLive": {
           "type": "boolean"
         },
@@ -3775,6 +3875,9 @@ func init() {
     "Image": {
       "type": "object",
       "properties": {
+        "author": {
+          "$ref": "#/definitions/User"
+        },
         "id": {
           "type": "integer",
           "format": "int64"
@@ -3785,15 +3888,18 @@ func init() {
         "medium": {
           "$ref": "#/definitions/ImageSize"
         },
-        "mimeType": {
-          "type": "string"
-        },
         "small": {
           "$ref": "#/definitions/ImageSize"
         },
-        "userId": {
-          "type": "integer",
-          "format": "int64"
+        "thumbnail": {
+          "$ref": "#/definitions/ImageSize"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "jpg",
+            "gif"
+          ]
         }
       }
     },
@@ -5609,6 +5715,16 @@ func init() {
             "required": true
           },
           {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
+          },
+          {
             "type": "boolean",
             "default": false,
             "name": "anonymous_comments",
@@ -5879,6 +5995,16 @@ func init() {
             "name": "content",
             "in": "formData",
             "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
           },
           {
             "enum": [
@@ -6397,6 +6523,75 @@ func init() {
           }
         }
       }
+    },
+    "/images/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "images"
+        ],
+        "responses": {
+          "200": {
+            "description": "Image",
+            "schema": {
+              "$ref": "#/definitions/Image"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "images"
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Image not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "minimum": 1,
+          "type": "integer",
+          "format": "int64",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
     },
     "/me": {
       "get": {
@@ -6984,6 +7179,16 @@ func init() {
             "name": "content",
             "in": "formData",
             "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "minimum": 1,
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": "images",
+            "in": "formData"
           },
           {
             "enum": [
@@ -8125,6 +8330,12 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Image"
+          }
+        },
         "inLive": {
           "type": "boolean"
         },
@@ -8349,6 +8560,9 @@ func init() {
     "Image": {
       "type": "object",
       "properties": {
+        "author": {
+          "$ref": "#/definitions/User"
+        },
         "id": {
           "type": "integer",
           "format": "int64"
@@ -8359,15 +8573,18 @@ func init() {
         "medium": {
           "$ref": "#/definitions/ImageSize"
         },
-        "mimeType": {
-          "type": "string"
-        },
         "small": {
           "$ref": "#/definitions/ImageSize"
         },
-        "userId": {
-          "type": "integer",
-          "format": "int64"
+        "thumbnail": {
+          "$ref": "#/definitions/ImageSize"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "jpg",
+            "gif"
+          ]
         }
       }
     },

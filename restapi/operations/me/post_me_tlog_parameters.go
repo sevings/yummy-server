@@ -59,6 +59,10 @@ type PostMeTlogParams struct {
 	Content string
 	/*
 	  In: formData
+	*/
+	Images []int64
+	/*
+	  In: formData
 	  Default: false
 	*/
 	InLive *bool
@@ -104,6 +108,11 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	fdContent, fdhkContent, _ := fds.GetOK("content")
 	if err := o.bindContent(fdContent, fdhkContent, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdImages, fdhkImages, _ := fds.GetOK("images")
+	if err := o.bindImages(fdImages, fdhkImages, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -177,6 +186,42 @@ func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 	if err := validate.Pattern("content", "formData", o.Content, `\s*\S+.*`); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// bindImages binds and validates array parameter Images from formData.
+//
+// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
+func (o *PostMeTlogParams) bindImages(rawData []string, hasKey bool, formats strfmt.Registry) error {
+
+	var qvImages string
+	if len(rawData) > 0 {
+		qvImages = rawData[len(rawData)-1]
+	}
+
+	// CollectionFormat:
+	imagesIC := swag.SplitByFormat(qvImages, "")
+	if len(imagesIC) == 0 {
+		return nil
+	}
+
+	var imagesIR []int64
+	for i, imagesIV := range imagesIC {
+		// items.Format: "int64"
+		imagesI, err := swag.ConvertInt64(imagesIV)
+		if err != nil {
+			return errors.InvalidType(fmt.Sprintf("%s.%v", "images", i), "formData", "int64", imagesI)
+		}
+
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", int64(imagesI), 1, false); err != nil {
+			return err
+		}
+
+		imagesIR = append(imagesIR, imagesI)
+	}
+
+	o.Images = imagesIR
 
 	return nil
 }

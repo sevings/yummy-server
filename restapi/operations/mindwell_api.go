@@ -76,6 +76,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		WatchingsDeleteEntriesIDWatchingHandler: watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation WatchingsDeleteEntriesIDWatching has not yet been implemented")
 		}),
+		ImagesDeleteImagesIDHandler: images.DeleteImagesIDHandlerFunc(func(params images.DeleteImagesIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ImagesDeleteImagesID has not yet been implemented")
+		}),
 		RelationsDeleteRelationsFromNameHandler: relations.DeleteRelationsFromNameHandlerFunc(func(params relations.DeleteRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsDeleteRelationsFromName has not yet been implemented")
 		}),
@@ -159,6 +162,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		EntriesGetEntriesWatchingHandler: entries.GetEntriesWatchingHandlerFunc(func(params entries.GetEntriesWatchingParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesWatching has not yet been implemented")
+		}),
+		ImagesGetImagesIDHandler: images.GetImagesIDHandlerFunc(func(params images.GetImagesIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ImagesGetImagesID has not yet been implemented")
 		}),
 		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
@@ -380,6 +386,8 @@ type MindwellAPI struct {
 	VotesDeleteEntriesIDVoteHandler votes.DeleteEntriesIDVoteHandler
 	// WatchingsDeleteEntriesIDWatchingHandler sets the operation handler for the delete entries ID watching operation
 	WatchingsDeleteEntriesIDWatchingHandler watchings.DeleteEntriesIDWatchingHandler
+	// ImagesDeleteImagesIDHandler sets the operation handler for the delete images ID operation
+	ImagesDeleteImagesIDHandler images.DeleteImagesIDHandler
 	// RelationsDeleteRelationsFromNameHandler sets the operation handler for the delete relations from name operation
 	RelationsDeleteRelationsFromNameHandler relations.DeleteRelationsFromNameHandler
 	// RelationsDeleteRelationsToNameHandler sets the operation handler for the delete relations to name operation
@@ -436,6 +444,8 @@ type MindwellAPI struct {
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
 	// EntriesGetEntriesWatchingHandler sets the operation handler for the get entries watching operation
 	EntriesGetEntriesWatchingHandler entries.GetEntriesWatchingHandler
+	// ImagesGetImagesIDHandler sets the operation handler for the get images ID operation
+	ImagesGetImagesIDHandler images.GetImagesIDHandler
 	// MeGetMeHandler sets the operation handler for the get me operation
 	MeGetMeHandler me.GetMeHandler
 	// MeGetMeFavoritesHandler sets the operation handler for the get me favorites operation
@@ -643,6 +653,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "watchings.DeleteEntriesIDWatchingHandler")
 	}
 
+	if o.ImagesDeleteImagesIDHandler == nil {
+		unregistered = append(unregistered, "images.DeleteImagesIDHandler")
+	}
+
 	if o.RelationsDeleteRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.DeleteRelationsFromNameHandler")
 	}
@@ -753,6 +767,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.EntriesGetEntriesWatchingHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesWatchingHandler")
+	}
+
+	if o.ImagesGetImagesIDHandler == nil {
+		unregistered = append(unregistered, "images.GetImagesIDHandler")
 	}
 
 	if o.MeGetMeHandler == nil {
@@ -1117,6 +1135,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
+	o.handlers["DELETE"]["/images/{id}"] = images.NewDeleteImagesID(o.context, o.ImagesDeleteImagesIDHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
 	o.handlers["DELETE"]["/relations/from/{name}"] = relations.NewDeleteRelationsFromName(o.context, o.RelationsDeleteRelationsFromNameHandler)
 
 	if o.handlers["DELETE"] == nil {
@@ -1253,6 +1276,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/watching"] = entries.NewGetEntriesWatching(o.context, o.EntriesGetEntriesWatchingHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/images/{id}"] = images.NewGetImagesID(o.context, o.ImagesGetImagesIDHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
