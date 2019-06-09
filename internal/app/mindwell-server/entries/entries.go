@@ -283,7 +283,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 
 			imageErr := checkImagesOwner(srv, tx, userID.ID, params.Images)
 			if imageErr != nil {
-				return me.NewPutMeCoverBadRequest().WithPayload(imageErr)
+				return me.NewPostMeTlogForbidden().WithPayload(imageErr)
 			}
 
 			entry := createEntry(srv, tx, userID,
@@ -397,6 +397,11 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 				}
 			}
 
+			imageErr := checkImagesOwner(srv, tx, uID.ID, params.Images)
+			if imageErr != nil {
+				return entries.NewPutEntriesIDForbidden().WithPayload(imageErr)
+			}
+
 			entry := editEntry(srv, tx, params.ID, uID,
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
 
@@ -468,6 +473,15 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 
 	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
 	entry.Comments = cmt
+
+	var images []int64
+	var imageID int64
+	tx.Query("SELECT image_id from entry_images WHERE entry_id = $1 ORDER BY image_id", entry.ID)
+	for tx.Scan(&imageID) {
+		images = append(images, imageID)
+	}
+
+	loadEntryImages(srv, tx, &entry, images)
 
 	setEntryRights(&entry, userID)
 
