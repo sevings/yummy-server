@@ -1910,6 +1910,7 @@ CREATE TABLE "mindwell"."images" (
     "user_id" Integer NOT NULL,
 	"path" Text NOT NULL,
     "extension" Text NOT NULL,
+    "processing" Boolean DEFAULT TRUE NOT NULL,
     "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL);
  ;
 -- -------------------------------------------------------------

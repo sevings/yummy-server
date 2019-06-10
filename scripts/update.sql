@@ -35,3 +35,9 @@ ADD COLUMN "extension" Text NOT NULL DEFAULT 'jpg';
 
 ALTER TABLE "mindwell"."images"
 ALTER COLUMN "extension" DROP DEFAULT;
+
+ALTER TABLE "mindwell"."images"
+ADD COLUMN "processing" Boolean DEFAULT TRUE NOT NULL;
+
+UPDATE "mindwell"."images"
+SET "processing" = FALSE;
