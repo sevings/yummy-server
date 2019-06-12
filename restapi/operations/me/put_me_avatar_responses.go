@@ -13,48 +13,28 @@ import (
 	models "github.com/sevings/mindwell-server/models"
 )
 
-// PutMeAvatarOKCode is the HTTP code returned for type PutMeAvatarOK
-const PutMeAvatarOKCode int = 200
+// PutMeAvatarNoContentCode is the HTTP code returned for type PutMeAvatarNoContent
+const PutMeAvatarNoContentCode int = 204
 
-/*PutMeAvatarOK Avatar
+/*PutMeAvatarNoContent OK
 
-swagger:response putMeAvatarOK
+swagger:response putMeAvatarNoContent
 */
-type PutMeAvatarOK struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Avatar `json:"body,omitempty"`
+type PutMeAvatarNoContent struct {
 }
 
-// NewPutMeAvatarOK creates PutMeAvatarOK with default headers values
-func NewPutMeAvatarOK() *PutMeAvatarOK {
+// NewPutMeAvatarNoContent creates PutMeAvatarNoContent with default headers values
+func NewPutMeAvatarNoContent() *PutMeAvatarNoContent {
 
-	return &PutMeAvatarOK{}
-}
-
-// WithPayload adds the payload to the put me avatar o k response
-func (o *PutMeAvatarOK) WithPayload(payload *models.Avatar) *PutMeAvatarOK {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put me avatar o k response
-func (o *PutMeAvatarOK) SetPayload(payload *models.Avatar) {
-	o.Payload = payload
+	return &PutMeAvatarNoContent{}
 }
 
 // WriteResponse to the client
-func (o *PutMeAvatarOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PutMeAvatarNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(204)
 }
 
 // PutMeAvatarBadRequestCode is the HTTP code returned for type PutMeAvatarBadRequest

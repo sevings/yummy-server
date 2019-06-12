@@ -18,6 +18,9 @@ type ImageSize struct {
 	// height
 	Height int64 `json:"height,omitempty"`
 
+	// preview
+	Preview string `json:"preview,omitempty"`
+
 	// url
 	URL string `json:"url,omitempty"`
 

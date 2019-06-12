@@ -2276,11 +2276,8 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
-            "description": "Avatar",
-            "schema": {
-              "$ref": "#/definitions/Avatar"
-            }
+          "204": {
+            "description": "OK"
           },
           "400": {
             "description": "bad request",
@@ -2312,11 +2309,8 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
-            "description": "Cover",
-            "schema": {
-              "$ref": "#/definitions/Cover"
-            }
+          "204": {
+            "description": "OK"
           },
           "400": {
             "description": "bad request",
@@ -3894,6 +3888,9 @@ func init() {
         "medium": {
           "$ref": "#/definitions/ImageSize"
         },
+        "processing": {
+          "type": "boolean"
+        },
         "small": {
           "$ref": "#/definitions/ImageSize"
         },
@@ -3937,6 +3934,9 @@ func init() {
       "properties": {
         "height": {
           "type": "integer"
+        },
+        "preview": {
+          "type": "string"
         },
         "url": {
           "type": "string"
@@ -6739,11 +6739,8 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
-            "description": "Avatar",
-            "schema": {
-              "$ref": "#/definitions/Avatar"
-            }
+          "204": {
+            "description": "OK"
           },
           "400": {
             "description": "bad request",
@@ -6775,11 +6772,8 @@ func init() {
           }
         ],
         "responses": {
-          "200": {
-            "description": "Cover",
-            "schema": {
-              "$ref": "#/definitions/Cover"
-            }
+          "204": {
+            "description": "OK"
           },
           "400": {
             "description": "bad request",
@@ -8585,6 +8579,9 @@ func init() {
         "medium": {
           "$ref": "#/definitions/ImageSize"
         },
+        "processing": {
+          "type": "boolean"
+        },
         "small": {
           "$ref": "#/definitions/ImageSize"
         },
@@ -8628,6 +8625,9 @@ func init() {
       "properties": {
         "height": {
           "type": "integer"
+        },
+        "preview": {
+          "type": "string"
         },
         "url": {
           "type": "string"

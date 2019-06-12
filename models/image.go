@@ -31,6 +31,9 @@ type Image struct {
 	// medium
 	Medium *ImageSize `json:"medium,omitempty"`
 
+	// processing
+	Processing bool `json:"processing,omitempty"`
+
 	// small
 	Small *ImageSize `json:"small,omitempty"`
 

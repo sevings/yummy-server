@@ -13,48 +13,28 @@ import (
 	models "github.com/sevings/mindwell-server/models"
 )
 
-// PutMeCoverOKCode is the HTTP code returned for type PutMeCoverOK
-const PutMeCoverOKCode int = 200
+// PutMeCoverNoContentCode is the HTTP code returned for type PutMeCoverNoContent
+const PutMeCoverNoContentCode int = 204
 
-/*PutMeCoverOK Cover
+/*PutMeCoverNoContent OK
 
-swagger:response putMeCoverOK
+swagger:response putMeCoverNoContent
 */
-type PutMeCoverOK struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.Cover `json:"body,omitempty"`
+type PutMeCoverNoContent struct {
 }
 
-// NewPutMeCoverOK creates PutMeCoverOK with default headers values
-func NewPutMeCoverOK() *PutMeCoverOK {
+// NewPutMeCoverNoContent creates PutMeCoverNoContent with default headers values
+func NewPutMeCoverNoContent() *PutMeCoverNoContent {
 
-	return &PutMeCoverOK{}
-}
-
-// WithPayload adds the payload to the put me cover o k response
-func (o *PutMeCoverOK) WithPayload(payload *models.Cover) *PutMeCoverOK {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the put me cover o k response
-func (o *PutMeCoverOK) SetPayload(payload *models.Cover) {
-	o.Payload = payload
+	return &PutMeCoverNoContent{}
 }
 
 // WriteResponse to the client
-func (o *PutMeCoverOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PutMeCoverNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
+
+	rw.WriteHeader(204)
 }
 
 // PutMeCoverBadRequestCode is the HTTP code returned for type PutMeCoverBadRequest
