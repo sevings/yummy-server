@@ -60,6 +60,13 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 		return img
 	}
 
+	filePath := path + "." + extension
+
+	var previewPath string
+	if extension == models.ImageTypeGif {
+		previewPath = path + ".jpg"
+	}
+
 	var width, height int64
 	var size string
 	tx.Query(`
@@ -74,25 +81,37 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 			img.Thumbnail = &models.ImageSize{
 				Height: height,
 				Width:  width,
-				URL:    baseURL + "albums/thumbnails/" + path,
+				URL:    baseURL + "albums/thumbnails/" + filePath,
+			}
+			if extension == models.ImageTypeGif {
+				img.Thumbnail.Preview = baseURL + "albums/thumbnails/" + previewPath
 			}
 		case "small":
 			img.Small = &models.ImageSize{
 				Height: height,
 				Width:  width,
-				URL:    baseURL + "albums/small/" + path,
+				URL:    baseURL + "albums/small/" + filePath,
+			}
+			if extension == models.ImageTypeGif {
+				img.Small.Preview = baseURL + "albums/small/" + previewPath
 			}
 		case "medium":
 			img.Medium = &models.ImageSize{
 				Height: height,
 				Width:  width,
-				URL:    baseURL + "albums/medium/" + path,
+				URL:    baseURL + "albums/medium/" + filePath,
+			}
+			if extension == models.ImageTypeGif {
+				img.Medium.Preview = baseURL + "albums/medium/" + previewPath
 			}
 		case "large":
 			img.Large = &models.ImageSize{
 				Height: height,
 				Width:  width,
-				URL:    baseURL + "albums/large/" + path,
+				URL:    baseURL + "albums/large/" + filePath,
+			}
+			if extension == models.ImageTypeGif {
+				img.Large.Preview = baseURL + "albums/large/" + previewPath
 			}
 		}
 	}
