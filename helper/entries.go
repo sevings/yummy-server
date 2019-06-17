@@ -8,13 +8,18 @@ import (
 )
 
 type entry struct {
-	id      int64
-	title   string
-	content string
+	id        int64
+	title     string
+	content   string
+	hasAttach bool
 }
 
 func UpdateEntries(tx *sql.Tx) {
-	rows, err := tx.Query("SELECT id, title, edit_content FROM entries")
+	rows, err := tx.Query(`
+		SELECT id, title, edit_content,
+			EXISTS(SELECT 1 FROM entry_images WHERE entry_id = entries.id)
+		FROM entries
+	`)
 	if err != nil {
 		log.Println(err)
 	}
@@ -22,7 +27,7 @@ func UpdateEntries(tx *sql.Tx) {
 	var feed []entry
 	for rows.Next() {
 		var e entry
-		rows.Scan(&e.id, &e.title, &e.content)
+		rows.Scan(&e.id, &e.title, &e.content, &e.hasAttach)
 		feed = append(feed, e)
 	}
 
@@ -37,7 +42,7 @@ func UpdateEntries(tx *sql.Tx) {
 	`
 
 	for _, e := range feed {
-		entry := entries.NewEntry(e.title, e.content)
+		entry := entries.NewEntry(e.title, e.content, e.hasAttach)
 		_, err = tx.Exec(q, e.id, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent, entry.HasCut)
 		if err != nil {
 			log.Println(err)

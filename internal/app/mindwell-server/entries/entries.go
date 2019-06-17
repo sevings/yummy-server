@@ -108,19 +108,19 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func NewEntry(title, content string) *models.Entry {
+func NewEntry(title, content string, hasAttach bool) *models.Entry {
 	title = strings.TrimSpace(title)
 	title = bluemonday.StrictPolicy().Sanitize(title)
 
-	const titleLength = 100
-	const titleFormat = "%.100s"
-	cutTitle, isTitleCut := utils.CutText(title, titleFormat, titleLength)
+	cutTitle, isTitleCut := utils.CutText(title, 100)
 
 	content = strings.TrimSpace(content)
 
-	const contentLength = 500
-	const contentFormat = "%.500s"
-	cutContent, isContentCut := utils.CutText(content, contentFormat, contentLength)
+	contentLength := 500
+	if hasAttach {
+		contentLength = 300
+	}
+	cutContent, isContentCut := utils.CutText(content, contentLength)
 
 	hasCut := isTitleCut || isContentCut
 	if !hasCut {
@@ -141,7 +141,7 @@ func NewEntry(title, content string) *models.Entry {
 	return &entry
 }
 
-func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
+func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive, hasAttach bool) *models.Entry {
 	if privacy == "followers" {
 		privacy = models.EntryPrivacySome //! \todo add users to list
 	}
@@ -151,7 +151,7 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID,
 		inLive = false
 	}
 
-	entry := NewEntry(title, content)
+	entry := NewEntry(title, content, hasAttach)
 
 	entry.Author = users.LoadUserByID(srv, tx, userID.ID)
 	entry.Privacy = privacy
@@ -170,8 +170,9 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID,
 	return entry
 }
 
-func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
-	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
+func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string,
+	isVotable, inLive, hasAttach bool) *models.Entry {
+	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive, hasAttach)
 
 	category := entryCategory(entry)
 
@@ -297,7 +298,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 			}
 
 			entry := createEntry(srv, tx, userID,
-				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive, len(params.Images) > 0)
 
 			attachImages(srv, tx, entry, params.Images)
 
@@ -311,8 +312,8 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 	}
 }
 
-func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userID *models.UserID, title, content, privacy string, isVotable, inLive bool) *models.Entry {
-	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive)
+func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userID *models.UserID, title, content, privacy string, isVotable, inLive, hasAttach bool) *models.Entry {
+	entry := myEntry(srv, tx, userID, title, content, privacy, isVotable, inLive, hasAttach)
 
 	category := entryCategory(entry)
 
@@ -413,7 +414,7 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 			}
 
 			entry := editEntry(srv, tx, params.ID, uID,
-				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive)
+				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive, len(params.Images) > 0)
 
 			reattachImages(srv, tx, entry, params.Images)
 

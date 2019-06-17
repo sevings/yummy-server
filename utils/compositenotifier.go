@@ -2,8 +2,9 @@ package utils
 
 import (
 	"database/sql"
-	"github.com/sevings/mindwell-server/models"
 	"log"
+
+	"github.com/sevings/mindwell-server/models"
 )
 
 type CompositeNotifier struct {
@@ -20,7 +21,7 @@ func NewCompositeNotifier(srv *MindwellServer) *CompositeNotifier {
 	return &CompositeNotifier{
 		srv: srv,
 		Ntf: NewNotifier(ntfURL, ntfKey),
-		Tg: NewTelegramBot(srv),
+		Tg:  NewTelegramBot(srv),
 	}
 }
 
@@ -43,7 +44,7 @@ func (ntf *CompositeNotifier) SendNewInvite(tx *AutoTx, userID int) {
 	}
 }
 
-func (ntf* CompositeNotifier) SendEmailChanged(tx *AutoTx, userID *models.UserID, oldEmail, newEmail string) {
+func (ntf *CompositeNotifier) SendEmailChanged(tx *AutoTx, userID *models.UserID, oldEmail, newEmail string) {
 	const q = `
 		SELECT show_name, telegram
 		FROM users
@@ -116,7 +117,7 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 	var title string
 	tx.Query(titleQ, cmt.EntryID).Scan(&title)
 
-	title, _ = CutText(title, "%.80s", 80)
+	title, _ = CutText(title, 80)
 
 	const fromQ = `
 		SELECT gender.type 

@@ -190,12 +190,12 @@ func GenerateString(length int) string {
 	return string(b)
 }
 
-func CutText(text, format string, size int) (string, bool) {
+func CutText(text string, size int) (string, bool) {
 	if len(text) <= size {
 		return text, false
 	}
 
-	text = fmt.Sprintf(format, text)
+	text = string([]rune(text)[:size])
 
 	var isSpace bool
 	trim := func(r rune) bool {
