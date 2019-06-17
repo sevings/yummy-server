@@ -44,11 +44,13 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 var wordRe *regexp.Regexp
 var imgRe *regexp.Regexp
+var ytRe *regexp.Regexp
 var md *markdown.Markdown
 
 func init() {
 	wordRe = regexp.MustCompile("[a-zA-Zа-яА-ЯёЁ0-9]+")
 	imgRe = regexp.MustCompile("!\\[[^\\]]*\\]\\([^\\)]+\\)")
+	ytRe = regexp.MustCompile(`(?i)(?:https?://)?(?:www\.)?(?:m\.)?(?:youtube.com/watch\?\S*v=|youtu.be/)[a-z0-9\-_]+\S*`)
 
 	markdown.RegisterCoreRule(250, appendTargetToLinks)
 	md = markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Tables(false))
@@ -90,9 +92,17 @@ func entryCategory(entry *models.Entry) string {
 		return "longread"
 	}
 
-	images := imgRe.FindAllStringIndex(entry.EditContent, -1)
-	if len(images) > 0 && entry.WordCount < 50 {
-		return "media"
+	if entry.WordCount < 50 {
+		hasMedia := len(entry.Images) > 0
+		if !hasMedia {
+			hasMedia = len(imgRe.FindAllStringIndex(entry.EditContent, -1)) > 0
+		}
+		if !hasMedia {
+			hasMedia = len(ytRe.FindAllStringIndex(entry.EditContent, -1)) > 0
+		}
+		if hasMedia {
+			return "media"
+		}
 	}
 
 	return "tweet"
