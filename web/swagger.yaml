@@ -1286,6 +1286,7 @@ paths:
         - in: formData
           name: file
           type: file
+          required: true
       responses:
         204:
           description: OK
@@ -1305,6 +1306,7 @@ paths:
         - in: formData
           name: file
           type: file
+          required: true
       responses:
         204:
           description: OK
@@ -2507,6 +2509,7 @@ paths:
         - in: formData
           name: file
           type: file
+          required: true
       responses:
         200:
           description: Image

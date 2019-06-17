@@ -2057,7 +2057,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -2272,7 +2273,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -2305,7 +2307,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -6515,7 +6518,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -6735,7 +6739,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {
@@ -6768,7 +6773,8 @@ func init() {
           {
             "type": "file",
             "name": "file",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           }
         ],
         "responses": {

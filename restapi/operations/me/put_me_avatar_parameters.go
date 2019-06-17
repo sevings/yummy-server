@@ -32,6 +32,7 @@ type PutMeAvatarParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
+	  Required: true
 	  In: formData
 	*/
 	File io.ReadCloser
@@ -55,11 +56,10 @@ func (o *PutMeAvatarParams) BindRequest(r *http.Request, route *middleware.Match
 	}
 
 	file, fileHeader, err := r.FormFile("file")
-	if err != nil && err != http.ErrMissingFile {
+	if err != nil {
 		res = append(res, errors.New(400, "reading file %q failed: %v", "file", err))
-	} else if err == http.ErrMissingFile {
-		// no-op for missing but optional file parameter
 	} else if err := o.bindFile(file, fileHeader); err != nil {
+		// Required: true
 		res = append(res, err)
 	} else {
 		o.File = &runtime.File{Data: file, Header: fileHeader}
