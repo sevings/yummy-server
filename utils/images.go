@@ -11,25 +11,25 @@ func setProcessingImage(baseURL string, img *models.Image) {
 	img.Thumbnail = &models.ImageSize{
 		Width:  100,
 		Height: 100,
-		URL:    baseURL + "albums/thumbnails/processing.jpg",
+		URL:    baseURL + "albums/thumbnails/processing.png",
 	}
 
 	img.Small = &models.ImageSize{
 		Width:  480,
-		Height: 360,
-		URL:    baseURL + "albums/small/processing.jpg",
+		Height: 300,
+		URL:    baseURL + "albums/small/processing.png",
 	}
 
 	img.Medium = &models.ImageSize{
-		Width:  800,
+		Width:  960,
 		Height: 600,
-		URL:    baseURL + "albums/medium/processing.jpg",
+		URL:    baseURL + "albums/medium/processing.png",
 	}
 
 	img.Large = &models.ImageSize{
-		Width:  1280,
-		Height: 960,
-		URL:    baseURL + "albums/large/processing.jpg",
+		Width:  1440,
+		Height: 900,
+		URL:    baseURL + "albums/large/processing.png",
 	}
 }
 
