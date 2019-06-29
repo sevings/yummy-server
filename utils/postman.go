@@ -38,13 +38,22 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 
 	go func() {
 		const limitPerInt = 100
-		const interval = time.Hour
 
-		until := time.Now().Add(interval)
+		until := time.Now()
+		minutes := until.Minute()
+		minutes = 65 - minutes
+
+		duration, err := time.ParseDuration(fmt.Sprintf("%dm", minutes))
+		if err == nil {
+			until = until.Add(duration)
+		} else {
+			log.Println(err)
+		}
+
 		count := 0
 
 		resetCounter := func() {
-			until = until.Add(interval)
+			until = until.Add(time.Hour)
 			count = 0
 		}
 
