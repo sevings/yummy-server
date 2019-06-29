@@ -7,6 +7,9 @@ import (
 	"github.com/sevings/mindwell-server/models"
 )
 
+const imageExtensionJpg = "jpg"
+const imageExtensionGif = "gif"
+
 func setProcessingImage(baseURL string, img *models.Image) {
 	img.Thumbnail = &models.ImageSize{
 		Width:  100,
@@ -51,7 +54,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 		Author: &models.User{
 			ID: authorID,
 		},
-		Type:       extension,
+		IsAnimated: extension == imageExtensionGif && !processing,
 		Processing: processing,
 	}
 
@@ -63,7 +66,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 	filePath := path + "." + extension
 
 	var previewPath string
-	if extension == models.ImageTypeGif {
+	if img.IsAnimated {
 		previewPath = path + ".jpg"
 	}
 
@@ -83,7 +86,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 				Width:  width,
 				URL:    baseURL + "albums/thumbnails/" + filePath,
 			}
-			if extension == models.ImageTypeGif {
+			if img.IsAnimated {
 				img.Thumbnail.Preview = baseURL + "albums/thumbnails/" + previewPath
 			}
 		case "small":
@@ -92,7 +95,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 				Width:  width,
 				URL:    baseURL + "albums/small/" + filePath,
 			}
-			if extension == models.ImageTypeGif {
+			if img.IsAnimated {
 				img.Small.Preview = baseURL + "albums/small/" + previewPath
 			}
 		case "medium":
@@ -101,7 +104,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 				Width:  width,
 				URL:    baseURL + "albums/medium/" + filePath,
 			}
-			if extension == models.ImageTypeGif {
+			if img.IsAnimated {
 				img.Medium.Preview = baseURL + "albums/medium/" + previewPath
 			}
 		case "large":
@@ -110,7 +113,7 @@ func loadImageNotCached(srv *MindwellServer, tx *AutoTx, imageID int64) *models.
 				Width:  width,
 				URL:    baseURL + "albums/large/" + filePath,
 			}
-			if extension == models.ImageTypeGif {
+			if img.IsAnimated {
 				img.Large.Preview = baseURL + "albums/large/" + previewPath
 			}
 		}

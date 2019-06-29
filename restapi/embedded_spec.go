@@ -3885,6 +3885,9 @@ func init() {
           "type": "integer",
           "format": "int64"
         },
+        "isAnimated": {
+          "type": "boolean"
+        },
         "large": {
           "$ref": "#/definitions/ImageSize"
         },
@@ -3899,13 +3902,6 @@ func init() {
         },
         "thumbnail": {
           "$ref": "#/definitions/ImageSize"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "jpg",
-            "gif"
-          ]
         }
       }
     },
@@ -8579,6 +8575,9 @@ func init() {
           "type": "integer",
           "format": "int64"
         },
+        "isAnimated": {
+          "type": "boolean"
+        },
         "large": {
           "$ref": "#/definitions/ImageSize"
         },
@@ -8593,13 +8592,6 @@ func init() {
         },
         "thumbnail": {
           "$ref": "#/definitions/ImageSize"
-        },
-        "type": {
-          "type": "string",
-          "enum": [
-            "jpg",
-            "gif"
-          ]
         }
       }
     },

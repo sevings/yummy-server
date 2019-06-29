@@ -524,9 +524,8 @@ definitions:
         format: int64
       author:
         $ref: '#/definitions/User'
-      type:
-        type: string
-        enum: [jpg, gif]
+      isAnimated:
+        type: boolean
       processing:
         type: boolean
       thumbnail:
