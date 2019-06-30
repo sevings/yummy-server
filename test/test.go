@@ -260,7 +260,7 @@ func saveImage(db *sql.DB, userID int64, img *models.Image, fileName string) {
 	defer tx.Finish()
 
 	tx.Query("INSERT INTO images(user_id, path, extension) VALUES($1, $2, $3) RETURNING id",
-		userID, fileName, img.Type)
+		userID, fileName, "jpg")
 	tx.Scan(&img.ID)
 
 	saveImageSize := func(tx *utils.AutoTx, imageID, width, height int64, size string) {
@@ -280,14 +280,14 @@ func saveImage(db *sql.DB, userID int64, img *models.Image, fileName string) {
 
 func createImage(srv *utils.MindwellServer, db *sql.DB, userID *models.UserID) *models.Image {
 	baseURL := srv.ConfigString("images.base_url")
-	path := "a/a/aaa.jpg"
+	path := "a/a/aaa"
 
 	img := &models.Image{
 		Author: &models.User{
 			ID:   userID.ID,
 			Name: userID.Name,
 		},
-		Type: "jpg",
+		IsAnimated: false,
 		Thumbnail: &models.ImageSize{
 			Width:  100,
 			Height: 100,
