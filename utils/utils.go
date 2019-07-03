@@ -191,11 +191,13 @@ func GenerateString(length int) string {
 }
 
 func CutText(text string, size int) (string, bool) {
-	if len(text) <= size {
+	runes := []rune(text)
+
+	if len(runes) <= size {
 		return text, false
 	}
 
-	text = string([]rune(text)[:size])
+	text = string(runes[:size])
 
 	var isSpace bool
 	trim := func(r rune) bool {
