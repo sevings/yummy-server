@@ -114,36 +114,26 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	return &profile
-}
+	profile.Relations = &models.ProfileAO1Relations{
+		IsOpenForMe: profile.ID == userID.ID,
+	}
 
-func loadProfile(srv *utils.MindwellServer, query string, userID *models.UserID, arg interface{}) middleware.Responder {
-	return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-		profile := loadUserProfile(srv, tx, query, userID, arg)
-		if tx.Error() != nil {
-			return users.NewGetUsersNameNotFound()
-		}
+	if profile.ID == userID.ID {
+		return &profile
+	}
 
-		result := users.NewGetUsersNameOK().WithPayload(profile)
-		if userID.ID == profile.ID {
-			return result
-		}
-
-		const relationQuery = `
+	const relationQuery = `
 			SELECT relation.type
 			FROM relations, relation
 			WHERE relations.from_id = $1
 				AND relations.to_id = $2
 				AND relations.type = relation.id`
 
-		profile.Relations = &models.ProfileAO1Relations{
-			FromMe: relationship(tx, relationQuery, userID.ID, profile.ID),
-			ToMe:   relationship(tx, relationQuery, profile.ID, userID.ID),
-		}
-		profile.Relations.IsOpenForMe = isOpenForMe(profile, userID)
+	profile.Relations.FromMe = relationship(tx, relationQuery, userID.ID, profile.ID)
+	profile.Relations.ToMe = relationship(tx, relationQuery, profile.ID, userID.ID)
+	profile.Relations.IsOpenForMe = isOpenForMe(&profile, userID)
 
-		return result
-	})
+	return &profile
 }
 
 func isOpenForMe(profile *models.Profile, me *models.UserID) bool {

@@ -9,8 +9,16 @@ import (
 
 func newUserLoader(srv *utils.MindwellServer) func(users.GetUsersNameParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameParams, userID *models.UserID) middleware.Responder {
-		const q = profileQuery + "WHERE lower(long_users.name) = lower($1)"
-		return loadProfile(srv, q, userID, params.Name)
+		const query = profileQuery + "WHERE lower(long_users.name) = lower($1)"
+
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			profile := loadUserProfile(srv, tx, query, userID, params.Name)
+			if profile.ID == 0 {
+				return users.NewGetUsersNameNotFound()
+			}
+
+			return users.NewGetUsersNameOK().WithPayload(profile)
+		})
 	}
 }
 

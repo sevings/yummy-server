@@ -125,6 +125,10 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 
 	profile.Cover = srv.NewCover(profile.ID, cover)
 
+	profile.Relations = &models.ProfileAO1Relations{
+		IsOpenForMe: true,
+	}
+
 	return &profile
 }
 
