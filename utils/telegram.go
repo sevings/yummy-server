@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	cache "github.com/patrickmn/go-cache"
 	"github.com/sevings/mindwell-server/models"
 	"golang.org/x/net/proxy"
@@ -67,28 +67,7 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		stop:   make(chan interface{}),
 	}
 
-	proxy := connectToProxy(srv)
-	if proxy == nil {
-		return bot
-	}
-
-	token := srv.ConfigString("telegram.token")
-	if len(token) == 0 {
-		return bot
-	}
-
-	api, err := tgbotapi.NewBotAPIWithClient(token, proxy)
-	if err != nil {
-		log.Print(err)
-		return bot
-	}
-
-	bot.api = api
-	// api.Debug = true
-
-	log.Printf("Running Telegram bot %s", api.Self.UserName)
-
-	go bot.run()
+	go bot.run(srv)
 
 	return bot
 }
@@ -100,7 +79,28 @@ func (bot *TelegramBot) sendMessage(chat int64, text string) {
 	bot.send <- &msg
 }
 
-func (bot *TelegramBot) run() {
+func (bot *TelegramBot) run(srv *MindwellServer) {
+	token := srv.ConfigString("telegram.token")
+	if len(token) == 0 {
+		return
+	}
+
+	proxy := connectToProxy(srv)
+	if proxy == nil {
+		return
+	}
+
+	api, err := tgbotapi.NewBotAPIWithClient(token, proxy)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+
+	bot.api = api
+	// api.Debug = true
+
+	log.Printf("Running Telegram bot %s", api.Self.UserName)
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
