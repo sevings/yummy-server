@@ -37,23 +37,14 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 	}
 
 	go func() {
-		const limitPerInt = 100
+		const limitPerInt = 1000
+		const interval = time.Hour
 
-		until := time.Now()
-		minutes := until.Minute()
-		minutes = 65 - minutes
-
-		duration, err := time.ParseDuration(fmt.Sprintf("%dm", minutes))
-		if err == nil {
-			until = until.Add(duration)
-		} else {
-			log.Println(err)
-		}
-
+		until := time.Now().Add(interval)
 		count := 0
 
 		resetCounter := func() {
-			until = until.Add(time.Hour)
+			until = time.Now().Add(interval)
 			count = 0
 		}
 
@@ -73,7 +64,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 
 			resp, id, err := pm.mg.Send(msg)
 			if err == nil {
-				fmt.Printf("ID: %s. Resp: %s.\n", id, resp)
+				fmt.Printf("Email ID: %s. Resp: %s.\n", id, resp)
 			} else {
 				log.Println(err)
 			}
