@@ -25,6 +25,12 @@ func NewCompositeNotifier(srv *MindwellServer) *CompositeNotifier {
 	}
 }
 
+func (ntf *CompositeNotifier) Stop() {
+	ntf.Mail.Stop()
+	ntf.Tg.Stop()
+	ntf.Ntf.Stop()
+}
+
 func (ntf *CompositeNotifier) SendNewInvite(tx *AutoTx, userID int) {
 	var email, name, showName string
 	var sendEmail bool

@@ -12,10 +12,11 @@ import (
 )
 
 type Postman struct {
-	url string
-	mg  mailgun.Mailgun
-	h   hermes.Hermes
-	ch  chan *mailgun.Message
+	url  string
+	mg   mailgun.Mailgun
+	h    hermes.Hermes
+	ch   chan *mailgun.Message
+	stop chan interface{}
 }
 
 func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
@@ -33,7 +34,8 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
 		},
-		ch: make(chan *mailgun.Message, 200),
+		ch:   make(chan *mailgun.Message, 200),
+		stop: make(chan interface{}),
 	}
 
 	go func() {
@@ -69,9 +71,16 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 				log.Println(err)
 			}
 		}
+
+		close(pm.stop)
 	}()
 
 	return pm
+}
+
+func (pm *Postman) Stop() {
+	close(pm.ch)
+	<-pm.stop
 }
 
 func (pm *Postman) send(email hermes.Email, address, subj, name string) {

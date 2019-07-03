@@ -150,8 +150,8 @@ func (bot *TelegramBot) Stop() {
 		return
 	}
 
-	close(bot.stop)
 	bot.api.StopReceivingUpdates()
+	close(bot.stop)
 }
 
 func (bot *TelegramBot) BuildToken(userID int64) string {

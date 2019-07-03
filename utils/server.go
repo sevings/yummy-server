@@ -29,6 +29,7 @@ type MailSender interface {
 	SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewInvite(address, name string)
 	SendInvited(address, fromShowName, fromGender, toShowName string)
+	Stop()
 }
 
 type MindwellServer struct {

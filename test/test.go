@@ -61,6 +61,10 @@ func (esm *EmailSenderMock) SendInvited(address, fromShowName, fromGender, toSho
 	esm.Emails = append(esm.Emails, address)
 }
 
+func (esm *EmailSenderMock) Stop() {
+	
+}
+
 func (esm *EmailSenderMock) CheckEmail(t *testing.T, email string) {
 	req := require.New(t)
 	req.Equal(1, len(esm.Emails))
