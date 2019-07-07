@@ -213,29 +213,35 @@ func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Post
 }
 
 const authProfileQuery = `
-SELECT id, name, show_name,
-avatar,
-gender, is_daylog,
-privacy,
-title, rank, 
-extract(epoch from created_at), extract(epoch from last_seen_at), is_online,
-age,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count, days_count,
-country, city,
-cover,
-css, background_color, text_color, 
-font_family, font_size, text_alignment, 
-email, verified, birthday,
-api_key, extract(epoch from valid_thru),
-extract(epoch from invite_ban), extract(epoch from vote_ban),
-extract(epoch from comment_ban), extract(epoch from live_ban),
-invited_by_id, 
-invited_by_name, invited_by_show_name,
-invited_by_is_online, 
-invited_by_avatar
-FROM long_users `
+SELECT users.id, users.name, users.show_name,
+users.avatar,
+gender.type, users.is_daylog,
+user_privacy.type,
+users.title, users.rank, 
+extract(epoch from users.created_at), extract(epoch from users.last_seen_at), is_online(users.last_seen_at),
+user_age(users.birthday),
+users.entries_count, users.followings_count, users.followers_count, 
+users.ignored_count, users.invited_count, users.comments_count, 
+users.favorites_count, users.tags_count, CURRENT_DATE - users.created_at::date,
+users.country, users.city,
+users.cover,
+users.css, users.background_color, users.text_color, 
+font_family.type, users.font_size, alignment.type, 
+users.email, users.verified, users.birthday,
+users.api_key, extract(epoch from users.valid_thru),
+extract(epoch from users.invite_ban), extract(epoch from users.vote_ban),
+extract(epoch from users.comment_ban), extract(epoch from users.live_ban),
+invited_by.id, 
+invited_by.name, invited_by.show_name,
+is_online(invited_by.last_seen_at), 
+invited_by.avatar
+FROM users 
+INNER JOIN gender ON gender.id = users.gender
+INNER JOIN user_privacy ON users.privacy = user_privacy.id
+INNER JOIN font_family ON users.font_family = font_family.id
+INNER JOIN alignment ON users.text_alignment = alignment.id
+LEFT JOIN users AS invited_by ON users.invited_by = invited_by.id
+`
 
 func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, args ...interface{}) *models.AuthProfile {
 	var profile models.AuthProfile
@@ -333,7 +339,7 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 	return &profile
 }
 
-const authProfileQueryByID = authProfileQuery + "WHERE long_users.id = $1"
+const authProfileQueryByID = authProfileQuery + "WHERE users.id = $1"
 
 func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterParams) middleware.Responder {
 	return func(params account.PostAccountRegisterParams) middleware.Responder {
@@ -374,8 +380,8 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 }
 
 const authProfileQueryByPassword = authProfileQuery + `
-	WHERE password_hash = $2
-		AND (lower(name) = lower($1) OR lower(email) = lower($1))
+	WHERE users.password_hash = $2
+		AND (lower(users.name) = lower($1) OR lower(users.email) = lower($1))
 `
 
 func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) middleware.Responder {
@@ -430,8 +436,8 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 				err := srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."})
 				return account.NewPostAccountPasswordForbidden().WithPayload(err)
 			}
- 
-		 srv.Ntf.SendPasswordChanged(tx, userID)
+
+			srv.Ntf.SendPasswordChanged(tx, userID)
 
 			return account.NewPostAccountPasswordOK()
 		})
@@ -488,7 +494,7 @@ func newEmailUpdater(srv *utils.MindwellServer) func(account.PostAccountEmailPar
 				return account.NewPostAccountEmailForbidden().WithPayload(err)
 			}
 
-		  srv.Ntf.SendEmailChanged(tx, userID, oldEmail, params.Email)
+			srv.Ntf.SendEmailChanged(tx, userID, oldEmail, params.Email)
 
 			return account.NewPostAccountEmailOK()
 		})

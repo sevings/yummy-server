@@ -19,7 +19,7 @@ entries.title, cut_title, content, cut_content, edit_content,
 has_cut, word_count, entry_privacy.type,
 is_votable, in_live, entries.comments_count,
 users.id, users.name, users.show_name,
-now() - users.last_seen_at < interval '15 minutes',
+is_online(users.last_seen_at),
 users.avatar, `
 
 const tlogFeedQueryStart = feedQueryStart + `

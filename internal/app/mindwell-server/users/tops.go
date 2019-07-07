@@ -13,12 +13,11 @@ func searchUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUs
 	const query = usersQuerySelect + `
 					FROM (
 						SELECT *, $1 <<-> to_search_string(name, show_name, country, city) AS trgm_dist 
-						FROM long_users 
+						FROM users 
 						ORDER BY trgm_dist
 						LIMIT 50
-					) AS long_users
-					WHERE trgm_dist < 0.6
-					`
+					) AS users, gender, user_privacy
+					WHERE trgm_dist < 0.6` + usersQueryJoins
 	tx.Query(query, params.Query)
 	list := loadUserList(srv, tx)
 	body := &users.GetUsersOKBody{
@@ -33,9 +32,9 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 	query := usersQuerySelect
 
 	if *params.Top == "rank" {
-		query += "FROM long_users WHERE invited_by IS NOT NULL ORDER BY rank ASC"
+		query += "FROM users, gender, user_privacy WHERE invited_by IS NOT NULL" + usersQueryJoins + "ORDER BY rank ASC"
 	} else if *params.Top == "new" {
-		query += "FROM long_users WHERE invited_by IS NOT NULL ORDER BY created_at DESC"
+		query += "FROM users, gender, user_privacy WHERE invited_by IS NOT NULL" + usersQueryJoins + " ORDER BY created_at DESC"
 	} else if *params.Top == "waiting" {
 		query += `
 			FROM (
@@ -45,14 +44,16 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 					INNER JOIN users ON entries.author_id = users.id
 					INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 					INNER JOIN user_privacy ON users.privacy = user_privacy.id
-					WHERE author_id = long_users.id 
+					WHERE author_id = users.id 
 						AND entry_privacy.type = 'all' 
 						AND user_privacy.type = 'all' 
 				), '-infinity') AS last_entry
-				FROM long_users
+				FROM users
 				WHERE invited_by IS NULL
 				ORDER BY last_entry DESC, created_at DESC
-			) as long_users
+			) as users
+			INNER JOIN gender ON gender.id = users.gender
+			INNER JOIN user_privacy ON users.privacy = user_privacy.id
 		`
 	} else {
 		fmt.Printf("Unknown users top: %s\n", *params.Top)

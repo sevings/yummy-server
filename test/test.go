@@ -62,7 +62,7 @@ func (esm *EmailSenderMock) SendInvited(address, fromShowName, fromGender, toSho
 }
 
 func (esm *EmailSenderMock) Stop() {
-	
+
 }
 
 func (esm *EmailSenderMock) CheckEmail(t *testing.T, email string) {

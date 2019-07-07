@@ -57,13 +57,13 @@ func HtmlContent(content string) string {
 
 const commentQuery = `
 	SELECT comments.id, entry_id,
-		extract(epoch from created_at), content, edit_content, rating,
+		extract(epoch from comments.created_at), content, edit_content, rating,
 		up_votes, down_votes, votes.vote,
 		author_id, name, show_name, 
-		is_online,
+		is_online(last_seen_at),
 		avatar
 	FROM comments
-	JOIN short_users ON comments.author_id = short_users.id
+	JOIN users ON comments.author_id = users.id
 	LEFT JOIN (SELECT comment_id, vote FROM comment_votes WHERE user_id = $1) AS votes 
 		ON comments.id = votes.comment_id 
 `

@@ -14,29 +14,34 @@ import (
 
 func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.AuthProfile {
 	const q = `
-	SELECT id, name, show_name,
-	avatar,
-	gender, is_daylog,
-	privacy,
-	title, rank, 
-	extract(epoch from created_at), extract(epoch from last_seen_at), is_online,
-	age,
-	entries_count, followings_count, followers_count, 
-	ignored_count, invited_count, comments_count, 
-	favorites_count, tags_count,
-	country, city,
-	cover,
-	css, background_color, text_color, 
-	font_family, font_size, text_alignment, 
-	birthday, email, verified,
-	extract(epoch from invite_ban), extract(epoch from vote_ban),
-	extract(epoch from comment_ban), extract(epoch from live_ban),
-	invited_by_id, 
-	invited_by_name, invited_by_show_name,
-	invited_by_is_online, 
-	invited_by_avatar
-	FROM long_users 
-	WHERE id = $1`
+	SELECT users.id, users.name, users.show_name,
+	users.avatar,
+	gender.type, users.is_daylog,
+	user_privacy.type,
+	users.title, users.rank, 
+	extract(epoch from users.created_at), extract(epoch from users.last_seen_at), is_online(users.last_seen_at),
+	user_age(users.birthday),
+	users.entries_count, users.followings_count, users.followers_count, 
+	users.ignored_count, users.invited_count, users.comments_count, 
+	users.favorites_count, users.tags_count, CURRENT_DATE - users.created_at::date,
+	users.country, users.city,
+	users.cover,
+	users.css, users.background_color, users.text_color, 
+	font_family.type, users.font_size, alignment.type, 
+	users.birthday, users.email, users.verified,
+	extract(epoch from users.invite_ban), extract(epoch from users.vote_ban),
+	extract(epoch from users.comment_ban), extract(epoch from users.live_ban),
+	invited_by.id, 
+	invited_by.name, invited_by.show_name,
+	is_online(invited_by.last_seen_at), 
+	invited_by.avatar
+	FROM users 
+	INNER JOIN gender ON gender.id = users.gender
+	INNER JOIN user_privacy ON users.privacy = user_privacy.id
+	INNER JOIN font_family ON users.font_family = font_family.id
+	INNER JOIN alignment ON users.text_alignment = alignment.id
+	LEFT JOIN users AS invited_by ON users.invited_by = invited_by.id
+	WHERE users.id = $1`
 
 	var profile models.AuthProfile
 	profile.Design = &models.Design{}
@@ -66,7 +71,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		&age,
 		&profile.Counts.Entries, &profile.Counts.Followings, &profile.Counts.Followers,
 		&profile.Counts.Ignored, &profile.Counts.Invited, &profile.Counts.Comments,
-		&profile.Counts.Favorites, &profile.Counts.Tags,
+		&profile.Counts.Favorites, &profile.Counts.Tags, &profile.Counts.Days,
 		&profile.Country, &profile.City,
 		&cover,
 		&profile.Design.CSS, &backColor, &textColor,
@@ -192,7 +197,7 @@ func editMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		tx.Exec(q, id, title)
 	}
 
-	const loadQuery = profileQuery + "WHERE long_users.id = $1"
+	const loadQuery = profileQuery + "WHERE users.id = $1"
 	return loadUserProfile(srv, tx, loadQuery, userID, id)
 }
 

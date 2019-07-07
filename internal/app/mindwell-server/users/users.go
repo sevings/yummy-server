@@ -36,25 +36,30 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 }
 
 const profileQuery = `
-SELECT id, name, show_name,
-avatar,
-gender, is_daylog,
-privacy,
-title, rank, 
-extract(epoch from created_at), extract(epoch from last_seen_at), is_online,
-age,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count, days_count, 
-country, city,
-cover,
-css, background_color, text_color, 
-font_family, font_size, text_alignment, 
-invited_by_id, 
-invited_by_name, invited_by_show_name,
-invited_by_is_online, 
-invited_by_avatar
-FROM long_users `
+SELECT users.id, users.name, users.show_name,
+users.avatar,
+gender.type, users.is_daylog,
+user_privacy.type,
+users.title, users.rank, 
+extract(epoch from users.created_at), extract(epoch from users.last_seen_at), is_online(users.last_seen_at),
+user_age(users.birthday),
+users.entries_count, users.followings_count, users.followers_count, 
+users.ignored_count, users.invited_count, users.comments_count, 
+users.favorites_count, users.tags_count, CURRENT_DATE - users.created_at::date,
+users.country, users.city,
+users.cover,
+users.css, users.background_color, users.text_color, 
+font_family.type, users.font_size, alignment.type, 
+invited_by.id, 
+invited_by.name, invited_by.show_name,
+is_online(invited_by.last_seen_at), 
+invited_by.avatar
+FROM users 
+INNER JOIN gender ON gender.id = users.gender
+INNER JOIN user_privacy ON users.privacy = user_privacy.id
+INNER JOIN font_family ON users.font_family = font_family.id
+INNER JOIN alignment ON users.text_alignment = alignment.id
+LEFT JOIN users AS invited_by ON users.invited_by = invited_by.id `
 
 func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, userID *models.UserID, arg interface{}) *models.Profile {
 	var profile models.Profile
@@ -168,20 +173,22 @@ func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) st
 }
 
 const usersQuerySelect = `
-SELECT long_users.id, name, show_name, gender,
-is_online, extract(epoch from last_seen_at), title, rank,
-privacy, avatar, cover,
-entries_count, followings_count, followers_count, 
-ignored_count, invited_count, comments_count, 
-favorites_count, tags_count, days_count
+SELECT users.id, users.name, users.show_name, gender.type,
+is_online(users.last_seen_at), extract(epoch from users.last_seen_at), users.title, users.rank,
+user_privacy.type, users.avatar, users.cover,
+users.entries_count, users.followings_count, users.followers_count, 
+users.ignored_count, users.invited_count, users.comments_count, 
+users.favorites_count, users.tags_count, CURRENT_DATE - users.created_at::date
 `
 
 const usersQueryStart = usersQuerySelect + `
-FROM long_users, relation, relations
+FROM users, relation, relations, gender, user_privacy
 WHERE `
 
+const usersQueryJoins = ` AND users.gender = gender.id AND users.privacy = user_privacy.id `
+
 const usersQueryEnd = `
- AND relations.type = relation.id AND relation.type = $2
+ AND relations.type = relation.id AND relation.type = $2` + usersQueryJoins + `
 ORDER BY relations.changed_at DESC
 LIMIT $3 OFFSET $4`
 
@@ -191,9 +198,9 @@ WITH by AS (
 	FROM users
 	WHERE lower(name) = lower($1)
 )` + usersQuerySelect + `
-FROM long_users, by
-WHERE invited_by = by.id
-ORDER BY long_users.id DESC
+FROM users, by, gender, user_privacy
+WHERE invited_by = by.id` + usersQueryJoins + `
+ORDER BY users.id DESC
 LIMIT $2 OFFSET $3`
 
 func loadUserList(srv *utils.MindwellServer, tx *utils.AutoTx) []*models.Friend {
@@ -260,8 +267,8 @@ func loadUsers(srv *utils.MindwellServer, usersQuery, subjectQuery, relation str
 
 const loadUserQuery = `
 SELECT id, name, show_name,
-is_online, avatar
-FROM short_users
+is_online(last_seen_at), avatar
+FROM users
 WHERE `
 
 const loadUserQueryID = loadUserQuery + "id = $1"

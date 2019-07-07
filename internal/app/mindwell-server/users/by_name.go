@@ -9,7 +9,7 @@ import (
 
 func newUserLoader(srv *utils.MindwellServer) func(users.GetUsersNameParams, *models.UserID) middleware.Responder {
 	return func(params users.GetUsersNameParams, userID *models.UserID) middleware.Responder {
-		const query = profileQuery + "WHERE lower(long_users.name) = lower($1)"
+		const query = profileQuery + "WHERE lower(users.name) = lower($1)"
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			profile := loadUserProfile(srv, tx, query, userID, params.Name)
@@ -23,8 +23,8 @@ func newUserLoader(srv *utils.MindwellServer) func(users.GetUsersNameParams, *mo
 }
 
 const idFromName = "(SELECT id FROM users WHERE lower(name) = lower($1))"
-const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = long_users.id" + usersQueryEnd
-const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = long_users.id" + usersQueryEnd
+const usersQueryToName = usersQueryStart + "relations.to_id = " + idFromName + " AND relations.from_id = users.id" + usersQueryEnd
+const usersQueryFromName = usersQueryStart + "relations.from_id = " + idFromName + " AND relations.to_id = users.id" + usersQueryEnd
 
 func loadUsersRelatedToName(srv *utils.MindwellServer, usersQuery, relation string,
 	userID *models.UserID, args ...interface{}) middleware.Responder {
