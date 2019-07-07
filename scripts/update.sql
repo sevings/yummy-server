@@ -1,6 +1,6 @@
 DROP VIEW feed;
-DROP VIEW short_users;
 DROP VIEW long_users;
+DROP VIEW short_users;
 
 CREATE OR REPLACE FUNCTION mindwell.is_online(last_seen_at Timestamp With Time Zone) RETURNS BOOLEAN AS $$
     BEGIN
