@@ -14,6 +14,7 @@ type UidGeneratorConfig struct {
 	SrvLen      uint8
 	CntLen      uint8
 	IntervalLen uint8
+	TruncStr    bool
 	EpochStart  int64
 	SrvID       int64
 
@@ -54,11 +55,12 @@ func (cfg *UidGeneratorConfig) update() error {
 	return nil
 }
 
-var DefaultUidGeneratorConfig = UidGeneratorConfig{
-	EpochLen:   30,
-	SrvLen:     1,
-	CntLen:     9,
-	EpochStart: 1167609600, // 01.01.2007
+var SnowflakeConfig = UidGeneratorConfig{
+	EpochLen:    41,
+	SrvLen:      10,
+	CntLen:      12,
+	EpochStart:  1288834974, // 2010-11-04T01:42:54
+	IntervalLen: 20,
 }
 
 const (
@@ -126,10 +128,9 @@ func NewUidGenerator(cfg UidGeneratorConfig, prevID UniqueID) (*UidGenerator, er
 
 func (gen *UidGenerator) NextID() UniqueID {
 	since := time.Since(gen.start).Nanoseconds() >> gen.cfg.IntervalLen
-	epoch := UniqueID(since) << gen.cfg.epochShift
+	epoch := UniqueID(since) << gen.cfg.epochShift & gen.cfg.epochMask
 
 	gen.mu.Lock()
-	defer gen.mu.Unlock()
 
 	if epoch <= gen.epoch {
 		gen.cnt++
@@ -146,7 +147,11 @@ func (gen *UidGenerator) NextID() UniqueID {
 		gen.cnt = 0
 	}
 
-	return gen.epoch | gen.srvID | gen.cnt
+	id := gen.epoch + gen.srvID + gen.cnt
+
+	gen.mu.Unlock()
+
+	return id
 }
 
 func (gen *UidGenerator) FromBase32(str string) (UniqueID, error) {
@@ -174,9 +179,11 @@ func (gen *UidGenerator) FromBase32(str string) (UniqueID, error) {
 func (gen *UidGenerator) ToBase32(id UniqueID) string {
 	i := gen.cfg.strLen - 1
 
-	for id&letterMask == 0 {
-		id >>= letterLen
-		i--
+	if gen.cfg.TruncStr {
+		for id&letterMask == 0 {
+			id >>= letterLen
+			i--
+		}
 	}
 
 	b := make([]byte, i+1)
@@ -190,8 +197,23 @@ func (gen *UidGenerator) ToBase32(id UniqueID) string {
 	return string(b)
 }
 
+func (gen *UidGenerator) FromUnix(epoch int64) UniqueID {
+	return UniqueID(epoch-gen.cfg.EpochStart)*1e9>>gen.cfg.IntervalLen<<gen.cfg.epochShift + gen.srvID
+}
+
 func (gen *UidGenerator) Unix(id UniqueID) int64 {
-	return int64(id>>gen.cfg.epochShift<<gen.cfg.IntervalLen)/1e9 + gen.cfg.EpochStart
+	nsec := int64(id >> gen.cfg.epochShift << gen.cfg.IntervalLen)
+	unix := nsec / 1e9
+
+	if nsec%1e9 >= 5e8 {
+		unix++
+	}
+
+	return unix + gen.cfg.EpochStart
+}
+
+func (gen *UidGenerator) FromUnixNano(epoch int64) UniqueID {
+	return UniqueID(epoch-gen.cfg.EpochStart*1e9)>>gen.cfg.IntervalLen<<gen.cfg.epochShift + gen.srvID
 }
 
 func (gen *UidGenerator) UnixNano(id UniqueID) int64 {
