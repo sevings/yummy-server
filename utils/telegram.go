@@ -42,7 +42,7 @@ func connectToProxy(srv *MindwellServer) *http.Client {
 	}
 
 	if len(auth.User) == 0 {
-		return nil
+		return http.DefaultClient
 	}
 
 	url := srv.ConfigString("proxy.url")
