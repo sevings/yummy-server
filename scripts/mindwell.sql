@@ -1808,6 +1808,7 @@ CREATE TABLE "mindwell"."notifications" (
     "subject_id" Integer NOT NULL,
     "read" Boolean DEFAULT FALSE NOT NULL,
 	CONSTRAINT "unique_notification_id" PRIMARY KEY("id"),
+    CONSTRAINT "notification_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
     CONSTRAINT "enum_notification_type" FOREIGN KEY("type") REFERENCES "mindwell"."notification_type"("id") );
 ;
 -- -------------------------------------------------------------
@@ -1829,7 +1830,8 @@ CREATE TABLE "mindwell"."images" (
 	"path" Text NOT NULL,
     "extension" Text NOT NULL,
     "processing" Boolean DEFAULT TRUE NOT NULL,
-    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL);
+    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT "image_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"));
  ;
 -- -------------------------------------------------------------
 
@@ -1890,7 +1892,7 @@ CREATE INDEX "index_entry_images_image" ON "mindwell"."entry_images" USING btree
 
 
 
-CREATE OR REPLACE FUNCTION give_invites() RETURNS TABLE(user_id int) AS $$
+CREATE OR REPLACE FUNCTION mindwell.give_invites() RETURNS TABLE(user_id int) AS $$
     WITH inviters AS (
         UPDATE mindwell.users 
         SET last_invite = CURRENT_DATE
@@ -1933,7 +1935,7 @@ $$ LANGUAGE SQL;
 
 
 
-CREATE OR REPLACE FUNCTION recalc_karma() RETURNS VOID AS $$
+CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
     WITH upd AS (
         SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0)) / 5 AS karma
         FROM mindwell.users
@@ -2123,6 +2125,43 @@ CREATE OR REPLACE FUNCTION mindwell.ban_invite(userName Text) RETURNS VOID AS $$
     SET invite_ban = CURRENT_DATE + interval '1 month'
     WHERE lower(name) = lower(userName);
 $$ LANGUAGE SQL;
+
+
+
+CREATE OR REPLACE FUNCTION mindwell.delete_user(user_name TEXT) RETURNS VOID AS $$
+    DECLARE
+        user_id INTEGER;
+    BEGIN
+        user_id = (SELECT id FROM users WHERE lower(name) = lower(user_name));
+
+        DELETE FROM mindwell.relations WHERE to_id = user_id;
+        DELETE FROM mindwell.relations WHERE from_id = user_id;
+
+        DELETE FROM mindwell.favorites WHERE favorites.user_id = delete_user.user_id;
+        DELETE FROM mindwell.watching WHERE watching.user_id = delete_user.user_id;
+        DELETE FROM mindwell.entries_privacy WHERE entries_privacy.user_id = delete_user.user_id;
+        
+        DELETE FROM mindwell.entry_votes WHERE entry_votes.user_id = delete_user.user_id;
+        DELETE FROM mindwell.comment_votes WHERE comment_votes.user_id = delete_user.user_id;
+        DELETE FROM mindwell.vote_weights WHERE vote_weights.user_id = delete_user.user_id;
+
+        DELETE FROM mindwell.notifications
+        WHERE nofitications.user_id = delete_user.user_id OR
+            CASE (SELECT "type" FROM notification_type WHERE notification_type.id = notifications."type")
+            WHEN 'comment' THEN
+                (SELECT author_id FROM comments WHERE comments.id = notifications.subject_id) = delete_user.user_id
+            WHEN 'invite' THEN
+                FALSE
+            ELSE 
+                notifications.subject_id = delete_user.user_id
+            END;
+
+        DELETE FROM mindwell.images WHERE images.user_id = delete_user.user_id;
+        DELETE FROM mindwell.entries WHERE author_id = user_id;
+        DELETE FROM mindwell.comments WHERE author_id = user_id;
+        DELETE FROM mindwell.users WHERE id = user_id;
+    END;
+$$ LANGUAGE plpgsql;
 
 
 
