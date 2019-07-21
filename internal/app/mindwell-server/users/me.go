@@ -31,7 +31,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 	users.birthday, users.email, users.verified,
 	extract(epoch from users.invite_ban), extract(epoch from users.vote_ban),
 	extract(epoch from users.comment_ban), extract(epoch from users.live_ban),
-	invited_by.id, 
+	users.invited_by, 
 	invited_by.name, invited_by.show_name,
 	is_online(invited_by.last_seen_at), 
 	invited_by.avatar
@@ -91,11 +91,14 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 
 	if invitedByID.Valid {
 		profile.InvitedBy = &models.User{
-			ID:       invitedByID.Int64,
-			Name:     invitedByName.String,
-			ShowName: invitedByShowName.String,
-			IsOnline: invitedByIsOnline.Bool,
-			Avatar:   srv.NewAvatar(invitedByAvatar.String),
+			ID: invitedByID.Int64,
+		}
+
+		if invitedByName.Valid {
+			profile.InvitedBy.Name = invitedByName.String
+			profile.InvitedBy.ShowName = invitedByShowName.String
+			profile.InvitedBy.IsOnline = invitedByIsOnline.Bool
+			profile.InvitedBy.Avatar = srv.NewAvatar(invitedByAvatar.String)
 		}
 	}
 

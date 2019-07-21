@@ -50,7 +50,7 @@ users.country, users.city,
 users.cover,
 users.css, users.background_color, users.text_color, 
 font_family.type, users.font_size, alignment.type, 
-invited_by.id, 
+users.invited_by, 
 invited_by.name, invited_by.show_name,
 is_online(invited_by.last_seen_at), 
 invited_by.avatar
@@ -104,11 +104,14 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 
 	if invitedByID.Valid {
 		profile.InvitedBy = &models.User{
-			ID:       invitedByID.Int64,
-			Name:     invitedByName.String,
-			ShowName: invitedByShowName.String,
-			IsOnline: invitedByIsOnline.Bool,
-			Avatar:   srv.NewAvatar(invitedByAvatar.String),
+			ID: invitedByID.Int64,
+		}
+
+		if invitedByName.Valid {
+			profile.InvitedBy.Name = invitedByName.String
+			profile.InvitedBy.ShowName = invitedByShowName.String
+			profile.InvitedBy.IsOnline = invitedByIsOnline.Bool
+			profile.InvitedBy.Avatar = srv.NewAvatar(invitedByAvatar.String)
 		}
 	}
 
