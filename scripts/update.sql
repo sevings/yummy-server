@@ -20,35 +20,35 @@ ADD CONSTRAINT "image_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."use
 
 CREATE OR REPLACE FUNCTION mindwell.delete_user(user_name TEXT) RETURNS VOID AS $$
     DECLARE
-        user_id INTEGER;
+        del_id INTEGER;
     BEGIN
-        user_id = (SELECT id FROM users WHERE lower(name) = lower(user_name));
+        del_id = (SELECT id FROM users WHERE lower(name) = lower(user_name));
 
-        DELETE FROM mindwell.relations WHERE to_id = user_id;
-        DELETE FROM mindwell.relations WHERE from_id = user_id;
+        DELETE FROM mindwell.relations WHERE to_id = del_id;
+        DELETE FROM mindwell.relations WHERE from_id = del_id;
 
-        DELETE FROM mindwell.favorites WHERE favorites.user_id = delete_user.user_id;
-        DELETE FROM mindwell.watching WHERE watching.user_id = delete_user.user_id;
-        DELETE FROM mindwell.entries_privacy WHERE entries_privacy.user_id = delete_user.user_id;
+        DELETE FROM mindwell.favorites WHERE favorites.user_id = del_id;
+        DELETE FROM mindwell.watching WHERE watching.user_id = del_id;
+        DELETE FROM mindwell.entries_privacy WHERE entries_privacy.user_id = del_id;
         
-        DELETE FROM mindwell.entry_votes WHERE entry_votes.user_id = delete_user.user_id;
-        DELETE FROM mindwell.comment_votes WHERE comment_votes.user_id = delete_user.user_id;
-        DELETE FROM mindwell.vote_weights WHERE vote_weights.user_id = delete_user.user_id;
+        DELETE FROM mindwell.entry_votes WHERE entry_votes.user_id = del_id;
+        DELETE FROM mindwell.comment_votes WHERE comment_votes.user_id = del_id;
+        DELETE FROM mindwell.vote_weights WHERE vote_weights.user_id = del_id;
 
         DELETE FROM mindwell.notifications
-        WHERE nofitications.user_id = delete_user.user_id OR
+        WHERE notifications.user_id = del_id OR
             CASE (SELECT "type" FROM notification_type WHERE notification_type.id = notifications."type")
             WHEN 'comment' THEN
-                (SELECT author_id FROM comments WHERE comments.id = notifications.subject_id) = delete_user.user_id
+                (SELECT author_id FROM comments WHERE comments.id = notifications.subject_id) = del_id
             WHEN 'invite' THEN
                 FALSE
             ELSE 
-                notifications.subject_id = delete_user.user_id
+                notifications.subject_id = del_id
             END;
 
-        DELETE FROM mindwell.images WHERE images.user_id = delete_user.user_id;
-        DELETE FROM mindwell.entries WHERE author_id = user_id;
-        DELETE FROM mindwell.comments WHERE author_id = user_id;
-        DELETE FROM mindwell.users WHERE id = user_id;
+        DELETE FROM mindwell.images WHERE images.user_id = del_id;
+        DELETE FROM mindwell.entries WHERE author_id = del_id;
+        DELETE FROM mindwell.comments WHERE author_id = del_id;
+        DELETE FROM mindwell.users WHERE id = del_id;
     END;
 $$ LANGUAGE plpgsql;
