@@ -51,7 +51,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		log.Print(err)
 	}
 
-	bundle := &i18n.Bundle{DefaultLanguage: language.Russian}
+	bundle := i18n.NewBundle(language.Russian)
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	bundle.MustLoadMessageFile(trFile)
 
