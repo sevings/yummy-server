@@ -52,7 +52,7 @@ func HtmlContent(content string) string {
 
 	content = strings.TrimSpace(content)
 	content = utils.ReplaceToHtml(content)
-	content = iMdRe.ReplaceAllLiteralString(content, "$1")
+	content = iMdRe.ReplaceAllString(content, "$1")
 	content = urlRe.ReplaceAllStringFunc(content, replaceURL)
 
 	return "<p>" + content + "</p>"
