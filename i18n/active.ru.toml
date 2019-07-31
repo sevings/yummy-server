@@ -10,6 +10,14 @@ other = "Пользователь уже имеет приглашение."
 hash = "sha1-84655547488334224a6f33369e673f071efc9bfb"
 other = "Твой адрес почты уже подтвержден."
 
+[attach_not_your_image]
+hash = "sha1-11a1898aae03e06ae6767befdef24e91364067ea"
+other = "Можно прикреплять только свои изображения."
+
+[attached_image_not_found]
+hash = "sha1-3f93de12d96647254a7db14930f1020fb27ed66a"
+other = "Прикрепленное изображение не найдено."
+
 [cant_comment]
 hash = "sha1-eb527255e2fb2718ea0ed9ea8c6548c0d2c1b1bc"
 other = "Ты не можешь комментировать данную запись."
@@ -125,6 +133,10 @@ other = "Сегодня тебе больше нельзя отправлять 
 [post_in_live_karma]
 hash = "sha1-df783c723369899f1ae67973f6cacb2ca64e89f6"
 other = "Тебе пока нельзя отправлять записи в Прямой эфир."
+
+[post_same_entry]
+hash = "sha1-df8fe6cced182190d6928c33c50da9de3cb1417e"
+other = "Ты уже не первый раз пытаешься опубликовать подобную запись."
 
 [post_wo_voting]
 hash = "sha1-1dcd6c112432afe944ab91341b71906bc30e1067"

@@ -278,6 +278,16 @@ func checkImagesOwner(srv *utils.MindwellServer, tx *utils.AutoTx, userID int64,
 func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.PostMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			prev, found, same := checkPrev(params, userID)
+			if found {
+				if same {
+					return me.NewPostMeTlogCreated().WithPayload(prev)
+				}
+
+				err := srv.NewError(&i18n.Message{ID: "post_same_entry", Other: "You are trying to post the same entry again."})
+				return me.NewPostMeTlogForbidden().WithPayload(err)
+			}
+
 			if *params.InLive && params.Privacy == models.EntryPrivacyAll {
 				err := canPostInLive(srv, tx, userID)
 				if err != nil {
@@ -306,6 +316,8 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 				err := srv.NewError(nil)
 				return me.NewPostMeTlogForbidden().WithPayload(err)
 			}
+
+			setPrev(entry, userID)
 
 			return me.NewPostMeTlogCreated().WithPayload(entry)
 		})
@@ -422,6 +434,8 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 				err := srv.NewError(&i18n.Message{ID: "edit_not_your_entry", Other: "You can't edit someone else's entries."})
 				return entries.NewPutEntriesIDForbidden().WithPayload(err)
 			}
+
+			updatePrev(entry, uID)
 
 			return entries.NewPutEntriesIDOK().WithPayload(entry)
 		})
@@ -544,6 +558,7 @@ func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDPara
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			ok := deleteEntry(srv, tx, params.ID, uID.ID)
 			if ok {
+				removePrev(params.ID, uID)
 				return entries.NewDeleteEntriesIDOK()
 			}
 
