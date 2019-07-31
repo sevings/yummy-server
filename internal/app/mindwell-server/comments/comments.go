@@ -28,10 +28,12 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 }
 
 var imgRe *regexp.Regexp
+var iMdRe *regexp.Regexp
 var urlRe *regexp.Regexp
 
 func init() {
 	imgRe = regexp.MustCompile(`(?i)^https?.+\.(?:png|jpg|jpeg|gif)(?:\?\S*)?$`)
+	iMdRe = regexp.MustCompile(`!\[[^\]]*\]\(([^\)]+)\)`)
 	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://[a-zA-Z0-9\-\._~:/?#\[\]@!$&'\(\)*+,;=]+)`)
 }
 
@@ -50,6 +52,7 @@ func HtmlContent(content string) string {
 
 	content = strings.TrimSpace(content)
 	content = utils.ReplaceToHtml(content)
+	content = iMdRe.ReplaceAllLiteralString(content, "$1")
 	content = urlRe.ReplaceAllStringFunc(content, replaceURL)
 
 	return "<p>" + content + "</p>"
