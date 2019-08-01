@@ -176,6 +176,8 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 
 			srv.Ntf.SendUpdateComment(tx, params.ID)
 
+			updatePrev(comment, userID)
+
 			return comments.NewPutCommentsIDOK().WithPayload(comment)
 		})
 	}
@@ -222,6 +224,8 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 			}
 
 			srv.Ntf.SendRemoveComment(tx, params.ID)
+
+			removePrev(params.ID, uID)
 
 			return comments.NewDeleteCommentsIDOK()
 		})
@@ -396,6 +400,11 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDCommentsParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostEntriesIDCommentsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			prev, found := checkPrev(params, userID)
+			if found {
+				return comments.NewPostEntriesIDCommentsCreated().WithPayload(prev)
+			}
+
 			allowed := canPostComment(tx, userID, params.ID)
 			if !allowed {
 				err := srv.NewError(&i18n.Message{ID: "cant_comment", Other: "You can't comment this entry."})
@@ -410,6 +419,8 @@ func newCommentPoster(srv *utils.MindwellServer) func(comments.PostEntriesIDComm
 			}
 
 			srv.Ntf.SendNewComment(tx, comment)
+
+			setPrev(comment, userID)
 
 			return comments.NewPostEntriesIDCommentsCreated().WithPayload(comment)
 		})

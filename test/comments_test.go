@@ -1,6 +1,7 @@
 package test
 
 import (
+	"github.com/sevings/mindwell-server/utils"
 	"testing"
 	"time"
 
@@ -119,6 +120,14 @@ func TestOpenComments(t *testing.T) {
 	checkEditComment(t, id, "edited comment", entry.ID, true, profiles[1], userIDs[1])
 	checkEntryWatching(t, userIDs[1], entry.ID, true, true)
 
+	id = checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
+	same := checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
+	require.Equal(t, id, same)
+
+	checkDeleteComment(t, id, userIDs[1], true)
+	id = checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
+	require.NotEqual(t, id, same)
+
 	banComment(db, userIDs[0])
 	checkPostComment(t, entry.ID, "blabla", true, profiles[0], userIDs[0])
 	removeUserRestrictions(db, userIDs)
@@ -151,7 +160,7 @@ func TestPrivateComments(t *testing.T) {
 func postComment(id *models.UserID, entryID int64) int64 {
 	params := comments.PostEntriesIDCommentsParams{
 		ID:      entryID,
-		Content: "test comment",
+		Content: "test comment" + utils.GenerateString(5),
 	}
 
 	post := api.CommentsPostEntriesIDCommentsHandler.Handle
