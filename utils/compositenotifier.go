@@ -136,9 +136,10 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 
 	const toQ = `
 		SELECT users.name, show_name, email, verified AND email_comments, telegram
-		FROM users, watching 
-		WHERE watching.entry_id = $1 AND watching.user_id = users.id 
-			AND users.id <> $2`
+		FROM users 
+		INNER JOIN watching ON watching.user_id = users.id 
+		WHERE watching.entry_id = $1 AND users.id <> $2 
+			AND can_view_entry(users.id, $1)`
 
 	tx.Query(toQ, cmt.EntryID, cmt.Author.ID)
 
