@@ -187,7 +187,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 	for _, entry := range feed.Entries {
 		var images []int64
 		var imageID int64
-		tx.Query("SELECT image_id from entry_images WHERE entry_id = $1", entry.ID)
+		tx.Query("SELECT image_id from entry_images WHERE entry_id = $1 ORDER BY image_id", entry.ID)
 		for tx.Scan(&imageID) {
 			images = append(images, imageID)
 		}
