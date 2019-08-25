@@ -59,7 +59,6 @@ WHERE entry_privacy.type = 'all'
 	AND (user_privacy.type = 'all' 
 		OR (user_privacy.type = 'invited' 
 			AND ` + isInvitedQueryWhere + `))
-	AND ` + isNotIgnoredQueryWhere + `
 	AND ` + relationToMeQuery + ` <> 'ignored'
 	AND ` + relationFromMeQuery + ` NOT IN ('ignored', 'hidden')
 `
