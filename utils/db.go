@@ -2,10 +2,9 @@ package utils
 
 import (
 	"database/sql"
-	"log"
-
 	"github.com/go-openapi/runtime/middleware"
 	goconf "github.com/zpatrick/go-config"
+	"log"
 )
 
 func dropTable(tx *sql.Tx, table string) {
@@ -94,10 +93,11 @@ func OpenDatabase(config *goconf.Config) *sql.DB {
 }
 
 type AutoTx struct {
-	tx   *sql.Tx
-	rows *sql.Rows
-	res  sql.Result
-	err  error
+	tx    *sql.Tx
+	query string
+	rows  *sql.Rows
+	res   sql.Result
+	err   error
 }
 
 func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
@@ -109,6 +109,7 @@ func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
 		tx.rows.Close()
 	}
 
+	tx.query = query
 	tx.rows, tx.err = tx.tx.Query(query, args...)
 
 	return tx
@@ -163,6 +164,10 @@ func (tx *AutoTx) Error() error {
 	return tx.err
 }
 
+func (tx *AutoTx) LastQuery() string {
+	return tx.query
+}
+
 func (tx *AutoTx) Exec(query string, args ...interface{}) {
 	if tx.err != nil && tx.err != sql.ErrNoRows {
 		return
@@ -203,10 +208,12 @@ func (tx *AutoTx) Finish() {
 	if p != nil {
 		err = tx.tx.Rollback()
 		log.Println(p, " (recovered by AutoTx)")
+		log.Println(tx.LastQuery())
 	} else if tx.Error() == nil || tx.Error() == sql.ErrNoRows {
 		err = tx.tx.Commit()
 	} else {
 		log.Println(tx.Error())
+		log.Println(tx.LastQuery())
 		err = tx.tx.Rollback()
 	}
 

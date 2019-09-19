@@ -24,14 +24,17 @@ func NewGetMeFollowingsParams() GetMeFollowingsParams {
 	var (
 		// initialize parameters with default values
 
-		limitDefault = int64(30)
-		skipDefault  = int64(0)
+		afterDefault  = string("")
+		beforeDefault = string("")
+		limitDefault  = int64(30)
 	)
 
 	return GetMeFollowingsParams{
-		Limit: &limitDefault,
+		After: &afterDefault,
 
-		Skip: &skipDefault,
+		Before: &beforeDefault,
+
+		Limit: &limitDefault,
 	}
 }
 
@@ -45,17 +48,22 @@ type GetMeFollowingsParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
+	  In: query
+	  Default: ""
+	*/
+	After *string
+	/*
+	  In: query
+	  Default: ""
+	*/
+	Before *string
+	/*
 	  Maximum: 100
 	  Minimum: 1
 	  In: query
 	  Default: 30
 	*/
 	Limit *int64
-	/*
-	  In: query
-	  Default: 0
-	*/
-	Skip *int64
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -69,19 +77,62 @@ func (o *GetMeFollowingsParams) BindRequest(r *http.Request, route *middleware.M
 
 	qs := runtime.Values(r.URL.Query())
 
-	qLimit, qhkLimit, _ := qs.GetOK("limit")
-	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+	qAfter, qhkAfter, _ := qs.GetOK("after")
+	if err := o.bindAfter(qAfter, qhkAfter, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
-	qSkip, qhkSkip, _ := qs.GetOK("skip")
-	if err := o.bindSkip(qSkip, qhkSkip, route.Formats); err != nil {
+	qBefore, qhkBefore, _ := qs.GetOK("before")
+	if err := o.bindBefore(qBefore, qhkBefore, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+// bindAfter binds and validates parameter After from query.
+func (o *GetMeFollowingsParams) bindAfter(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetMeFollowingsParams()
+		return nil
+	}
+
+	o.After = &raw
+
+	return nil
+}
+
+// bindBefore binds and validates parameter Before from query.
+func (o *GetMeFollowingsParams) bindBefore(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetMeFollowingsParams()
+		return nil
+	}
+
+	o.Before = &raw
+
 	return nil
 }
 
@@ -122,29 +173,6 @@ func (o *GetMeFollowingsParams) validateLimit(formats strfmt.Registry) error {
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
 		return err
 	}
-
-	return nil
-}
-
-// bindSkip binds and validates parameter Skip from query.
-func (o *GetMeFollowingsParams) bindSkip(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-	// AllowEmptyValue: false
-	if raw == "" { // empty values pass all other validations
-		// Default values have been previously initialized by NewGetMeFollowingsParams()
-		return nil
-	}
-
-	value, err := swag.ConvertInt64(raw)
-	if err != nil {
-		return errors.InvalidType("skip", "query", "int64", raw)
-	}
-	o.Skip = &value
 
 	return nil
 }

@@ -149,6 +149,14 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Friend'
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
   Profile:
     allOf:
       - $ref: '#/definitions/Friend'
@@ -588,11 +596,6 @@ parameters:
     minimum: 1
     maximum: 100
     default: 30
-  skip:
-    in: query
-    name: skip
-    type: integer
-    default: 0
   after:
     in: query
     name: after
@@ -1072,7 +1075,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1096,7 +1100,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1120,7 +1125,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1326,7 +1332,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1340,7 +1347,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1354,7 +1362,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1368,7 +1377,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1382,7 +1392,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1396,7 +1407,8 @@ paths:
     get:
       parameters:
         - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/skip'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
       security:
         - ApiKeyHeader: []
       tags:

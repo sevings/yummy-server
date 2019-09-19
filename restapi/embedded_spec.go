@@ -2370,7 +2370,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2398,7 +2401,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2426,7 +2432,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2454,7 +2463,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2519,7 +2531,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -2564,7 +2579,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -3182,7 +3200,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -3227,7 +3248,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -3314,7 +3338,10 @@ func init() {
             "$ref": "#/parameters/limit"
           },
           {
-            "$ref": "#/parameters/skip"
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
           }
         ],
         "responses": {
@@ -3853,6 +3880,18 @@ func init() {
     "FriendList": {
       "type": "object",
       "properties": {
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
         "relation": {
           "type": "string",
           "enum": [
@@ -4288,12 +4327,6 @@ func init() {
       "name": "name",
       "in": "path",
       "required": true
-    },
-    "skip": {
-      "type": "integer",
-      "default": 0,
-      "name": "skip",
-      "in": "query"
     },
     "sort": {
       "enum": [
@@ -6848,9 +6881,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -6884,9 +6923,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -6920,9 +6965,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -6956,9 +7007,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -7040,9 +7097,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -7093,9 +7156,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -7790,9 +7859,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -7849,9 +7924,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -7967,9 +8048,15 @@ func init() {
             "in": "query"
           },
           {
-            "type": "integer",
-            "default": 0,
-            "name": "skip",
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
             "in": "query"
           }
         ],
@@ -8543,6 +8630,18 @@ func init() {
     "FriendList": {
       "type": "object",
       "properties": {
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
         "relation": {
           "type": "string",
           "enum": [
@@ -8978,12 +9077,6 @@ func init() {
       "name": "name",
       "in": "path",
       "required": true
-    },
-    "skip": {
-      "type": "integer",
-      "default": 0,
-      "name": "skip",
-      "in": "query"
     },
     "sort": {
       "enum": [

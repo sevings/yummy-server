@@ -10,7 +10,7 @@ import (
 )
 
 func searchUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUsersParams) middleware.Responder {
-	const query = usersQuerySelect + `
+	const query = usersQuerySelect + `, false 
 					FROM (
 						SELECT *, $1 <<-> to_search_string(name, show_name, country, city) AS trgm_dist 
 						FROM users 
@@ -19,7 +19,7 @@ func searchUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUs
 					) AS users, gender, user_privacy
 					WHERE trgm_dist < 0.6` + usersQueryJoins
 	tx.Query(query, params.Query)
-	list := loadUserList(srv, tx)
+	list, _, _ := loadUserList(srv, tx, false)
 	body := &users.GetUsersOKBody{
 		Users: list,
 		Query: *params.Query,
@@ -29,7 +29,7 @@ func searchUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUs
 }
 
 func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetUsersParams) middleware.Responder {
-	query := usersQuerySelect
+	query := usersQuerySelect + ", false "
 
 	if *params.Top == "rank" {
 		query += "FROM users, gender, user_privacy WHERE invited_by IS NOT NULL" + usersQueryJoins + "ORDER BY rank ASC"
@@ -63,7 +63,7 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 
 	query += " LIMIT 50"
 	tx.Query(query)
-	list := loadUserList(srv, tx)
+	list, _, _ := loadUserList(srv, tx, false)
 	body := &users.GetUsersOKBody{
 		Users: list,
 		Top:   *params.Top,
