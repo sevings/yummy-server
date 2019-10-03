@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -34,20 +35,23 @@ var urlRe *regexp.Regexp
 func init() {
 	imgRe = regexp.MustCompile(`(?i)^https?.+\.(?:png|jpg|jpeg|gif)(?:\?\S*)?$`)
 	iMdRe = regexp.MustCompile(`!\[[^\]]*\]\(([^\)]+)\)`)
-	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://[a-zA-Z0-9\-\._~:/?#\[\]@!$&'\(\)*+,;=]+)`)
+	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://[a-zA-Z0-9\-\._~:/?#\[\]@!$&'\(\)\*\+,;=%]+)`)
 }
 
 func HtmlContent(content string) string {
-	replaceURL := func(url string) string {
-		if imgRe.MatchString(url) {
-			return fmt.Sprintf("<img src=\"%s\">", url)
+	replaceURL := func(href string) string {
+		if imgRe.MatchString(href) {
+			return fmt.Sprintf("<img src=\"%s\">", href)
 		}
 
-		text := url
+		text, err := url.QueryUnescape(href)
+		if err != nil {
+			text = href
+		}
 		if len(text) > 40 {
 			text = text[:40] + "..."
 		}
-		return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener nofollow">%s</a>`, url, text)
+		return fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener nofollow">%s</a>`, href, text)
 	}
 
 	content = strings.TrimSpace(content)

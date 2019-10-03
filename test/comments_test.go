@@ -1,12 +1,12 @@
 package test
 
 import (
-	"github.com/sevings/mindwell-server/utils"
 	"testing"
 	"time"
 
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
+	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -242,4 +242,9 @@ func TestCommentHTML(t *testing.T) {
 	content = "<>&\n\"'\t"
 	cmt = edit(content)
 	req.Equal("<p>&lt;&gt;&amp;<br>&#34;&#39;</p>", cmt.Content)
+
+	content = "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F"
+	href := "https://ru.wikipedia.org/wiki/Википедия"
+	cmt = edit(content)
+	req.Equal("<p><a href=\""+href+"\" target=\"_blank\" rel=\"noopener nofollow\">"+href+"</a></p>", cmt.Content)
 }
