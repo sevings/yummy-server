@@ -88,10 +88,12 @@ func commentVote(vote sql.NullFloat64) int64 {
 	}
 }
 
-func setCommentRights(comment *models.Comment, userID *models.UserID) {
+func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.UserID) {
+	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
+
 	comment.Rights = &models.CommentRights{
 		Edit:   comment.Author.ID == userID.ID,
-		Delete: comment.Author.ID == userID.ID,
+		Delete: comment.Author.ID == userID.ID || entryAuthorID == userID.ID,
 		Vote:   comment.Author.ID != userID.ID && !userID.Ban.Vote,
 	}
 }
@@ -115,7 +117,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 		&comment.Author.IsOnline,
 		&avatar)
 
-	setCommentRights(&comment, userID)
+	setCommentRights(tx, &comment, userID)
 
 	if !comment.Rights.Edit {
 		comment.EditContent = ""
@@ -189,16 +191,16 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 	}
 }
 
-func commentAuthor(tx *utils.AutoTx, commentID int64) int64 {
+func canDeleteComment(tx *utils.AutoTx, userID *models.UserID, commentID int64) bool {
 	const q = `
-		SELECT author_id
-		FROM comments
-		WHERE id = $1`
+		SELECT comments.author_id, entries.author_id
+		FROM comments, entries
+		WHERE comments.id = $1 AND entries.id = comments.entry_id`
 
-	var authorID int64
-	tx.Query(q, commentID).Scan(&authorID)
+	var commentAuthorID, entryAuthorID int64
+	tx.Query(q, commentID).Scan(&commentAuthorID, &entryAuthorID)
 
-	return authorID
+	return commentAuthorID == userID.ID || entryAuthorID == userID.ID
 }
 
 func deleteComment(tx *utils.AutoTx, commentID int64) {
@@ -210,15 +212,14 @@ func deleteComment(tx *utils.AutoTx, commentID int64) {
 }
 
 func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsIDParams, *models.UserID) middleware.Responder {
-	return func(params comments.DeleteCommentsIDParams, uID *models.UserID) middleware.Responder {
+	return func(params comments.DeleteCommentsIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			userID := uID.ID
-			authorID := commentAuthor(tx, params.ID)
+			allowed := canDeleteComment(tx, userID, params.ID)
 			if tx.Error() != nil {
 				err := srv.NewError(nil)
 				return comments.NewDeleteCommentsIDNotFound().WithPayload(err)
 			}
-			if authorID != userID {
+			if !allowed {
 				err := srv.NewError(&i18n.Message{ID: "delete_not_your_comment", Other: "You can't delete someone else's comments."})
 				return comments.NewDeleteCommentsIDForbidden().WithPayload(err)
 			}
@@ -231,7 +232,7 @@ func newCommentDeleter(srv *utils.MindwellServer) func(comments.DeleteCommentsID
 
 			srv.Ntf.SendRemoveComment(tx, params.ID)
 
-			removePrev(params.ID, uID)
+			removePrev(params.ID, userID)
 
 			return comments.NewDeleteCommentsIDOK()
 		})
@@ -294,7 +295,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			break
 		}
 
-		setCommentRights(&comment, userID)
+		setCommentRights(tx, &comment, userID)
 
 		if !comment.Rights.Edit {
 			comment.EditContent = ""

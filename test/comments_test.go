@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func checkComment(t *testing.T, cmt *models.Comment, entryID int64, userID *models.UserID, author *models.AuthProfile, content string) {
+func checkComment(t *testing.T, cmt *models.Comment, entry *models.Entry, userID *models.UserID, author *models.AuthProfile, content string) {
 	req := require.New(t)
 
-	req.Equal(entryID, cmt.EntryID)
+	req.Equal(entry.ID, cmt.EntryID)
 	req.Equal("<p>"+content+"</p>", cmt.Content)
 	req.Equal(content, cmt.EditContent)
 
@@ -31,12 +31,12 @@ func checkComment(t *testing.T, cmt *models.Comment, entryID int64, userID *mode
 	req.Zero(cmt.Rating.Vote)
 
 	req.Equal(userID.ID == author.ID, cmt.Rights.Edit)
-	req.Equal(userID.ID == author.ID, cmt.Rights.Delete)
+	req.Equal(userID.ID == author.ID, cmt.Rights.Delete || userID.ID == entry.Author.ID)
 	req.Equal(userID.ID != author.ID && !userID.Ban.Vote, cmt.Rights.Vote)
 }
 
 func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, success bool,
-	author *models.AuthProfile, entryID int64, content string) {
+	author *models.AuthProfile, entry *models.Entry, content string) {
 
 	load := api.CommentsGetCommentsIDHandler.Handle
 	resp := load(comments.GetCommentsIDParams{ID: commentID}, userID)
@@ -47,15 +47,15 @@ func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, succ
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, entryID, userID, author, content)
+	checkComment(t, cmt, entry, userID, author, content)
 }
 
 func checkPostComment(t *testing.T,
-	entryID int64, content string, success bool,
+	entry *models.Entry, content string, success bool,
 	author *models.AuthProfile, id *models.UserID) int64 {
 
 	params := comments.PostEntriesIDCommentsParams{
-		ID:      entryID,
+		ID:      entry.ID,
 		Content: content,
 	}
 
@@ -68,15 +68,15 @@ func checkPostComment(t *testing.T,
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, params.ID, id, author, params.Content)
+	checkComment(t, cmt, entry, id, author, params.Content)
 
-	checkLoadComment(t, cmt.ID, id, true, author, params.ID, params.Content)
+	checkLoadComment(t, cmt.ID, id, true, author, entry, params.Content)
 
 	return cmt.ID
 }
 
 func checkEditComment(t *testing.T,
-	commentID int64, content string, entryID int64, success bool,
+	commentID int64, content string, entry *models.Entry, success bool,
 	author *models.AuthProfile, id *models.UserID) {
 
 	params := comments.PutCommentsIDParams{
@@ -93,9 +93,9 @@ func checkEditComment(t *testing.T,
 	}
 
 	cmt := body.Payload
-	checkComment(t, cmt, entryID, id, author, content)
+	checkComment(t, cmt, entry, id, author, content)
 
-	checkLoadComment(t, commentID, id, true, author, entryID, content)
+	checkLoadComment(t, commentID, id, true, author, entry, content)
 }
 
 func checkDeleteComment(t *testing.T, commentID int64, userID *models.UserID, success bool) {
@@ -112,28 +112,30 @@ func TestOpenComments(t *testing.T) {
 
 	var id int64
 
-	id = checkPostComment(t, entry.ID, "blabla", true, profiles[0], userIDs[0])
-	checkEditComment(t, id, "edited comment", entry.ID, true, profiles[0], userIDs[0])
+	id = checkPostComment(t, entry, "blabla", true, profiles[0], userIDs[0])
+	checkEditComment(t, id, "edited comment", entry, true, profiles[0], userIDs[0])
 	checkEntryWatching(t, userIDs[0], entry.ID, true, true)
 
-	id = checkPostComment(t, entry.ID, "blabla", true, profiles[1], userIDs[1])
-	checkEditComment(t, id, "edited comment", entry.ID, true, profiles[1], userIDs[1])
+	id = checkPostComment(t, entry, "blabla", true, profiles[1], userIDs[1])
+	checkEditComment(t, id, "edited comment", entry, true, profiles[1], userIDs[1])
 	checkEntryWatching(t, userIDs[1], entry.ID, true, true)
+	checkDeleteComment(t, id, userIDs[0], true)
 
-	id = checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
-	same := checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
+	id = checkPostComment(t, entry, "aaaa", true, profiles[1], userIDs[1])
+	same := checkPostComment(t, entry, "aaaa", true, profiles[1], userIDs[1])
 	require.Equal(t, id, same)
 
+	checkDeleteComment(t, id, userIDs[2], false)
 	checkDeleteComment(t, id, userIDs[1], true)
-	id = checkPostComment(t, entry.ID, "aaaa", true, profiles[1], userIDs[1])
+	id = checkPostComment(t, entry, "aaaa", true, profiles[1], userIDs[1])
 	require.NotEqual(t, id, same)
 
 	banComment(db, userIDs[0])
-	checkPostComment(t, entry.ID, "blabla", true, profiles[0], userIDs[0])
+	checkPostComment(t, entry, "blabla", true, profiles[0], userIDs[0])
 	removeUserRestrictions(db, userIDs)
 
 	banComment(db, userIDs[1])
-	checkPostComment(t, entry.ID, "blabla", false, profiles[1], userIDs[1])
+	checkPostComment(t, entry, "blabla", false, profiles[1], userIDs[1])
 	removeUserRestrictions(db, userIDs)
 
 	checkDeleteEntry(t, entry.ID, userIDs[0], true)
@@ -146,12 +148,12 @@ func TestPrivateComments(t *testing.T) {
 
 	var id int64
 
-	id = checkPostComment(t, entry.ID, "blabla", true, profiles[0], userIDs[0])
-	checkEditComment(t, id, "edited comment", entry.ID, true, profiles[0], userIDs[0])
+	id = checkPostComment(t, entry, "blabla", true, profiles[0], userIDs[0])
+	checkEditComment(t, id, "edited comment", entry, true, profiles[0], userIDs[0])
 	checkEntryWatching(t, userIDs[0], entry.ID, true, true)
 
-	checkEditComment(t, id, "edited comment", entry.ID, false, profiles[1], userIDs[1])
-	id = checkPostComment(t, entry.ID, "blabla", false, profiles[1], userIDs[1])
+	checkEditComment(t, id, "edited comment", entry, false, profiles[1], userIDs[1])
+	id = checkPostComment(t, entry, "blabla", false, profiles[1], userIDs[1])
 	checkEntryWatching(t, userIDs[1], entry.ID, false, false)
 
 	checkDeleteEntry(t, entry.ID, userIDs[0], true)
