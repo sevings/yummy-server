@@ -1062,6 +1062,46 @@ func init() {
         }
       ]
     },
+    "/comments/{id}/complain": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "comments"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "content",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Comment not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathId"
+        }
+      ]
+    },
     "/comments/{id}/vote": {
       "get": {
         "security": [
@@ -1762,6 +1802,46 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "404": {
+            "description": "Entry not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathId"
+        }
+      ]
+    },
+    "/entries/{id}/complain": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "content",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
           },
           "404": {
             "description": "Entry not found",
@@ -5450,6 +5530,51 @@ func init() {
         }
       ]
     },
+    "/comments/{id}/complain": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "comments"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "content",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Comment not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "minimum": 1,
+          "type": "integer",
+          "format": "int64",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/comments/{id}/vote": {
       "get": {
         "security": [
@@ -6232,6 +6357,51 @@ func init() {
             "schema": {
               "$ref": "#/definitions/Error"
             }
+          },
+          "404": {
+            "description": "Entry not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "minimum": 1,
+          "type": "integer",
+          "format": "int64",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/entries/{id}/complain": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "type": "string",
+            "name": "content",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK"
           },
           "404": {
             "description": "Entry not found",

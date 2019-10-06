@@ -2163,6 +2163,29 @@ paths:
           description: Entry not found
           schema:
             $ref: '#/definitions/Error'
+  /entries/{id}/complain:
+    parameters:
+      - $ref: '#/parameters/pathId'
+    post:
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: content
+          type: string
+          maxLength: 1000
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - entries
+      responses:
+        204:
+          description: OK
+        404:
+          description: Entry not found
+          schema:
+            $ref: '#/definitions/Error'
   /comments/{id}:
     parameters:
       - $ref: '#/parameters/pathId'
@@ -2287,6 +2310,29 @@ paths:
           description: access denied
           schema:
             $ref: '#/definitions/Error'
+        404:
+          description: Comment not found
+          schema:
+            $ref: '#/definitions/Error'
+  /comments/{id}/complain:
+    parameters:
+      - $ref: '#/parameters/pathId'
+    post:
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: formData
+          name: content
+          type: string
+          maxLength: 1000
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - comments
+      responses:
+        204:
+          description: OK
         404:
           description: Comment not found
           schema:

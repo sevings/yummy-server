@@ -262,11 +262,17 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AdmPostAdmGrandsonStatusHandler: adm.PostAdmGrandsonStatusHandlerFunc(func(params adm.PostAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmPostAdmGrandsonStatus has not yet been implemented")
 		}),
+		CommentsPostCommentsIDComplainHandler: comments.PostCommentsIDComplainHandlerFunc(func(params comments.PostCommentsIDComplainParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation CommentsPostCommentsIDComplain has not yet been implemented")
+		}),
 		EntriesPostEntriesAnonymousHandler: entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesPostEntriesAnonymous has not yet been implemented")
 		}),
 		CommentsPostEntriesIDCommentsHandler: comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPostEntriesIDComments has not yet been implemented")
+		}),
+		EntriesPostEntriesIDComplainHandler: entries.PostEntriesIDComplainHandlerFunc(func(params entries.PostEntriesIDComplainParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesPostEntriesIDComplain has not yet been implemented")
 		}),
 		ImagesPostImagesHandler: images.PostImagesHandlerFunc(func(params images.PostImagesParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation ImagesPostImages has not yet been implemented")
@@ -510,10 +516,14 @@ type MindwellAPI struct {
 	AdmPostAdmGrandsonHandler adm.PostAdmGrandsonHandler
 	// AdmPostAdmGrandsonStatusHandler sets the operation handler for the post adm grandson status operation
 	AdmPostAdmGrandsonStatusHandler adm.PostAdmGrandsonStatusHandler
+	// CommentsPostCommentsIDComplainHandler sets the operation handler for the post comments ID complain operation
+	CommentsPostCommentsIDComplainHandler comments.PostCommentsIDComplainHandler
 	// EntriesPostEntriesAnonymousHandler sets the operation handler for the post entries anonymous operation
 	EntriesPostEntriesAnonymousHandler entries.PostEntriesAnonymousHandler
 	// CommentsPostEntriesIDCommentsHandler sets the operation handler for the post entries ID comments operation
 	CommentsPostEntriesIDCommentsHandler comments.PostEntriesIDCommentsHandler
+	// EntriesPostEntriesIDComplainHandler sets the operation handler for the post entries ID complain operation
+	EntriesPostEntriesIDComplainHandler entries.PostEntriesIDComplainHandler
 	// ImagesPostImagesHandler sets the operation handler for the post images operation
 	ImagesPostImagesHandler images.PostImagesHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
@@ -901,12 +911,20 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "adm.PostAdmGrandsonStatusHandler")
 	}
 
+	if o.CommentsPostCommentsIDComplainHandler == nil {
+		unregistered = append(unregistered, "comments.PostCommentsIDComplainHandler")
+	}
+
 	if o.EntriesPostEntriesAnonymousHandler == nil {
 		unregistered = append(unregistered, "entries.PostEntriesAnonymousHandler")
 	}
 
 	if o.CommentsPostEntriesIDCommentsHandler == nil {
 		unregistered = append(unregistered, "comments.PostEntriesIDCommentsHandler")
+	}
+
+	if o.EntriesPostEntriesIDComplainHandler == nil {
+		unregistered = append(unregistered, "entries.PostEntriesIDComplainHandler")
 	}
 
 	if o.ImagesPostImagesHandler == nil {
@@ -1445,12 +1463,22 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/comments/{id}/complain"] = comments.NewPostCommentsIDComplain(o.context, o.CommentsPostCommentsIDComplainHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/entries/anonymous"] = entries.NewPostEntriesAnonymous(o.context, o.EntriesPostEntriesAnonymousHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/entries/{id}/comments"] = comments.NewPostEntriesIDComments(o.context, o.CommentsPostEntriesIDCommentsHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/entries/{id}/complain"] = entries.NewPostEntriesIDComplain(o.context, o.EntriesPostEntriesIDComplainHandler)
 
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
