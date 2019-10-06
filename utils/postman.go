@@ -318,11 +318,11 @@ func (pm *Postman) SendNewInvite(address, name string) {
 			},
 			Actions: []hermes.Action{
 				{
-					Instructions: "Посмотреть доступные приглашения можно в настройках:",
+					Instructions: "Ожидающие приглашений пользователи перечислены в этом разделе:",
 					Button: hermes.Button{
 						Color: "#22BC66",
-						Text:  "Приглашения",
-						Link:  pm.url + "account/invites",
+						Text:  "Ожидающие",
+						Link:  pm.url + "users?top=waiting",
 					},
 				},
 			},

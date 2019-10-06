@@ -329,7 +329,7 @@ func (bot *TelegramBot) SendNewInvite(chat int64) {
 		return
 	}
 
-	text := `У тебя в настройках <a href="` + bot.url + `account/invites">появилось новое приглашение</a>! Используй его с умом.`
+	text := `У тебя появилось новое приглашение! <a href="` + bot.url + `users?top=waiting">Используй</a> его с умом.`
 	bot.sendMessage(chat, text)
 }
 
