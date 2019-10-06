@@ -47,6 +47,8 @@ func HtmlContent(content string) string {
 		text, err := url.QueryUnescape(href)
 		if err != nil {
 			text = href
+		} else {
+			href = text
 		}
 		if len(text) > 40 {
 			text = text[:40] + "..."

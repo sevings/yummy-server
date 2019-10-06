@@ -243,8 +243,8 @@ func TestCommentHTML(t *testing.T) {
 	cmt = edit(content)
 	req.Equal("<p>&lt;&gt;&amp;<br>&#34;&#39;</p>", cmt.Content)
 
-	content = "https://ru.wikipedia.org/wiki/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F"
-	href := "https://ru.wikipedia.org/wiki/Википедия"
+	content = "https://wiki.org/%D0%92%D0%B8%D0%BA%D0%B8%D0%BF%D0%B5%D0%B4%D0%B8%D1%8F"
+	href := "https://wiki.org/Википедия"
 	cmt = edit(content)
 	req.Equal("<p><a href=\""+href+"\" target=\"_blank\" rel=\"noopener nofollow\">"+href+"</a></p>", cmt.Content)
 }
