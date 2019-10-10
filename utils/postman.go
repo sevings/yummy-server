@@ -15,11 +15,12 @@ type Postman struct {
 	url  string
 	mg   mailgun.Mailgun
 	h    hermes.Hermes
+	sprt string
 	ch   chan *mailgun.Message
 	stop chan interface{}
 }
 
-func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
+func NewPostman(domain, apiKey, pubKey, baseURL, support string) *Postman {
 	pm := &Postman{
 		url: baseURL,
 		mg:  mailgun.NewMailgun(domain, apiKey, pubKey),
@@ -34,6 +35,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL string) *Postman {
 					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
 		},
+		sprt: support,
 		ch:   make(chan *mailgun.Message, 200),
 		stop: make(chan interface{}),
 	}
@@ -381,4 +383,32 @@ func (pm *Postman) SendInvited(address, fromShowName, fromGender, toShowName str
 
 	const subj = "Приглашение на Mindwell"
 	pm.send(email, address, subj, toShowName)
+}
+
+func (pm *Postman) SendCommentComplain(from, against, content, comment string, commentID, entryID int64) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"Пользователь " + from + " пожаловался на комментарий " +
+					strconv.FormatInt(commentID, 10) + " от " + against + ".",
+				"Текст комментария:",
+				comment,
+				"Пояснение (если есть):",
+				content,
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Ссылка на запись с комментарием:",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Запись",
+						Link:  pm.url + "entries/" + strconv.FormatInt(entryID, 10),
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Жалоба на комментарий пользователя " + against
+	pm.send(email, pm.sprt, subj, "дорогой модератор")
 }
