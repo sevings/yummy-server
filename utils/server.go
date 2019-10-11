@@ -30,6 +30,7 @@ type MailSender interface {
 	SendNewInvite(address, name string)
 	SendInvited(address, fromShowName, fromGender, toShowName string)
 	SendCommentComplain(from, against, content, comment string, commentID, entryID int64)
+	SendEntryComplain(from, against, content, entry string, entryID int64)
 	Stop()
 }
 

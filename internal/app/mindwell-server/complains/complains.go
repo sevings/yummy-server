@@ -2,6 +2,7 @@ package complains
 
 import (
 	"database/sql"
+
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
@@ -53,8 +54,8 @@ func newEntryComplainer(srv *utils.MindwellServer) func(entries.PostEntriesIDCom
 				return entries.NewPostEntriesIDComplainNoContent()
 			}
 
-			// send email
 			tx.Exec(createQuery, userID.ID, "entry", params.ID, params.Content)
+			srv.Ntf.SendNewEntryComplain(tx, params.ID, userID.Name, *params.Content)
 			return entries.NewPostEntriesIDComplainNoContent()
 		})
 	}
@@ -81,8 +82,8 @@ func newCommentComplainer(srv *utils.MindwellServer) func(comments.PostCommentsI
 				return entries.NewPostEntriesIDComplainNoContent()
 			}
 
-			// send email
 			tx.Exec(createQuery, userID.ID, "comment", params.ID, params.Content)
+			srv.Ntf.SendNewCommentComplain(tx, params.ID, userID.Name, *params.Content)
 			return entries.NewPostEntriesIDComplainNoContent()
 		})
 	}

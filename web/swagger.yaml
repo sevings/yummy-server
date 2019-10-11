@@ -2175,6 +2175,7 @@ paths:
           name: content
           type: string
           maxLength: 1000
+          default: ""
       security:
         - ApiKeyHeader: []
       tags:
@@ -2326,6 +2327,7 @@ paths:
           name: content
           type: string
           maxLength: 1000
+          default: ""
       security:
         - ApiKeyHeader: []
       tags:

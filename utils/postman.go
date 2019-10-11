@@ -122,6 +122,21 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 	pm.ch <- msg
 }
 
+func (pm *Postman) sendComplain(email hermes.Email, subj string) {
+	email.Body.Title = "Привет, дорогой модератор"
+
+	text, err := pm.h.GeneratePlainText(email)
+	if err != nil {
+		log.Println(err)
+	}
+
+	from := "Команда Mindwell <support@mindwell.win>"
+	recp := "Команда Mindwell <" + pm.sprt + ">"
+	msg := pm.mg.NewMessage(from, subj, text, recp)
+
+	pm.ch <- msg
+}
+
 func (pm *Postman) SendGreeting(address, name, code string) {
 	email := hermes.Email{
 		Body: hermes.Body{
@@ -392,9 +407,9 @@ func (pm *Postman) SendCommentComplain(from, against, content, comment string, c
 				"Пользователь " + from + " пожаловался на комментарий " +
 					strconv.FormatInt(commentID, 10) + " от " + against + ".",
 				"Текст комментария:",
-				comment,
+				"«" + comment + "».",
 				"Пояснение (если есть):",
-				content,
+				"«" + content + "».",
 			},
 			Actions: []hermes.Action{
 				{
@@ -410,5 +425,33 @@ func (pm *Postman) SendCommentComplain(from, against, content, comment string, c
 	}
 
 	subj := "Жалоба на комментарий пользователя " + against
-	pm.send(email, pm.sprt, subj, "дорогой модератор")
+	pm.sendComplain(email, subj)
+}
+
+func (pm *Postman) SendEntryComplain(from, against, content, entry string, entryID int64) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"Пользователь " + from + " пожаловался на запись " +
+					strconv.FormatInt(entryID, 10) + " от " + against + ".",
+				"Текст записи:",
+				"«" + entry + "».",
+				"Пояснение (если есть):",
+				"«" + content + "».",
+			},
+			Actions: []hermes.Action{
+				{
+					Instructions: "Ссылка на запись:",
+					Button: hermes.Button{
+						Color: "#22BC66",
+						Text:  "Запись",
+						Link:  pm.url + "entries/" + strconv.FormatInt(entryID, 10),
+					},
+				},
+			},
+		},
+	}
+
+	subj := "Жалоба на запись пользователя " + against
+	pm.sendComplain(email, subj)
 }

@@ -279,13 +279,25 @@ func (ntf *CompositeNotifier) SendNewAccept(tx *AutoTx, from, to string) {
 
 func (ntf *CompositeNotifier) SendNewCommentComplain(tx *AutoTx, commentID int64, from, content string) {
 	const q = `
-		SELECT entry_id, name, edit_content 
+		SELECT entry_id, edit_content, name 
 		FROM comments, users 
 		WHERE comments.id = $1 AND users.id = comments.author_id`
 
 	var entryID int64
 	var comment, against string
-	tx.Query(q, commentID).Scan(&entryID, &against, &comment)
+	tx.Query(q, commentID).Scan(&entryID, &comment, &against)
 
 	ntf.Mail.SendCommentComplain(from, against, content, comment, commentID, entryID)
+}
+
+func (ntf *CompositeNotifier) SendNewEntryComplain(tx *AutoTx, entryID int64, from, content string) {
+	const q = `
+		SELECT edit_content, name
+		FROM entries, users 
+		WHERE entries.id = $1 AND users.id = entries.author_id`
+
+	var entry, against string
+	tx.Query(q, entryID).Scan(&entry, &against)
+
+	ntf.Mail.SendEntryComplain(from, against, content, entry, entryID)
 }
