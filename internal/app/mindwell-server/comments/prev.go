@@ -2,6 +2,7 @@ package comments
 
 import (
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
+	"strings"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -21,7 +22,7 @@ func checkPrev(params comments.PostEntriesIDCommentsParams, userID *models.UserI
 	}
 
 	prev = c.(*models.Comment)
-	if prev.EntryID != params.ID || prev.EditContent != params.Content {
+	if prev.EntryID != params.ID || strings.TrimSpace(prev.EditContent) != strings.TrimSpace(params.Content) {
 		found = false
 		return
 	}

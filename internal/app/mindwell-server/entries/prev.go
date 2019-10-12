@@ -1,6 +1,7 @@
 package entries
 
 import (
+	"strings"
 	"time"
 
 	cache "github.com/patrickmn/go-cache"
@@ -21,7 +22,7 @@ func checkPrev(params me.PostMeTlogParams, userID *models.UserID) (prev *models.
 	}
 
 	prev = e.(*models.Entry)
-	if prev.EditContent != params.Content {
+	if strings.TrimSpace(prev.EditContent) != strings.TrimSpace(params.Content) {
 		found = false
 		return
 	}
@@ -29,7 +30,7 @@ func checkPrev(params me.PostMeTlogParams, userID *models.UserID) (prev *models.
 	same = prev.InLive == *params.InLive &&
 		prev.Rating.IsVotable == *params.IsVotable &&
 		prev.Privacy == params.Privacy &&
-		prev.Title == *params.Title &&
+		strings.TrimSpace(prev.Title) == strings.TrimSpace(*params.Title) &&
 		len(prev.Images) == len(params.Images)
 	//! \todo check visible for
 	if !same {
