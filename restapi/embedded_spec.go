@@ -1080,6 +1080,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "content",
             "in": "formData"
           }
@@ -1835,6 +1836,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "content",
             "in": "formData"
           }
@@ -5548,6 +5550,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "content",
             "in": "formData"
           }
@@ -6395,6 +6398,7 @@ func init() {
           {
             "maxLength": 1000,
             "type": "string",
+            "default": "",
             "name": "content",
             "in": "formData"
           }

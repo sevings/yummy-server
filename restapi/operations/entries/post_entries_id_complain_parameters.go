@@ -18,10 +18,18 @@ import (
 )
 
 // NewPostEntriesIDComplainParams creates a new PostEntriesIDComplainParams object
-// no default values defined in spec.
+// with the default values initialized.
 func NewPostEntriesIDComplainParams() PostEntriesIDComplainParams {
 
-	return PostEntriesIDComplainParams{}
+	var (
+		// initialize parameters with default values
+
+		contentDefault = string("")
+	)
+
+	return PostEntriesIDComplainParams{
+		Content: &contentDefault,
+	}
 }
 
 // PostEntriesIDComplainParams contains all the bound params for the post entries ID complain operation
@@ -36,6 +44,7 @@ type PostEntriesIDComplainParams struct {
 	/*
 	  Max Length: 1000
 	  In: formData
+	  Default: ""
 	*/
 	Content *string
 	/*
@@ -90,6 +99,7 @@ func (o *PostEntriesIDComplainParams) bindContent(rawData []string, hasKey bool,
 	// Required: false
 
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPostEntriesIDComplainParams()
 		return nil
 	}
 
