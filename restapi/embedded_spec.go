@@ -1089,6 +1089,12 @@ func init() {
           "204": {
             "description": "OK"
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -1844,6 +1850,12 @@ func init() {
         "responses": {
           "204": {
             "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "404": {
             "description": "Entry not found",
@@ -5559,6 +5571,12 @@ func init() {
           "204": {
             "description": "OK"
           },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "404": {
             "description": "Comment not found",
             "schema": {
@@ -6406,6 +6424,12 @@ func init() {
         "responses": {
           "204": {
             "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "404": {
             "description": "Entry not found",

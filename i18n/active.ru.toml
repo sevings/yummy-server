@@ -30,6 +30,10 @@ other = "Этому пользователю пока нельзя выдать 
 hash = "sha1-038aa354d298a0a8b74be514e411536ddbf4bd64"
 other = "Ты не сможешь проголосовать за данную запись."
 
+[complain_against_yourself]
+hash = "sha1-0152d6191e7c9651017cebdd3a1f3f815789d6b4"
+other = "Ты не можешь жаловаться на себя."
+
 [delete_not_your_comment]
 hash = "sha1-e384ec5dcfdaf52b7f2cd59a11b1b1cf9f9c6744"
 other = "Чужие комментарии — это частная собственность. Ты не сможешь их удалить."

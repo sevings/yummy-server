@@ -2,6 +2,7 @@ package complains
 
 import (
 	"database/sql"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
@@ -10,8 +11,12 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
+var errCAY *models.Error
+
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
+	errCAY = srv.NewError(&i18n.Message{ID: "complain_against_yourself", Other: "You can't complain against yourself."})
+
 	srv.API.EntriesPostEntriesIDComplainHandler = entries.PostEntriesIDComplainHandlerFunc(newEntryComplainer(srv))
 	srv.API.CommentsPostCommentsIDComplainHandler = comments.PostCommentsIDComplainHandlerFunc(newCommentComplainer(srv))
 }
@@ -43,6 +48,11 @@ func newEntryComplainer(srv *utils.MindwellServer) func(entries.PostEntriesIDCom
 				return entries.NewPostEntriesIDComplainNotFound().WithPayload(err)
 			}
 
+			authorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", params.ID)
+			if authorID == userID.ID {
+				return entries.NewGetEntriesIDForbidden().WithPayload(errCAY)
+			}
+
 			id := tx.QueryInt64(selectPrevQuery, userID.ID, params.ID, "entry")
 			if tx.Error() != sql.ErrNoRows {
 				if tx.Error() != nil {
@@ -64,11 +74,18 @@ func newEntryComplainer(srv *utils.MindwellServer) func(entries.PostEntriesIDCom
 func newCommentComplainer(srv *utils.MindwellServer) func(comments.PostCommentsIDComplainParams, *models.UserID) middleware.Responder {
 	return func(params comments.PostCommentsIDComplainParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			entryID := tx.QueryInt64("SELECT entry_id FROM comments WHERE id = $1", params.ID)
+			var entryID, authorID int64
+			tx.Query("SELECT entry_id, author_id FROM comments WHERE id = $1", params.ID)
+			tx.Scan(&entryID, &authorID)
+
 			allowed := utils.CanViewEntry(tx, userID.ID, entryID)
 			if !allowed {
 				err := srv.StandardError("no_comment")
 				return entries.NewPostEntriesIDComplainNotFound().WithPayload(err)
+			}
+
+			if authorID == userID.ID {
+				return entries.NewGetEntriesIDForbidden().WithPayload(errCAY)
 			}
 
 			id := tx.QueryInt64(selectPrevQuery, userID.ID, params.ID, "comment")

@@ -37,6 +37,50 @@ func (o *PostEntriesIDComplainNoContent) WriteResponse(rw http.ResponseWriter, p
 	rw.WriteHeader(204)
 }
 
+// PostEntriesIDComplainForbiddenCode is the HTTP code returned for type PostEntriesIDComplainForbidden
+const PostEntriesIDComplainForbiddenCode int = 403
+
+/*PostEntriesIDComplainForbidden access denied
+
+swagger:response postEntriesIdComplainForbidden
+*/
+type PostEntriesIDComplainForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostEntriesIDComplainForbidden creates PostEntriesIDComplainForbidden with default headers values
+func NewPostEntriesIDComplainForbidden() *PostEntriesIDComplainForbidden {
+
+	return &PostEntriesIDComplainForbidden{}
+}
+
+// WithPayload adds the payload to the post entries Id complain forbidden response
+func (o *PostEntriesIDComplainForbidden) WithPayload(payload *models.Error) *PostEntriesIDComplainForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post entries Id complain forbidden response
+func (o *PostEntriesIDComplainForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostEntriesIDComplainForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostEntriesIDComplainNotFoundCode is the HTTP code returned for type PostEntriesIDComplainNotFound
 const PostEntriesIDComplainNotFoundCode int = 404
 

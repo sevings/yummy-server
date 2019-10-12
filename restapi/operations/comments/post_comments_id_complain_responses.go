@@ -37,6 +37,50 @@ func (o *PostCommentsIDComplainNoContent) WriteResponse(rw http.ResponseWriter, 
 	rw.WriteHeader(204)
 }
 
+// PostCommentsIDComplainForbiddenCode is the HTTP code returned for type PostCommentsIDComplainForbidden
+const PostCommentsIDComplainForbiddenCode int = 403
+
+/*PostCommentsIDComplainForbidden access denied
+
+swagger:response postCommentsIdComplainForbidden
+*/
+type PostCommentsIDComplainForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostCommentsIDComplainForbidden creates PostCommentsIDComplainForbidden with default headers values
+func NewPostCommentsIDComplainForbidden() *PostCommentsIDComplainForbidden {
+
+	return &PostCommentsIDComplainForbidden{}
+}
+
+// WithPayload adds the payload to the post comments Id complain forbidden response
+func (o *PostCommentsIDComplainForbidden) WithPayload(payload *models.Error) *PostCommentsIDComplainForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post comments Id complain forbidden response
+func (o *PostCommentsIDComplainForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostCommentsIDComplainForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostCommentsIDComplainNotFoundCode is the HTTP code returned for type PostCommentsIDComplainNotFound
 const PostCommentsIDComplainNotFoundCode int = 404
 
