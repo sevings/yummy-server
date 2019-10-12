@@ -1939,10 +1939,6 @@ CREATE TABLE "mindwell"."complains" (
 ;
 -- -------------------------------------------------------------
 
--- CREATE INDEX "index_complain_id" ------------------------
-CREATE UNIQUE INDEX "index_complain_id" ON "mindwell"."complains" USING btree( "id" );
--- -------------------------------------------------------------
-
 -- CREATE "index_complain_user_id" -------------------
 CREATE INDEX "index_complain_user_id" ON "mindwell"."complains" USING btree( "user_id" );
 -- -------------------------------------------------------------
