@@ -11,6 +11,7 @@ import (
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	complainsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/complains"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
 	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
 	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
@@ -54,6 +55,7 @@ func TestMain(m *testing.M) {
 	designImpl.ConfigureAPI(srv)
 	relationsImpl.ConfigureAPI(srv)
 	notificationsImpl.ConfigureAPI(srv)
+	complainsImpl.ConfigureAPI(srv)
 
 	userIDs, profiles = registerTestUsers(db)
 
@@ -240,7 +242,7 @@ func TestInvites(t *testing.T) {
 		Name: "Mindwell",
 	}
 
-	checkInvites(t, inviter, 3)	
+	checkInvites(t, inviter, 3)
 
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
