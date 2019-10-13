@@ -17,7 +17,6 @@ func BenchmarkLoadLive(b *testing.B) {
 	votable := true
 	live := true
 	entryParams := me.PostMeTlogParams{
-		Content:   "test test test",
 		Title:     &title,
 		Privacy:   models.EntryPrivacyAll,
 		IsVotable: &votable,
@@ -25,6 +24,7 @@ func BenchmarkLoadLive(b *testing.B) {
 	}
 	for i := 0; i < 1000; i++ {
 		title = fmt.Sprintf("Entry %d", i)
+		entryParams.Content = fmt.Sprintf("test test test %d", i)
 		post(entryParams, userIDs[0])
 	}
 
@@ -54,7 +54,6 @@ func BenchmarkLoadFavorite(b *testing.B) {
 	votable := true
 	live := true
 	entryParams := me.PostMeTlogParams{
-		Content:   "test test test",
 		Title:     &title,
 		Privacy:   models.EntryPrivacyAll,
 		IsVotable: &votable,
@@ -63,6 +62,7 @@ func BenchmarkLoadFavorite(b *testing.B) {
 	var ids []int64
 	for i := 0; i < 1000; i++ {
 		title = fmt.Sprintf("Entry %d", i)
+		entryParams.Content = fmt.Sprintf("test test test %d", i)
 		resp := post(entryParams, userIDs[0])
 		body := resp.(*me.PostMeTlogCreated)
 		id := body.Payload.ID
@@ -71,7 +71,7 @@ func BenchmarkLoadFavorite(b *testing.B) {
 
 	fav := api.FavoritesPutEntriesIDFavoriteHandler.Handle
 	for _, id := range ids {
-		favParams := favorites.PutEntriesIDFavoriteParams{ID:id}
+		favParams := favorites.PutEntriesIDFavoriteParams{ID: id}
 		fav(favParams, userIDs[1])
 	}
 
@@ -79,10 +79,10 @@ func BenchmarkLoadFavorite(b *testing.B) {
 	before := "0"
 	after := "0"
 	params := users.GetUsersNameFavoritesParams{
-		Limit:   &limit,
-		Before:  &before,
-		After:   &after,
-		Name:userIDs[1].Name,
+		Limit:  &limit,
+		Before: &before,
+		After:  &after,
+		Name:   userIDs[1].Name,
 	}
 
 	load := api.UsersGetUsersNameFavoritesHandler.Handle
