@@ -92,9 +92,10 @@ func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.
 	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
 
 	comment.Rights = &models.CommentRights{
-		Edit:   comment.Author.ID == userID.ID,
-		Delete: comment.Author.ID == userID.ID || entryAuthorID == userID.ID,
-		Vote:   comment.Author.ID != userID.ID && !userID.Ban.Vote,
+		Edit:     comment.Author.ID == userID.ID,
+		Delete:   comment.Author.ID == userID.ID || entryAuthorID == userID.ID,
+		Vote:     comment.Author.ID != userID.ID && !userID.Ban.Vote,
+		Complain: comment.Author.ID != userID.ID,
 	}
 }
 

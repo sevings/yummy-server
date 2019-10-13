@@ -33,6 +33,7 @@ func checkComment(t *testing.T, cmt *models.Comment, entry *models.Entry, userID
 	req.Equal(userID.ID == author.ID, cmt.Rights.Edit)
 	req.Equal(userID.ID == author.ID, cmt.Rights.Delete || userID.ID == entry.Author.ID)
 	req.Equal(userID.ID != author.ID && !userID.Ban.Vote, cmt.Rights.Vote)
+	req.Equal(userID.ID != author.ID, cmt.Rights.Complain)
 }
 
 func checkLoadComment(t *testing.T, commentID int64, userID *models.UserID, success bool,

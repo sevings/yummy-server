@@ -176,6 +176,9 @@ func (m *Comment) UnmarshalBinary(b []byte) error {
 // swagger:model CommentRights
 type CommentRights struct {
 
+	// complain
+	Complain bool `json:"complain,omitempty"`
+
 	// delete
 	Delete bool `json:"delete,omitempty"`
 

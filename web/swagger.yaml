@@ -338,6 +338,8 @@ definitions:
             type: boolean
           vote:
             type: boolean
+          complain:
+            type: boolean
     example:
       id: 152
       createdAt: 1531029717.333
@@ -449,6 +451,8 @@ definitions:
           delete:
             type: boolean
           vote:
+            type: boolean
+          complain:
             type: boolean
     example:
       id: 999

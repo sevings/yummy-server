@@ -334,6 +334,9 @@ type EntryRights struct {
 	// comment
 	Comment bool `json:"comment,omitempty"`
 
+	// complain
+	Complain bool `json:"complain,omitempty"`
+
 	// delete
 	Delete bool `json:"delete,omitempty"`
 

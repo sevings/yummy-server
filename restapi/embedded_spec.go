@@ -3639,6 +3639,9 @@ func init() {
         "rights": {
           "type": "object",
           "properties": {
+            "complain": {
+              "type": "boolean"
+            },
             "delete": {
               "type": "boolean"
             },
@@ -3800,6 +3803,9 @@ func init() {
           "type": "object",
           "properties": {
             "comment": {
+              "type": "boolean"
+            },
+            "complain": {
               "type": "boolean"
             },
             "delete": {
@@ -8493,6 +8499,9 @@ func init() {
         "rights": {
           "type": "object",
           "properties": {
+            "complain": {
+              "type": "boolean"
+            },
             "delete": {
               "type": "boolean"
             },
@@ -8654,6 +8663,9 @@ func init() {
           "type": "object",
           "properties": {
             "comment": {
+              "type": "boolean"
+            },
+            "complain": {
               "type": "boolean"
             },
             "delete": {

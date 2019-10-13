@@ -161,10 +161,11 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID,
 		IsVotable: isVotable,
 	}
 	entry.Rights = &models.EntryRights{
-		Edit:    true,
-		Delete:  true,
-		Comment: true,
-		Vote:    false,
+		Edit:     true,
+		Delete:   true,
+		Comment:  true,
+		Vote:     false,
+		Complain: false,
 	}
 
 	return entry
@@ -455,10 +456,11 @@ func entryVoteStatus(vote sql.NullFloat64) int64 {
 
 func setEntryRights(entry *models.Entry, userID *models.UserID) {
 	entry.Rights = &models.EntryRights{
-		Edit:    entry.Author.ID == userID.ID,
-		Delete:  entry.Author.ID == userID.ID,
-		Comment: entry.Author.ID == userID.ID || !userID.Ban.Comment,
-		Vote:    entry.Author.ID != userID.ID && !userID.Ban.Vote && entry.Rating.IsVotable,
+		Edit:     entry.Author.ID == userID.ID,
+		Delete:   entry.Author.ID == userID.ID,
+		Comment:  entry.Author.ID == userID.ID || !userID.Ban.Comment,
+		Vote:     entry.Author.ID != userID.ID && !userID.Ban.Vote && entry.Rating.IsVotable,
+		Complain: entry.Author.ID != userID.ID,
 	}
 }
 

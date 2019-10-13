@@ -67,6 +67,7 @@ func checkEntry(t *testing.T, entry *models.Entry,
 	req.Equal(canEdit, rights.Delete)
 	req.Equal(true, rights.Comment)
 	req.Equal(!canEdit && rating.IsVotable, rights.Vote)
+	req.Equal(!canEdit, rights.Complain)
 }
 
 func checkLoadEntry(t *testing.T, entryID int64, userID *models.UserID, success bool,
