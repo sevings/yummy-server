@@ -25,3 +25,7 @@ CREATE TABLE "mindwell"."complains" (
 -- CREATE "index_complain_user_id" -------------------
 CREATE INDEX "index_complain_user_id" ON "mindwell"."complains" USING btree( "user_id" );
 -- -------------------------------------------------------------
+
+-- CREATE "index_complain_id" ----------------------------------
+CREATE INDEX "index_complain_id" ON "mindwell"."complains" USING btree( "id" );
+-- -------------------------------------------------------------
