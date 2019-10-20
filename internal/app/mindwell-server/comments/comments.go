@@ -88,9 +88,7 @@ func commentVote(vote sql.NullFloat64) int64 {
 	}
 }
 
-func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.UserID) {
-	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
-
+func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.UserID, entryAuthorID int64) {
 	comment.Rights = &models.CommentRights{
 		Edit:     comment.Author.ID == userID.ID,
 		Delete:   comment.Author.ID == userID.ID || entryAuthorID == userID.ID,
@@ -118,7 +116,8 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 		&comment.Author.IsOnline,
 		&avatar)
 
-	setCommentRights(tx, &comment, userID)
+	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
+	setCommentRights(tx, &comment, userID, entryAuthorID)
 
 	if !comment.Rights.Edit {
 		comment.EditContent = ""
@@ -254,6 +253,8 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		log.Printf("error parse after: %s", afterS)
 	}
 
+	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", entryID)
+
 	if after > 0 {
 		const q = commentQuery + `
 			WHERE entry_id = $2 AND comments.id > $3
@@ -296,7 +297,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			break
 		}
 
-		setCommentRights(tx, &comment, userID)
+		setCommentRights(tx, &comment, userID, entryAuthorID)
 
 		if !comment.Rights.Edit {
 			comment.EditContent = ""
