@@ -14,6 +14,7 @@ import (
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	complainsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/complains"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
 	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
 	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
@@ -61,6 +62,7 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	designImpl.ConfigureAPI(srv)
 	relationsImpl.ConfigureAPI(srv)
 	notificationsImpl.ConfigureAPI(srv)
+	complainsImpl.ConfigureAPI(srv)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
