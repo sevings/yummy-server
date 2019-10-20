@@ -183,7 +183,7 @@ func (pm *Postman) SendEmailChanged(address, name string) {
 		},
 	}
 
-	subj := "Изменение пароля"
+	subj := "Изменение адреса почты"
 	pm.send(email, address, subj, name)
 }
 
