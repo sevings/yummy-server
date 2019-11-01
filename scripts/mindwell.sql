@@ -119,6 +119,7 @@ CREATE TABLE "mindwell"."users" (
     "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
     "comment_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "live_ban" Date DEFAULT CURRENT_DATE NOT NULL,
+    "adm_ban" Boolean DEFAULT TRUE NOT NULL,
     "telegram" Integer,
 	CONSTRAINT "unique_user_id" PRIMARY KEY( "id" ),
     CONSTRAINT "enum_user_gender" FOREIGN KEY("gender") REFERENCES "mindwell"."gender"("id"),
@@ -197,6 +198,20 @@ CREATE TRIGGER cnt_invited_del
     AFTER DELETE ON mindwell.users
     FOR EACH ROW EXECUTE PROCEDURE mindwell.count_invited_del();
 
+CREATE OR REPLACE FUNCTION mindwell.allow_adm_upd() RETURNS TRIGGER AS $$
+    BEGIN
+        IF (OLD.invited_by <> NEW.invited_by) THEN
+            NEW.adm_ban = false;
+        END IF;
+
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER alw_adm_upd
+    BEFORE UPDATE ON mindwell.users
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.allow_adm_upd();
+
     
 
 -- CREATE TABLE "adm" ------------------------------------------
@@ -217,6 +232,17 @@ CREATE TABLE "mindwell"."adm" (
 -- CREATE INDEX "index_adm" ------------------------------------
 CREATE UNIQUE INDEX "index_adm" ON "mindwell"."adm" USING btree( lower("name") );
 -- -------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION mindwell.ban_adm() RETURNS VOID AS $$
+    UPDATE users 
+    SET adm_ban = true
+    WHERE name IN (
+        SELECT gs.name 
+        FROM adm AS gs
+        JOIN adm AS gf ON gf.grandfather = gs.name
+        WHERE NOT gf.sent OR (gs.sent AND NOT gs.received)
+    );
+$$ LANGUAGE SQL;
 
     
 

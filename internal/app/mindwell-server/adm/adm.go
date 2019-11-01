@@ -12,6 +12,7 @@ import (
 
 var finishedErr *models.Error
 var notRegErr *models.Error
+var admBanErr *models.Error
 
 const regFinished = true
 const admFinished = true
@@ -20,6 +21,7 @@ const admFinished = true
 func ConfigureAPI(srv *utils.MindwellServer) {
 	finishedErr = srv.NewError(&i18n.Message{ID: "adm_reg_finished", Other: "ADM registration finished."})
 	notRegErr = srv.NewError(&i18n.Message{ID: "not_in_adm", Other: "You are not registered in ADM."})
+	admBanErr = srv.NewError(&i18n.Message{ID: "cant_be_adm", Other: "You are not allowed to participate in ADM."})
 
 	srv.API.AdmGetAdmGrandsonHandler = adm.GetAdmGrandsonHandlerFunc(newGrandsonLoader(srv))
 	srv.API.AdmPostAdmGrandsonHandler = adm.PostAdmGrandsonHandlerFunc(newGrandsonUpdater(srv))
@@ -42,6 +44,11 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			banned := tx.QueryBool("SELECT adm_ban FROM users WHERE id = $1", userID.ID)
+			if banned {
+				return adm.NewGetAdmGrandsonStatusForbidden().WithPayload(admBanErr)
+			}
+
 			address := adm.GetAdmGrandsonOKBody{}
 
 			const q = `
@@ -76,6 +83,11 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			banned := tx.QueryBool("SELECT adm_ban FROM users WHERE id = $1", userID.ID)
+			if banned {
+				return adm.NewGetAdmGrandsonStatusForbidden().WithPayload(admBanErr)
+			}
+
 			const q = `
 				INSERT INTO adm(name, anonymous, fullname, postcode, country, address, comment)
 				VALUES($1, $2, $3, $4, $5, $6, $7)
