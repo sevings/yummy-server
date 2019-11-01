@@ -14,14 +14,17 @@ var finishedErr *models.Error
 var notRegErr *models.Error
 var admBanErr *models.Error
 
-const regFinished = true
-const admFinished = true
+var regFinished bool
+var admFinished bool
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	finishedErr = srv.NewError(&i18n.Message{ID: "adm_reg_finished", Other: "ADM registration finished."})
 	notRegErr = srv.NewError(&i18n.Message{ID: "not_in_adm", Other: "You are not registered in ADM."})
 	admBanErr = srv.NewError(&i18n.Message{ID: "cant_be_adm", Other: "You are not allowed to participate in ADM."})
+
+	regFinished = srv.ConfigBool("adm.reg_finished")
+	admFinished = srv.ConfigBool("adm.adm_finished")
 
 	srv.API.AdmGetAdmGrandsonHandler = adm.GetAdmGrandsonHandlerFunc(newGrandsonLoader(srv))
 	srv.API.AdmPostAdmGrandsonHandler = adm.PostAdmGrandsonHandlerFunc(newGrandsonUpdater(srv))

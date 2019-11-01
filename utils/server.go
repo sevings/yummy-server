@@ -98,6 +98,15 @@ func (srv *MindwellServer) ConfigInt(field string) int {
 	return value
 }
 
+func (srv *MindwellServer) ConfigBool(field string) bool {
+	value, err := srv.cfg.Bool(field)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return value
+}
+
 func (srv *MindwellServer) NewAvatar(avatar string) *models.Avatar {
 	base := srv.ConfigString("images.base_url") + "avatars/"
 
