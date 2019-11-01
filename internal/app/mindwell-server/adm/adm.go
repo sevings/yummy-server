@@ -135,11 +135,22 @@ func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandso
 			return adm.NewPostAdmGrandsonStatusGone().WithPayload(finishedErr)
 		}
 
+		const q = `
+			UPDATE adm 
+			SET received = $2 
+			WHERE lower(name) = lower($1) 
+			RETURNING grandfather
+		`
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			tx.Exec("UPDATE adm SET received = $2 WHERE lower(name) = lower($1)", userID.Name, params.Received)
+			grandfather := tx.QueryString(q, userID.Name, params.Received)
 
 			if tx.RowsAffected() == 0 {
 				return adm.NewPostAdmGrandsonStatusForbidden().WithPayload(notRegErr)
+			}
+
+			if params.Received {
+				srv.Ntf.SendAdmReceived(tx, userID.Name, grandfather)
 			}
 
 			return adm.NewPostAdmGrandsonStatusOK()
@@ -207,11 +218,22 @@ func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGran
 			return adm.NewPostAdmGrandfatherStatusGone().WithPayload(finishedErr)
 		}
 
+		const q = `
+			UPDATE adm 
+			SET sent = $2 
+			WHERE lower(grandfather) = lower($1)
+			RETURNING name
+		`
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			tx.Exec("UPDATE adm SET sent = $2 WHERE lower(grandfather) = lower($1)", userID.Name, params.Sent)
+			grandson := tx.QueryString(q, userID.Name, params.Sent)
 
 			if tx.RowsAffected() == 0 {
 				return adm.NewPostAdmGrandfatherStatusForbidden().WithPayload(notRegErr)
+			}
+
+			if params.Sent {
+				srv.Ntf.SendAdmSent(tx, grandson, userID.Name)
 			}
 
 			return adm.NewPostAdmGrandfatherStatusOK()

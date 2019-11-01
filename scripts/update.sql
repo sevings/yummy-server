@@ -30,3 +30,6 @@ CREATE OR REPLACE FUNCTION mindwell.ban_adm() RETURNS VOID AS $$
 $$ LANGUAGE SQL;
 
 DELETE FROM adm;
+
+INSERT INTO "mindwell"."notification_type" VALUES(7, 'adm_sent');
+INSERT INTO "mindwell"."notification_type" VALUES(8, 'adm_received');

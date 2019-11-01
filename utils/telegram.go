@@ -351,3 +351,22 @@ func (bot *TelegramBot) SendInvited(chat int64, fromName, fromShowName, fromGend
 
 	bot.sendMessage(chat, text)
 }
+
+func (bot *TelegramBot) SendAdmSent(chat int64) {
+	if bot.api == nil {
+		return
+	}
+
+	text := `Твой Дед Мороз отправил тебе подарок! Когда получишь, не забудь <a href="` + bot.url +
+		`adm/grandfather">поставить нужный флажок</a>. И не открывай до Нового года.`
+	bot.sendMessage(chat, text)
+}
+
+func (bot *TelegramBot) SendAdmReceived(chat int64) {
+	if bot.api == nil {
+		return
+	}
+
+	text := `Внук получил твой новогодний подарок.`
+	bot.sendMessage(chat, text)
+}

@@ -61,6 +61,14 @@ func (esm *EmailSenderMock) SendInvited(address, fromShowName, fromGender, toSho
 	esm.Emails = append(esm.Emails, address)
 }
 
+func (esm *EmailSenderMock) SendAdmSent(address, toShowName string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
+func (esm *EmailSenderMock) SendAdmReceived(address, toShowName string) {
+	esm.Emails = append(esm.Emails, address)
+}
+
 func (esm *EmailSenderMock) SendCommentComplain(from, against, content, comment string, commentID, entryID int64) {
 	esm.Emails = append(esm.Emails, "support")
 }

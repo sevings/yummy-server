@@ -400,6 +400,33 @@ func (pm *Postman) SendInvited(address, fromShowName, fromGender, toShowName str
 	pm.send(email, address, subj, toShowName)
 }
 
+func (pm *Postman) SendAdmSent(address, toShowName string) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"твой Дед Мороз отправил тебе подарок! Когда получишь, не забудь " +
+					"поставить нужный флажок. И не открывай до Нового года.",
+			},
+		},
+	}
+
+	subj := "Клуб анонимных Дедов Морозов"
+	pm.send(email, address, subj, toShowName)
+}
+
+func (pm *Postman) SendAdmReceived(address, toShowName string) {
+	email := hermes.Email{
+		Body: hermes.Body{
+			Intros: []string{
+				"внук получил твой новогодний подарок.",
+			},
+		},
+	}
+
+	subj := "Клуб анонимных Дедов Морозов"
+	pm.send(email, address, subj, toShowName)
+}
+
 func (pm *Postman) SendCommentComplain(from, against, content, comment string, commentID, entryID int64) {
 	email := hermes.Email{
 		Body: hermes.Body{

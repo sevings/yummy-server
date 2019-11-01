@@ -29,6 +29,8 @@ type MailSender interface {
 	SendNewAccept(address, fromName, fromShowName, fromGender, toShowName string)
 	SendNewInvite(address, name string)
 	SendInvited(address, fromShowName, fromGender, toShowName string)
+	SendAdmSent(address, toShowName string)
+	SendAdmReceived(address, toShowName string)
 	SendCommentComplain(from, against, content, comment string, commentID, entryID int64)
 	SendEntryComplain(from, against, content, entry string, entryID int64)
 	Stop()

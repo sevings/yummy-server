@@ -1825,7 +1825,7 @@ CREATE TRIGGER cnt_comment_votes_del
     FOR EACH ROW 
     EXECUTE PROCEDURE mindwell.comment_votes_del();
 
-    
+
 
 INSERT INTO mindwell.users
     (name, show_name, email, password_hash, api_key, invited_by)
@@ -1845,6 +1845,8 @@ INSERT INTO "mindwell"."notification_type" VALUES(3, 'accept');
 INSERT INTO "mindwell"."notification_type" VALUES(4, 'invite');
 INSERT INTO "mindwell"."notification_type" VALUES(5, 'welcome');
 INSERT INTO "mindwell"."notification_type" VALUES(6, 'invited');
+INSERT INTO "mindwell"."notification_type" VALUES(7, 'adm_sent');
+INSERT INTO "mindwell"."notification_type" VALUES(8, 'adm_received');
 -- -------------------------------------------------------------
 
 

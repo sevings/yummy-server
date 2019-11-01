@@ -301,3 +301,65 @@ func (ntf *CompositeNotifier) SendNewEntryComplain(tx *AutoTx, entryID int64, fr
 
 	ntf.Mail.SendEntryComplain(from, against, content, entry, entryID)
 }
+
+const retryQuery = `
+SELECT EXISTS(SELECT 1 
+	FROM notifications 
+	JOIN notification_type ON notifications.type = notification_type.id
+	JOIN users on user_id = users.id
+	WHERE users.name = $1 AND notification_type = $2 AND age(created_at) < interval '6 month')
+`
+
+func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson, grandfather string) {
+	if tx.QueryBool(retryQuery, grandson, "adm_sent") {
+		return
+	}
+
+	const toQ = `
+		SELECT show_name, email, verified, telegram
+		FROM users 
+		WHERE lower(name) = lower($1)
+	`
+
+	var sendEmail bool
+	var toShowName, email string
+	var tg sql.NullInt64
+	tx.Query(toQ, grandson).Scan(&toShowName, &email, &sendEmail, &tg)
+
+	if sendEmail {
+		ntf.Mail.SendAdmSent(email, toShowName)
+	}
+
+	if tg.Valid {
+		ntf.Tg.SendAdmSent(tg.Int64)
+	}
+
+	ntf.Ntf.Notify(tx, 0, "adm_sent", grandson)
+}
+
+func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandson, grandfather string) {
+	if tx.QueryBool(retryQuery, grandfather, "adm_received") {
+		return
+	}
+
+	const toQ = `
+		SELECT show_name, email, verified, telegram
+		FROM users 
+		WHERE lower(name) = lower($1)
+	`
+
+	var sendEmail bool
+	var toShowName, email string
+	var tg sql.NullInt64
+	tx.Query(toQ, grandfather).Scan(&toShowName, &email, &sendEmail, &tg)
+
+	if sendEmail {
+		ntf.Mail.SendAdmReceived(email, toShowName)
+	}
+
+	if tg.Valid {
+		ntf.Tg.SendAdmReceived(tg.Int64)
+	}
+
+	ntf.Ntf.Notify(tx, 0, "adm_received", grandfather)
+}
