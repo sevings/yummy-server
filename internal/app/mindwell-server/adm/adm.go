@@ -49,7 +49,7 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			banned := tx.QueryBool("SELECT adm_ban FROM users WHERE id = $1", userID.ID)
 			if banned {
-				return adm.NewGetAdmGrandsonStatusForbidden().WithPayload(admBanErr)
+				return adm.NewGetAdmGrandsonForbidden().WithPayload(admBanErr)
 			}
 
 			address := adm.GetAdmGrandsonOKBody{}
@@ -88,7 +88,7 @@ func newGrandsonUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandsonParam
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			banned := tx.QueryBool("SELECT adm_ban FROM users WHERE id = $1", userID.ID)
 			if banned {
-				return adm.NewGetAdmGrandsonStatusForbidden().WithPayload(admBanErr)
+				return adm.NewPostAdmGrandsonForbidden().WithPayload(admBanErr)
 			}
 
 			const q = `

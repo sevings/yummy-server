@@ -37,6 +37,50 @@ func (o *PostAdmGrandsonOK) WriteResponse(rw http.ResponseWriter, producer runti
 	rw.WriteHeader(200)
 }
 
+// PostAdmGrandsonForbiddenCode is the HTTP code returned for type PostAdmGrandsonForbidden
+const PostAdmGrandsonForbiddenCode int = 403
+
+/*PostAdmGrandsonForbidden you're not allowed to participate
+
+swagger:response postAdmGrandsonForbidden
+*/
+type PostAdmGrandsonForbidden struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostAdmGrandsonForbidden creates PostAdmGrandsonForbidden with default headers values
+func NewPostAdmGrandsonForbidden() *PostAdmGrandsonForbidden {
+
+	return &PostAdmGrandsonForbidden{}
+}
+
+// WithPayload adds the payload to the post adm grandson forbidden response
+func (o *PostAdmGrandsonForbidden) WithPayload(payload *models.Error) *PostAdmGrandsonForbidden {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post adm grandson forbidden response
+func (o *PostAdmGrandsonForbidden) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostAdmGrandsonForbidden) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(403)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostAdmGrandsonGoneCode is the HTTP code returned for type PostAdmGrandsonGone
 const PostAdmGrandsonGoneCode int = 410
 

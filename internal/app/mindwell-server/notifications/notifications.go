@@ -95,6 +95,10 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 	case models.NotificationTypeInvited:
 		notif.User = users.LoadUserByID(srv, tx, not.subj)
 		break
+	case models.NotificationTypeAdmReceived:
+		break
+	case models.NotificationTypeAdmSent:
+		break
 	default:
 		log.Println("Unknown notification type:", not.tpe)
 	}

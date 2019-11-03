@@ -488,7 +488,7 @@ definitions:
         minimum: 1
       type: 
         type: string
-        enum: [comment, follower, request, accept, invite, welcome, invited]
+        enum: [comment, follower, request, accept, invite, welcome, invited, adm_sent, adm_received]
       read:
         type: boolean
       createdAt:
@@ -2375,6 +2375,10 @@ paths:
                 type: string
               anonymous:
                 type: boolean
+        403:
+          description: you're not allowed to participate
+          schema:
+            $ref: '#/definitions/Error'
         410:
           description: registration finished
           schema:
@@ -2420,6 +2424,10 @@ paths:
       responses:
         200:
           description: OK
+        403:
+          description: you're not allowed to participate
+          schema:
+            $ref: '#/definitions/Error'
         410:
           description: registration finished
           schema:

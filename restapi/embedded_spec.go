@@ -764,6 +764,12 @@ func init() {
               }
             }
           },
+          "403": {
+            "description": "you're not allowed to participate",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "410": {
             "description": "registration finished",
             "schema": {
@@ -831,6 +837,12 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "403": {
+            "description": "you're not allowed to participate",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "410": {
             "description": "registration finished",
@@ -4114,7 +4126,9 @@ func init() {
             "accept",
             "invite",
             "welcome",
-            "invited"
+            "invited",
+            "adm_sent",
+            "adm_received"
           ]
         },
         "user": {
@@ -5247,6 +5261,12 @@ func init() {
               }
             }
           },
+          "403": {
+            "description": "you're not allowed to participate",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
           "410": {
             "description": "registration finished",
             "schema": {
@@ -5314,6 +5334,12 @@ func init() {
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "403": {
+            "description": "you're not allowed to participate",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "410": {
             "description": "registration finished",
@@ -8974,7 +9000,9 @@ func init() {
             "accept",
             "invite",
             "welcome",
-            "invited"
+            "invited",
+            "adm_sent",
+            "adm_received"
           ]
         },
         "user": {
