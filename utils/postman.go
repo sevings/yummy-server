@@ -368,7 +368,7 @@ func (pm *Postman) SendAdm(address, name, gender string) {
 					Button: hermes.Button{
 						Color: "#22BC66",
 						Text:  "Клуб АДМ",
-						Link:  pm.url + "adm/grandfather",
+						Link:  pm.url + "adm",
 					},
 				},
 			},
