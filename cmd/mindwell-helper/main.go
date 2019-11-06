@@ -38,12 +38,13 @@ func main() {
 	apiKey, _ := cfg.String("mailgun.api_key")
 	pubKey, _ := cfg.String("mailgun.pub_key")
 	baseURL, _ := cfg.String("server.base_url")
+	support, _ := cfg.String("server.support")
 
 	if len(domain) == 0 || len(apiKey) == 0 || len(pubKey) == 0 || len(baseURL) == 0 {
 		log.Println("Check config consistency")
 	}
 
-	mail := utils.NewPostman(domain, apiKey, pubKey, baseURL)
+	mail := utils.NewPostman(domain, apiKey, pubKey, baseURL, support)
 
 	db := utils.OpenDatabase(cfg)
 	tx, err := db.Begin()
