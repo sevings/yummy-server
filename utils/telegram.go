@@ -358,7 +358,7 @@ func (bot *TelegramBot) SendAdmSent(chat int64) {
 	}
 
 	text := `Твой Дед Мороз отправил тебе подарок! Когда получишь, не забудь <a href="` + bot.url +
-		`adm/grandfather">поставить нужный флажок</a>. И не открывай до Нового года.`
+		`adm">поставить нужный флажок</a>. И не открывай до Нового года.`
 	bot.sendMessage(chat, text)
 }
 
