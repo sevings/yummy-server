@@ -307,7 +307,7 @@ SELECT EXISTS(SELECT 1
 	FROM notifications 
 	JOIN notification_type ON notifications.type = notification_type.id
 	JOIN users on user_id = users.id
-	WHERE users.name = $1 AND notification_type = $2 AND age(created_at) < interval '6 month')
+	WHERE users.name = $1 AND notification_type.type = $2 AND age(notifications.created_at) < interval '6 month')
 `
 
 func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson, grandfather string) {

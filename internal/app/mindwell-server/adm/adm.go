@@ -2,7 +2,6 @@ package adm
 
 import (
 	"database/sql"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/models"
@@ -145,7 +144,7 @@ func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandso
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			grandfather := tx.QueryString(q, userID.Name, params.Received)
 
-			if tx.RowsAffected() == 0 {
+			if tx.Error() == sql.ErrNoRows {
 				return adm.NewPostAdmGrandsonStatusForbidden().WithPayload(notRegErr)
 			}
 
@@ -228,7 +227,7 @@ func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGran
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			grandson := tx.QueryString(q, userID.Name, params.Sent)
 
-			if tx.RowsAffected() == 0 {
+			if tx.Error() == sql.ErrNoRows {
 				return adm.NewPostAdmGrandfatherStatusForbidden().WithPayload(notRegErr)
 			}
 
