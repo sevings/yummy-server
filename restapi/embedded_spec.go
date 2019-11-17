@@ -1531,7 +1531,8 @@ func init() {
           {
             "enum": [
               "entries",
-              "comments"
+              "comments",
+              "waiting"
             ],
             "type": "string",
             "default": "entries",
@@ -6093,7 +6094,8 @@ func init() {
           {
             "enum": [
               "entries",
-              "comments"
+              "comments",
+              "waiting"
             ],
             "type": "string",
             "default": "entries",

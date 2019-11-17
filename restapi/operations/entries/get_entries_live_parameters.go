@@ -226,7 +226,7 @@ func (o *GetEntriesLiveParams) bindSection(rawData []string, hasKey bool, format
 // validateSection carries on validations for parameter Section
 func (o *GetEntriesLiveParams) validateSection(formats strfmt.Registry) error {
 
-	if err := validate.Enum("section", "query", *o.Section, []interface{}{"entries", "comments"}); err != nil {
+	if err := validate.Enum("section", "query", *o.Section, []interface{}{"entries", "comments", "waiting"}); err != nil {
 		return err
 	}
 

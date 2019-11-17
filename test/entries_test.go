@@ -325,6 +325,7 @@ func TestLoadLive(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
+	e3 := postEntry(userIDs[3], models.EntryPrivacyAll, true)
 	e2 := postEntry(userIDs[0], models.EntryPrivacyAll, true)
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
 	postEntry(userIDs[0], models.EntryPrivacySome, true)
@@ -377,6 +378,9 @@ func TestLoadLive(t *testing.T) {
 
 	checkLoadLive(t, userIDs[0], 1, "entries", "", feed.NextAfter, 0)
 	checkLoadLive(t, userIDs[0], 0, "entries", "", feed.NextAfter, 0)
+
+	feed = checkLoadLive(t, userIDs[0], 10, "waiting", "", "", 1)
+	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 
 	setUserPrivacy(t, userIDs[0], "invited")
 	feed = checkLoadLive(t, userIDs[3], 10, "entries", "", "", 2)

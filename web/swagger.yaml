@@ -1745,7 +1745,7 @@ paths:
         - in: query
           name: section
           type: string
-          enum: [entries, comments]
+          enum: [entries, comments, waiting]
           default: entries
       security:
         - ApiKeyHeader: []

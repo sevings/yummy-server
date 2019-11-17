@@ -63,15 +63,20 @@ WHERE entry_privacy.type = 'all'
 	AND ` + relationFromMeQuery + ` NOT IN ('ignored', 'hidden')
 `
 
-const liveFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere
+const liveEntriesFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NOT NULL "
+const liveWaitingFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NULL "
+
+const liveEntriesFeedQuery = tlogFeedQueryStart + liveEntriesFeedQueryWhere
+const liveWaitingFeedQuery = tlogFeedQueryStart + liveWaitingFeedQueryWhere
 
 const commentsFeedQueryEnd = `
+	AND users.invited_by IS NOT NULL
 	AND entries.comments_count > 0
 ORDER BY last_comment DESC
 LIMIT $2
 `
 
-const liveCommentsFeedQuery = liveFeedQuery + commentsFeedQueryEnd
+const liveCommentsFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere + commentsFeedQueryEnd
 
 const anonymousFeedQuery = `
 SELECT entries.id, extract(epoch from entries.created_at), 0, 
@@ -204,18 +209,18 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 	return &feed
 }
 
-func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, query, queryWhere, beforeS, afterS string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
-		q := liveFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
+		q := query + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
 		tx.Query(q, userID.ID, after, limit)
 	} else if before > 0 {
-		q := liveFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
+		q := query + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
 		tx.Query(q, userID.ID, before, limit)
 	} else {
-		q := liveFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
+		q := query + " ORDER BY entries.created_at DESC LIMIT $2"
 		tx.Query(q, userID.ID, limit)
 	}
 
@@ -228,24 +233,24 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 	feed.NextBefore = utils.FormatFloat(nextBefore)
 
-	const beforeQuery = `SELECT EXISTS(
+	beforeQuery := `SELECT EXISTS(
 		SELECT 1 
 		FROM entries
 		INNER JOIN users ON entries.author_id = users.id
 		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + liveFeedQueryWhere + " AND entries.created_at < to_timestamp($2))"
+	` + queryWhere + " AND entries.created_at < to_timestamp($2))"
 
 	tx.Query(beforeQuery, userID.ID, nextBefore)
 	tx.Scan(&feed.HasBefore)
 
-	const afterQuery = `SELECT EXISTS(
+	afterQuery := `SELECT EXISTS(
 		SELECT 1 
 		FROM entries
 		INNER JOIN users ON entries.author_id = users.id
 		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + liveFeedQueryWhere + " AND entries.created_at > to_timestamp($2))"
+	` + queryWhere + " AND entries.created_at > to_timestamp($2))"
 
 	nextAfter := feed.Entries[0].CreatedAt
 	feed.NextAfter = utils.FormatFloat(nextAfter)
@@ -265,9 +270,11 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			var feed *models.Feed
 			if *params.Section == "entries" {
-				feed = loadLiveFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
-			} else {
+				feed = loadLiveFeed(srv, tx, userID, liveEntriesFeedQuery, liveEntriesFeedQueryWhere, *params.Before, *params.After, *params.Limit)
+			} else if *params.Section == "comments" {
 				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Limit)
+			} else if *params.Section == "waiting" {
+				feed = loadLiveFeed(srv, tx, userID, liveWaitingFeedQuery, liveWaitingFeedQueryWhere, *params.Before, *params.After, *params.Limit)
 			}
 
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
@@ -300,7 +307,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		interval = "1 month"
 	}
 
-	q := "SELECT * FROM (" + liveFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
+	q := "SELECT * FROM (" + liveEntriesFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
 		interval + "' ORDER BY entries.rating DESC LIMIT $2) AS feed ORDER BY feed.created_at DESC"
 	tx.Query(q, userID.ID, limit)
 
