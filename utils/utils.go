@@ -12,7 +12,7 @@ import (
 	"time"
 	"unicode"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	goconf "github.com/zpatrick/go-config"
 
 	"github.com/go-openapi/errors"
@@ -22,7 +22,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var errUnauthorized = errors.New(401, "Unauthorized")
+var errUnauthorized = errors.New(401, "Invalid or expired API key")
 var htmlEsc *strings.Replacer = strings.NewReplacer(
 	"<", "&lt;",
 	">", "&gt;",
@@ -55,23 +55,30 @@ func IsOpenForMe(tx *AutoTx, userID *models.UserID, name interface{}) bool {
 	return tx.QueryBool("SELECT can_view_tlog($1, $2)", userID.ID, name)
 }
 
-func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {
-	const q = `
+const userIDQuery = `
 			SELECT id, name, followers_count, invited_by is not null, karma < -1,
 				invite_ban > CURRENT_DATE, vote_ban > CURRENT_DATE, 
 				comment_ban > CURRENT_DATE, live_ban > CURRENT_DATE
-			FROM users
-			WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP`
+			FROM users `
 
+func LoadUserIDByID(tx *AutoTx, id int64) (*models.UserID, error) {
+	const q = userIDQuery + "WHERE id = $1"
+	tx.Query(q, id)
+	return scanUserID(tx)
+}
+
+func LoadUserIDByApiKey(tx *AutoTx, apiKey string) (*models.UserID, error) {
+	const q = userIDQuery + "WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
+	tx.Query(q, apiKey)
+	return scanUserID(tx)
+}
+
+func scanUserID(tx *AutoTx) (*models.UserID, error) {
 	var user models.UserID
 	user.Ban = &models.UserIDBan{}
-	err := db.QueryRow(q, apiKey).Scan(&user.ID, &user.Name, &user.FollowersCount, &user.IsInvited, &user.NegKarma,
+	tx.Scan(&user.ID, &user.Name, &user.FollowersCount, &user.IsInvited, &user.NegKarma,
 		&user.Ban.Invite, &user.Ban.Vote, &user.Ban.Comment, &user.Ban.Live)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Print(err)
-		}
-
+	if tx.Error() != nil {
 		return nil, errUnauthorized
 	}
 
@@ -83,10 +90,10 @@ func loadUserID(db *sql.DB, apiKey string) (*models.UserID, error) {
 	return &user, nil
 }
 
-func readUserID(secret []byte, tokenString string) (*models.UserID, error) {
+func readUserID(secret []byte, tokenString string) (int64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return secret, nil
@@ -94,55 +101,61 @@ func readUserID(secret []byte, tokenString string) (*models.UserID, error) {
 
 	if err != nil {
 		log.Println(err)
-		return nil, errUnauthorized
+		return 0, errUnauthorized
 	}
 
 	if !token.Valid {
 		log.Printf("Invalid token: %s\n", tokenString)
-		return nil, errUnauthorized
+		return 0, errUnauthorized
 
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		log.Printf("Error get claims: %s\n", tokenString)
-		return nil, errUnauthorized
+		return 0, errUnauthorized
 	}
 
-	now := time.Now().Unix()
-	exp := int64(claims["exp"].(float64))
-	if exp < now {
-		return nil, errUnauthorized
+	if claims.Valid() != nil {
+		return 0, errUnauthorized
 	}
 
-	id := models.UserID{
-		ID:   int64(claims["id"].(float64)),
-		Name: claims["name"].(string),
+	id, err := strconv.ParseInt(claims["sub"].(string), 32, 64)
+	if err != nil {
+		log.Println(err)
+		return 0, errUnauthorized
 	}
 
-	return &id, nil
+	return id, nil
 }
 
 func NewKeyAuth(db *sql.DB, secret []byte) func(apiKey string) (*models.UserID, error) {
 	return func(apiKey string) (*models.UserID, error) {
+		tx := NewAutoTx(db)
+		defer tx.Finish()
+
 		if len(apiKey) == 32 {
-			return loadUserID(db, apiKey)
+			return LoadUserIDByApiKey(tx, apiKey)
 		}
 
-		return readUserID(secret, apiKey)
+		id, err := readUserID(secret, apiKey)
+		if err != nil {
+			return nil, err
+		}
+
+		return LoadUserIDByID(tx, id)
 	}
 }
 
-func BuildApiToken(secret []byte, userID *models.UserID) (string, int64) {
+func BuildApiToken(secret []byte, userID int64) (string, int64) {
 	now := time.Now().Unix()
-	exp := now + 60*60*24*180
-	thru := now + 60*60
+	exp := now + 60*60*24*365
+	sub := strconv.FormatInt(userID, 32)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp":  exp,
-		"thru": thru,
-		"id":   userID.ID,
-		"name": userID.Name,
+		"iat": now,
+		"exp": exp,
+		"sub": sub,
 	})
 
 	tokenString, err := token.SignedString(secret)

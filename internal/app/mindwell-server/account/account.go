@@ -300,12 +300,9 @@ func loadAuthProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		}
 	}
 
-	// token, thru := utils.BuildApiToken(apiSecret, &models.UserID{
-	// 	ID:   profile.ID,
-	// 	Name: profile.Name,
-	// })
-	// profile.Account.APIKey = token
-	// profile.Account.ValidThru = float64(thru)
+	//token, thru := utils.BuildApiToken(apiSecret, profile.ID)
+	//profile.Account.APIKey = token
+	//profile.Account.ValidThru = float64(thru)
 
 	if bday.Valid {
 		profile.Birthday = bday.String
