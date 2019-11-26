@@ -48,3 +48,14 @@ CREATE TRIGGER cnt_invited_del
     FOR EACH ROW
     WHEN (OLD.invited_by IS NOT NULL)
     EXECUTE PROCEDURE mindwell.count_invited_del();
+
+CREATE OR REPLACE FUNCTION mindwell.ban_adm() RETURNS VOID AS $$
+    UPDATE users 
+    SET adm_ban = true
+    WHERE name IN (
+        SELECT gs.name 
+        FROM adm AS gs
+        JOIN adm AS gf ON gf.grandfather = gs.name
+        WHERE (NOT gf.sent AND NOT gf.received) OR (gs.sent AND NOT gs.received)
+    );
+$$ LANGUAGE SQL;

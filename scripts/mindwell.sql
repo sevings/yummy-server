@@ -235,7 +235,7 @@ CREATE OR REPLACE FUNCTION mindwell.ban_adm() RETURNS VOID AS $$
         SELECT gs.name 
         FROM adm AS gs
         JOIN adm AS gf ON gf.grandfather = gs.name
-        WHERE NOT gf.sent OR (gs.sent AND NOT gs.received)
+        WHERE (NOT gf.sent AND NOT gf.received) OR (gs.sent AND NOT gs.received)
     );
 $$ LANGUAGE SQL;
 
