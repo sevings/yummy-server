@@ -2013,20 +2013,26 @@ $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
     WITH upd AS (
-        SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0)) / 5 AS karma
+        SELECT users.id, (users.karma * 4 + COALESCE(ek.karma, 0) + COALESCE(ck.karma, 0) / 10) / 5 AS karma
         FROM mindwell.users
         LEFT JOIN (
-            SELECT users.id, sum(entry_votes.vote) AS karma
-            FROM mindwell.entry_votes, mindwell.entries, mindwell.users
-            WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
-                AND entry_votes.entry_id = entries.id AND entries.author_id = users.id
+            SELECT users.id, sum(for_votes.vote) + sum(by_votes.vote) / 5 AS karma
+            FROM mindwell.users
+            LEFT JOIN mindwell.entries ON entries.author_id = users.id AS by_entries
+            LEFT JOIN mindwell.entry_votes ON entry_votes.entry_id = by_entries.id AS for_votes
+            LEFT JOIN mindwell.entry_votes ON entry_votes.user_id = users.id AS by_votes
+            WHERE abs(for_votes.vote) > 0.2 AND age(by_entries.created_at) <= interval '2 months' 
+                AND age(by_votes.created_at) <= interval '2 months' 
             GROUP BY users.id  
         ) as ek ON users.id = ek.id
         LEFT JOIN (
-            SELECT users.id, sum(comment_votes.vote) / 10 AS karma
-            FROM mindwell.comment_votes, mindwell.comments, mindwell.users
-            WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
-                AND comment_votes.comment_id = comments.id AND comments.author_id = users.id
+            SELECT users.id, sum(for_votes.vote) + sum(by_votes.vote) / 5 AS karma
+            FROM mindwell.users
+            LEFT JOIN mindwell.comments ON comments.author_id = users.id AS by_comments
+            LEFT JOIN mindwell.comment_votes ON comment_votes.comment_id = by_comments.id AS for_votes
+            LEFT JOIN mindwell.comment_votes ON comment_votes.user_id = users.id AS by_votes
+            WHERE abs(for_votes.vote) > 0.2 AND age(by_comments.created_at) <= interval '2 months' 
+                AND age(by_votes.created_at) <= interval '2 months' 
             GROUP BY users.id  
         ) AS ck ON users.id = ck.id
     )
