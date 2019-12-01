@@ -113,3 +113,6 @@ CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
     FROM upd
     WHERE users.id = upd.id;
 $$ LANGUAGE SQL;
+
+ALTER TABLE users
+ALTER COLUMN vote_ban SET DEFAULT CURRENT_DATE;

@@ -116,7 +116,7 @@ CREATE TABLE "mindwell"."users" (
     "email_followers" Boolean NOT NULL DEFAULT FALSE,
     "email_invites" Boolean NOT NULL DEFAULT FALSE,
     "invite_ban" Date DEFAULT CURRENT_DATE NOT NULL,
-    "vote_ban" Date DEFAULT CURRENT_DATE + interval '1 month' NOT NULL,
+    "vote_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "comment_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "live_ban" Date DEFAULT CURRENT_DATE NOT NULL,
     "adm_ban" Boolean DEFAULT TRUE NOT NULL,
