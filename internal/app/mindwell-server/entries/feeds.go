@@ -63,10 +63,10 @@ WHERE entry_privacy.type = 'all'
 	AND ` + relationFromMeQuery + ` NOT IN ('ignored', 'hidden')
 `
 
-const liveEntriesFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NOT NULL "
+const liveInvitedFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NOT NULL "
 const liveWaitingFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NULL "
 
-const liveEntriesFeedQuery = tlogFeedQueryStart + liveEntriesFeedQueryWhere
+const liveInvitedFeedQuery = tlogFeedQueryStart + liveInvitedFeedQueryWhere
 const liveWaitingFeedQuery = tlogFeedQueryStart + liveWaitingFeedQueryWhere
 
 const commentsFeedQueryEnd = `
@@ -270,7 +270,7 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			var feed *models.Feed
 			if *params.Section == "entries" {
-				feed = loadLiveFeed(srv, tx, userID, liveEntriesFeedQuery, liveEntriesFeedQueryWhere, *params.Before, *params.After, *params.Limit)
+				feed = loadLiveFeed(srv, tx, userID, liveInvitedFeedQuery, liveInvitedFeedQueryWhere, *params.Before, *params.After, *params.Limit)
 			} else if *params.Section == "comments" {
 				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Limit)
 			} else if *params.Section == "waiting" {
@@ -307,7 +307,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		interval = "1 month"
 	}
 
-	q := "SELECT * FROM (" + liveEntriesFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
+	q := "SELECT * FROM (" + liveInvitedFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
 		interval + "' ORDER BY entries.rating DESC LIMIT $2) AS feed ORDER BY feed.created_at DESC"
 	tx.Query(q, userID.ID, limit)
 
