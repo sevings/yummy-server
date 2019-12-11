@@ -2020,34 +2020,30 @@ CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
             ) / 5 AS karma
         FROM mindwell.users
         LEFT JOIN (
-            SELECT users.id, sum(entry_votes.vote) AS karma
-            FROM mindwell.users
-            JOIN mindwell.entries ON entries.author_id = users.id
+            SELECT entries.author_id AS id, sum(entry_votes.vote) AS karma
+            FROM mindwell.entries
             JOIN mindwell.entry_votes ON entry_votes.entry_id = entries.id
             WHERE abs(entry_votes.vote) > 0.2 AND age(entries.created_at) <= interval '2 months'
-            GROUP BY users.id
+            GROUP BY entries.author_id
         ) AS fek ON users.id = fek.id -- votes for users entries
         LEFT JOIN (
-            SELECT users.id, sum(entry_votes.vote) / 5 AS karma
-            FROM mindwell.users
-            JOIN mindwell.entry_votes ON entry_votes.user_id = users.id
+            SELECT entry_votes.user_id AS id, sum(entry_votes.vote) / 5 AS karma
+            FROM mindwell.entry_votes
             WHERE entry_votes.vote < 0 AND age(entry_votes.created_at) <= interval '2 months'
-            GROUP BY users.id
+            GROUP BY entry_votes.user_id
         ) AS bek ON users.id = bek.id -- entry votes by users
         LEFT JOIN (
-            SELECT users.id, sum(comment_votes.vote) AS karma
-            FROM mindwell.users
-            JOIN mindwell.comments ON comments.author_id = users.id
+            SELECT comments.author_id AS id, sum(comment_votes.vote) AS karma
+            FROM mindwell.comments
             JOIN mindwell.comment_votes ON comment_votes.comment_id = comments.id
             WHERE abs(comment_votes.vote) > 0.2 AND age(comments.created_at) <= interval '2 months'
-            GROUP BY users.id
+            GROUP BY comments.author_id
         ) AS fck ON users.id = fck.id -- votes for users comments
         LEFT JOIN (
-            SELECT users.id, sum(comment_votes.vote) / 5 AS karma
-            FROM mindwell.users
-            JOIN mindwell.comment_votes ON comment_votes.user_id = users.id
+            SELECT comment_votes.user_id AS id, sum(comment_votes.vote) / 5 AS karma
+            FROM mindwell.comment_votes
             WHERE comment_votes.vote < 0 AND age(comment_votes.created_at) <= interval '2 months'
-            GROUP BY users.id
+            GROUP BY comment_votes.user_id
         ) AS bck ON users.id = bck.id -- comment votes by users
     )
     UPDATE mindwell.users
