@@ -76,7 +76,7 @@ CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
             GROUP BY entries.author_id
         ) AS fek ON users.id = fek.id -- votes for users entries
         LEFT JOIN (
-            SELECT entry_votes.user_id AS id, sum(entry_votes.vote) / 5 AS karma
+            SELECT entry_votes.user_id AS id, sum(entry_votes.vote) AS karma
             FROM mindwell.entry_votes
             WHERE entry_votes.vote < 0 AND age(entry_votes.created_at) <= interval '2 months'
             GROUP BY entry_votes.user_id
@@ -89,7 +89,7 @@ CREATE OR REPLACE FUNCTION mindwell.recalc_karma() RETURNS VOID AS $$
             GROUP BY comments.author_id
         ) AS fck ON users.id = fck.id -- votes for users comments
         LEFT JOIN (
-            SELECT comment_votes.user_id AS id, sum(comment_votes.vote) / 5 AS karma
+            SELECT comment_votes.user_id AS id, sum(comment_votes.vote) AS karma
             FROM mindwell.comment_votes
             WHERE comment_votes.vote < 0 AND age(comment_votes.created_at) <= interval '2 months'
             GROUP BY comment_votes.user_id
