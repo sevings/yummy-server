@@ -83,7 +83,7 @@ func scanUserID(tx *AutoTx) (*models.UserID, error) {
 	}
 
 	user.Ban.Invite = user.Ban.Invite || !user.IsInvited
-	user.Ban.Vote = user.Ban.Vote || !user.IsInvited
+	user.Ban.Vote = user.Ban.Vote || !user.IsInvited || user.NegKarma
 	user.Ban.Comment = user.Ban.Comment || !user.IsInvited
 
 	return &user, nil
