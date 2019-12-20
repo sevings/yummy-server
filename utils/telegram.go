@@ -269,7 +269,7 @@ func (bot *TelegramBot) comment(entryTitle string, cmt *models.Comment) (cmtID, 
 
 	link := bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
-	text = cmt.Author.ShowName + " пишет: \n" +
+	text = tgHtmlEsc.Replace(cmt.Author.ShowName) + " пишет: \n" +
 		"«" + tgHtmlEsc.Replace(cmt.EditContent) + "»\n"
 
 	if len(entryTitle) == 0 {
