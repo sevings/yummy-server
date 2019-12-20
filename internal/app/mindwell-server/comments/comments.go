@@ -182,7 +182,7 @@ func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDPara
 				return comments.NewGetCommentsIDNotFound().WithPayload(err)
 			}
 
-			srv.Ntf.SendUpdateComment(tx, params.ID)
+			srv.Ntf.SendUpdateComment(tx, comment)
 
 			updatePrev(comment, userID)
 

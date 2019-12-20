@@ -120,9 +120,7 @@ func (ntf *CompositeNotifier) SendResetPassword(email, showName, gender string) 
 
 func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 	const titleQ = "SELECT title FROM entries WHERE id = $1"
-	var title string
-	tx.Query(titleQ, cmt.EntryID).Scan(&title)
-
+	title := tx.QueryString(titleQ, cmt.EntryID)
 	title, _ = CutText(title, 80)
 
 	const fromQ = `
@@ -165,11 +163,17 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 	}
 }
 
-func (ntf *CompositeNotifier) SendUpdateComment(tx *AutoTx, commentID int64) {
-	ntf.Ntf.NotifyUpdate(tx, commentID, models.NotificationTypeComment)
+func (ntf *CompositeNotifier) SendUpdateComment(tx *AutoTx, cmt *models.Comment) {
+	const titleQ = "SELECT title FROM entries WHERE id = $1"
+	title := tx.QueryString(titleQ, cmt.EntryID)
+	title, _ = CutText(title, 80)
+
+	ntf.Tg.SendUpdateComment(title, cmt)
+	ntf.Ntf.NotifyUpdate(tx, cmt.ID, models.NotificationTypeComment)
 }
 
 func (ntf *CompositeNotifier) SendRemoveComment(tx *AutoTx, commentID int64) {
+	ntf.Tg.SendRemoveComment(commentID)
 	ntf.Ntf.NotifyRemove(tx, commentID, models.NotificationTypeComment)
 }
 

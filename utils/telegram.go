@@ -31,9 +31,17 @@ type TelegramBot struct {
 	api    *tgbotapi.BotAPI
 	url    string
 	logins *cache.Cache
-	send   chan *tgbotapi.MessageConfig
+	cmts   *cache.Cache
+	send   chan func()
 	stop   chan interface{}
 }
+
+type messageID struct {
+	chat int64
+	msg  int
+}
+
+type messageIDs []messageID
 
 func connectToProxy(srv *MindwellServer) *http.Client {
 	auth := proxy.Auth{
@@ -63,7 +71,8 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		srv:    srv,
 		url:    srv.ConfigString("server.base_url"),
 		logins: cache.New(10*time.Minute, 10*time.Minute),
-		send:   make(chan *tgbotapi.MessageConfig, 200),
+		cmts:   cache.New(12*time.Hour, 1*time.Hour),
+		send:   make(chan func(), 200),
 		stop:   make(chan interface{}),
 	}
 
@@ -72,11 +81,20 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	return bot
 }
 
-func (bot *TelegramBot) sendMessage(chat int64, text string) {
+func (bot *TelegramBot) sendMessageNow(chat int64, text string) tgbotapi.Message {
 	msg := tgbotapi.NewMessage(chat, text)
 	msg.DisableWebPagePreview = true
 	msg.ParseMode = "HTML"
-	bot.send <- &msg
+	message, err := bot.api.Send(msg)
+	if err != nil {
+		log.Println("Telegram: ", err)
+	}
+
+	return message
+}
+
+func (bot *TelegramBot) sendMessage(chat int64, text string) {
+	bot.send <- func() { bot.sendMessageNow(chat, text) }
 }
 
 func (bot *TelegramBot) run(srv *MindwellServer) {
@@ -111,11 +129,8 @@ func (bot *TelegramBot) run(srv *MindwellServer) {
 
 	for {
 		select {
-		case msg := <-bot.send:
-			_, err := bot.api.Send(msg)
-			if err != nil {
-				log.Println("Telegram: ", err)
-			}
+		case send := <-bot.send:
+			send()
 		case <-bot.stop:
 			return
 		case upd := <-updates:
@@ -140,7 +155,7 @@ func (bot *TelegramBot) run(srv *MindwellServer) {
 				reply = unrecognisedText
 			}
 
-			bot.sendMessage(upd.Message.Chat.ID, reply)
+			bot.sendMessageNow(upd.Message.Chat.ID, reply)
 		}
 	}
 }
@@ -156,7 +171,7 @@ func (bot *TelegramBot) Stop() {
 
 func (bot *TelegramBot) BuildToken(userID int64) string {
 	token := GenerateString(8)
-	bot.logins.Set(token, userID, cache.DefaultExpiration)
+	bot.logins.SetDefault(token, userID)
 	return token
 }
 
@@ -245,14 +260,16 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 /help - вывести данную краткую справку.`
 }
 
-func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *models.Comment) {
-	if bot.api == nil {
-		return
-	}
+func idToString(id int64) string {
+	return strconv.FormatInt(id, 32)
+}
+
+func (bot *TelegramBot) comment(entryTitle string, cmt *models.Comment) (cmtID, text string) {
+	cmtID = idToString(cmt.ID)
 
 	link := bot.url + "entries/" + strconv.FormatInt(cmt.EntryID, 10) + "#comments"
 
-	text := cmt.Author.ShowName + " пишет: \n" +
+	text = cmt.Author.ShowName + " пишет: \n" +
 		"«" + tgHtmlEsc.Replace(cmt.EditContent) + "»\n"
 
 	if len(entryTitle) == 0 {
@@ -261,7 +278,83 @@ func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *model
 		text += `<a href="` + link + `">` + entryTitle + `</a>`
 	}
 
-	bot.sendMessage(chat, text)
+	return
+}
+
+func (bot *TelegramBot) SendNewComment(chat int64, entryTitle string, cmt *models.Comment) {
+	if bot.api == nil {
+		return
+	}
+
+	cmtID, text := bot.comment(entryTitle, cmt)
+
+	bot.send <- func() {
+		msg := bot.sendMessageNow(chat, text)
+		if msg.MessageID <= 0 {
+			return
+		}
+
+		var msgIDs messageIDs
+		msgIDsVar, found := bot.cmts.Get(cmtID)
+		if found {
+			msgIDs = msgIDsVar.(messageIDs)
+		}
+		msgIDs = append(msgIDs, messageID{chat, msg.MessageID})
+
+		bot.cmts.SetDefault(cmtID, msgIDs)
+	}
+}
+
+func (bot *TelegramBot) SendUpdateComment(entryTitle string, cmt *models.Comment) {
+	if bot.api == nil {
+		return
+	}
+
+	cmtID, text := bot.comment(entryTitle, cmt)
+	msgIDsVar, found := bot.cmts.Get(cmtID)
+	if !found {
+		log.Printf("Telegram: a message for comment %d not found.\n", cmt.ID)
+		return
+	}
+
+	msgIDs := msgIDsVar.(messageIDs)
+
+	bot.send <- func() {
+		for _, msgID := range msgIDs {
+			msg := tgbotapi.NewEditMessageText(msgID.chat, msgID.msg, text)
+			msg.DisableWebPagePreview = true
+			msg.ParseMode = "HTML"
+			_, err := bot.api.Send(msg)
+			if err != nil {
+				log.Println("Telegram: ", err)
+			}
+		}
+	}
+}
+
+func (bot *TelegramBot) SendRemoveComment(commentID int64) {
+	if bot.api == nil {
+		return
+	}
+
+	cmtID := idToString(commentID)
+	msgIDsVar, found := bot.cmts.Get(cmtID)
+	if !found {
+		log.Printf("Telegram: a message for comment %d not found.\n", commentID)
+		return
+	}
+
+	msgIDs := msgIDsVar.(messageIDs)
+
+	bot.send <- func() {
+		for _, msgID := range msgIDs {
+			msg := tgbotapi.NewDeleteMessage(msgID.chat, msgID.msg)
+			_, err := bot.api.DeleteMessage(msg)
+			if err != nil {
+				log.Println("Telegram: ", err)
+			}
+		}
+	}
 }
 
 func (bot *TelegramBot) SendPasswordChanged(chat int64) {
