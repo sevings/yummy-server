@@ -153,6 +153,8 @@ func TestPostMyTlog(t *testing.T) {
 	title := "title title ti"
 	params.Title = &title
 
+	params.Tags = []string{"tag1", "tag2"}
+
 	id := checkPostEntry(t, params, profiles[0], userIDs[0], true, 5)
 	checkEntryWatching(t, userIDs[0], id, true, true)
 
@@ -187,6 +189,7 @@ func TestPostMyTlog(t *testing.T) {
 		IsVotable: &votable,
 		InLive:    &live,
 		Privacy:   models.EntryPrivacyMe,
+		Tags:      []string{"tag1", "tag3"},
 	}
 
 	checkEditEntry(t, editParams, profiles[0], userIDs[0], true, 2)

@@ -94,6 +94,12 @@ type PutEntriesIDParams struct {
 	*/
 	Privacy string
 	/*
+	  Max Items: 5
+	  Unique: true
+	  In: formData
+	*/
+	Tags []string
+	/*
 	  Max Length: 500
 	  In: formData
 	  Default: ""
@@ -155,6 +161,11 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	fdPrivacy, fdhkPrivacy, _ := fds.GetOK("privacy")
 	if err := o.bindPrivacy(fdPrivacy, fdhkPrivacy, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	fdTags, fdhkTags, _ := fds.GetOK("tags")
+	if err := o.bindTags(fdTags, fdhkTags, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -405,6 +416,63 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 
 	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindTags binds and validates array parameter Tags from formData.
+//
+// Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
+func (o *PutEntriesIDParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
+
+	var qvTags string
+	if len(rawData) > 0 {
+		qvTags = rawData[len(rawData)-1]
+	}
+
+	// CollectionFormat:
+	tagsIC := swag.SplitByFormat(qvTags, "")
+	if len(tagsIC) == 0 {
+		return nil
+	}
+
+	var tagsIR []string
+	for i, tagsIV := range tagsIC {
+		tagsI := tagsIV
+
+		if err := validate.MinLength(fmt.Sprintf("%s.%v", "tags", i), "formData", tagsI, 1); err != nil {
+			return err
+		}
+
+		if err := validate.MaxLength(fmt.Sprintf("%s.%v", "tags", i), "formData", tagsI, 50); err != nil {
+			return err
+		}
+
+		tagsIR = append(tagsIR, tagsI)
+	}
+
+	o.Tags = tagsIR
+	if err := o.validateTags(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateTags carries on validations for parameter Tags
+func (o *PutEntriesIDParams) validateTags(formats strfmt.Registry) error {
+
+	tagsSize := int64(len(o.Tags))
+
+	// maxItems: 5
+	if err := validate.MaxItems("tags", "formData", tagsSize, 5); err != nil {
+		return err
+	}
+
+	// uniqueItems: true
+	if err := validate.UniqueItems("tags", "formData", o.Tags); err != nil {
 		return err
 	}
 

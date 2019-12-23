@@ -217,6 +217,29 @@ func attachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Ent
 	loadEntryImages(srv, tx, entry, images)
 }
 
+func setTags(tx *utils.AutoTx, entry *models.Entry, tags []string) {
+	if len(tags) == 0 {
+		return
+	}
+
+	realTags := make([]string, 0, len(tags))
+	for _, tag := range tags {
+		tag = strings.TrimSpace(tag)
+		tag = strings.ToLower(tag)
+		realTags = append(realTags, tag)
+	}
+
+	for _, tag := range realTags {
+		tagID := tx.QueryInt64("SELECT id FROM tags WHERE tag = $1", tag)
+		if tagID == 0 {
+			tagID = tx.QueryInt64("INSERT INTO tags(tag) VALUES($1) RETURNING id", tag)
+		}
+		tx.Exec("INSERT INTO entry_tags(entry_id, tag_id) VALUES($1, $2)", entry.ID, tagID)
+	}
+
+	entry.Tags = realTags
+}
+
 func allowedInLive(followersCount, entryCount int64) bool {
 	switch {
 	case followersCount < 3:
@@ -312,6 +335,7 @@ func newMyTlogPoster(srv *utils.MindwellServer) func(me.PostMeTlogParams, *model
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive, len(params.Images) > 0)
 
 			attachImages(srv, tx, entry, params.Images)
+			setTags(tx, entry, params.Tags)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(nil)
@@ -364,6 +388,12 @@ func reattachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.E
 	}
 
 	loadEntryImages(srv, tx, entry, images)
+}
+
+func resetTags(tx *utils.AutoTx, entry *models.Entry, tags []string) {
+	tx.Exec("DELETE FROM entry_tags WHERE entry_id = $1", entry.ID)
+
+	setTags(tx, entry, tags)
 }
 
 func canEditInLive(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, entryID int64) *models.Error {
@@ -430,6 +460,7 @@ func newEntryEditor(srv *utils.MindwellServer) func(entries.PutEntriesIDParams, 
 				*params.Title, params.Content, params.Privacy, *params.IsVotable, *params.InLive, len(params.Images) > 0)
 
 			reattachImages(srv, tx, entry, params.Images)
+			resetTags(tx, entry, params.Tags)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(&i18n.Message{ID: "edit_not_your_entry", Other: "You can't edit someone else's entries."})

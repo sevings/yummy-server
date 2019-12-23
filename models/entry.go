@@ -73,6 +73,9 @@ type Entry struct {
 	// rights
 	Rights *EntryRights `json:"rights,omitempty"`
 
+	// tags
+	Tags []string `json:"tags"`
+
 	// title
 	Title string `json:"title,omitempty"`
 

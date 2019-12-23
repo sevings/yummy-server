@@ -1417,6 +1417,18 @@ func init() {
             "in": "formData"
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
+            "in": "formData"
+          },
+          {
             "type": "boolean",
             "default": false,
             "name": "anonymous_comments",
@@ -1652,6 +1664,18 @@ func init() {
               "format": "int64"
             },
             "name": "images",
+            "in": "formData"
+          },
+          {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
             "in": "formData"
           },
           {
@@ -2778,6 +2802,18 @@ func init() {
             "in": "formData"
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
+            "in": "formData"
+          },
+          {
             "enum": [
               "all",
               "followers",
@@ -3830,6 +3866,12 @@ func init() {
             "vote": {
               "type": "boolean"
             }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "title": {
@@ -5944,6 +5986,18 @@ func init() {
             "in": "formData"
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
+            "in": "formData"
+          },
+          {
             "type": "boolean",
             "default": false,
             "name": "anonymous_comments",
@@ -6226,6 +6280,18 @@ func init() {
               "format": "int64"
             },
             "name": "images",
+            "in": "formData"
+          },
+          {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
             "in": "formData"
           },
           {
@@ -7500,6 +7566,18 @@ func init() {
             "in": "formData"
           },
           {
+            "maxItems": 5,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
+              "maxLength": 50,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "tags",
+            "in": "formData"
+          },
+          {
             "enum": [
               "all",
               "followers",
@@ -8705,6 +8783,12 @@ func init() {
             "vote": {
               "type": "boolean"
             }
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "title": {
