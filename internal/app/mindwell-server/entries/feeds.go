@@ -197,6 +197,7 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 		}
 
 		loadEntryImages(srv, tx, entry, images)
+		loadEntryTags(tx, entry)
 	}
 
 	if reverse {

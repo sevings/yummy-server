@@ -204,6 +204,19 @@ func loadEntryImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.
 	}
 }
 
+func loadEntryTags(tx *utils.AutoTx, entry *models.Entry) {
+	const q = `SELECT tag FROM entry_tags INNER JOIN tags ON tag_id = tags.id WHERE entry_id = $1 ORDER BY tag`
+	tx.Query(q, entry.ID)
+
+	var tags []string
+	var tag string
+	for tx.Scan(&tag) {
+		tags = append(tags, tag)
+	}
+
+	entry.Tags = tags
+}
+
 func attachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Entry, images []int64) {
 	if len(images) == 0 {
 		return
@@ -540,7 +553,7 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 	}
 
 	loadEntryImages(srv, tx, &entry, images)
-
+	loadEntryTags(tx, &entry)
 	setEntryRights(&entry, userID)
 
 	return &entry
