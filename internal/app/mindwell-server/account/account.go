@@ -2,6 +2,7 @@ package account
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"image"
 	"log"
@@ -25,11 +26,13 @@ import (
 
 var centSecret []byte
 var apiSecret []byte
+var imSecret []byte
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	centSecret = []byte(srv.ConfigString("centrifugo.secret"))
 	apiSecret = []byte(srv.ConfigString("server.api_secret"))
+	imSecret = []byte(srv.ConfigString("server.im_secret"))
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 
@@ -54,6 +57,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountGetAccountSubscribeTokenHandler = account.GetAccountSubscribeTokenHandlerFunc(newConnectionTokenGenerator(srv))
 	srv.API.AccountGetAccountSubscribeTelegramHandler = account.GetAccountSubscribeTelegramHandlerFunc(newTelegramTokenGenerator(srv))
 	srv.API.AccountDeleteAccountSubscribeTelegramHandler = account.DeleteAccountSubscribeTelegramHandlerFunc(newTelegramDeleter(srv))
+	srv.API.AccountGetAccountSubscribeImHandler = account.GetAccountSubscribeImHandlerFunc(newImTokenGenerator(srv))
 }
 
 // IsEmailFree returns true if there is no account with such an email
@@ -722,5 +726,33 @@ func newTelegramDeleter(srv *utils.MindwellServer) func(account.DeleteAccountSub
 
 			return account.NewDeleteAccountSubscribeTelegramNoContent()
 		})
+	}
+}
+
+func imToken(userID *models.UserID) string {
+	now := time.Now().Unix()
+	exp := now + 60*10
+
+	claims := jwt.MapClaims{
+		"iat": now,
+		"exp": exp,
+		"sub": userID.Name,
+		"uid": userID.ID,
+	}
+
+	tok := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	str, err := tok.SignedString(imSecret)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(str))
+}
+
+func newImTokenGenerator(srv *utils.MindwellServer) func(account.GetAccountSubscribeImParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountSubscribeImParams, userID *models.UserID) middleware.Responder {
+		tok := imToken(userID)
+		res := account.GetAccountSubscribeImOKBody{Token: tok}
+		return account.NewGetAccountSubscribeImOK().WithPayload(&res)
 	}
 }

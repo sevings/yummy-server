@@ -474,6 +474,31 @@ func init() {
         }
       }
     },
+    "/account/subscribe/im": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "tinode connection token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/account/subscribe/telegram": {
       "get": {
         "security": [
@@ -5010,6 +5035,31 @@ func init() {
         "responses": {
           "200": {
             "description": "email notification settings has been updated"
+          }
+        }
+      }
+    },
+    "/account/subscribe/im": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "tinode connection token",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

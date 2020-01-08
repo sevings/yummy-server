@@ -97,6 +97,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
 		}),
+		AccountGetAccountSubscribeImHandler: account.GetAccountSubscribeImHandlerFunc(func(params account.GetAccountSubscribeImParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountGetAccountSubscribeIm has not yet been implemented")
+		}),
 		AccountGetAccountSubscribeTelegramHandler: account.GetAccountSubscribeTelegramHandlerFunc(func(params account.GetAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSubscribeTelegram has not yet been implemented")
 		}),
@@ -406,6 +409,8 @@ type MindwellAPI struct {
 	AccountGetAccountNameNameHandler account.GetAccountNameNameHandler
 	// AccountGetAccountSettingsEmailHandler sets the operation handler for the get account settings email operation
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
+	// AccountGetAccountSubscribeImHandler sets the operation handler for the get account subscribe im operation
+	AccountGetAccountSubscribeImHandler account.GetAccountSubscribeImHandler
 	// AccountGetAccountSubscribeTelegramHandler sets the operation handler for the get account subscribe telegram operation
 	AccountGetAccountSubscribeTelegramHandler account.GetAccountSubscribeTelegramHandler
 	// AccountGetAccountSubscribeTokenHandler sets the operation handler for the get account subscribe token operation
@@ -689,6 +694,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
+	}
+
+	if o.AccountGetAccountSubscribeImHandler == nil {
+		unregistered = append(unregistered, "account.GetAccountSubscribeImHandler")
 	}
 
 	if o.AccountGetAccountSubscribeTelegramHandler == nil {
@@ -1184,6 +1193,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/account/subscribe/im"] = account.NewGetAccountSubscribeIm(o.context, o.AccountGetAccountSubscribeImHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
