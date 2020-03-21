@@ -153,7 +153,7 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 		g = govatar.MALE
 	}
 
-	img, err := govatar.GenerateFromUsername(g, name)
+	img, err := govatar.GenerateForUsername(g, name)
 	if err != nil {
 		log.Print(err)
 	}

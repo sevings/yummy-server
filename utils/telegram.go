@@ -103,12 +103,12 @@ func (bot *TelegramBot) run(srv *MindwellServer) {
 		return
 	}
 
-	proxy := connectToProxy(srv)
-	if proxy == nil {
+	client := connectToProxy(srv)
+	if client == nil {
 		return
 	}
 
-	api, err := tgbotapi.NewBotAPIWithClient(token, proxy)
+	api, err := tgbotapi.NewBotAPIWithClient(token, tgbotapi.APIEndpoint, client)
 	if err != nil {
 		log.Print(err)
 		return

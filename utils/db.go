@@ -19,7 +19,7 @@ func dropTable(tx *sql.Tx, table string) {
 func ClearDatabase(db *sql.DB) {
 	tx, err := db.Begin()
 	if err != nil {
-		log.Fatal("cannot begin tx")
+		log.Fatal("cannot begin tx: ", err)
 	}
 
 	dropTable(tx, "vote_weights")
