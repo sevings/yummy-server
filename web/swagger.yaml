@@ -567,6 +567,80 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  Chat:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      partner:
+        $ref: '#/definitions/User'
+      lastMessage:
+        $ref: '#/definitions/Message'
+      unreadCount:
+        type: integer
+      rights:
+        type: object
+        properties:
+          send:
+            type: boolean
+  ChatList:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Chat'
+      unreadCount:
+        type: integer
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
+  Message:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      chatId:
+        type: integer
+        format: int64
+      author:
+        $ref: '#/definitions/User'
+      createdAt:
+        type: number
+        format: double
+      content:
+        type: string
+      editContent:
+        type: string
+      rights:
+        type: object
+        properties:
+          edit:
+            type: boolean
+          delete:
+            type: boolean
+  MessageList:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Message'
+      nextAfter:
+        type: string
+      hasAfter:
+        type: boolean
+      nextBefore:
+        type: string
+      hasBefore:
+        type: boolean
 parameters:
   pathId:
     in: path
@@ -2380,6 +2454,184 @@ paths:
             $ref: '#/definitions/Error'
         404:
           description: Comment not found
+          schema:
+            $ref: '#/definitions/Error'
+  /chats:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: Chat list
+          schema:
+            $ref: '#/definitions/ChatList'
+  /chats/{name}:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: Chat info
+          schema:
+            $ref: '#/definitions/Chat'
+        404:
+          description: Chat not found
+          schema:
+            $ref: '#/definitions/Error'
+  /chats/{name}/read:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    put:
+      security:
+        - ApiKeyHeader: []
+      parameters:
+        - in: query
+          name: message
+          type: integer
+          format: int64
+          required: true
+      tags:
+        - chats
+      responses:
+        200:
+          description: unread count
+          schema:
+            type: object
+            properties:
+              unread:
+                type: integer
+        404:
+          description: Chat not found
+          schema:
+            $ref: '#/definitions/Error'
+  /chats/{name}/messages:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/after'
+        - $ref: '#/parameters/before'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: message list
+          schema:
+            $ref: '#/definitions/MessageList'
+        404:
+          description: Chat not found
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: content
+          type: string
+          minLength: 1
+          maxLength: 1000
+          required: true
+          pattern: "\\s*\\S+.*"
+        - in: formData
+          name: uid
+          type: number
+          format: int64
+          required: true
+          description: unique message id
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        201:
+          description: Message data
+          schema:
+            $ref: '#/definitions/Message'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Chat not found
+          schema:
+            $ref: '#/definitions/Error'
+  /messages/{id}:
+    parameters:
+      - $ref: '#/parameters/pathId'
+    get:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: Message data
+          schema:
+            $ref: '#/definitions/Message'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Message not found
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: content
+          type: string
+          minLength: 1
+          maxLength: 1000
+          required: true
+          pattern: "\\s*\\S+.*"
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: Message data
+          schema:
+            $ref: '#/definitions/Message'
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Message not found
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - chats
+      responses:
+        200:
+          description: OK
+        403:
+          description: access denied
+          schema:
+            $ref: '#/definitions/Error'
+        404:
+          description: Message not found
           schema:
             $ref: '#/definitions/Error'
   /adm/grandson:

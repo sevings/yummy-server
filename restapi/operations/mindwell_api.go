@@ -21,6 +21,7 @@ import (
 
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/restapi/operations/adm"
+	"github.com/sevings/mindwell-server/restapi/operations/chats"
 	"github.com/sevings/mindwell-server/restapi/operations/comments"
 	"github.com/sevings/mindwell-server/restapi/operations/design"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
@@ -79,6 +80,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		ImagesDeleteImagesIDHandler: images.DeleteImagesIDHandlerFunc(func(params images.DeleteImagesIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation ImagesDeleteImagesID has not yet been implemented")
 		}),
+		ChatsDeleteMessagesIDHandler: chats.DeleteMessagesIDHandlerFunc(func(params chats.DeleteMessagesIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsDeleteMessagesID has not yet been implemented")
+		}),
 		RelationsDeleteRelationsFromNameHandler: relations.DeleteRelationsFromNameHandlerFunc(func(params relations.DeleteRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation RelationsDeleteRelationsFromName has not yet been implemented")
 		}),
@@ -120,6 +124,15 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		AdmGetAdmStatHandler: adm.GetAdmStatHandlerFunc(func(params adm.GetAdmStatParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmGetAdmStat has not yet been implemented")
+		}),
+		ChatsGetChatsHandler: chats.GetChatsHandlerFunc(func(params chats.GetChatsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsGetChats has not yet been implemented")
+		}),
+		ChatsGetChatsNameHandler: chats.GetChatsNameHandlerFunc(func(params chats.GetChatsNameParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsGetChatsName has not yet been implemented")
+		}),
+		ChatsGetChatsNameMessagesHandler: chats.GetChatsNameMessagesHandlerFunc(func(params chats.GetChatsNameMessagesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsGetChatsNameMessages has not yet been implemented")
 		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsGetCommentsID has not yet been implemented")
@@ -196,6 +209,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
 		}),
+		ChatsGetMessagesIDHandler: chats.GetMessagesIDHandlerFunc(func(params chats.GetMessagesIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsGetMessagesID has not yet been implemented")
+		}),
 		NotificationsGetNotificationsHandler: notifications.GetNotificationsHandlerFunc(func(params notifications.GetNotificationsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation NotificationsGetNotifications has not yet been implemented")
 		}),
@@ -262,6 +278,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AdmPostAdmGrandsonStatusHandler: adm.PostAdmGrandsonStatusHandlerFunc(func(params adm.PostAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AdmPostAdmGrandsonStatus has not yet been implemented")
 		}),
+		ChatsPostChatsNameMessagesHandler: chats.PostChatsNameMessagesHandlerFunc(func(params chats.PostChatsNameMessagesParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsPostChatsNameMessages has not yet been implemented")
+		}),
 		CommentsPostCommentsIDComplainHandler: comments.PostCommentsIDComplainHandlerFunc(func(params comments.PostCommentsIDComplainParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPostCommentsIDComplain has not yet been implemented")
 		}),
@@ -285,6 +304,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		AccountPutAccountSettingsEmailHandler: account.PutAccountSettingsEmailHandlerFunc(func(params account.PutAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPutAccountSettingsEmail has not yet been implemented")
+		}),
+		ChatsPutChatsNameReadHandler: chats.PutChatsNameReadHandlerFunc(func(params chats.PutChatsNameReadParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsPutChatsNameRead has not yet been implemented")
 		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
@@ -318,6 +340,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		MePutMeOnlineHandler: me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MePutMeOnline has not yet been implemented")
+		}),
+		ChatsPutMessagesIDHandler: chats.PutMessagesIDHandlerFunc(func(params chats.PutMessagesIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation ChatsPutMessagesID has not yet been implemented")
 		}),
 		NotificationsPutNotificationsReadHandler: notifications.PutNotificationsReadHandlerFunc(func(params notifications.PutNotificationsReadParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation NotificationsPutNotificationsRead has not yet been implemented")
@@ -394,6 +419,8 @@ type MindwellAPI struct {
 	WatchingsDeleteEntriesIDWatchingHandler watchings.DeleteEntriesIDWatchingHandler
 	// ImagesDeleteImagesIDHandler sets the operation handler for the delete images ID operation
 	ImagesDeleteImagesIDHandler images.DeleteImagesIDHandler
+	// ChatsDeleteMessagesIDHandler sets the operation handler for the delete messages ID operation
+	ChatsDeleteMessagesIDHandler chats.DeleteMessagesIDHandler
 	// RelationsDeleteRelationsFromNameHandler sets the operation handler for the delete relations from name operation
 	RelationsDeleteRelationsFromNameHandler relations.DeleteRelationsFromNameHandler
 	// RelationsDeleteRelationsToNameHandler sets the operation handler for the delete relations to name operation
@@ -422,6 +449,12 @@ type MindwellAPI struct {
 	AdmGetAdmGrandsonStatusHandler adm.GetAdmGrandsonStatusHandler
 	// AdmGetAdmStatHandler sets the operation handler for the get adm stat operation
 	AdmGetAdmStatHandler adm.GetAdmStatHandler
+	// ChatsGetChatsHandler sets the operation handler for the get chats operation
+	ChatsGetChatsHandler chats.GetChatsHandler
+	// ChatsGetChatsNameHandler sets the operation handler for the get chats name operation
+	ChatsGetChatsNameHandler chats.GetChatsNameHandler
+	// ChatsGetChatsNameMessagesHandler sets the operation handler for the get chats name messages operation
+	ChatsGetChatsNameMessagesHandler chats.GetChatsNameMessagesHandler
 	// CommentsGetCommentsIDHandler sets the operation handler for the get comments ID operation
 	CommentsGetCommentsIDHandler comments.GetCommentsIDHandler
 	// VotesGetCommentsIDVoteHandler sets the operation handler for the get comments ID vote operation
@@ -472,6 +505,8 @@ type MindwellAPI struct {
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
 	// MeGetMeTlogHandler sets the operation handler for the get me tlog operation
 	MeGetMeTlogHandler me.GetMeTlogHandler
+	// ChatsGetMessagesIDHandler sets the operation handler for the get messages ID operation
+	ChatsGetMessagesIDHandler chats.GetMessagesIDHandler
 	// NotificationsGetNotificationsHandler sets the operation handler for the get notifications operation
 	NotificationsGetNotificationsHandler notifications.GetNotificationsHandler
 	// NotificationsGetNotificationsIDHandler sets the operation handler for the get notifications ID operation
@@ -516,6 +551,8 @@ type MindwellAPI struct {
 	AdmPostAdmGrandsonHandler adm.PostAdmGrandsonHandler
 	// AdmPostAdmGrandsonStatusHandler sets the operation handler for the post adm grandson status operation
 	AdmPostAdmGrandsonStatusHandler adm.PostAdmGrandsonStatusHandler
+	// ChatsPostChatsNameMessagesHandler sets the operation handler for the post chats name messages operation
+	ChatsPostChatsNameMessagesHandler chats.PostChatsNameMessagesHandler
 	// CommentsPostCommentsIDComplainHandler sets the operation handler for the post comments ID complain operation
 	CommentsPostCommentsIDComplainHandler comments.PostCommentsIDComplainHandler
 	// EntriesPostEntriesAnonymousHandler sets the operation handler for the post entries anonymous operation
@@ -532,6 +569,8 @@ type MindwellAPI struct {
 	RelationsPostRelationsInvitedNameHandler relations.PostRelationsInvitedNameHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
 	AccountPutAccountSettingsEmailHandler account.PutAccountSettingsEmailHandler
+	// ChatsPutChatsNameReadHandler sets the operation handler for the put chats name read operation
+	ChatsPutChatsNameReadHandler chats.PutChatsNameReadHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
 	CommentsPutCommentsIDHandler comments.PutCommentsIDHandler
 	// VotesPutCommentsIDVoteHandler sets the operation handler for the put comments ID vote operation
@@ -554,6 +593,8 @@ type MindwellAPI struct {
 	MePutMeCoverHandler me.PutMeCoverHandler
 	// MePutMeOnlineHandler sets the operation handler for the put me online operation
 	MePutMeOnlineHandler me.PutMeOnlineHandler
+	// ChatsPutMessagesIDHandler sets the operation handler for the put messages ID operation
+	ChatsPutMessagesIDHandler chats.PutMessagesIDHandler
 	// NotificationsPutNotificationsReadHandler sets the operation handler for the put notifications read operation
 	NotificationsPutNotificationsReadHandler notifications.PutNotificationsReadHandler
 	// RelationsPutRelationsFromNameHandler sets the operation handler for the put relations from name operation
@@ -667,6 +708,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "images.DeleteImagesIDHandler")
 	}
 
+	if o.ChatsDeleteMessagesIDHandler == nil {
+		unregistered = append(unregistered, "chats.DeleteMessagesIDHandler")
+	}
+
 	if o.RelationsDeleteRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.DeleteRelationsFromNameHandler")
 	}
@@ -721,6 +766,18 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AdmGetAdmStatHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmStatHandler")
+	}
+
+	if o.ChatsGetChatsHandler == nil {
+		unregistered = append(unregistered, "chats.GetChatsHandler")
+	}
+
+	if o.ChatsGetChatsNameHandler == nil {
+		unregistered = append(unregistered, "chats.GetChatsNameHandler")
+	}
+
+	if o.ChatsGetChatsNameMessagesHandler == nil {
+		unregistered = append(unregistered, "chats.GetChatsNameMessagesHandler")
 	}
 
 	if o.CommentsGetCommentsIDHandler == nil {
@@ -823,6 +880,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeTlogHandler")
 	}
 
+	if o.ChatsGetMessagesIDHandler == nil {
+		unregistered = append(unregistered, "chats.GetMessagesIDHandler")
+	}
+
 	if o.NotificationsGetNotificationsHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsHandler")
 	}
@@ -911,6 +972,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "adm.PostAdmGrandsonStatusHandler")
 	}
 
+	if o.ChatsPostChatsNameMessagesHandler == nil {
+		unregistered = append(unregistered, "chats.PostChatsNameMessagesHandler")
+	}
+
 	if o.CommentsPostCommentsIDComplainHandler == nil {
 		unregistered = append(unregistered, "comments.PostCommentsIDComplainHandler")
 	}
@@ -941,6 +1006,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountPutAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.PutAccountSettingsEmailHandler")
+	}
+
+	if o.ChatsPutChatsNameReadHandler == nil {
+		unregistered = append(unregistered, "chats.PutChatsNameReadHandler")
 	}
 
 	if o.CommentsPutCommentsIDHandler == nil {
@@ -985,6 +1054,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MePutMeOnlineHandler == nil {
 		unregistered = append(unregistered, "me.PutMeOnlineHandler")
+	}
+
+	if o.ChatsPutMessagesIDHandler == nil {
+		unregistered = append(unregistered, "chats.PutMessagesIDHandler")
 	}
 
 	if o.NotificationsPutNotificationsReadHandler == nil {
@@ -1158,6 +1231,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
+	o.handlers["DELETE"]["/messages/{id}"] = chats.NewDeleteMessagesID(o.context, o.ChatsDeleteMessagesIDHandler)
+
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
 	o.handlers["DELETE"]["/relations/from/{name}"] = relations.NewDeleteRelationsFromName(o.context, o.RelationsDeleteRelationsFromNameHandler)
 
 	if o.handlers["DELETE"] == nil {
@@ -1224,6 +1302,21 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/stat"] = adm.NewGetAdmStat(o.context, o.AdmGetAdmStatHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/chats"] = chats.NewGetChats(o.context, o.ChatsGetChatsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/chats/{name}"] = chats.NewGetChatsName(o.context, o.ChatsGetChatsNameHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/chats/{name}/messages"] = chats.NewGetChatsNameMessages(o.context, o.ChatsGetChatsNameMessagesHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1353,6 +1446,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/messages/{id}"] = chats.NewGetMessagesID(o.context, o.ChatsGetMessagesIDHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/notifications"] = notifications.NewGetNotifications(o.context, o.NotificationsGetNotificationsHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1463,6 +1561,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
+	o.handlers["POST"]["/chats/{name}/messages"] = chats.NewPostChatsNameMessages(o.context, o.ChatsPostChatsNameMessagesHandler)
+
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
 	o.handlers["POST"]["/comments/{id}/complain"] = comments.NewPostCommentsIDComplain(o.context, o.CommentsPostCommentsIDComplainHandler)
 
 	if o.handlers["POST"] == nil {
@@ -1499,6 +1602,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/account/settings/email"] = account.NewPutAccountSettingsEmail(o.context, o.AccountPutAccountSettingsEmailHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/chats/{name}/read"] = chats.NewPutChatsNameRead(o.context, o.ChatsPutChatsNameReadHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
@@ -1554,6 +1662,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me/online"] = me.NewPutMeOnline(o.context, o.MePutMeOnlineHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/messages/{id}"] = chats.NewPutMessagesID(o.context, o.ChatsPutMessagesIDHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

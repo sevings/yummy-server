@@ -965,6 +965,207 @@ func init() {
         }
       }
     },
+    "/chats": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat list",
+            "schema": {
+              "$ref": "#/definitions/ChatList"
+            }
+          }
+        }
+      }
+    },
+    "/chats/{name}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat info",
+            "schema": {
+              "$ref": "#/definitions/Chat"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
+    "/chats/{name}/messages": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/after"
+          },
+          {
+            "$ref": "#/parameters/before"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "message list",
+            "schema": {
+              "$ref": "#/definitions/MessageList"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "minLength": 1,
+            "pattern": "\\s*\\S+.*",
+            "type": "string",
+            "name": "content",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "number",
+            "format": "int64",
+            "description": "unique message id",
+            "name": "uid",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
+    "/chats/{name}/read": {
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "message",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "unread count",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "unread": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
     "/comments/{id}": {
       "get": {
         "security": [
@@ -2864,6 +3065,114 @@ func init() {
         }
       }
     },
+    "/messages/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "minLength": 1,
+            "pattern": "\\s*\\S+.*",
+            "type": "string",
+            "name": "content",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathId"
+        }
+      ]
+    },
     "/notifications": {
       "get": {
         "security": [
@@ -3650,6 +3959,58 @@ func init() {
         }
       }
     },
+    "Chat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lastMessage": {
+          "$ref": "#/definitions/Message"
+        },
+        "partner": {
+          "$ref": "#/definitions/User"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "send": {
+              "type": "boolean"
+            }
+          }
+        },
+        "unreadCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "ChatList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Chat"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
+        "unreadCount": {
+          "type": "integer"
+        }
+      }
+    },
     "Color": {
       "description": "color in rgb",
       "type": "string",
@@ -4136,6 +4497,66 @@ func init() {
         },
         "width": {
           "type": "integer"
+        }
+      }
+    },
+    "Message": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "$ref": "#/definitions/User"
+        },
+        "chatId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number",
+          "format": "double"
+        },
+        "editContent": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "MessageList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Message"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
         }
       }
     },
@@ -5505,6 +5926,247 @@ func init() {
         }
       }
     },
+    "/chats": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat list",
+            "schema": {
+              "$ref": "#/definitions/ChatList"
+            }
+          }
+        }
+      }
+    },
+    "/chats/{name}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "Chat info",
+            "schema": {
+              "$ref": "#/definitions/Chat"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/chats/{name}/messages": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "after",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "",
+            "name": "before",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "message list",
+            "schema": {
+              "$ref": "#/definitions/MessageList"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "minLength": 1,
+            "pattern": "\\s*\\S+.*",
+            "type": "string",
+            "name": "content",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "number",
+            "format": "int64",
+            "description": "unique message id",
+            "name": "uid",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
+    "/chats/{name}/read": {
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "name": "message",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "unread count",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "unread": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Chat not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/comments/{id}": {
       "get": {
         "security": [
@@ -7628,6 +8290,119 @@ func init() {
         }
       }
     },
+    "/messages/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "chats"
+        ],
+        "parameters": [
+          {
+            "maxLength": 1000,
+            "minLength": 1,
+            "pattern": "\\s*\\S+.*",
+            "type": "string",
+            "name": "content",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Message data",
+            "schema": {
+              "$ref": "#/definitions/Message"
+            }
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "chats"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "access denied",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Message not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "minimum": 1,
+          "type": "integer",
+          "format": "int64",
+          "name": "id",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/notifications": {
       "get": {
         "security": [
@@ -8567,6 +9342,58 @@ func init() {
         }
       }
     },
+    "Chat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lastMessage": {
+          "$ref": "#/definitions/Message"
+        },
+        "partner": {
+          "$ref": "#/definitions/User"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "send": {
+              "type": "boolean"
+            }
+          }
+        },
+        "unreadCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "ChatList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Chat"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
+        },
+        "unreadCount": {
+          "type": "integer"
+        }
+      }
+    },
     "Color": {
       "description": "color in rgb",
       "type": "string",
@@ -9053,6 +9880,66 @@ func init() {
         },
         "width": {
           "type": "integer"
+        }
+      }
+    },
+    "Message": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "$ref": "#/definitions/User"
+        },
+        "chatId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "content": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "number",
+          "format": "double"
+        },
+        "editContent": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "rights": {
+          "type": "object",
+          "properties": {
+            "delete": {
+              "type": "boolean"
+            },
+            "edit": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "MessageList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Message"
+          }
+        },
+        "hasAfter": {
+          "type": "boolean"
+        },
+        "hasBefore": {
+          "type": "boolean"
+        },
+        "nextAfter": {
+          "type": "string"
+        },
+        "nextBefore": {
+          "type": "string"
         }
       }
     },

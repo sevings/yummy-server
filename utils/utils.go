@@ -240,6 +240,19 @@ func FormatFloat(val float64) string {
 	return strconv.FormatFloat(val, 'f', 6, 64)
 }
 
+func ParseInt64(val string) int64 {
+	res, err := strconv.ParseInt(val, 32, 64)
+	if len(val) > 0 && err != nil {
+		log.Printf("error parse int: '%s'", val)
+	}
+
+	return res
+}
+
+func FormatInt64(val int64) string {
+	return strconv.FormatInt(val, 32)
+}
+
 func ReplaceToHtml(val string) string {
 	return htmlEsc.Replace(val)
 }

@@ -10,6 +10,7 @@ import (
 
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
+	chatsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/chats"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	complainsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/complains"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
@@ -56,6 +57,7 @@ func TestMain(m *testing.M) {
 	relationsImpl.ConfigureAPI(srv)
 	notificationsImpl.ConfigureAPI(srv)
 	complainsImpl.ConfigureAPI(srv)
+	chatsImpl.ConfigureAPI(srv)
 
 	userIDs, profiles = registerTestUsers(db)
 

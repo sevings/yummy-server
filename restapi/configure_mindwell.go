@@ -13,6 +13,7 @@ import (
 	"github.com/didip/tollbooth/limiter"
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
+	chatsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/chats"
 	commentsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	complainsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/complains"
 	designImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/design"
@@ -63,6 +64,7 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	relationsImpl.ConfigureAPI(srv)
 	notificationsImpl.ConfigureAPI(srv)
 	complainsImpl.ConfigureAPI(srv)
+	chatsImpl.ConfigureAPI(srv)
 
 	// configure the api here
 	api.ServeError = errors.ServeError
