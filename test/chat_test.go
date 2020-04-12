@@ -171,10 +171,10 @@ func compareMessages(t *testing.T, exp, act *models.Message, user *models.UserID
 }
 
 func TestLoadMessages(t *testing.T) {
-	m3 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
-	m2 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
-	m1 := checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
 	m0 := checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
+	m1 := checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
+	m2 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
+	m3 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
 
 	msgs := checkLoadMessages(t, userIDs[0], 10, userIDs[1].Name, "", "", 4)
 	compareMessages(t, m0, msgs.Data[0], userIDs[0])
@@ -187,7 +187,7 @@ func TestLoadMessages(t *testing.T) {
 	req.False(msgs.HasBefore)
 
 	msgs = checkLoadMessages(t, userIDs[0], 1, userIDs[1].Name, "", "", 1)
-	compareMessages(t, m0, msgs.Data[0], userIDs[0])
+	compareMessages(t, m3, msgs.Data[0], userIDs[0])
 	req.False(msgs.HasAfter)
 	req.True(msgs.HasBefore)
 
@@ -198,7 +198,7 @@ func TestLoadMessages(t *testing.T) {
 	req.True(msgs.HasBefore)
 
 	msgs = checkLoadMessages(t, userIDs[0], 1, userIDs[1].Name, msgs.NextBefore, "", 1)
-	compareMessages(t, m3, msgs.Data[0], userIDs[0])
+	compareMessages(t, m0, msgs.Data[0], userIDs[0])
 	req.True(msgs.HasAfter)
 	req.False(msgs.HasBefore)
 
@@ -209,7 +209,7 @@ func TestLoadMessages(t *testing.T) {
 	req.True(msgs.HasBefore)
 
 	msgs = checkLoadMessages(t, userIDs[0], 1, userIDs[1].Name, "", msgs.NextAfter, 1)
-	compareMessages(t, m0, msgs.Data[0], userIDs[0])
+	compareMessages(t, m3, msgs.Data[0], userIDs[0])
 	req.False(msgs.HasAfter)
 	req.True(msgs.HasBefore)
 

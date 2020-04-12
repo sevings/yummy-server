@@ -91,7 +91,7 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 				tx.Query(q, chatID, *params.Limit)
 			}
 
-			list := loadMessageList(srv, tx, userID.ID, chatID, after > 0)
+			list := loadMessageList(srv, tx, userID.ID, chatID, after <= 0)
 
 			if len(list.Data) == 0 {
 				return chats.NewGetChatsNameMessagesOK().WithPayload(list)
@@ -102,7 +102,7 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 				FROM messages
                 WHERE chat_id = $1 AND id < $2)`
 
-			nextBefore := list.Data[len(list.Data)-1].ID
+			nextBefore := list.Data[0].ID
 			list.NextBefore = utils.FormatInt64(nextBefore)
 			tx.Query(beforeQuery, chatID, nextBefore)
 			tx.Scan(&list.HasBefore)
@@ -112,7 +112,7 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 				FROM messages
                 WHERE chat_id = $1 AND id > $2)`
 
-			nextAfter := list.Data[0].ID
+			nextAfter := list.Data[len(list.Data)-1].ID
 			list.NextAfter = utils.FormatInt64(nextAfter)
 			tx.Query(afterQuery, chatID, nextAfter)
 			tx.Scan(&list.HasAfter)
