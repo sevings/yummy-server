@@ -11,11 +11,13 @@ import (
 var userIDs *cache.Cache
 var chatIDs *cache.Cache
 var messages *cache.Cache
+var partners *cache.Cache
 
 func init() {
 	userIDs = cache.New(48*time.Hour, 24*time.Hour)
 	chatIDs = cache.New(48*time.Hour, 24*time.Hour)
 	messages = cache.New(48*time.Hour, 24*time.Hour)
+	partners = cache.New(48*time.Hour, 24*time.Hour)
 }
 
 func findUserID(tx *utils.AutoTx, name string) int64 {
@@ -80,4 +82,26 @@ func getCachedMessage(userID, uid int64, partnerName string) *models.Message {
 func setCachedMessage(userID, uid int64, partnerName string, msg *models.Message) {
 	key := fmt.Sprintf("%x_%x_%s", userID, uid, partnerName)
 	messages.SetDefault(key, msg)
+}
+
+func findPartner(tx *utils.AutoTx, chatID, userID int64) string {
+	key := fmt.Sprintf("%d_%d", chatID, userID)
+	name, found := partners.Get(key)
+	if found {
+		return name.(string)
+	}
+
+	const q = `
+		SELECT name 
+		FROM users
+		JOIN talkers ON user_id = users.id
+		WHERE chat_id = $1 and user_id <> $2
+	`
+
+	partner := tx.QueryString(q, chatID, userID)
+	if partner != "" {
+		partners.SetDefault(key, partner)
+	}
+
+	return partner
 }

@@ -283,6 +283,29 @@ func newChatLoader(srv *utils.MindwellServer) func(chats.GetChatsNameParams, *mo
 	}
 }
 
+func loadReadMessages(tx *utils.AutoTx, chatID, userID, lastRead int64) []int64 {
+	const q = `
+		SELECT id
+		FROM messages 
+		WHERE chat_id = $2 AND author_id <> $1 AND id <= $3
+			AND id > (SELECT last_read FROM talkers WHERE user_id = $1 AND chat_id = $2)
+	`
+
+	tx.Query(q, userID, chatID, lastRead)
+
+	var ids []int64
+	for {
+		var msgID int64
+		if !tx.Scan(&msgID) {
+			break
+		}
+
+		ids = append(ids, msgID)
+	}
+
+	return ids
+}
+
 const readChatQuery = `
     WITH cnt AS (
         SELECT count(*) AS unread
@@ -305,6 +328,12 @@ func newChatReader(srv *utils.MindwellServer) func(chats.PutChatsNameReadParams,
 			}
 			if chatID == 0 {
 				return chats.NewPutChatsNameReadOK()
+			}
+
+			name := findPartner(tx, chatID, userID.ID)
+			msgIDs := loadReadMessages(tx, chatID, userID.ID, params.Message)
+			for _, msgID := range msgIDs {
+				srv.Ntf.Ntf.NotifyMessageRead(chatID, msgID, name)
 			}
 
 			var result chats.PutChatsNameReadOKBody

@@ -173,6 +173,7 @@ func newMessageCreator(srv *utils.MindwellServer) func(chats.PostChatsNameMessag
 			}
 
 			msg = createMessage(srv, tx, userID.ID, chatID, params.Content)
+			srv.Ntf.Ntf.NotifyMessage(chatID, msg.ID, params.Name)
 			setCachedMessage(userID.ID, params.UID, params.Name, msg)
 			return chats.NewPostChatsNameMessagesCreated().WithPayload(msg)
 		})
@@ -280,14 +281,19 @@ func newMessageEditor(srv *utils.MindwellServer) func(chats.PutMessagesIDParams,
 				return chats.NewPutMessagesIDNotFound()
 			}
 
+			name := findPartner(tx, msg.ChatID, userID.ID)
+			if name != "" {
+				srv.Ntf.Ntf.NotifyMessageUpdate(msg.ChatID, msg.ID, name)
+			}
+
 			return chats.NewPutMessagesIDOK().WithPayload(msg)
 		})
 	}
 }
 
-func deleteMessage(tx *utils.AutoTx, msgID int64) {
-	const q = "DELETE FROM messages WHERE id = $1"
-	tx.Exec(q, msgID)
+func deleteMessage(tx *utils.AutoTx, msgID int64) int64 {
+	const q = "DELETE FROM messages WHERE id = $1 RETURNING chat_id"
+	return tx.QueryInt64(q, msgID)
 }
 
 func newMessageDeleter(srv *utils.MindwellServer) func(chats.DeleteMessagesIDParams, *models.UserID) middleware.Responder {
@@ -297,7 +303,13 @@ func newMessageDeleter(srv *utils.MindwellServer) func(chats.DeleteMessagesIDPar
 				return chats.NewDeleteMessagesIDForbidden()
 			}
 
-			deleteMessage(tx, params.ID)
+			chatID := deleteMessage(tx, params.ID)
+
+			name := findPartner(tx, chatID, userID.ID)
+			if name != "" {
+				srv.Ntf.Ntf.NotifyMessageRemove(chatID, params.ID, name)
+			}
+
 			return chats.NewDeleteMessagesIDOK()
 		})
 	}

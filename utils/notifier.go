@@ -161,3 +161,55 @@ func (ntf *Notifier) NotifyRead(user string, ntfID int64) {
 		ch:    notificationsChannel(user),
 	}
 }
+
+func messagesChannel(userName string) string {
+	return "messages#" + userName
+}
+
+func (ntf *Notifier) NotifyMessage(chatID, msgID int64, user string) {
+	if ntf.ch != nil {
+		ntf.ch <- &message{
+			ID:    chatID,
+			Subj:  msgID,
+			State: "new",
+			Type:  "message",
+			ch:    messagesChannel(user),
+		}
+	}
+}
+
+func (ntf *Notifier) NotifyMessageUpdate(chatID, msgID int64, user string) {
+	if ntf.ch != nil {
+		ntf.ch <- &message{
+			ID:    chatID,
+			Subj:  msgID,
+			State: "updated",
+			Type:  "message",
+			ch:    messagesChannel(user),
+		}
+	}
+}
+
+func (ntf *Notifier) NotifyMessageRemove(chatID, msgID int64, user string) {
+	if ntf.ch != nil {
+		ntf.ch <- &message{
+			ID:    chatID,
+			Subj:  msgID,
+			State: "removed",
+			Type:  "message",
+			ch:    messagesChannel(user),
+		}
+	}
+}
+
+func (ntf *Notifier) NotifyMessageRead(chatID, msgID int64, user string) {
+	if ntf.ch != nil {
+		ntf.ch <- &message{
+			ID:    chatID,
+			Subj:  msgID,
+			State: "read",
+			Type:  "message",
+			ch:    messagesChannel(user),
+		}
+	}
+}
