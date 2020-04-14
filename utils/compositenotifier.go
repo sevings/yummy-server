@@ -314,7 +314,7 @@ SELECT EXISTS(SELECT 1
 	WHERE users.name = $1 AND notification_type.type = $2 AND age(notifications.created_at) < interval '6 month')
 `
 
-func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson, grandfather string) {
+func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson string) {
 	if tx.QueryBool(retryQuery, grandson, "adm_sent") {
 		return
 	}
@@ -341,7 +341,7 @@ func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson, grandfather stri
 	ntf.Ntf.Notify(tx, 0, typeAdmSent, grandson)
 }
 
-func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandson, grandfather string) {
+func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandfather string) {
 	if tx.QueryBool(retryQuery, grandfather, "adm_received") {
 		return
 	}

@@ -70,7 +70,7 @@ func newGrandsonLoader(srv *utils.MindwellServer) func(adm.GetAdmGrandsonParams,
 					WHERE id = $1
 				`
 
-				tx.Query(q, userID.ID).Scan(&address.Country, &address.Address)
+				tx.Query(usersQ, userID.ID).Scan(&address.Country, &address.Address)
 			}
 
 			return adm.NewGetAdmGrandsonOK().WithPayload(&address)
@@ -149,7 +149,7 @@ func newGrandsonStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGrandso
 			}
 
 			if params.Received {
-				srv.Ntf.SendAdmReceived(tx, userID.Name, grandfather)
+				srv.Ntf.SendAdmReceived(tx, grandfather)
 			}
 
 			return adm.NewPostAdmGrandsonStatusOK()
@@ -232,7 +232,7 @@ func newGrandfatherStatusUpdater(srv *utils.MindwellServer) func(adm.PostAdmGran
 			}
 
 			if params.Sent {
-				srv.Ntf.SendAdmSent(tx, grandson, userID.Name)
+				srv.Ntf.SendAdmSent(tx, grandson)
 			}
 
 			return adm.NewPostAdmGrandfatherStatusOK()
