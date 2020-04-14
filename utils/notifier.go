@@ -22,6 +22,23 @@ type Notifier struct {
 	stop chan interface{}
 }
 
+const (
+	stateNew     = "new"
+	stateUpdated = "updated"
+	stateRemoved = "removed"
+	stateRead    = "read"
+
+	typeAdmReceived = "adm_received"
+	typeAdmSent     = "adm_sent"
+	typeInvited     = "invited"
+	typeAccept      = "accept"
+	typeComment     = "comment"
+	typeRequest     = "request"
+	typeFollower    = "follower"
+	typeInvite      = "invite"
+	typeMessage     = "message"
+)
+
 func NewNotifier(apiURL, apiKey string) *Notifier {
 	if len(apiKey) == 0 {
 		return &Notifier{}
@@ -84,7 +101,7 @@ func (ntf *Notifier) Notify(tx *AutoTx, subjectID int64, tpe, user string) {
 		ntf.ch <- &message{
 			ID:    id,
 			Subj:  subjectID,
-			State: "new",
+			State: stateNew,
 			Type:  tpe,
 			ch:    notificationsChannel(user),
 		}
@@ -115,7 +132,7 @@ func (ntf *Notifier) NotifyUpdate(tx *AutoTx, subjectID int64, tpe string) {
 
 		ntf.ch <- &message{
 			ID:    id,
-			State: "updated",
+			State: stateUpdated,
 			ch:    notificationsChannel(user),
 		}
 	}
@@ -144,7 +161,7 @@ func (ntf *Notifier) NotifyRemove(tx *AutoTx, subjectID int64, tpe string) {
 
 		ntf.ch <- &message{
 			ID:    id,
-			State: "removed",
+			State: stateRemoved,
 			ch:    notificationsChannel(user),
 		}
 	}
@@ -157,7 +174,7 @@ func (ntf *Notifier) NotifyRead(user string, ntfID int64) {
 
 	ntf.ch <- &message{
 		ID:    ntfID,
-		State: "read",
+		State: stateRead,
 		ch:    notificationsChannel(user),
 	}
 }
@@ -171,8 +188,8 @@ func (ntf *Notifier) NotifyMessage(chatID, msgID int64, user string) {
 		ntf.ch <- &message{
 			ID:    chatID,
 			Subj:  msgID,
-			State: "new",
-			Type:  "message",
+			State: stateNew,
+			Type:  typeMessage,
 			ch:    messagesChannel(user),
 		}
 	}
@@ -183,8 +200,8 @@ func (ntf *Notifier) NotifyMessageUpdate(chatID, msgID int64, user string) {
 		ntf.ch <- &message{
 			ID:    chatID,
 			Subj:  msgID,
-			State: "updated",
-			Type:  "message",
+			State: stateUpdated,
+			Type:  typeMessage,
 			ch:    messagesChannel(user),
 		}
 	}
@@ -195,8 +212,8 @@ func (ntf *Notifier) NotifyMessageRemove(chatID, msgID int64, user string) {
 		ntf.ch <- &message{
 			ID:    chatID,
 			Subj:  msgID,
-			State: "removed",
-			Type:  "message",
+			State: stateRemoved,
+			Type:  typeMessage,
 			ch:    messagesChannel(user),
 		}
 	}
@@ -207,8 +224,8 @@ func (ntf *Notifier) NotifyMessageRead(chatID, msgID int64, user string) {
 		ntf.ch <- &message{
 			ID:    chatID,
 			Subj:  msgID,
-			State: "read",
-			Type:  "message",
+			State: stateRead,
+			Type:  typeMessage,
 			ch:    messagesChannel(user),
 		}
 	}

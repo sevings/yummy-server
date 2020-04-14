@@ -39,7 +39,7 @@ func (ntf *CompositeNotifier) SendNewInvite(tx *AutoTx, userID int) {
 	tx.Query("SELECT email, name, show_name, verified AND email_invites, telegram FROM users WHERE id = $1", userID)
 	tx.Scan(&email, &name, &showName, &sendEmail, &tg)
 
-	ntf.Ntf.Notify(tx, 0, models.NotificationTypeInvite, name)
+	ntf.Ntf.Notify(tx, 0, typeInvite, name)
 
 	if tg.Valid {
 		ntf.Tg.SendNewInvite(tg.Int64)
@@ -159,7 +159,7 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 	}
 
 	for _, name := range toNames {
-		ntf.Ntf.Notify(tx, cmt.ID, models.NotificationTypeComment, name)
+		ntf.Ntf.Notify(tx, cmt.ID, typeComment, name)
 	}
 }
 
@@ -169,12 +169,12 @@ func (ntf *CompositeNotifier) SendUpdateComment(tx *AutoTx, cmt *models.Comment)
 	title, _ = CutText(title, 80)
 
 	ntf.Tg.SendUpdateComment(title, cmt)
-	ntf.Ntf.NotifyUpdate(tx, cmt.ID, models.NotificationTypeComment)
+	ntf.Ntf.NotifyUpdate(tx, cmt.ID, typeComment)
 }
 
 func (ntf *CompositeNotifier) SendRemoveComment(tx *AutoTx, commentID int64) {
 	ntf.Tg.SendRemoveComment(commentID)
-	ntf.Ntf.NotifyRemove(tx, commentID, models.NotificationTypeComment)
+	ntf.Ntf.NotifyRemove(tx, commentID, typeComment)
 }
 
 func (ntf *CompositeNotifier) SendRead(name string, id int64) {
@@ -210,7 +210,7 @@ func (ntf *CompositeNotifier) SendInvited(tx *AutoTx, from, to string) {
 		ntf.Tg.SendInvited(tg.Int64, from, fromShowName, fromGender)
 	}
 
-	ntf.Ntf.Notify(tx, fromID, models.NotificationTypeInvited, to)
+	ntf.Ntf.Notify(tx, fromID, typeInvited, to)
 }
 
 func (ntf *CompositeNotifier) SendNewFollower(tx *AutoTx, toPrivate bool, from, to string) {
@@ -243,9 +243,9 @@ func (ntf *CompositeNotifier) SendNewFollower(tx *AutoTx, toPrivate bool, from, 
 	}
 
 	if toPrivate {
-		ntf.Ntf.Notify(tx, fromID, models.NotificationTypeRequest, to)
+		ntf.Ntf.Notify(tx, fromID, typeRequest, to)
 	} else {
-		ntf.Ntf.Notify(tx, fromID, models.NotificationTypeFollower, to)
+		ntf.Ntf.Notify(tx, fromID, typeFollower, to)
 	}
 }
 
@@ -278,7 +278,7 @@ func (ntf *CompositeNotifier) SendNewAccept(tx *AutoTx, from, to string) {
 		ntf.Tg.SendNewAccept(tg.Int64, from, fromShowName, fromGender)
 	}
 
-	ntf.Ntf.Notify(tx, fromID, "accept", to)
+	ntf.Ntf.Notify(tx, fromID, typeAccept, to)
 }
 
 func (ntf *CompositeNotifier) SendNewCommentComplain(tx *AutoTx, commentID int64, from, content string) {
@@ -338,7 +338,7 @@ func (ntf *CompositeNotifier) SendAdmSent(tx *AutoTx, grandson, grandfather stri
 		ntf.Tg.SendAdmSent(tg.Int64)
 	}
 
-	ntf.Ntf.Notify(tx, 0, "adm_sent", grandson)
+	ntf.Ntf.Notify(tx, 0, typeAdmSent, grandson)
 }
 
 func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandson, grandfather string) {
@@ -365,5 +365,5 @@ func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandson, grandfather 
 		ntf.Tg.SendAdmReceived(tg.Int64)
 	}
 
-	ntf.Ntf.Notify(tx, 0, "adm_received", grandfather)
+	ntf.Ntf.Notify(tx, 0, typeAdmReceived, grandfather)
 }
