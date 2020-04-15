@@ -64,6 +64,26 @@ func loadMessageList(srv *utils.MindwellServer, tx *utils.AutoTx, userID, chatID
 	return &result
 }
 
+const userLastReadQuery = "SELECT last_read FROM talkers WHERE chat_id = $1 AND user_id = $2"
+const partnerLastReadQuery = `
+	SELECT COALESCE(
+		(SELECT MAX(last_read) FROM talkers WHERE chat_id = $1 AND user_id <> $2),
+		12147483647
+	)`
+
+func setMessagesRead(tx *utils.AutoTx, list *models.MessageList, userID int64) {
+	chatID := list.Data[0].ChatID
+	userLastRead := tx.QueryInt64(userLastReadQuery, chatID, userID)
+	partnerLastRead := tx.QueryInt64(partnerLastReadQuery, chatID, userID)
+	for _, msg := range list.Data {
+		if msg.Author.ID == userID {
+			msg.Read = msg.ID <= partnerLastRead
+		} else {
+			msg.Read = msg.ID <= userLastRead
+		}
+	}
+}
+
 func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMessagesParams, *models.UserID) middleware.Responder {
 	return func(params chats.GetChatsNameMessagesParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -96,6 +116,8 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 			if len(list.Data) == 0 {
 				return chats.NewGetChatsNameMessagesOK().WithPayload(list)
 			}
+
+			setMessagesRead(tx, list, userID.ID)
 
 			const beforeQuery = `SELECT EXISTS(
 				SELECT 1 
@@ -147,6 +169,8 @@ func createMessage(srv *utils.MindwellServer, tx *utils.AutoTx, userID, chatID i
 
 	tx.Query(createMessageQuery, chatID, userID, msg.Content, msg.EditContent)
 	tx.Scan(&msg.ID, &msg.CreatedAt)
+
+	setMessageRead(tx, msg, userID)
 
 	return msg
 }
@@ -222,6 +246,17 @@ func canViewChat(tx *utils.AutoTx, userID, chatID int64) bool {
 	return tx.QueryBool(q, userID, chatID)
 }
 
+func setMessageRead(tx *utils.AutoTx, msg *models.Message, userID int64) {
+	var lastRead int64
+	if msg.Author.ID == userID {
+		lastRead = tx.QueryInt64(partnerLastReadQuery, msg.ChatID, userID)
+	} else {
+		lastRead = tx.QueryInt64(userLastReadQuery, msg.ChatID, userID)
+	}
+
+	msg.Read = msg.ID <= lastRead
+}
+
 func newMessageLoader(srv *utils.MindwellServer) func(chats.GetMessagesIDParams, *models.UserID) middleware.Responder {
 	return func(params chats.GetMessagesIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -233,6 +268,8 @@ func newMessageLoader(srv *utils.MindwellServer) func(chats.GetMessagesIDParams,
 			if !canViewChat(tx, userID.ID, msg.ChatID) {
 				return chats.NewGetMessagesIDForbidden()
 			}
+
+			setMessageRead(tx, msg, userID.ID)
 
 			return chats.NewGetMessagesIDOK().WithPayload(msg)
 		})
@@ -280,6 +317,8 @@ func newMessageEditor(srv *utils.MindwellServer) func(chats.PutMessagesIDParams,
 			if msg.CreatedAt == 0 {
 				return chats.NewPutMessagesIDNotFound()
 			}
+
+			setMessageRead(tx, msg, userID.ID)
 
 			name := findPartner(tx, msg.ChatID, userID.ID)
 			if name != "" {

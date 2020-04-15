@@ -4524,6 +4524,9 @@ func init() {
           "type": "integer",
           "format": "int64"
         },
+        "read": {
+          "type": "boolean"
+        },
         "rights": {
           "type": "object",
           "properties": {
@@ -9906,6 +9909,9 @@ func init() {
         "id": {
           "type": "integer",
           "format": "int64"
+        },
+        "read": {
+          "type": "boolean"
         },
         "rights": {
           "type": "object",

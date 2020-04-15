@@ -34,6 +34,9 @@ type Message struct {
 	// id
 	ID int64 `json:"id,omitempty"`
 
+	// read
+	Read bool `json:"read,omitempty"`
+
 	// rights
 	Rights *MessageRights `json:"rights,omitempty"`
 }

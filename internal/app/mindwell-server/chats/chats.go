@@ -91,6 +91,8 @@ func loadChatList(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		} else {
 			chat.LastMessage.Author = chat.Partner
 		}
+
+		setMessageRead(tx, chat.LastMessage, userID.ID)
 	}
 
 	if reverse {
@@ -209,6 +211,8 @@ func loadChat(srv *utils.MindwellServer, tx *utils.AutoTx, userID, partnerID, ch
 		} else {
 			chat.LastMessage.Author = users.LoadUserByID(srv, tx, authorID.Int64)
 		}
+
+		setMessageRead(tx, chat.LastMessage, userID)
 	}
 
 	return &chat

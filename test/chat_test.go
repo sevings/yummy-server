@@ -8,6 +8,26 @@ import (
 	"testing"
 )
 
+func compareMessages(t *testing.T, exp, act *models.Message, user *models.UserID) {
+	req := require.New(t)
+
+	req.Equal(exp.ID, act.ID)
+	req.Equal(exp.ChatID, act.ChatID)
+	req.Equal(exp.Content, act.Content)
+	req.Equal(exp.CreatedAt, act.CreatedAt)
+	req.Equal(exp.Read, act.Read)
+
+	if exp.Author.ID == user.ID {
+		req.NotEmpty(act.EditContent)
+	} else {
+		req.Empty(act.EditContent)
+	}
+
+	rights := act.Rights
+	req.Equal(act.Author.ID == user.ID, rights != nil && rights.Edit)
+	req.Equal(act.Author.ID == user.ID, rights != nil && rights.Delete)
+}
+
 func checkLoadMessage(t *testing.T, userID *models.UserID, msg *models.Message, success bool) {
 	load := api.ChatsGetMessagesIDHandler.Handle
 	params := chats.GetMessagesIDParams{ID: msg.ID}
@@ -18,7 +38,7 @@ func checkLoadMessage(t *testing.T, userID *models.UserID, msg *models.Message, 
 		return
 	}
 
-	require.Equal(t, *msg, *body.Payload)
+	compareMessages(t, msg, body.Payload, userID)
 }
 
 func checkSendMessage(t *testing.T, userID *models.UserID, otherName string, uid int64, success bool) *models.Message {
@@ -41,6 +61,7 @@ func checkSendMessage(t *testing.T, userID *models.UserID, otherName string, uid
 	require.Equal(t, msg.EditContent, params.Content)
 	require.Equal(t, msg.Content, "<p>"+params.Content+"</p>")
 	require.Equal(t, msg.Author.ID, userID.ID)
+	require.Equal(t, userID.Name == otherName, msg.Read)
 	require.True(t, msg.Rights.Edit)
 	require.True(t, msg.Rights.Delete)
 
@@ -149,25 +170,6 @@ func checkLoadMessages(t *testing.T, id *models.UserID, limit int64, name, befor
 	}
 
 	return msgs
-}
-
-func compareMessages(t *testing.T, exp, act *models.Message, user *models.UserID) {
-	req := require.New(t)
-
-	req.Equal(exp.ID, act.ID)
-	req.Equal(exp.ChatID, act.ChatID)
-	req.Equal(exp.Content, act.Content)
-	req.Equal(exp.CreatedAt, act.CreatedAt)
-
-	if exp.Author.ID == user.ID {
-		req.NotEmpty(act.EditContent)
-	} else {
-		req.Empty(act.EditContent)
-	}
-
-	rights := act.Rights
-	req.Equal(act.Author.ID == user.ID, rights != nil && rights.Edit)
-	req.Equal(act.Author.ID == user.ID, rights != nil && rights.Delete)
 }
 
 func TestLoadMessages(t *testing.T) {
@@ -329,10 +331,10 @@ func TestLoadChats(t *testing.T) {
 	checkDeleteMessage(t, userIDs[2], m3, true)
 }
 
-func checkReadMessage(t *testing.T, user *models.UserID, otherName string, id, unread int64, success bool) {
+func checkReadMessage(t *testing.T, user *models.UserID, otherName string, msg *models.Message, unread int64, success bool) {
 	read := api.ChatsPutChatsNameReadHandler.Handle
 	params := chats.PutChatsNameReadParams{
-		Message: id,
+		Message: msg.ID,
 		Name:    otherName,
 	}
 	resp := read(params, user)
@@ -343,6 +345,9 @@ func checkReadMessage(t *testing.T, user *models.UserID, otherName string, id, u
 	}
 
 	require.Equal(t, unread, body.Payload.Unread)
+
+	msg.Read = user.ID != msg.Author.ID
+	checkLoadMessage(t, user, msg, true)
 }
 
 func TestReadMessages(t *testing.T) {
@@ -357,13 +362,14 @@ func TestReadMessages(t *testing.T) {
 	c = loadChat(t, userIDs[1], userIDs[0].Name)
 	req.Equal(int64(2), c.UnreadCount)
 
-	checkReadMessage(t, userIDs[0], userIDs[1].Name, m0.ID, 0, true)
-	checkReadMessage(t, userIDs[1], userIDs[0].Name, m0.ID, 1, true)
+	checkReadMessage(t, userIDs[0], userIDs[1].Name, m0, 0, true)
+	checkReadMessage(t, userIDs[1], userIDs[0].Name, m0, 1, true)
 
 	c = loadChat(t, userIDs[1], userIDs[0].Name)
 	req.Equal(int64(1), c.UnreadCount)
 
-	checkReadMessage(t, userIDs[1], userIDs[0].Name, m1.ID, 0, true)
+	checkLoadMessage(t, userIDs[0], m1, true)
+	checkReadMessage(t, userIDs[1], userIDs[0].Name, m1, 0, true)
 
 	c = loadChat(t, userIDs[1], userIDs[0].Name)
 	req.Zero(c.UnreadCount)

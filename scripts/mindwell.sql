@@ -2064,7 +2064,7 @@ CREATE TRIGGER last_messages_del
 CREATE TABLE "mindwell"."talkers" (
 	"chat_id" Integer NOT NULL,
 	"user_id" Integer NOT NULL,
-	"last_read" Integer,
+	"last_read" Integer DEFAULT 0 NOT NULL,
 	"unread_count" Integer DEFAULT 0 NOT NULL,
 	"can_send" Boolean DEFAULT TRUE NOT NULL,
 	CONSTRAINT "unique_talker_chat" PRIMARY KEY( "chat_id", "user_id" ),
