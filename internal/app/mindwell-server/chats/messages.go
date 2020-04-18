@@ -2,6 +2,7 @@ package chats
 
 import (
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/models"
@@ -89,7 +90,8 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			chatID, partnerID := findDialog(tx, userID.ID, params.Name)
 			if partnerID == 0 {
-				return chats.NewGetChatsNameMessagesNotFound()
+				err := srv.StandardError("no_chat")
+				return chats.NewGetChatsNameMessagesNotFound().WithPayload(err)
 			}
 			if chatID == 0 {
 				return chats.NewGetChatsNameMessagesOK()
@@ -185,7 +187,8 @@ func newMessageCreator(srv *utils.MindwellServer) func(chats.PostChatsNameMessag
 
 			chatID, partnerID := findDialog(tx, userID.ID, params.Name)
 			if partnerID == 0 {
-				return chats.NewPostChatsNameMessagesNotFound()
+				err := srv.StandardError("no_chat")
+				return chats.NewPostChatsNameMessagesNotFound().WithPayload(err)
 			}
 
 			if chatID == 0 {
@@ -193,7 +196,8 @@ func newMessageCreator(srv *utils.MindwellServer) func(chats.PostChatsNameMessag
 			}
 
 			if !canSendMessage(tx, userID.ID, chatID) {
-				return chats.NewPostChatsNameMessagesForbidden()
+				err := srv.NewError(&i18n.Message{ID: "cant_chat", Other: "You are not allowed to send messages to this chat."})
+				return chats.NewPostChatsNameMessagesForbidden().WithPayload(err)
 			}
 
 			msg = createMessage(srv, tx, userID.ID, chatID, params.Content)
@@ -262,11 +266,13 @@ func newMessageLoader(srv *utils.MindwellServer) func(chats.GetMessagesIDParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			msg := loadMessage(srv, tx, userID.ID, params.ID)
 			if msg.CreatedAt == 0 {
-				return chats.NewGetMessagesIDNotFound()
+				err := srv.StandardError("no_message")
+				return chats.NewGetMessagesIDNotFound().WithPayload(err)
 			}
 
 			if !canViewChat(tx, userID.ID, msg.ChatID) {
-				return chats.NewGetMessagesIDForbidden()
+				err := srv.StandardError("no_message")
+				return chats.NewGetMessagesIDForbidden().WithPayload(err)
 			}
 
 			setMessageRead(tx, msg, userID.ID)
@@ -310,12 +316,14 @@ func newMessageEditor(srv *utils.MindwellServer) func(chats.PutMessagesIDParams,
 	return func(params chats.PutMessagesIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if !canEditMessage(tx, userID.ID, params.ID) {
-				return chats.NewPutMessagesIDForbidden()
+				err := srv.StandardError("no_message")
+				return chats.NewPutMessagesIDForbidden().WithPayload(err)
 			}
 
 			msg := editMessage(srv, tx, userID.ID, params.ID, params.Content)
 			if msg.CreatedAt == 0 {
-				return chats.NewPutMessagesIDNotFound()
+				err := srv.StandardError("no_message")
+				return chats.NewPutMessagesIDNotFound().WithPayload(err)
 			}
 
 			setMessageRead(tx, msg, userID.ID)
@@ -339,7 +347,8 @@ func newMessageDeleter(srv *utils.MindwellServer) func(chats.DeleteMessagesIDPar
 	return func(params chats.DeleteMessagesIDParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if !canEditMessage(tx, userID.ID, params.ID) {
-				return chats.NewDeleteMessagesIDForbidden()
+				err := srv.StandardError("no_message")
+				return chats.NewDeleteMessagesIDForbidden().WithPayload(err)
 			}
 
 			chatID := deleteMessage(tx, params.ID)

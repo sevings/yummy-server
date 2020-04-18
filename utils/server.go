@@ -69,6 +69,8 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 			"no_entry":       &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
 			"no_comment":     &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
 			"no_tlog":        &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
+			"no_chat":        &i18n.Message{ID: "no_chat", Other: "Chat not found or you have no access rights."},
+			"no_message":     &i18n.Message{ID: "no_message", Other: "Message not found or you have no access rights."},
 			"no_request":     &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
 			"invalid_invite": &i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."},
 		},

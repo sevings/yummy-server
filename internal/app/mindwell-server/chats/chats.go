@@ -269,7 +269,8 @@ func newChatLoader(srv *utils.MindwellServer) func(chats.GetChatsNameParams, *mo
 
 			chatID, partnerID := findDialog(tx, userID.ID, params.Name)
 			if partnerID == 0 {
-				return chats.NewGetChatsNameNotFound()
+				err := srv.StandardError("no_chat")
+				return chats.NewGetChatsNameNotFound().WithPayload(err)
 			}
 
 			if chatID == 0 {
@@ -279,7 +280,8 @@ func newChatLoader(srv *utils.MindwellServer) func(chats.GetChatsNameParams, *mo
 			}
 
 			if chat == nil {
-				return chats.NewGetChatsNameNotFound()
+				err := srv.StandardError("no_chat")
+				return chats.NewGetChatsNameNotFound().WithPayload(err)
 			}
 
 			return chats.NewGetChatsNameOK().WithPayload(chat)
@@ -328,7 +330,8 @@ func newChatReader(srv *utils.MindwellServer) func(chats.PutChatsNameReadParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			chatID, partnerID := findDialog(tx, userID.ID, params.Name)
 			if partnerID == 0 {
-				return chats.NewPutChatsNameReadNotFound()
+				err := srv.StandardError("no_chat")
+				return chats.NewPutChatsNameReadNotFound().WithPayload(err)
 			}
 			if chatID == 0 {
 				return chats.NewPutChatsNameReadOK()
