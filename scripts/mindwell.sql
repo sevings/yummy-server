@@ -2339,9 +2339,9 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEG
 
             is_follower = COALESCE(is_follower, FALSE);
             RETURN is_follower;
+        ELSE
+            RETURN FALSE;
         END CASE;
-
-        RETURN FALSE;
     END;
 $$ LANGUAGE plpgsql;
 
@@ -2396,9 +2396,9 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_entry(user_id INTEGER, entry_id INT
             RETURN allowed;
         WHEN 'me' THEN
             RETURN FALSE;
+        ELSE
+            RETURN FALSE;
         END CASE;
-
-        RETURN FALSE;
     END;
 $$ LANGUAGE plpgsql;
 
