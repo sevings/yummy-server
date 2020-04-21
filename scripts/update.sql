@@ -195,8 +195,8 @@ CREATE TRIGGER can_send_invited
 CREATE OR REPLACE FUNCTION mindwell.set_can_send_related() RETURNS TRIGGER AS $$
     BEGIN
         UPDATE mindwell.talkers
-        SET can_send = (NEW.type != (SELECT id FROM relation WHERE type = 'ignored') AND is_invited(NEW.to_id))
-        WHERE chat_id = (
+        SET can_send = (NEW.type <> (SELECT id FROM relation WHERE type = 'ignored') AND is_invited(NEW.to_id))
+        WHERE user_id = NEW.to_id AND chat_id = (
             SELECT id
             FROM chats
             WHERE (creator_id = NEW.to_id AND partner_id = NEW.from_id)
@@ -208,8 +208,29 @@ CREATE OR REPLACE FUNCTION mindwell.set_can_send_related() RETURNS TRIGGER AS $$
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER can_send_related
-    AFTER UPDATE ON mindwell.relations
+    AFTER INSERT OR UPDATE ON mindwell.relations
     FOR EACH ROW EXECUTE PROCEDURE mindwell.set_can_send_related();
+
+CREATE OR REPLACE FUNCTION mindwell.set_can_send_not_related() RETURNS TRIGGER AS $$
+    BEGIN
+        IF OLD.type = (SELECT id FROM relation WHERE type = 'ignored') THEN
+            UPDATE mindwell.talkers
+            SET can_send = is_invited(OLD.to_id)
+            WHERE user_id = OLD.to_id AND chat_id = (
+                SELECT id
+                FROM chats
+                WHERE (creator_id = OLD.to_id AND partner_id = OLD.from_id)
+                    OR (creator_id = OLD.from_id AND partner_id = OLD.to_id)
+            );
+        END IF;
+
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER can_send_not_related
+    AFTER DELETE ON mindwell.relations
+    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_can_send_not_related();
 
 CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEGER) RETURNS BOOLEAN AS $$
     DECLARE

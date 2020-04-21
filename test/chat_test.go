@@ -120,6 +120,15 @@ func TestSendMessage(t *testing.T) {
 	checkDeleteMessage(t, userIDs[0], msg4, true)
 
 	checkSendMessage(t, userIDs[0], "unknown name", rand.Int63(), false)
+
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationIgnored, true)
+	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), false)
+	msg1 = checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
+	checkUnfollow(t, userIDs[1], userIDs[0])
+	msg2 = checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
+
+	checkDeleteMessage(t, userIDs[1], msg1, true)
+	checkDeleteMessage(t, userIDs[0], msg2, true)
 }
 
 func TestDoubleMessage(t *testing.T) {
