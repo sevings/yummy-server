@@ -11,26 +11,46 @@ import (
 	"github.com/go-openapi/runtime"
 )
 
-// PutMeOnlineNoContentCode is the HTTP code returned for type PutMeOnlineNoContent
-const PutMeOnlineNoContentCode int = 204
+// PutMeOnlineOKCode is the HTTP code returned for type PutMeOnlineOK
+const PutMeOnlineOKCode int = 200
 
-/*PutMeOnlineNoContent OK
+/*PutMeOnlineOK OK
 
-swagger:response putMeOnlineNoContent
+swagger:response putMeOnlineOK
 */
-type PutMeOnlineNoContent struct {
+type PutMeOnlineOK struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *PutMeOnlineOKBody `json:"body,omitempty"`
 }
 
-// NewPutMeOnlineNoContent creates PutMeOnlineNoContent with default headers values
-func NewPutMeOnlineNoContent() *PutMeOnlineNoContent {
+// NewPutMeOnlineOK creates PutMeOnlineOK with default headers values
+func NewPutMeOnlineOK() *PutMeOnlineOK {
 
-	return &PutMeOnlineNoContent{}
+	return &PutMeOnlineOK{}
+}
+
+// WithPayload adds the payload to the put me online o k response
+func (o *PutMeOnlineOK) WithPayload(payload *PutMeOnlineOKBody) *PutMeOnlineOK {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the put me online o k response
+func (o *PutMeOnlineOK) SetPayload(payload *PutMeOnlineOKBody) {
+	o.Payload = payload
 }
 
 // WriteResponse to the client
-func (o *PutMeOnlineNoContent) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *PutMeOnlineOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
-	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
-
-	rw.WriteHeader(204)
+	rw.WriteHeader(200)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
 }

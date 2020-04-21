@@ -2890,8 +2890,19 @@ func init() {
           "me"
         ],
         "responses": {
-          "204": {
-            "description": "OK"
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "chats": {
+                  "type": "integer"
+                },
+                "notifications": {
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }
@@ -8093,8 +8104,19 @@ func init() {
           "me"
         ],
         "responses": {
-          "204": {
-            "description": "OK"
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "chats": {
+                  "type": "integer"
+                },
+                "notifications": {
+                  "type": "integer"
+                }
+              }
+            }
           }
         }
       }

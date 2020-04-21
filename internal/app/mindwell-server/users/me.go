@@ -269,10 +269,14 @@ func newMyRequestedLoader(srv *utils.MindwellServer) func(me.GetMeRequestedParam
 func newMyOnlineSetter(srv *utils.MindwellServer) func(me.PutMeOnlineParams, *models.UserID) middleware.Responder {
 	return func(params me.PutMeOnlineParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			id := userID.ID
 			const q = `UPDATE users SET last_seen_at = DEFAULT WHERE id = $1`
-			tx.Exec(q, id)
-			return me.NewPutMeOnlineNoContent()
+			tx.Exec(q, userID.ID)
+
+			var res me.PutMeOnlineOKBody
+			res.Notifications = tx.QueryInt64("SELECT count(*) FROM notifications WHERE user_id = $1 AND NOT read", userID.ID)
+			res.Chats = tx.QueryInt64("SELECT count(*) FROM talkers WHERE user_id = $1 AND unread_count > 0", userID.ID)
+
+			return me.NewPutMeOnlineOK().WithPayload(&res)
 		})
 	}
 }

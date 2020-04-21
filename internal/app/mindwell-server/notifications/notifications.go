@@ -21,10 +21,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 }
 
 func unreadCount(tx *utils.AutoTx, userID int64) int64 {
-	var unread int64
-	tx.Query("SELECT count(*) FROM notifications WHERE user_id = $1 AND NOT read", userID).Scan(&unread)
-
-	return unread
+	const q = "SELECT count(*) FROM notifications WHERE user_id = $1 AND NOT read"
+	return tx.QueryInt64(q, userID)
 }
 
 func newNotificationsReader(srv *utils.MindwellServer) func(notifications.PutNotificationsReadParams, *models.UserID) middleware.Responder {

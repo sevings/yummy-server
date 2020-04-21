@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	middleware "github.com/go-openapi/runtime/middleware"
+	strfmt "github.com/go-openapi/strfmt"
+	swag "github.com/go-openapi/swag"
 
 	models "github.com/sevings/mindwell-server/models"
 )
@@ -70,4 +72,38 @@ func (o *PutMeOnline) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
+}
+
+// PutMeOnlineOKBody put me online o k body
+// swagger:model PutMeOnlineOKBody
+type PutMeOnlineOKBody struct {
+
+	// chats
+	Chats int64 `json:"chats,omitempty"`
+
+	// notifications
+	Notifications int64 `json:"notifications,omitempty"`
+}
+
+// Validate validates this put me online o k body
+func (o *PutMeOnlineOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (o *PutMeOnlineOKBody) MarshalBinary() ([]byte, error) {
+	if o == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(o)
+}
+
+// UnmarshalBinary interface implementation
+func (o *PutMeOnlineOKBody) UnmarshalBinary(b []byte) error {
+	var res PutMeOnlineOKBody
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*o = res
+	return nil
 }

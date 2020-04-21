@@ -1410,8 +1410,15 @@ paths:
       tags:
         - me
       responses:
-        204:
-          description: OK
+        200:
+          description: unread counts
+          schema:
+            type: object
+            properties:
+              notifications:
+                type: integer
+              chats:
+                type: integer
   /me/followers:
     get:
       parameters:
