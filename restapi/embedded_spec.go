@@ -2891,7 +2891,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "unread counts",
             "schema": {
               "type": "object",
               "properties": {
@@ -4571,6 +4571,9 @@ func init() {
         },
         "nextBefore": {
           "type": "string"
+        },
+        "unreadCount": {
+          "type": "integer"
         }
       }
     },
@@ -8105,7 +8108,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "unread counts",
             "schema": {
               "type": "object",
               "properties": {
@@ -9968,6 +9971,9 @@ func init() {
         },
         "nextBefore": {
           "type": "string"
+        },
+        "unreadCount": {
+          "type": "integer"
         }
       }
     },

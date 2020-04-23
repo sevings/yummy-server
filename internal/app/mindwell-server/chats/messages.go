@@ -121,6 +121,9 @@ func newMessageListLoader(srv *utils.MindwellServer) func(chats.GetChatsNameMess
 
 			setMessagesRead(tx, list, userID.ID)
 
+			const unreadQuery = "SELECT unread_count FROM talkers WHERE chat_id = $1 AND user_id = $2"
+			list.UnreadCount = tx.QueryInt64(unreadQuery, chatID, userID.ID)
+
 			const beforeQuery = `SELECT EXISTS(
 				SELECT 1 
 				FROM messages

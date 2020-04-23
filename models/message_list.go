@@ -32,6 +32,9 @@ type MessageList struct {
 
 	// next before
 	NextBefore string `json:"nextBefore,omitempty"`
+
+	// unread count
+	UnreadCount int64 `json:"unreadCount,omitempty"`
 }
 
 // Validate validates this message list

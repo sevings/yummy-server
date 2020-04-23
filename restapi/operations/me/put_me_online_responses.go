@@ -14,7 +14,7 @@ import (
 // PutMeOnlineOKCode is the HTTP code returned for type PutMeOnlineOK
 const PutMeOnlineOKCode int = 200
 
-/*PutMeOnlineOK OK
+/*PutMeOnlineOK unread counts
 
 swagger:response putMeOnlineOK
 */

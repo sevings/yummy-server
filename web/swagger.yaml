@@ -635,6 +635,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Message'
+      unreadCount:
+        type: integer
       nextAfter:
         type: string
       hasAfter:
