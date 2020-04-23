@@ -60,6 +60,8 @@ func loadChatList(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 			break
 		}
 
+		chat.LastMessage.ChatID = chat.ID
+
 		if creatorID == userID.ID {
 			chat.Partner = &models.User{ID: partnerID}
 		} else {
@@ -195,6 +197,7 @@ func loadChat(srv *utils.MindwellServer, tx *utils.AutoTx, userID, partnerID, ch
 		chat.LastMessage = &models.Message{
 			Content:   msgContent.String,
 			CreatedAt: msgCreatedAt.Float64,
+			ChatID:    chat.ID,
 			ID:        msgID.Int64,
 		}
 
