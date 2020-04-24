@@ -299,20 +299,7 @@ func loadReadMessages(tx *utils.AutoTx, chatID, userID, lastRead int64) []int64 
 		WHERE chat_id = $2 AND author_id <> $1 AND id <= $3
 			AND id > (SELECT last_read FROM talkers WHERE user_id = $1 AND chat_id = $2)
 	`
-
-	tx.Query(q, userID, chatID, lastRead)
-
-	var ids []int64
-	for {
-		var msgID int64
-		if !tx.Scan(&msgID) {
-			break
-		}
-
-		ids = append(ids, msgID)
-	}
-
-	return ids
+	return tx.QueryInt64s(q, userID, chatID, lastRead)
 }
 
 const readChatQuery = `

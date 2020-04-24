@@ -204,6 +204,14 @@ func newMessageCreator(srv *utils.MindwellServer) func(chats.PostChatsNameMessag
 			}
 
 			msg = createMessage(srv, tx, userID.ID, chatID, params.Content)
+
+			msgIDs := loadReadMessages(tx, chatID, userID.ID, msg.ID)
+			for _, msgID := range msgIDs {
+				srv.Ntf.Ntf.NotifyMessageRead(chatID, msgID, params.Name)
+			}
+			const q = "UPDATE talkers SET last_read = $3, unread_count = 0 WHERE chat_id = $1 AND user_id = $2"
+			tx.Exec(q, chatID, userID.ID, msg.ID)
+
 			srv.Ntf.Ntf.NotifyMessage(chatID, msg.ID, params.Name)
 			setCachedMessage(userID.ID, params.UID, params.Name, msg)
 			return chats.NewPostChatsNameMessagesCreated().WithPayload(msg)

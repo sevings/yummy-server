@@ -2100,7 +2100,7 @@ CREATE OR REPLACE FUNCTION mindwell.count_unread_del() RETURNS TRIGGER AS $$
         UPDATE mindwell.talkers
         SET unread_count = unread_count - 1
         WHERE talkers.chat_id = OLD.chat_id AND talkers.user_id <> OLD.author_id
-            AND (last_read IS NULL OR last_read < OLD.id);
+            AND last_read < OLD.id;
 
         RETURN NULL;
     END;

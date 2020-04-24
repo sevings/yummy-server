@@ -179,6 +179,9 @@ func TestLoadMessages(t *testing.T) {
 	m2 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
 	m3 := checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
 
+	m0.Read = true
+	m1.Read = true
+
 	msgs := checkLoadMessages(t, userIDs[0], 10, userIDs[1].Name, "", "", 4)
 	compareMessages(t, m0, msgs.Data[0], userIDs[0])
 	compareMessages(t, m1, msgs.Data[1], userIDs[0])
