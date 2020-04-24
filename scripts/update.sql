@@ -178,11 +178,9 @@ CREATE TRIGGER can_send_ins
 
 CREATE OR REPLACE FUNCTION mindwell.set_can_send_invited() RETURNS TRIGGER AS $$
     BEGIN
-        IF NEW.invited_by <> OLD.invited_by THEN
-            UPDATE mindwell.talkers
-            SET can_send = NOT is_partner_ignoring(user_id, chat_id)
-            WHERE user_id = NEW.id;
-        END IF;
+        UPDATE mindwell.talkers
+        SET can_send = NOT is_partner_ignoring(user_id, chat_id)
+        WHERE user_id = NEW.id;
 
         RETURN NULL;
     END;
@@ -190,7 +188,9 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER can_send_invited
     AFTER UPDATE ON mindwell.users
-    FOR EACH ROW EXECUTE PROCEDURE mindwell.set_can_send_invited();
+    FOR EACH ROW
+    WHEN (OLD.invited_by IS NULL AND NEW.invited_by IS NOT NULL)
+    EXECUTE PROCEDURE mindwell.set_can_send_invited();
 
 CREATE OR REPLACE FUNCTION mindwell.set_can_send_related() RETURNS TRIGGER AS $$
     BEGIN

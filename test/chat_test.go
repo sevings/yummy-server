@@ -3,6 +3,7 @@ package test
 import (
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/chats"
+	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
 	"math/rand"
 	"testing"
@@ -120,15 +121,6 @@ func TestSendMessage(t *testing.T) {
 	checkDeleteMessage(t, userIDs[0], msg4, true)
 
 	checkSendMessage(t, userIDs[0], "unknown name", rand.Int63(), false)
-
-	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationIgnored, true)
-	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), false)
-	msg1 = checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
-	checkUnfollow(t, userIDs[1], userIDs[0])
-	msg2 = checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
-
-	checkDeleteMessage(t, userIDs[1], msg1, true)
-	checkDeleteMessage(t, userIDs[0], msg2, true)
 }
 
 func TestDoubleMessage(t *testing.T) {
@@ -385,4 +377,21 @@ func TestReadMessages(t *testing.T) {
 
 	checkDeleteMessage(t, userIDs[0], m0, true)
 	checkDeleteMessage(t, userIDs[0], m1, true)
+}
+
+func TestCanSendMessage(t *testing.T) {
+	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationIgnored, true)
+	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), false)
+	checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
+	checkUnfollow(t, userIDs[1], userIDs[0])
+	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
+
+	checkSendMessage(t, userIDs[3], userIDs[0].Name, rand.Int63(), false)
+	_, err := db.Exec("UPDATE users SET invited_by = 1 WHERE id = $1", userIDs[3].ID)
+	require.Nil(t, err)
+	checkSendMessage(t, userIDs[3], userIDs[0].Name, rand.Int63(), true)
+
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
 }
