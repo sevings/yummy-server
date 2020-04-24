@@ -383,6 +383,7 @@ func TestCanSendMessage(t *testing.T) {
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationIgnored, true)
 	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), false)
 	checkSendMessage(t, userIDs[1], userIDs[0].Name, rand.Int63(), true)
+	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), false)
 	checkUnfollow(t, userIDs[1], userIDs[0])
 	checkSendMessage(t, userIDs[0], userIDs[1].Name, rand.Int63(), true)
 
@@ -390,6 +391,13 @@ func TestCanSendMessage(t *testing.T) {
 	_, err := db.Exec("UPDATE users SET invited_by = 1 WHERE id = $1", userIDs[3].ID)
 	require.Nil(t, err)
 	checkSendMessage(t, userIDs[3], userIDs[0].Name, rand.Int63(), true)
+
+	user, _ := register("test_msg")
+	checkSendMessage(t, userIDs[0], user.Name, rand.Int63(), true)
+	checkSendMessage(t, user, userIDs[0].Name, rand.Int63(), true)
+	checkSendMessage(t, user, userIDs[1].Name, rand.Int63(), false)
+	checkSendMessage(t, userIDs[1], user.Name, rand.Int63(), true)
+	checkSendMessage(t, user, userIDs[1].Name, rand.Int63(), true)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)

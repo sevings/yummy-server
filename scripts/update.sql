@@ -232,6 +232,19 @@ CREATE TRIGGER can_send_not_related
     AFTER DELETE ON mindwell.relations
     FOR EACH ROW EXECUTE PROCEDURE mindwell.set_can_send_not_related();
 
+CREATE OR REPLACE FUNCTION mindwell.set_can_send_new_msg() RETURNS TRIGGER AS $$
+    BEGIN
+        NEW.can_send = NOT is_partner_ignoring(NEW.user_id, NEW.chat_id);
+        RETURN NEW;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER can_send_new_msg
+    BEFORE UPDATE ON mindwell.talkers
+    FOR EACH ROW
+    WHEN (NOT NEW.can_send AND OLD.unread_count < NEW.unread_count)
+    EXECUTE PROCEDURE mindwell.set_can_send_new_msg();
+
 CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEGER) RETURNS BOOLEAN AS $$
     DECLARE
         privacy TEXT;
