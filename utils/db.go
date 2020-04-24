@@ -144,15 +144,51 @@ func (tx *AutoTx) QueryBool(query string, args ...interface{}) bool {
 	return result
 }
 
+func (tx *AutoTx) QueryBools(query string, args ...interface{}) []bool {
+	tx.Query(query, args...)
+
+	var result []bool
+	var value bool
+	for tx.Scan(&value) {
+		result = append(result, value)
+	}
+
+	return result
+}
+
 func (tx *AutoTx) QueryInt64(query string, args ...interface{}) int64 {
 	var result int64
 	tx.Query(query, args...).Scan(&result)
 	return result
 }
 
+func (tx *AutoTx) QueryInt64s(query string, args ...interface{}) []int64 {
+	tx.Query(query, args...)
+
+	var result []int64
+	var value int64
+	for tx.Scan(&value) {
+		result = append(result, value)
+	}
+
+	return result
+}
+
 func (tx *AutoTx) QueryString(query string, args ...interface{}) string {
 	var result string
 	tx.Query(query, args...).Scan(&result)
+	return result
+}
+
+func (tx *AutoTx) QueryStrings(query string, args ...interface{}) []string {
+	tx.Query(query, args...)
+
+	var result []string
+	var value string
+	for tx.Scan(&value) {
+		result = append(result, value)
+	}
+
 	return result
 }
 
