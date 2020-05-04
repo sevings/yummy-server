@@ -1878,6 +1878,7 @@ CREATE TABLE "mindwell"."images" (
     "extension" Text NOT NULL,
     "processing" Boolean DEFAULT TRUE NOT NULL,
     "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT "unique_image_id" PRIMARY KEY("id"),
     CONSTRAINT "image_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"));
  ;
 -- -------------------------------------------------------------
