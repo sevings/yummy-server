@@ -101,6 +101,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
 		}),
+		AccountGetAccountSettingsTelegramHandler: account.GetAccountSettingsTelegramHandlerFunc(func(params account.GetAccountSettingsTelegramParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountGetAccountSettingsTelegram has not yet been implemented")
+		}),
 		AccountGetAccountSubscribeTelegramHandler: account.GetAccountSubscribeTelegramHandlerFunc(func(params account.GetAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountGetAccountSubscribeTelegram has not yet been implemented")
 		}),
@@ -305,6 +308,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		AccountPutAccountSettingsEmailHandler: account.PutAccountSettingsEmailHandlerFunc(func(params account.PutAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation AccountPutAccountSettingsEmail has not yet been implemented")
 		}),
+		AccountPutAccountSettingsTelegramHandler: account.PutAccountSettingsTelegramHandlerFunc(func(params account.PutAccountSettingsTelegramParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation AccountPutAccountSettingsTelegram has not yet been implemented")
+		}),
 		ChatsPutChatsNameReadHandler: chats.PutChatsNameReadHandlerFunc(func(params chats.PutChatsNameReadParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation ChatsPutChatsNameRead has not yet been implemented")
 		}),
@@ -433,6 +439,8 @@ type MindwellAPI struct {
 	AccountGetAccountNameNameHandler account.GetAccountNameNameHandler
 	// AccountGetAccountSettingsEmailHandler sets the operation handler for the get account settings email operation
 	AccountGetAccountSettingsEmailHandler account.GetAccountSettingsEmailHandler
+	// AccountGetAccountSettingsTelegramHandler sets the operation handler for the get account settings telegram operation
+	AccountGetAccountSettingsTelegramHandler account.GetAccountSettingsTelegramHandler
 	// AccountGetAccountSubscribeTelegramHandler sets the operation handler for the get account subscribe telegram operation
 	AccountGetAccountSubscribeTelegramHandler account.GetAccountSubscribeTelegramHandler
 	// AccountGetAccountSubscribeTokenHandler sets the operation handler for the get account subscribe token operation
@@ -569,6 +577,8 @@ type MindwellAPI struct {
 	RelationsPostRelationsInvitedNameHandler relations.PostRelationsInvitedNameHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
 	AccountPutAccountSettingsEmailHandler account.PutAccountSettingsEmailHandler
+	// AccountPutAccountSettingsTelegramHandler sets the operation handler for the put account settings telegram operation
+	AccountPutAccountSettingsTelegramHandler account.PutAccountSettingsTelegramHandler
 	// ChatsPutChatsNameReadHandler sets the operation handler for the put chats name read operation
 	ChatsPutChatsNameReadHandler chats.PutChatsNameReadHandler
 	// CommentsPutCommentsIDHandler sets the operation handler for the put comments ID operation
@@ -734,6 +744,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.AccountGetAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
+	}
+
+	if o.AccountGetAccountSettingsTelegramHandler == nil {
+		unregistered = append(unregistered, "account.GetAccountSettingsTelegramHandler")
 	}
 
 	if o.AccountGetAccountSubscribeTelegramHandler == nil {
@@ -1008,6 +1022,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "account.PutAccountSettingsEmailHandler")
 	}
 
+	if o.AccountPutAccountSettingsTelegramHandler == nil {
+		unregistered = append(unregistered, "account.PutAccountSettingsTelegramHandler")
+	}
+
 	if o.ChatsPutChatsNameReadHandler == nil {
 		unregistered = append(unregistered, "chats.PutChatsNameReadHandler")
 	}
@@ -1262,6 +1280,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/account/settings/telegram"] = account.NewGetAccountSettingsTelegram(o.context, o.AccountGetAccountSettingsTelegramHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1602,6 +1625,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/account/settings/email"] = account.NewPutAccountSettingsEmail(o.context, o.AccountPutAccountSettingsEmailHandler)
+
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/account/settings/telegram"] = account.NewPutAccountSettingsTelegram(o.context, o.AccountPutAccountSettingsTelegramHandler)
 
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)

@@ -468,6 +468,44 @@ func TestEmailSettings(t *testing.T) {
 	checkUpdateEmailSettings(t, userIDs[0], true, true, false)
 }
 
+func checkTelegramSettings(t *testing.T, userID *models.UserID, comments, followers, invites, messages bool) {
+	load := api.AccountGetAccountSettingsTelegramHandler.Handle
+	resp := load(account.GetAccountSettingsTelegramParams{}, userID)
+	body, ok := resp.(*account.GetAccountSettingsTelegramOK)
+	require.True(t, ok, "user %d", userID.ID)
+
+	settings := body.Payload
+	require.Equal(t, comments, settings.Comments)
+	require.Equal(t, followers, settings.Followers)
+	require.Equal(t, invites, settings.Invites)
+	require.Equal(t, messages, settings.Messages)
+}
+
+func checkUpdateTelegramSettings(t *testing.T, userID *models.UserID, comments, followers, invites, messages bool) {
+	load := api.AccountPutAccountSettingsTelegramHandler.Handle
+
+	settings := account.PutAccountSettingsTelegramParams{
+		Comments:  &comments,
+		Followers: &followers,
+		Invites:   &invites,
+		Messages:  &messages,
+	}
+
+	resp := load(settings, userID)
+	_, ok := resp.(*account.PutAccountSettingsTelegramOK)
+
+	require.True(t, ok, "user %d", userID.ID)
+
+	checkTelegramSettings(t, userID, comments, followers, invites, messages)
+}
+
+func TestTelegramSettings(t *testing.T) {
+	checkTelegramSettings(t, userIDs[0], true, true, true, true)
+	checkUpdateTelegramSettings(t, userIDs[0], true, false, false, false)
+	checkUpdateTelegramSettings(t, userIDs[0], false, false, true, true)
+	checkUpdateTelegramSettings(t, userIDs[0], true, true, false, false)
+}
+
 func TestConnectionToken(t *testing.T) {
 	load := api.AccountGetAccountSubscribeTokenHandler.Handle
 	resp := load(account.GetAccountSubscribeTokenParams{}, userIDs[1])

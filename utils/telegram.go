@@ -313,7 +313,6 @@ func (bot *TelegramBot) SendUpdateComment(entryTitle string, cmt *models.Comment
 	cmtID, text := bot.comment(entryTitle, cmt)
 	msgIDsVar, found := bot.cmts.Get(cmtID)
 	if !found {
-		log.Printf("Telegram: a message for comment %d not found.\n", cmt.ID)
 		return
 	}
 

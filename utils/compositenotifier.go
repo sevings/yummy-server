@@ -33,15 +33,20 @@ func (ntf *CompositeNotifier) Stop() {
 
 func (ntf *CompositeNotifier) SendNewInvite(tx *AutoTx, userID int) {
 	var email, name, showName string
-	var sendEmail bool
+	var sendEmail, sendTg bool
 	var tg sql.NullInt64
 
-	tx.Query("SELECT email, name, show_name, verified AND email_invites, telegram FROM users WHERE id = $1", userID)
-	tx.Scan(&email, &name, &showName, &sendEmail, &tg)
+	const q = `
+		SELECT email, name, show_name, verified AND email_invites, telegram, telegram_invites
+		FROM users WHERE id = $1
+	`
+
+	tx.Query(q, userID)
+	tx.Scan(&email, &name, &showName, &sendEmail, &tg, &sendTg)
 
 	ntf.Ntf.Notify(tx, 0, typeInvite, name)
 
-	if tg.Valid {
+	if tg.Valid && sendTg {
 		ntf.Tg.SendNewInvite(tg.Int64)
 	}
 
@@ -133,7 +138,7 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 	tx.Query(fromQ, cmt.Author.ID).Scan(&fromGender)
 
 	const toQ = `
-		SELECT users.name, show_name, email, verified AND email_comments, telegram
+		SELECT users.name, show_name, email, verified AND email_comments, telegram, telegram_comments
 		FROM users 
 		INNER JOIN watching ON watching.user_id = users.id 
 		WHERE watching.entry_id = $1 AND users.id <> $2 
@@ -143,15 +148,15 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 
 	var toNames []string
 	var toName string
-	var sendEmail bool
+	var sendEmail, sendTg bool
 	var toShowName, email string
 	var tg sql.NullInt64
-	for tx.Scan(&toName, &toShowName, &email, &sendEmail, &tg) {
+	for tx.Scan(&toName, &toShowName, &email, &sendEmail, &tg, &sendTg) {
 		if sendEmail {
 			ntf.Mail.SendNewComment(email, fromGender, toShowName, title, cmt)
 		}
 
-		if tg.Valid {
+		if tg.Valid && sendTg {
 			ntf.Tg.SendNewComment(tg.Int64, title, cmt)
 		}
 
@@ -215,15 +220,15 @@ func (ntf *CompositeNotifier) SendInvited(tx *AutoTx, from, to string) {
 
 func (ntf *CompositeNotifier) SendNewFollower(tx *AutoTx, toPrivate bool, from, to string) {
 	const toQ = `
-		SELECT show_name, email, verified AND email_followers, telegram
+		SELECT show_name, email, verified AND email_followers, telegram, telegram_followers
 		FROM users 
 		WHERE lower(name) = lower($1)
 	`
 
-	var sendEmail bool
+	var sendEmail, sendTg bool
 	var toShowName, email string
 	var tg sql.NullInt64
-	tx.Query(toQ, to).Scan(&toShowName, &email, &sendEmail, &tg)
+	tx.Query(toQ, to).Scan(&toShowName, &email, &sendEmail, &tg, &sendTg)
 
 	const fromQ = `
 		SELECT users.id, show_name, gender.type 
@@ -238,7 +243,7 @@ func (ntf *CompositeNotifier) SendNewFollower(tx *AutoTx, toPrivate bool, from, 
 		ntf.Mail.SendNewFollower(email, from, fromShowName, fromGender, toPrivate, toShowName)
 	}
 
-	if tg.Valid {
+	if tg.Valid && sendTg {
 		ntf.Tg.SendNewFollower(tg.Int64, from, fromShowName, fromGender, toPrivate)
 	}
 
@@ -251,15 +256,15 @@ func (ntf *CompositeNotifier) SendNewFollower(tx *AutoTx, toPrivate bool, from, 
 
 func (ntf *CompositeNotifier) SendNewAccept(tx *AutoTx, from, to string) {
 	const toQ = `
-		SELECT show_name, email, verified AND email_followers, telegram
+		SELECT show_name, email, verified AND email_followers, telegram, telegram_followers
 		FROM users 
 		WHERE lower(name) = lower($1)
 	`
 
-	var sendEmail bool
+	var sendEmail, sendTg bool
 	var toShowName, email string
 	var tg sql.NullInt64
-	tx.Query(toQ, to).Scan(&toShowName, &email, &sendEmail, &tg)
+	tx.Query(toQ, to).Scan(&toShowName, &email, &sendEmail, &tg, &sendTg)
 
 	const fromQ = `
 		SELECT users.id, show_name, gender.type 
@@ -274,7 +279,7 @@ func (ntf *CompositeNotifier) SendNewAccept(tx *AutoTx, from, to string) {
 		ntf.Mail.SendNewAccept(email, from, fromShowName, fromGender, toShowName)
 	}
 
-	if tg.Valid {
+	if tg.Valid && sendTg {
 		ntf.Tg.SendNewAccept(tg.Int64, from, fromShowName, fromGender)
 	}
 

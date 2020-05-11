@@ -51,6 +51,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountGetAccountSettingsEmailHandler = account.GetAccountSettingsEmailHandlerFunc(newEmailSettingsLoader(srv))
 	srv.API.AccountPutAccountSettingsEmailHandler = account.PutAccountSettingsEmailHandlerFunc(newEmailSettingsEditor(srv))
 
+	srv.API.AccountGetAccountSettingsTelegramHandler = account.GetAccountSettingsTelegramHandlerFunc(newTelegramSettingsLoader(srv))
+	srv.API.AccountPutAccountSettingsTelegramHandler = account.PutAccountSettingsTelegramHandlerFunc(newTelegramSettingsEditor(srv))
+
 	srv.API.AccountGetAccountSubscribeTokenHandler = account.GetAccountSubscribeTokenHandlerFunc(newConnectionTokenGenerator(srv))
 	srv.API.AccountGetAccountSubscribeTelegramHandler = account.GetAccountSubscribeTelegramHandlerFunc(newTelegramTokenGenerator(srv))
 	srv.API.AccountDeleteAccountSubscribeTelegramHandler = account.DeleteAccountSubscribeTelegramHandlerFunc(newTelegramDeleter(srv))
@@ -670,6 +673,39 @@ func newEmailSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSe
 			tx.Exec(q, userID.ID, *params.Comments, *params.Followers, *params.Invites)
 
 			return account.NewPutAccountSettingsEmailOK()
+		})
+	}
+}
+
+func newTelegramSettingsLoader(srv *utils.MindwellServer) func(account.GetAccountSettingsTelegramParams, *models.UserID) middleware.Responder {
+	return func(params account.GetAccountSettingsTelegramParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = `
+				SELECT telegram_comments, telegram_followers, 
+					telegram_invites, telegram_messages 
+				FROM users 
+				WHERE id = $1`
+
+			settings := account.GetAccountSettingsTelegramOKBody{}
+			tx.Query(q, userID.ID).Scan(&settings.Comments, &settings.Followers, &settings.Invites, &settings.Messages)
+
+			return account.NewGetAccountSettingsTelegramOK().WithPayload(&settings)
+		})
+	}
+}
+
+func newTelegramSettingsEditor(srv *utils.MindwellServer) func(account.PutAccountSettingsTelegramParams, *models.UserID) middleware.Responder {
+	return func(params account.PutAccountSettingsTelegramParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			const q = `
+				UPDATE users 
+				SET telegram_comments = $2, telegram_followers = $3, 
+					telegram_invites = $4, telegram_messages = $5 
+				WHERE id = $1`
+
+			tx.Exec(q, userID.ID, *params.Comments, *params.Followers, *params.Invites, *params.Messages)
+
+			return account.NewPutAccountSettingsTelegramOK()
 		})
 	}
 }

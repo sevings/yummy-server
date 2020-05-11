@@ -474,6 +474,85 @@ func init() {
         }
       }
     },
+    "/account/settings/telegram": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram notification settings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "boolean"
+                },
+                "followers": {
+                  "type": "boolean"
+                },
+                "invites": {
+                  "type": "boolean"
+                },
+                "messages": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "comments",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "followers",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "invites",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "messages",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram notification settings has been updated"
+          }
+        }
+      }
+    },
     "/account/subscribe/telegram": {
       "get": {
         "security": [
@@ -5448,6 +5527,85 @@ func init() {
         "responses": {
           "200": {
             "description": "email notification settings has been updated"
+          }
+        }
+      }
+    },
+    "/account/settings/telegram": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "account"
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram notification settings",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "comments": {
+                  "type": "boolean"
+                },
+                "followers": {
+                  "type": "boolean"
+                },
+                "invites": {
+                  "type": "boolean"
+                },
+                "messages": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "comments",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "followers",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "invites",
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "messages",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "telegram notification settings has been updated"
           }
         }
       }
