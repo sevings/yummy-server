@@ -32,6 +32,7 @@ type TelegramBot struct {
 	url    string
 	logins *cache.Cache
 	cmts   *cache.Cache
+	msgs   *cache.Cache
 	send   chan func()
 	stop   chan interface{}
 }
@@ -72,6 +73,7 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		url:    srv.ConfigString("server.base_url"),
 		logins: cache.New(10*time.Minute, 10*time.Minute),
 		cmts:   cache.New(12*time.Hour, 1*time.Hour),
+		msgs:   cache.New(12*time.Hour, 1*time.Hour),
 		send:   make(chan func(), 200),
 		stop:   make(chan interface{}),
 	}
@@ -339,7 +341,6 @@ func (bot *TelegramBot) SendRemoveComment(commentID int64) {
 	cmtID := idToString(commentID)
 	msgIDsVar, found := bot.cmts.Get(cmtID)
 	if !found {
-		log.Printf("Telegram: a message for comment %d not found.\n", commentID)
 		return
 	}
 
@@ -461,4 +462,90 @@ func (bot *TelegramBot) SendAdmReceived(chat int64) {
 
 	text := `Внук получил твой новогодний подарок.`
 	bot.sendMessage(chat, text)
+}
+
+func (bot *TelegramBot) message(msg *models.Message) (msgID, text string) {
+	msgID = idToString(msg.ID)
+
+	link := bot.url + "chats/" + msg.Author.Name
+
+	text = tgHtmlEsc.Replace(msg.Author.ShowName) + " пишет: \n" +
+		"«" + tgHtmlEsc.Replace(msg.EditContent) + "»\n" +
+		`В <a href="` + link + `">беседе</a>`
+
+	return
+}
+
+func (bot *TelegramBot) SendNewMessage(chat int64, msg *models.Message) {
+	if bot.api == nil {
+		return
+	}
+
+	msgID, text := bot.message(msg)
+
+	bot.send <- func() {
+		msg := bot.sendMessageNow(chat, text)
+		if msg.MessageID <= 0 {
+			return
+		}
+
+		var msgIDs messageIDs
+		msgIDsVar, found := bot.msgs.Get(msgID)
+		if found {
+			msgIDs = msgIDsVar.(messageIDs)
+		}
+		msgIDs = append(msgIDs, messageID{chat, msg.MessageID})
+
+		bot.msgs.SetDefault(msgID, msgIDs)
+	}
+}
+
+func (bot *TelegramBot) SendUpdateMessage(msg *models.Message) {
+	if bot.api == nil {
+		return
+	}
+
+	msgID, text := bot.message(msg)
+	msgIDsVar, found := bot.msgs.Get(msgID)
+	if !found {
+		return
+	}
+
+	msgIDs := msgIDsVar.(messageIDs)
+
+	bot.send <- func() {
+		for _, msgID := range msgIDs {
+			msg := tgbotapi.NewEditMessageText(msgID.chat, msgID.msg, text)
+			msg.DisableWebPagePreview = true
+			msg.ParseMode = "HTML"
+			_, err := bot.api.Send(msg)
+			if err != nil {
+				log.Println("Telegram: ", err)
+			}
+		}
+	}
+}
+
+func (bot *TelegramBot) SendRemoveMessage(messageID int64) {
+	if bot.api == nil {
+		return
+	}
+
+	cmtID := idToString(messageID)
+	msgIDsVar, found := bot.msgs.Get(cmtID)
+	if !found {
+		return
+	}
+
+	msgIDs := msgIDsVar.(messageIDs)
+
+	bot.send <- func() {
+		for _, msgID := range msgIDs {
+			msg := tgbotapi.NewDeleteMessage(msgID.chat, msgID.msg)
+			_, err := bot.api.DeleteMessage(msg)
+			if err != nil {
+				log.Println("Telegram: ", err)
+			}
+		}
+	}
 }

@@ -330,7 +330,7 @@ func newChatReader(srv *utils.MindwellServer) func(chats.PutChatsNameReadParams,
 			name := findPartner(tx, chatID, userID.ID)
 			msgIDs := loadReadMessages(tx, chatID, userID.ID, params.Message)
 			for _, msgID := range msgIDs {
-				srv.Ntf.Ntf.NotifyMessageRead(chatID, msgID, name)
+				srv.Ntf.NotifyMessageRead(chatID, msgID, name)
 			}
 
 			var result chats.PutChatsNameReadOKBody

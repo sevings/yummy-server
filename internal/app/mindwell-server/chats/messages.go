@@ -207,12 +207,12 @@ func newMessageCreator(srv *utils.MindwellServer) func(chats.PostChatsNameMessag
 
 			msgIDs := loadReadMessages(tx, chatID, userID.ID, msg.ID)
 			for _, msgID := range msgIDs {
-				srv.Ntf.Ntf.NotifyMessageRead(chatID, msgID, params.Name)
+				srv.Ntf.NotifyMessageRead(chatID, msgID, params.Name)
 			}
 			const q = "UPDATE talkers SET last_read = $3, unread_count = 0 WHERE chat_id = $1 AND user_id = $2"
 			tx.Exec(q, chatID, userID.ID, msg.ID)
 
-			srv.Ntf.Ntf.NotifyMessage(chatID, msg.ID, params.Name)
+			srv.Ntf.NotifyMessage(tx, msg, params.Name)
 			setCachedMessage(userID.ID, params.UID, params.Name, msg)
 			return chats.NewPostChatsNameMessagesCreated().WithPayload(msg)
 		})
@@ -341,7 +341,7 @@ func newMessageEditor(srv *utils.MindwellServer) func(chats.PutMessagesIDParams,
 
 			name := findPartner(tx, msg.ChatID, userID.ID)
 			if name != "" {
-				srv.Ntf.Ntf.NotifyMessageUpdate(msg.ChatID, msg.ID, name)
+				srv.Ntf.NotifyMessageUpdate(msg, name)
 			}
 
 			return chats.NewPutMessagesIDOK().WithPayload(msg)
@@ -366,7 +366,7 @@ func newMessageDeleter(srv *utils.MindwellServer) func(chats.DeleteMessagesIDPar
 
 			name := findPartner(tx, chatID, userID.ID)
 			if name != "" {
-				srv.Ntf.Ntf.NotifyMessageRemove(chatID, params.ID, name)
+				srv.Ntf.NotifyMessageRemove(chatID, params.ID, name)
 			}
 
 			return chats.NewDeleteMessagesIDOK()

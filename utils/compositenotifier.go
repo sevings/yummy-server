@@ -372,3 +372,31 @@ func (ntf *CompositeNotifier) SendAdmReceived(tx *AutoTx, grandfather string) {
 
 	ntf.Ntf.Notify(tx, 0, typeAdmReceived, grandfather)
 }
+
+func (ntf *CompositeNotifier) NotifyMessage(tx *AutoTx, msg *models.Message, user string) {
+	const q = "SELECT telegram, telegram_messages FROM users WHERE lower(name) = lower($1)"
+
+	var tg sql.NullInt64
+	var sendTg bool
+	tx.Query(q, user).Scan(&tg, &sendTg)
+
+	if tg.Valid && sendTg {
+		ntf.Tg.SendNewMessage(tg.Int64, msg)
+	}
+
+	ntf.Ntf.NotifyMessage(msg.ChatID, msg.ID, user)
+}
+
+func (ntf *CompositeNotifier) NotifyMessageUpdate(msg *models.Message, user string) {
+	ntf.Tg.SendUpdateMessage(msg)
+	ntf.Ntf.NotifyMessageUpdate(msg.ChatID, msg.ID, user)
+}
+
+func (ntf *CompositeNotifier) NotifyMessageRemove(chatID, msgID int64, user string) {
+	ntf.Tg.SendRemoveMessage(msgID)
+	ntf.Ntf.NotifyMessageRemove(chatID, msgID, user)
+}
+
+func (ntf *CompositeNotifier) NotifyMessageRead(chatID, msgID int64, user string) {
+	ntf.Ntf.NotifyMessageRead(chatID, msgID, user)
+}
