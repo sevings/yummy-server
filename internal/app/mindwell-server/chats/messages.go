@@ -8,6 +8,7 @@ import (
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/chats"
 	"github.com/sevings/mindwell-server/utils"
+	"time"
 )
 
 const loadMessagesQuery = `
@@ -372,4 +373,24 @@ func newMessageDeleter(srv *utils.MindwellServer) func(chats.DeleteMessagesIDPar
 			return chats.NewDeleteMessagesIDOK()
 		})
 	}
+}
+
+func SendWelcomeMessage(srv *utils.MindwellServer, user *models.AuthProfile) {
+	helpURL := srv.ConfigString("server.base_url") + "help/faq"
+
+	text := `Привет, друг! Мы рады видеть тебя с нами!
+У нас уютно. Убедись в этом лично, написав первый пост в своем дневнике.
+На данный момент тебе доступны основные функции сайта. Продолжай публиковать открытые посты, чтобы получить приглашение и иметь возможность комментировать записи других пользователей, голосовать, начинать новые беседы и многое другое.
+Ответы на распространенные вопросы содержатся в разделе Помощь ` + helpURL + `
+Если в разделе ответа не нашлось, спрашивай у меня. 
+Чувствуй себя как дома 😌`
+
+	tx := utils.NewAutoTx(srv.DB)
+	defer tx.Finish()
+
+	chat := createChat(srv, tx, 1, user.ID)
+	msg := createMessage(srv, tx, 1, chat.ID, text)
+
+	srv.Ntf.NotifyMessage(tx, msg, user.Name)
+	setCachedMessage(1, time.Now().Unix(), user.Name, msg)
 }

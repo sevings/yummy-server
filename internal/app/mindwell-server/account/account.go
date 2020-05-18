@@ -3,6 +3,7 @@ package account
 import (
 	"database/sql"
 	"fmt"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/chats"
 	"image"
 	"log"
 	"os"
@@ -371,6 +372,7 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 			}
 
 			srv.Ntf.SendGreeting(user.Account.Email, user.ShowName)
+			time.AfterFunc(2*time.Minute, func() { chats.SendWelcomeMessage(srv, user) })
 
 			user.Account.Email = utils.HideEmail(user.Account.Email)
 
