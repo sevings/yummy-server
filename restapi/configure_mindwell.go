@@ -4,13 +4,15 @@ package restapi
 
 import (
 	"crypto/tls"
+	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
+	errors "github.com/go-openapi/errors"
+	runtime "github.com/go-openapi/runtime"
 	accountImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/account"
 	admImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/adm"
 	chatsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/chats"
@@ -24,10 +26,6 @@ import (
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	votesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/votes"
 	watchingsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
-	"github.com/unrolled/logger"
-
-	errors "github.com/go-openapi/errors"
-	runtime "github.com/go-openapi/runtime"
 
 	"github.com/sevings/mindwell-server/restapi/operations"
 	"github.com/sevings/mindwell-server/utils"
@@ -50,7 +48,7 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	baseURL := srv.ConfigString("server.base_url")
 	support := srv.ConfigString("server.support")
 
-	srv.Ntf.Mail = utils.NewPostman(domain, apiKey, pubKey, baseURL, support)
+	srv.Ntf.Mail = utils.NewPostman(domain, apiKey, pubKey, baseURL, support, srv.LogEmail())
 
 	accountImpl.ConfigureAPI(srv)
 	admImpl.ConfigureAPI(srv)
@@ -68,13 +66,7 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 
 	// configure the api here
 	api.ServeError = errors.ServeError
-
-	// Set your custom logger if needed. Default one is log.Printf
-	// Expected interface func(string, ...interface{})
-	//
-	// Example:
-	// api.Logger = log.Printf
-
+	api.Logger = srv.LogSystem().Sugar().Infof
 	api.JSONConsumer = runtime.JSONConsumer()
 	api.UrlformConsumer = runtime.DiscardConsumer
 	api.MultipartformConsumer = runtime.DiscardConsumer
@@ -101,7 +93,7 @@ func configureServer(s *http.Server, scheme, addr string) {
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
 // The middleware executes after routing but before authentication, binding and validation
 func setupMiddlewares(handler http.Handler) http.Handler {
-	lmt := tollbooth.NewLimiter(2, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
+	lmt := tollbooth.NewLimiter(3, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
 	lmt.SetIPLookups([]string{"X-Forwarded-For"})
 	// lmt.SetHeader("X-User-Key", []string{})
 	// lmt.SetHeaderEntryExpirationTTL(time.Hour)
@@ -114,10 +106,10 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	log := logger.New(logger.Options{
-		RemoteAddressHeaders: []string{"X-Forwarded-For"},
-		Out:                  os.Stdout,
-	})
+	logger, err := utils.LogHandler("api", handler)
+	if err != nil {
+		log.Println(err)
+	}
 
-	return log.Handler(handler)
+	return logger
 }

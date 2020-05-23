@@ -1,8 +1,6 @@
 package notifications
 
 import (
-	"log"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
@@ -98,7 +96,7 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 	case models.NotificationTypeAdmSent:
 		break
 	default:
-		log.Println("Unknown notification type:", not.tpe)
+		srv.LogApi().Sugar().Warn("Unknown notification type:", not.tpe)
 	}
 
 	return &notif

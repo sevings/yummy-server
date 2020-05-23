@@ -2,8 +2,6 @@ package utils
 
 import (
 	"database/sql"
-	"log"
-
 	"github.com/sevings/mindwell-server/models"
 )
 
@@ -68,7 +66,7 @@ func (ntf *CompositeNotifier) SendEmailChanged(tx *AutoTx, userID *models.UserID
 
 	if tx.Error() != nil {
 		if tx.Error() != sql.ErrNoRows {
-			log.Print(tx.Error())
+			ntf.srv.LogSystem().Error(tx.Error().Error())
 		}
 		return
 	}
@@ -99,7 +97,7 @@ func (ntf *CompositeNotifier) SendPasswordChanged(tx *AutoTx, userID *models.Use
 
 	if tx.Error() != nil {
 		if tx.Error() != sql.ErrNoRows {
-			log.Print(tx.Error())
+			ntf.srv.LogSystem().Error(tx.Error().Error())
 		}
 		return
 	}

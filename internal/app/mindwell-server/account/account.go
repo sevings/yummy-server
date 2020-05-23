@@ -131,7 +131,7 @@ func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, na
 	path := srv.ImagesFolder() + "avatars/" + strconv.Itoa(size) + "/" + folder
 	err := os.MkdirAll(path, 0777)
 	if err != nil {
-		log.Print(err)
+		srv.LogApi().Error(err.Error())
 	}
 
 	w := img.Bounds().Dx()
@@ -141,7 +141,7 @@ func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, na
 
 	err = imaging.Save(img, path+name, imaging.JPEGQuality(85))
 	if err != nil {
-		log.Print(err)
+		srv.LogApi().Error(err.Error())
 	}
 }
 
@@ -159,7 +159,7 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 
 	img, err := govatar.GenerateForUsername(g, name)
 	if err != nil {
-		log.Print(err)
+		srv.LogApi().Error(err.Error())
 	}
 
 	folder := name[:1] + "/"

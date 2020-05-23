@@ -3,7 +3,6 @@ package comments
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -245,12 +244,12 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 
 	before, err := strconv.ParseInt(beforeS, 10, 64)
 	if len(beforeS) > 0 && err != nil {
-		log.Printf("error parse before: %s", beforeS)
+		srv.LogApi().Sugar().Warn("error parse before:", beforeS)
 	}
 
 	after, err := strconv.ParseInt(afterS, 10, 64)
 	if len(afterS) > 0 && err != nil {
-		log.Printf("error parse after: %s", afterS)
+		srv.LogApi().Sugar().Warn("error parse after:", afterS)
 	}
 
 	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", entryID)

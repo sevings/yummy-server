@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"go.uber.org/zap"
 	"log"
 	"strconv"
 	"time"
@@ -36,23 +37,42 @@ type MailSender interface {
 	Stop()
 }
 
+const (
+	logApi      = "api"
+	logTelegram = "telegram"
+	logEmail    = "email"
+	logSystem   = "system"
+)
+
 type MindwellServer struct {
 	DB    *sql.DB
 	API   *operations.MindwellAPI
 	Ntf   *CompositeNotifier
 	Imgs  *cache.Cache
+	log   *zap.Logger
 	cfg   *goconf.Config
 	local *i18n.Localizer
 	errs  map[string]*i18n.Message
 }
 
 func NewMindwellServer(api *operations.MindwellAPI, configPath string) *MindwellServer {
+	logger, err := zap.NewProduction(zap.WithCaller(false))
+	if err != nil {
+		log.Println(err)
+	}
+
+	systemLogger := logger.With(zap.String("type", "system"))
+	_, err = zap.RedirectStdLogAt(systemLogger, zap.ErrorLevel)
+	if err != nil {
+		systemLogger.Error(err.Error())
+	}
+
 	config := LoadConfig(configPath)
 	db := OpenDatabase(config)
 
 	trFile, err := config.String("server.tr_file")
 	if err != nil {
-		log.Print(err)
+		logger.Error(err.Error(), zap.String("type", "system"))
 	}
 
 	bundle := i18n.NewBundle(language.Russian)
@@ -63,6 +83,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		DB:    db,
 		API:   api,
 		Imgs:  cache.New(2*24*time.Hour, 24*time.Hour),
+		log:   logger,
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{
@@ -87,7 +108,7 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 func (srv *MindwellServer) ConfigString(field string) string {
 	value, err := srv.cfg.String(field)
 	if err != nil {
-		log.Println(err)
+		srv.LogSystem().Warn(err.Error())
 	}
 
 	return value
@@ -96,7 +117,7 @@ func (srv *MindwellServer) ConfigString(field string) string {
 func (srv *MindwellServer) ConfigInt(field string) int {
 	value, err := srv.cfg.Int(field)
 	if err != nil {
-		log.Println(err)
+		srv.LogSystem().Warn(err.Error())
 	}
 
 	return value
@@ -105,7 +126,7 @@ func (srv *MindwellServer) ConfigInt(field string) int {
 func (srv *MindwellServer) ConfigBool(field string) bool {
 	value, err := srv.cfg.Bool(field)
 	if err != nil {
-		log.Println(err)
+		srv.LogSystem().Warn(err.Error())
 	}
 
 	return value
@@ -193,7 +214,7 @@ func (srv *MindwellServer) NewError(msg *i18n.Message) *models.Error {
 
 	message, err := srv.local.Localize(&i18n.LocalizeConfig{DefaultMessage: msg})
 	if err != nil {
-		log.Print(err)
+		srv.LogApi().Error(err.Error())
 	}
 
 	return &models.Error{Message: message}
@@ -202,41 +223,69 @@ func (srv *MindwellServer) NewError(msg *i18n.Message) *models.Error {
 func (srv *MindwellServer) StandardError(name string) *models.Error {
 	msg := srv.errs[name]
 	if msg == nil {
-		log.Printf("Standard error not found: %s\n", name)
+		srv.LogApi().Sugar().Error("Standard error not found:", name)
 	}
 
 	return srv.NewError(msg)
 }
 
+func (srv *MindwellServer) Log(tpe string) *zap.Logger {
+	return srv.log.With(zap.String("type", tpe))
+}
+
+func (srv *MindwellServer) LogApi() *zap.Logger {
+	return srv.Log(logApi)
+}
+
+func (srv *MindwellServer) LogTelegram() *zap.Logger {
+	return srv.Log(logTelegram)
+}
+
+func (srv *MindwellServer) LogEmail() *zap.Logger {
+	return srv.Log(logEmail)
+}
+
+func (srv *MindwellServer) LogSystem() *zap.Logger {
+	return srv.Log(logSystem)
+}
+
 func (srv *MindwellServer) recalcKarma() {
-	log.Println("Updating karma...")
+	start := time.Now()
 
 	_, err := srv.DB.Exec("SELECT recalc_karma()")
 	if err != nil {
-		log.Println(err)
+		srv.LogSystem().Error(err.Error())
 	}
+
+	srv.LogSystem().Info("Karma recalculated",
+		zap.Int64("duration", time.Since(start).Microseconds()),
+	)
 }
 
 func (srv *MindwellServer) giveInvites() {
-	srv.Transact(func(tx *AutoTx) middleware.Responder {
-		tx.Query("SELECT user_id FROM give_invites()")
+	start := time.Now()
 
-		var ids []int
-		for {
-			var id int
-			if !tx.Scan(&id) {
-				break
-			}
+	tx := NewAutoTx(srv.DB)
+	defer tx.Finish()
 
-			ids = append(ids, id)
+	tx.Query("SELECT user_id FROM give_invites()")
+
+	var ids []int
+	for {
+		var id int
+		if !tx.Scan(&id) {
+			break
 		}
 
-		for _, id := range ids {
-			srv.Ntf.SendNewInvite(tx, id)
-		}
+		ids = append(ids, id)
+	}
 
-		log.Printf("%d new invites given.\n", len(ids))
+	for _, id := range ids {
+		srv.Ntf.SendNewInvite(tx, id)
+	}
 
-		return nil
-	})
+	srv.LogSystem().Info("Given invites",
+		zap.Int64("duration", time.Since(start).Microseconds()),
+		zap.Int("invites", len(ids)),
+	)
 }

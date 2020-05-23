@@ -1,8 +1,7 @@
 package utils
 
 import (
-	"fmt"
-	"log"
+	"go.uber.org/zap"
 	"strconv"
 	"time"
 
@@ -15,12 +14,13 @@ type Postman struct {
 	url  string
 	mg   mailgun.Mailgun
 	h    hermes.Hermes
+	log  *zap.Logger
 	sprt string
 	ch   chan *mailgun.Message
 	stop chan interface{}
 }
 
-func NewPostman(domain, apiKey, pubKey, baseURL, support string) *Postman {
+func NewPostman(domain, apiKey, pubKey, baseURL, support string, log *zap.Logger) *Postman {
 	pm := &Postman{
 		url: baseURL,
 		mg:  mailgun.NewMailgun(domain, apiKey, pubKey),
@@ -35,6 +35,7 @@ func NewPostman(domain, apiKey, pubKey, baseURL, support string) *Postman {
 					"скопируй и вставь в адресную строку браузера следующую ссылку: ",
 			},
 		},
+		log:  log,
 		sprt: support,
 		ch:   make(chan *mailgun.Message, 200),
 		stop: make(chan interface{}),
@@ -59,7 +60,9 @@ func NewPostman(domain, apiKey, pubKey, baseURL, support string) *Postman {
 			}
 
 			if count == limitPerInt {
-				fmt.Printf("Exceeded the limit of emails. Sleeping for %.0f minutes...\n", timeLeft.Minutes())
+				pm.log.Warn("exceeded the limit of emails",
+					zap.Float64("timeout", timeLeft.Minutes()),
+				)
 				time.Sleep(timeLeft)
 				resetCounter()
 			}
@@ -68,9 +71,12 @@ func NewPostman(domain, apiKey, pubKey, baseURL, support string) *Postman {
 
 			resp, id, err := pm.mg.Send(msg)
 			if err == nil {
-				fmt.Printf("Email ID: %s. Resp: %s.\n", id, resp)
+				pm.log.Info("sent",
+					zap.String("id", id),
+					zap.String("resp", resp),
+				)
 			} else {
-				log.Println(err)
+				log.Error(err.Error())
 			}
 		}
 
@@ -97,7 +103,7 @@ func (pm *Postman) send(email hermes.Email, address, subj, name string) {
 
 	text, err := pm.h.GeneratePlainText(email)
 	if err != nil {
-		log.Println(err)
+		pm.log.Error(err.Error())
 	}
 
 	from := "Команда Mindwell <support@mindwell.win>"
@@ -127,7 +133,7 @@ func (pm *Postman) sendComplain(email hermes.Email, subj string) {
 
 	text, err := pm.h.GeneratePlainText(email)
 	if err != nil {
-		log.Println(err)
+		pm.log.Error(err.Error())
 	}
 
 	from := "Команда Mindwell <support@mindwell.win>"

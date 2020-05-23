@@ -2,7 +2,7 @@ package utils
 
 import (
 	"database/sql"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,6 +30,7 @@ type TelegramBot struct {
 	srv    *MindwellServer
 	api    *tgbotapi.BotAPI
 	url    string
+	log    *zap.Logger
 	logins *cache.Cache
 	cmts   *cache.Cache
 	msgs   *cache.Cache
@@ -44,33 +45,11 @@ type messageID struct {
 
 type messageIDs []messageID
 
-func connectToProxy(srv *MindwellServer) *http.Client {
-	auth := proxy.Auth{
-		User:     srv.ConfigString("proxy.user"),
-		Password: srv.ConfigString("proxy.password"),
-	}
-
-	if len(auth.User) == 0 {
-		return http.DefaultClient
-	}
-
-	url := srv.ConfigString("proxy.url")
-	dialer, err := proxy.SOCKS5("tcp", url, &auth, proxy.Direct)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	tr := &http.Transport{Dial: dialer.Dial}
-	return &http.Client{
-		Transport: tr,
-	}
-}
-
 func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 	bot := &TelegramBot{
 		srv:    srv,
 		url:    srv.ConfigString("server.base_url"),
+		log:    srv.LogTelegram(),
 		logins: cache.New(10*time.Minute, 10*time.Minute),
 		cmts:   cache.New(12*time.Hour, 1*time.Hour),
 		msgs:   cache.New(12*time.Hour, 1*time.Hour),
@@ -78,7 +57,7 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		stop:   make(chan interface{}),
 	}
 
-	go bot.run(srv)
+	go bot.run()
 
 	return bot
 }
@@ -89,7 +68,7 @@ func (bot *TelegramBot) sendMessageNow(chat int64, text string) tgbotapi.Message
 	msg.ParseMode = "HTML"
 	message, err := bot.api.Send(msg)
 	if err != nil {
-		log.Println("Telegram: ", err)
+		bot.log.Error(err.Error())
 	}
 
 	return message
@@ -99,34 +78,57 @@ func (bot *TelegramBot) sendMessage(chat int64, text string) {
 	bot.send <- func() { bot.sendMessageNow(chat, text) }
 }
 
-func (bot *TelegramBot) run(srv *MindwellServer) {
-	token := srv.ConfigString("telegram.token")
+func (bot *TelegramBot) connectToProxy() *http.Client {
+	auth := proxy.Auth{
+		User:     bot.srv.ConfigString("proxy.user"),
+		Password: bot.srv.ConfigString("proxy.password"),
+	}
+
+	if len(auth.User) == 0 {
+		return http.DefaultClient
+	}
+
+	url := bot.srv.ConfigString("proxy.url")
+	dialer, err := proxy.SOCKS5("tcp", url, &auth, proxy.Direct)
+	if err != nil {
+		bot.log.Error(err.Error())
+		return nil
+	}
+
+	tr := &http.Transport{Dial: dialer.Dial}
+	return &http.Client{
+		Transport: tr,
+	}
+}
+
+func (bot *TelegramBot) run() {
+	token := bot.srv.ConfigString("telegram.token")
 	if len(token) == 0 {
 		return
 	}
 
-	client := connectToProxy(srv)
+	client := bot.connectToProxy()
 	if client == nil {
 		return
 	}
 
 	api, err := tgbotapi.NewBotAPIWithClient(token, tgbotapi.APIEndpoint, client)
 	if err != nil {
-		log.Print(err)
+		bot.log.Error(err.Error())
 		return
 	}
 
 	bot.api = api
 	// api.Debug = true
 
-	log.Printf("Running Telegram bot %s", api.Self.UserName)
+	bot.log.Sugar().Infof("Running Telegram bot %s", api.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates, err := bot.api.GetUpdatesChan(u)
 	if err != nil {
-		log.Print(err)
+		bot.log.Error(err.Error())
 	}
 
 	for {
@@ -141,7 +143,10 @@ func (bot *TelegramBot) run(srv *MindwellServer) {
 			}
 
 			cmd := upd.Message.Command()
-			log.Printf("Telegram: [%s] %s", upd.Message.From.UserName, cmd)
+			bot.log.Info("update",
+				zap.String("cmd", cmd),
+				zap.String("from", upd.Message.From.UserName),
+			)
 
 			var reply string
 			switch cmd {
@@ -221,7 +226,7 @@ func (bot *TelegramBot) login(upd *tgbotapi.Update) string {
 	var name string
 	err := bot.srv.DB.QueryRow(q, userID, upd.Message.Chat.ID).Scan(&name)
 	if err != nil {
-		log.Print(err)
+		bot.log.Error(err.Error())
 		return errorText
 	}
 
@@ -250,7 +255,7 @@ func (bot *TelegramBot) logout(upd *tgbotapi.Update) string {
 	} else if err == sql.ErrNoRows {
 		return "К этому номеру не привязан аккаунт в Mindwell."
 	} else {
-		log.Print(err)
+		bot.log.Error(err.Error())
 		return errorText
 	}
 }
@@ -327,7 +332,7 @@ func (bot *TelegramBot) SendUpdateComment(entryTitle string, cmt *models.Comment
 			msg.ParseMode = "HTML"
 			_, err := bot.api.Send(msg)
 			if err != nil {
-				log.Println("Telegram: ", err)
+				bot.log.Error(err.Error())
 			}
 		}
 	}
@@ -351,7 +356,7 @@ func (bot *TelegramBot) SendRemoveComment(commentID int64) {
 			msg := tgbotapi.NewDeleteMessage(msgID.chat, msgID.msg)
 			_, err := bot.api.DeleteMessage(msg)
 			if err != nil {
-				log.Println("Telegram: ", err)
+				bot.log.Error(err.Error())
 			}
 		}
 	}
@@ -520,7 +525,7 @@ func (bot *TelegramBot) SendUpdateMessage(msg *models.Message) {
 			msg.ParseMode = "HTML"
 			_, err := bot.api.Send(msg)
 			if err != nil {
-				log.Println("Telegram: ", err)
+				bot.log.Error(err.Error())
 			}
 		}
 	}
@@ -544,7 +549,7 @@ func (bot *TelegramBot) SendRemoveMessage(messageID int64) {
 			msg := tgbotapi.NewDeleteMessage(msgID.chat, msgID.msg)
 			_, err := bot.api.DeleteMessage(msg)
 			if err != nil {
-				log.Println("Telegram: ", err)
+				bot.log.Error(err.Error())
 			}
 		}
 	}

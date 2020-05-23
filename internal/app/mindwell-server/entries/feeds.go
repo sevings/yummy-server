@@ -2,8 +2,6 @@ package entries
 
 import (
 	"database/sql"
-	"log"
-
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
@@ -304,7 +302,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	} else if category == "week" {
 		interval = "7 days"
 	} else {
-		log.Printf("Unknown best category: %s", category)
+		srv.LogApi().Sugar().Warn("Unknown best category:", category)
 		interval = "1 month"
 	}
 
