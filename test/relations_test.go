@@ -168,7 +168,7 @@ func TestRelationship(t *testing.T) {
 	checkUnfollow(t, userIDs[1], userIDs[0])
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationNone)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
-	
+
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
 	checkRelation(t, userIDs[0], userIDs[1], models.RelationshipRelationHidden)
 	checkRelation(t, userIDs[1], userIDs[0], models.RelationshipRelationNone)
@@ -193,11 +193,14 @@ func TestInvite(t *testing.T) {
 		resp := post(params, from)
 		_, ok := resp.(*relations.PostRelationsInvitedNameNoContent)
 		req.Equal(success, ok)
-	} 
+	}
 
 	from := &models.UserID{
 		ID:   1,
 		Name: "Mindwell",
+		Ban: &models.UserIDBan{
+			Invite: false,
+		},
 	}
 
 	invite("test3", "acknown acknown acknown", from, false)
@@ -216,6 +219,10 @@ func TestInvite(t *testing.T) {
 	invite("test3", "acknown acknown acknown", from, false)
 
 	voteForEntry(userIDs[2], e3.ID, true)
+
+	from.Ban.Invite = true
+	invite("test3", "acknown acknown acknown", from, false)
+	from.Ban.Invite = false
 
 	invite("test0", "acknown acknown acknown", from, false)
 	invite("fsdf", "acknown acknown acknown", from, false)

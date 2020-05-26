@@ -4931,6 +4931,9 @@ func init() {
         },
         "negKarma": {
           "type": "boolean"
+        },
+        "verified": {
+          "type": "boolean"
         }
       }
     },
@@ -10409,6 +10412,9 @@ func init() {
           "minLength": 1
         },
         "negKarma": {
+          "type": "boolean"
+        },
+        "verified": {
           "type": "boolean"
         }
       }

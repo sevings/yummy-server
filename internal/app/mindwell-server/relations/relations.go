@@ -52,7 +52,7 @@ func newToRelationSetter(srv *utils.MindwellServer) func(relations.PutRelationsT
 				toRelation := relationship(tx, params.Name, uID.Name)
 				if toRelation.Relation == models.RelationshipRelationIgnored {
 					err := srv.NewError(&i18n.Message{ID: "relation_from_ignored", Other: "You can't follow this user."})
-					return relations.NewPutRelationsToNameForbidden().WithPayload(err)				
+					return relations.NewPutRelationsToNameForbidden().WithPayload(err)
 				}
 			}
 
@@ -123,6 +123,11 @@ func newFromRelationDeleter(srv *utils.MindwellServer) func(relations.DeleteRela
 func newInviter(srv *utils.MindwellServer) func(relations.PostRelationsInvitedNameParams, *models.UserID) middleware.Responder {
 	return func(params relations.PostRelationsInvitedNameParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			if userID.Ban.Invite {
+				err := srv.NewError(&i18n.Message{ID: "cant_invite", Other: "You are not allowed to invite users."})
+				return relations.NewPostRelationsInvitedNameForbidden().WithPayload(err)
+			}
+
 			exists, invited := isTlogExistsAndInvited(tx, params.Name)
 
 			if !exists {
@@ -136,7 +141,7 @@ func newInviter(srv *utils.MindwellServer) func(relations.PostRelationsInvitedNa
 			}
 
 			if !canInvite(tx, params.Name) {
-				err := srv.NewError(&i18n.Message{ID: "cant_invite", Other: "The user can't be invited."})
+				err := srv.NewError(&i18n.Message{ID: "cant_be_invited", Other: "The user can't be invited."})
 				return relations.NewPostRelationsInvitedNameForbidden().WithPayload(err)
 			}
 

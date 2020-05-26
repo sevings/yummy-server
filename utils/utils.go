@@ -56,7 +56,8 @@ func IsOpenForMe(tx *AutoTx, userID *models.UserID, name interface{}) bool {
 }
 
 const userIDQuery = `
-			SELECT id, name, followers_count, invited_by is not null, karma < -1,
+			SELECT id, name, followers_count, 
+				invited_by is not null, karma < -1, verified,
 				invite_ban > CURRENT_DATE, vote_ban > CURRENT_DATE, 
 				comment_ban > CURRENT_DATE, live_ban > CURRENT_DATE
 			FROM users `
@@ -76,15 +77,17 @@ func LoadUserIDByApiKey(tx *AutoTx, apiKey string) (*models.UserID, error) {
 func scanUserID(tx *AutoTx) (*models.UserID, error) {
 	var user models.UserID
 	user.Ban = &models.UserIDBan{}
-	tx.Scan(&user.ID, &user.Name, &user.FollowersCount, &user.IsInvited, &user.NegKarma,
+	tx.Scan(&user.ID, &user.Name, &user.FollowersCount,
+		&user.IsInvited, &user.NegKarma, &user.Verified,
 		&user.Ban.Invite, &user.Ban.Vote, &user.Ban.Comment, &user.Ban.Live)
 	if tx.Error() != nil {
 		return nil, errUnauthorized
 	}
 
-	user.Ban.Invite = user.Ban.Invite || !user.IsInvited
-	user.Ban.Vote = user.Ban.Vote || !user.IsInvited || user.NegKarma
-	user.Ban.Comment = user.Ban.Comment || !user.IsInvited
+	user.Ban.Invite = user.Ban.Invite || !user.IsInvited || !user.Verified
+	user.Ban.Vote = user.Ban.Vote || !user.IsInvited || user.NegKarma || !user.Verified
+	user.Ban.Comment = user.Ban.Comment || !user.IsInvited || !user.Verified
+	user.Ban.Live = user.Ban.Live || !user.Verified
 
 	return &user, nil
 }

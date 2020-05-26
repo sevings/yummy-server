@@ -2,10 +2,8 @@ package users
 
 import (
 	"database/sql"
-	"strings"
-	"time"
-
 	"github.com/sevings/mindwell-server/utils"
+	"strings"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/models"
@@ -113,7 +111,7 @@ func loadMyProfile(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.U
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	now := float64(time.Now().Unix())
+	now := tx.QueryFloat64("SELECT extract(epoch from CURRENT_DATE)")
 
 	if profile.Ban.Invite <= now {
 		profile.Ban.Invite = 0

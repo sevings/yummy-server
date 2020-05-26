@@ -36,6 +36,9 @@ type UserID struct {
 
 	// neg karma
 	NegKarma bool `json:"negKarma,omitempty"`
+
+	// verified
+	Verified bool `json:"verified,omitempty"`
 }
 
 // Validate validates this user ID

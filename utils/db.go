@@ -174,6 +174,12 @@ func (tx *AutoTx) QueryInt64s(query string, args ...interface{}) []int64 {
 	return result
 }
 
+func (tx *AutoTx) QueryFloat64(query string, args ...interface{}) float64 {
+	var result float64
+	tx.Query(query, args...).Scan(&result)
+	return result
+}
+
 func (tx *AutoTx) QueryString(query string, args ...interface{}) string {
 	var result string
 	tx.Query(query, args...).Scan(&result)

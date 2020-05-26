@@ -26,6 +26,8 @@ definitions:
         format: int64
       isInvited:
         type: boolean
+      verified:
+        type: boolean
       ban:
         type: object
         properties:
