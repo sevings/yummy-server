@@ -35,12 +35,15 @@ var db *sql.DB
 var userIDs []*models.UserID
 var profiles []*models.AuthProfile
 var esm EmailSenderMock
+var ecm EmailCheckerMock
 
 func TestMain(m *testing.M) {
 	api = &operations.MindwellAPI{}
 	srv = utils.NewMindwellServer(api, "../configs/server")
 	db = srv.DB
 
+	ecm.Trusted = []string{"example.com"}
+	srv.Eac = &ecm
 	srv.Ntf.Mail = &esm
 
 	utils.ClearDatabase(db)
@@ -77,18 +80,24 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func checkEmail(t *testing.T, email string, free bool) {
+func checkEmail(t *testing.T, email string, success, free bool) {
 	check := api.AccountGetAccountEmailEmailHandler.Handle
 	resp := check(account.GetAccountEmailEmailParams{Email: email})
 	body, ok := resp.(*account.GetAccountEmailEmailOK)
 
-	require.True(t, ok, email)
+	require.Equal(t, success, ok)
+	if !ok {
+		return
+	}
+
 	require.Equal(t, email, body.Payload.Email)
 	require.Equal(t, free, body.Payload.IsFree, email)
 }
 
-func TestCheckEmail(t *testing.T) {
-	checkEmail(t, "123", true)
+func TestCheckEmailFree(t *testing.T) {
+	checkEmail(t, "123@example.com", true, true)
+	checkEmail(t, "test", false, false)
+	checkEmail(t, "test@test.com", false, false)
 }
 
 func checkName(t *testing.T, name string, free bool) {
@@ -101,7 +110,7 @@ func checkName(t *testing.T, name string, free bool) {
 	require.Equal(t, free, body.Payload.IsFree, name)
 }
 
-func TestCheckName(t *testing.T) {
+func TestCheckNameFree(t *testing.T) {
 	checkName(t, "mINDWell", false)
 	checkName(t, "nAMe", true)
 }
@@ -252,11 +261,11 @@ func TestInvites(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	checkName(t, "testtEst", true)
-	checkEmail(t, "testeMAil", true)
+	checkEmail(t, "testeMAil@example.com", true, true)
 
 	params := account.PostAccountRegisterParams{
 		Name:     "testtest",
-		Email:    "testemail",
+		Email:    "testemail@example.com",
 		Password: "test123",
 	}
 
@@ -279,35 +288,37 @@ func TestRegister(t *testing.T) {
 	}
 
 	checkName(t, "testtEst", false)
-	checkEmail(t, "testeMAil", false)
+	checkEmail(t, "testeMAil@example.com", true, false)
 	checkLogin(t, user, params.Name, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Name), params.Password)
 	checkLogin(t, user, params.Email, params.Password)
 	checkLogin(t, user, strings.ToUpper(params.Email), params.Password)
 
-	esm.CheckEmail(t, "testemail")
-	checkVerify(t, userID, "testemail")
+	esm.CheckEmail(t, "testemail@example.com")
+	checkVerify(t, userID, "testemail@example.com")
 	user.Account.Verified = true
-	checkResetPassword(t, "testemail")
-	checkResetPassword(t, "testeMAil")
+	checkResetPassword(t, "testemail@example.com")
+	checkResetPassword(t, "testeMAil@example.com")
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, userID, "test123", "new123", "testemail", true)
+	changePassword(t, userID, "test123", "new123", "testemail@example.com", true)
 	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
 
-	changeEmail(t, userID, "testemail", "tEsteMail", "new123", false)
-	changeEmail(t, userID, "testemail", "testemail0", "xvc", false)
-	changeEmail(t, userID, "testemail", "testemail0", "new123", true)
-	user.Account.Email = ""
+	changeEmail(t, userID, "testemail@example.com", "tEsteMail@example.com", "new123", false)
+	changeEmail(t, userID, "testemail@example.com", "testemail0@example.com", "xvc", false)
+	changeEmail(t, userID, "testemail@example.com", "test", "new123", false)
+	changeEmail(t, userID, "testemail@example.com", "testemail0@test.com", "new123", false)
+	changeEmail(t, userID, "testemail@example.com", "testemail0@example.com", "new123", true)
+	user.Account.Email = utils.HideEmail("testemail0@example.com")
 	user.Account.Verified = false
-	checkLogin(t, user, "testemail0", "new123")
-	checkVerify(t, userID, "testemail0")
+	checkLogin(t, user, "testemail0@example.com", "new123")
+	checkVerify(t, userID, "testemail0@example.com")
 	user.Account.Verified = true
 
 	req := require.New(t)
 	req.Equal(params.Name, user.Name)
-	req.Equal(params.Email, "testemail")
+	req.Equal(params.Email, "testemail@example.com")
 
 	req.Equal(user.Name, user.ShowName)
 	req.True(user.IsOnline)
@@ -352,7 +363,7 @@ func TestRegister(t *testing.T) {
 
 	params = account.PostAccountRegisterParams{
 		Name:     "testtest2",
-		Email:    "testemail2",
+		Email:    "testemail2@example.com",
 		Password: "test123",
 		Gender:   &gender,
 		City:     &city,
@@ -371,15 +382,15 @@ func TestRegister(t *testing.T) {
 	}
 
 	checkName(t, "testtEst2", false)
-	checkEmail(t, "testeMAil2", false)
+	checkEmail(t, "testeMAil2@example.com", true, false)
 	checkLogin(t, user, params.Name, params.Password)
 
-	esm.CheckEmail(t, "testemail2")
-	checkVerify(t, userID, "testemail2")
+	esm.CheckEmail(t, "testemail2@example.com")
+	checkVerify(t, userID, "testemail2@example.com")
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, userID, "test123", "new123", "testemail2", true)
+	changePassword(t, userID, "test123", "new123", "testemail2@example.com", true)
 	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
 
@@ -395,7 +406,7 @@ func TestRegister(t *testing.T) {
 
 	params = account.PostAccountRegisterParams{
 		Name:     "testtest3",
-		Email:    "testemail3",
+		Email:    "testemail3@example.com",
 		Password: "test123",
 	}
 
@@ -412,15 +423,15 @@ func TestRegister(t *testing.T) {
 	req.Nil(user.InvitedBy)
 
 	checkName(t, "testtEst3", false)
-	checkEmail(t, "testeMAil3", false)
+	checkEmail(t, "testeMAil3@example.com", true, false)
 	checkLogin(t, user, params.Name, params.Password)
 
-	esm.CheckEmail(t, "testemail3")
-	checkVerify(t, userID, "testemail3")
+	esm.CheckEmail(t, "testemail3@example.com")
+	checkVerify(t, userID, "testemail3@example.com")
 	user.Account.Verified = true
 	checkLogin(t, user, params.Name, params.Password)
 
-	changePassword(t, userID, "test123", "new123", "testemail3", true)
+	changePassword(t, userID, "test123", "new123", "testemail3@example.com", true)
 	changePassword(t, userID, "test123", "new123", "", false)
 	checkLogin(t, user, params.Name, "new123")
 
@@ -549,4 +560,12 @@ func TestHideEmail(t *testing.T) {
 	req.Equal("***@ml.win", he("s@ml.win"))
 	req.Equal("***@ml.win", he("sp@ml.win"))
 	req.Equal("s***t@mindwell.win", he("support@mindwell.win"))
+}
+
+func TestCheckEmailAllowed(t *testing.T) {
+	ec := utils.NewEmailChecker(srv)
+	req := require.New(t)
+
+	req.True(ec.IsAllowed("test@ya.ru"))
+	req.False(ec.IsAllowed("test@mailinator.com"))
 }

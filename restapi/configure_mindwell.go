@@ -41,6 +41,7 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	srv := utils.NewMindwellServer(api, "configs/server")
+	srv.Eac = utils.NewEmailChecker(srv)
 
 	domain := srv.ConfigString("mailgun.domain")
 	apiKey := srv.ConfigString("mailgun.api_key")

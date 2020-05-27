@@ -60,7 +60,15 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.AccountDeleteAccountSubscribeTelegramHandler = account.DeleteAccountSubscribeTelegramHandlerFunc(newTelegramDeleter(srv))
 }
 
-// IsEmailFree returns true if there is no account with such an email
+func checkEmailAllowed(srv *utils.MindwellServer, email string) *models.Error {
+	if srv.Eac.IsAllowed(email) {
+		return nil
+	}
+
+	msg := &i18n.Message{ID: "email_is_not_allowed", Other: "Please use trusted email service."}
+	return srv.NewError(msg)
+}
+
 func isEmailFree(tx *utils.AutoTx, email string) bool {
 	const q = `
         select id 
@@ -76,6 +84,10 @@ func isEmailFree(tx *utils.AutoTx, email string) bool {
 func newEmailChecker(srv *utils.MindwellServer) func(account.GetAccountEmailEmailParams) middleware.Responder {
 	return func(params account.GetAccountEmailEmailParams) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			if err := checkEmailAllowed(srv, params.Email); err != nil {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
+			}
+
 			free := isEmailFree(tx, params.Email)
 			data := account.GetAccountEmailEmailOKBody{Email: params.Email, IsFree: free}
 			return account.NewGetAccountEmailEmailOK().WithPayload(&data)
@@ -103,28 +115,6 @@ func newNameChecker(srv *utils.MindwellServer) func(account.GetAccountNameNamePa
 			return account.NewGetAccountNameNameOK().WithPayload(&data)
 		})
 	}
-}
-
-func removeInvite(tx *utils.AutoTx, invite string) (int64, bool) {
-	words := strings.Fields(invite)
-	if len(words) != 3 {
-		return 0, false
-	}
-
-	const q = `
-		DELETE FROM invites
-		WHERE word1 = (SELECT id FROM invite_words WHERE word = $1)
-		  AND word2 = (SELECT id FROM invite_words WHERE word = $2)
-		  AND word3 = (SELECT id FROM invite_words WHERE word = $3)
-		RETURNING referrer_id`
-
-	var userID int64
-	tx.Query(q,
-		strings.ToLower(words[0]),
-		strings.ToLower(words[1]),
-		strings.ToLower(words[2])).Scan(&userID)
-
-	return userID, userID != 0
 }
 
 func saveAvatar(srv *utils.MindwellServer, img image.Image, size int, folder, name string) {
@@ -349,6 +339,10 @@ func newRegistrator(srv *utils.MindwellServer) func(account.PostAccountRegisterP
 			params.Password = strings.TrimSpace(params.Password)
 			params.Email = strings.TrimSpace(params.Email)
 
+			if err := checkEmailAllowed(srv, params.Email); err != nil {
+				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
+			}
+
 			if ok := isEmailFree(tx, params.Email); !ok {
 				err := srv.NewError(&i18n.Message{ID: "email_is_not_free", Other: "Email is not free."})
 				return account.NewPostAccountRegisterBadRequest().WithPayload(err)
@@ -447,21 +441,25 @@ func newPasswordUpdater(srv *utils.MindwellServer) func(account.PostAccountPassw
 }
 
 func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountEmailParams, userID *models.UserID) (*models.Error, string) {
+	if err := checkEmailAllowed(srv, params.Email); err != nil {
+		return err, ""
+	}
+
+	newEmail := strings.TrimSpace(params.Email)
+	if !isEmailFree(tx, newEmail) {
+		return srv.NewError(&i18n.Message{ID: "email_is_used", Other: "Email is already used."}), ""
+	}
+
 	var oldEmail string
 	var verified bool
 	tx.Query("SELECT email, verified FROM users WHERE id = $1", userID.ID).Scan(&oldEmail, &verified)
 
-	newEmail := strings.TrimSpace(params.Email)
 	if strings.ToLower(oldEmail) == strings.ToLower(newEmail) {
-		return srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."}), oldEmail
+		return srv.NewError(&i18n.Message{ID: "email_is_the_same", Other: "Email is the same as old one."}), ""
 	}
 
 	if !verified {
 		oldEmail = ""
-	}
-
-	if !isEmailFree(tx, newEmail) {
-		return srv.NewError(&i18n.Message{ID: "email_is_used", Other: "Email is already used."}), oldEmail
 	}
 
 	const q = `
@@ -473,7 +471,7 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
 	tx.Exec(q, newEmail, hash, userID.ID)
 
 	if tx.RowsAffected() < 1 {
-		return srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."}), oldEmail
+		return srv.NewError(&i18n.Message{ID: "invalid_password_or_api_key", Other: "Password or ApiKey is invalid."}), ""
 	}
 
 	return nil, oldEmail

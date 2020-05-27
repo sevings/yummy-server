@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -102,6 +103,27 @@ func (esm *EmailSenderMock) Clear() {
 	esm.Emails = nil
 	esm.Codes = nil
 	esm.Dates = nil
+}
+
+type EmailCheckerMock struct {
+	Trusted []string
+}
+
+func (ecm EmailCheckerMock) IsAllowed(email string) bool {
+	loginAtService := strings.Split(email, "@")
+	if len(loginAtService) < 2 {
+		return false
+	}
+
+	service := loginAtService[1]
+
+	for _, s := range ecm.Trusted {
+		if s == service {
+			return true
+		}
+	}
+
+	return false
 }
 
 func register(name string) (*models.UserID, *models.AuthProfile) {

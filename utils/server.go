@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -37,6 +38,10 @@ type MailSender interface {
 	Stop()
 }
 
+type EmailAllowedChecker interface {
+	IsAllowed(email string) bool
+}
+
 const (
 	logApi      = "api"
 	logTelegram = "telegram"
@@ -49,6 +54,7 @@ type MindwellServer struct {
 	API   *operations.MindwellAPI
 	Ntf   *CompositeNotifier
 	Imgs  *cache.Cache
+	Eac   EmailAllowedChecker
 	log   *zap.Logger
 	cfg   *goconf.Config
 	local *i18n.Localizer
@@ -103,6 +109,15 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 	scheduler.Every().Day().At("03:15").Run(func() { srv.giveInvites() })
 
 	return srv
+}
+
+func (srv *MindwellServer) ConfigStrings(field string) []string {
+	value, err := srv.cfg.String(field)
+	if err != nil {
+		srv.LogSystem().Warn(err.Error())
+	}
+
+	return strings.Split(value, ";")
 }
 
 func (srv *MindwellServer) ConfigString(field string) string {
