@@ -1846,6 +1846,7 @@ INSERT INTO "mindwell"."notification_type" VALUES(5, 'welcome');
 INSERT INTO "mindwell"."notification_type" VALUES(6, 'invited');
 INSERT INTO "mindwell"."notification_type" VALUES(7, 'adm_sent');
 INSERT INTO "mindwell"."notification_type" VALUES(8, 'adm_received');
+INSERT INTO "mindwell"."notification_type" VALUES(9, 'info');
 -- -------------------------------------------------------------
 
 
@@ -1870,6 +1871,18 @@ CREATE UNIQUE INDEX "index_notification_id" ON "mindwell"."notifications" USING 
 
 -- CREATE "index_notification_user_id" -------------------
 CREATE INDEX "index_notification_user_id" ON "mindwell"."notifications" USING btree( "user_id" );
+-- -------------------------------------------------------------
+
+
+
+-- CREATE TABLE "info" -----------------------------------------
+CREATE TABLE "mindwell"."info" (
+    "id" Serial NOT NULL,
+    "created_at" Timestamp With Time Zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    "content" Text NOT NULL,
+    "link" Text NOT NULL,
+	CONSTRAINT "unique_info_id" PRIMARY KEY("id") );
+;
 -- -------------------------------------------------------------
 
 

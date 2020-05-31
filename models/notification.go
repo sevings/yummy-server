@@ -32,11 +32,14 @@ type Notification struct {
 	// Minimum: 1
 	ID int64 `json:"id,omitempty"`
 
+	// info
+	Info *NotificationInfo `json:"info,omitempty"`
+
 	// read
 	Read bool `json:"read,omitempty"`
 
 	// type
-	// Enum: [comment follower request accept invite welcome invited adm_sent adm_received]
+	// Enum: [comment follower request accept invite welcome invited adm_sent adm_received info]
 	Type string `json:"type,omitempty"`
 
 	// user
@@ -56,6 +59,10 @@ func (m *Notification) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateInfo(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -122,11 +129,29 @@ func (m *Notification) validateID(formats strfmt.Registry) error {
 	return nil
 }
 
+func (m *Notification) validateInfo(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Info) { // not required
+		return nil
+	}
+
+	if m.Info != nil {
+		if err := m.Info.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 var notificationTypeTypePropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["comment","follower","request","accept","invite","welcome","invited","adm_sent","adm_received"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["comment","follower","request","accept","invite","welcome","invited","adm_sent","adm_received","info"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -162,6 +187,9 @@ const (
 
 	// NotificationTypeAdmReceived captures enum value "adm_received"
 	NotificationTypeAdmReceived string = "adm_received"
+
+	// NotificationTypeInfo captures enum value "info"
+	NotificationTypeInfo string = "info"
 )
 
 // prop value enum
@@ -215,6 +243,40 @@ func (m *Notification) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Notification) UnmarshalBinary(b []byte) error {
 	var res Notification
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// NotificationInfo notification info
+// swagger:model NotificationInfo
+type NotificationInfo struct {
+
+	// content
+	Content string `json:"content,omitempty"`
+
+	// link
+	Link string `json:"link,omitempty"`
+}
+
+// Validate validates this notification info
+func (m *NotificationInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *NotificationInfo) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *NotificationInfo) UnmarshalBinary(b []byte) error {
+	var res NotificationInfo
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

@@ -36,6 +36,7 @@ func ClearDatabase(db *sql.DB) {
 	dropTable(tx, "watching")
 	dropTable(tx, "entries")
 	dropTable(tx, "adm")
+	dropTable(tx, "info")
 	dropTable(tx, "notifications")
 	dropTable(tx, "images")
 	dropTable(tx, "complains")

@@ -494,7 +494,7 @@ definitions:
         minimum: 1
       type: 
         type: string
-        enum: [comment, follower, request, accept, invite, welcome, invited, adm_sent, adm_received]
+        enum: [comment, follower, request, accept, invite, welcome, invited, adm_sent, adm_received, info]
       read:
         type: boolean
       createdAt:
@@ -506,6 +506,13 @@ definitions:
         $ref: '#/definitions/Comment'
       entry: 
         $ref: '#/definitions/Entry'
+      info:
+        type: object
+        properties:
+          content:
+            type: string
+          link:
+            type: string
   NotificationList:
     type: object
     properties:

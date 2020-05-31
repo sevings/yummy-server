@@ -29,22 +29,30 @@ func checkLoadNotifications(t *testing.T, id *models.UserID, limit int64, before
 	return list
 }
 
-func checkLoadSingleNotification(t *testing.T, userID *models.UserID, ntf *models.Notification, success bool) {
+func loadSingleNotification(userID *models.UserID, ntfID int64) *models.Notification {
 	params := notifications.GetNotificationsIDParams{
-		ID: ntf.ID,
+		ID: ntfID,
 	}
 
 	get := api.NotificationsGetNotificationsIDHandler.Handle
 	resp := get(params, userID)
 	body, ok := resp.(*notifications.GetNotificationsIDOK)
+	if !ok {
+		return nil
+	}
+
+	return body.Payload
+}
+
+func checkLoadSingleNotification(t *testing.T, userID *models.UserID, ntf *models.Notification, success bool) {
+	loaded := loadSingleNotification(userID, ntf.ID)
 
 	req := require.New(t)
-	req.Equal(success, ok)
-	if !ok {
+	req.Equal(success, loaded != nil)
+	if !success {
 		return
 	}
 
-	loaded := body.Payload
 	req.Equal(ntf.ID, loaded.ID)
 	req.Equal(ntf.Type, loaded.Type)
 	req.Equal(ntf.Read, loaded.Read)
@@ -118,4 +126,31 @@ func TestNotification(t *testing.T) {
 	checkDeleteComment(t, cID, userIDs[1], true)
 	checkLoadNotifications(t, userIDs[0], 20, "", "", true, 0)
 	checkLoadSingleNotification(t, userIDs[0], nots.Notifications[0], false)
+}
+
+func TestNotificationInfo(t *testing.T) {
+	tx := utils.NewAutoTx(db)
+	infoID := tx.QueryInt64(`
+		INSERT INTO info(content, link) 
+		VALUES('test content', 'test link')
+		RETURNING id
+	`)
+
+	typeID := tx.QueryInt64("SELECT id FROM notification_type WHERE type = 'info'")
+	ntfID := tx.QueryInt64(`
+		INSERT INTO notifications(user_id, type, subject_id)
+		VALUES($1, $2, $3)
+		RETURNING id
+	`, userIDs[0].ID, typeID, infoID)
+
+	tx.Finish()
+
+	ntf := loadSingleNotification(userIDs[0], ntfID)
+
+	req := require.New(t)
+	req.NotNil(ntf)
+	req.Equal(ntfID, ntf.ID)
+	req.Equal("info", ntf.Type)
+	req.Equal("test content", ntf.Info.Content)
+	req.Equal("test link", ntf.Info.Link)
 }

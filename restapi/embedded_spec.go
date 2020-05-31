@@ -4674,6 +4674,17 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
+        "info": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "link": {
+              "type": "string"
+            }
+          }
+        },
         "read": {
           "type": "boolean"
         },
@@ -4688,7 +4699,8 @@ func init() {
             "welcome",
             "invited",
             "adm_sent",
-            "adm_received"
+            "adm_received",
+            "info"
           ]
         },
         "user": {
@@ -10156,6 +10168,17 @@ func init() {
           "format": "int64",
           "minimum": 1
         },
+        "info": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string"
+            },
+            "link": {
+              "type": "string"
+            }
+          }
+        },
         "read": {
           "type": "boolean"
         },
@@ -10170,7 +10193,8 @@ func init() {
             "welcome",
             "invited",
             "adm_sent",
-            "adm_received"
+            "adm_received",
+            "info"
           ]
         },
         "user": {

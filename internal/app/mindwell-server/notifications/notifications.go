@@ -3,13 +3,21 @@ package notifications
 import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/patrickmn/go-cache"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/notifications"
 	"github.com/sevings/mindwell-server/utils"
+	"time"
 )
+
+var infoCache *cache.Cache
+
+func init() {
+	infoCache = cache.New(48*time.Hour, 48*time.Hour)
+}
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
@@ -65,6 +73,28 @@ type notice struct {
 	read bool
 }
 
+func loadInfo(tx *utils.AutoTx, id int64) *models.NotificationInfo {
+	key := utils.FormatInt64(id)
+
+	i, found := infoCache.Get(key)
+	if found {
+		return i.(*models.NotificationInfo)
+	}
+
+	const q = "SELECT content, link FROM info WHERE id = $1"
+
+	info := &models.NotificationInfo{}
+	tx.Query(q, id).Scan(&info.Content, &info.Link)
+
+	if info.Content == "" {
+
+	}
+
+	infoCache.SetDefault(key, info)
+
+	return info
+}
+
 func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, not *notice) *models.Notification {
 	notif := models.Notification{
 		ID:        not.id,
@@ -94,6 +124,9 @@ func loadNotification(srv *utils.MindwellServer, tx *utils.AutoTx, userID *model
 	case models.NotificationTypeAdmReceived:
 		break
 	case models.NotificationTypeAdmSent:
+		break
+	case models.NotificationTypeInfo:
+		notif.Info = loadInfo(tx, not.subj)
 		break
 	default:
 		srv.LogApi().Sugar().Warn("Unknown notification type:", not.tpe)
