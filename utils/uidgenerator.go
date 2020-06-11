@@ -49,7 +49,7 @@ func (cfg *UidGeneratorConfig) update() error {
 		cfg.IntervalLen = 61 - cfg.EpochLen
 	}
 
-	cfg.interval = (1 << cfg.IntervalLen)
+	cfg.interval = 1 << cfg.IntervalLen
 	cfg.timeMask = cfg.interval - 1
 
 	return nil
@@ -72,13 +72,13 @@ const (
 var decodeLetters [256]byte
 
 // ErrInvalidStringUID is returned by UidFromString when given an invalid string
-var ErrInvalidStringUID = errors.New("Invalid encoded UniqueID")
+var ErrInvalidStringUID = errors.New("invalid encoded UniqueID")
 
 // ErrTooBigServerID is returned by NewUidGenerator when given a server ID bigger than 2^srvLen-1
-var ErrTooBigServerID = errors.New("Server ID is too big")
+var ErrTooBigServerID = errors.New("server ID is too big")
 
 // ErrTooLongID is returned by NewUidGenerator if length of IDs would exceed 64 bits
-var ErrTooLongID = errors.New("Configured ID length is too big")
+var ErrTooLongID = errors.New("configured ID length is too big")
 
 func init() {
 	for i := 0; i < len(letters); i++ {

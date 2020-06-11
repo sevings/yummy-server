@@ -23,7 +23,7 @@ import (
 )
 
 var errUnauthorized = errors.New(401, "Invalid or expired API key")
-var htmlEsc *strings.Replacer = strings.NewReplacer(
+var htmlEsc = strings.NewReplacer(
 	"<", "&lt;",
 	">", "&gt;",
 	"&", "&amp;",

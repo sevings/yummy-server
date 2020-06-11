@@ -33,8 +33,8 @@ var urlRe *regexp.Regexp
 
 func init() {
 	imgRe = regexp.MustCompile(`(?i)^https?.+\.(?:png|jpg|jpeg|gif)(?:\?\S*)?$`)
-	iMdRe = regexp.MustCompile(`!\[[^\]]*\]\(([^\)]+)\)`)
-	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d\+\-\.]*://[a-zA-Z0-9\-\._~:/?#\[\]@!$&'\(\)\*\+,;=%]+)`)
+	iMdRe = regexp.MustCompile(`!\[[^]]*]\(([^)]+)\)`)
+	urlRe = regexp.MustCompile(`([a-zA-Z][a-zA-Z\d+\-.]*://[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+)`)
 }
 
 func HtmlContent(content string) string {
@@ -87,7 +87,7 @@ func commentVote(vote sql.NullFloat64) int64 {
 	}
 }
 
-func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.UserID, entryAuthorID int64) {
+func setCommentRights(comment *models.Comment, userID *models.UserID, entryAuthorID int64) {
 	comment.Rights = &models.CommentRights{
 		Edit:     comment.Author.ID == userID.ID,
 		Delete:   comment.Author.ID == userID.ID || entryAuthorID == userID.ID,
@@ -120,7 +120,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 		&avatar)
 
 	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
-	setCommentRights(tx, &comment, userID, entryAuthorID)
+	setCommentRights(&comment, userID, entryAuthorID)
 	setCommentText(&comment)
 
 	if !comment.Rights.Edit {
@@ -301,7 +301,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 			break
 		}
 
-		setCommentRights(tx, &comment, userID, entryAuthorID)
+		setCommentRights(&comment, userID, entryAuthorID)
 		setCommentText(&comment)
 
 		if !comment.Rights.Edit {
@@ -321,7 +321,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		}
 	}
 
-	comments := &models.CommentList{Data: list}
+	cmts := &models.CommentList{Data: list}
 
 	if len(list) > 0 {
 		nextBefore := list[0].ID
@@ -329,17 +329,17 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id < $2)", entryID, nextBefore)
 		tx.Scan(&hasBefore)
 		if hasBefore {
-			comments.NextBefore = strconv.FormatInt(nextBefore, 10)
-			comments.HasBefore = hasBefore
+			cmts.NextBefore = strconv.FormatInt(nextBefore, 10)
+			cmts.HasBefore = hasBefore
 		}
 
 		nextAfter := list[len(list)-1].ID
-		comments.NextAfter = strconv.FormatInt(nextAfter, 10)
+		cmts.NextAfter = strconv.FormatInt(nextAfter, 10)
 		tx.Query("SELECT EXISTS(SELECT 1 FROM comments WHERE entry_id = $1 AND comments.id > $2)", entryID, nextAfter)
-		tx.Scan(&comments.HasAfter)
+		tx.Scan(&cmts.HasAfter)
 	}
 
-	return comments
+	return cmts
 }
 
 func newEntryCommentsLoader(srv *utils.MindwellServer) func(comments.GetEntriesIDCommentsParams, *models.UserID) middleware.Responder {

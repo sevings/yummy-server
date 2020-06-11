@@ -87,20 +87,24 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		cfg:   config,
 		local: i18n.NewLocalizer(bundle),
 		errs: map[string]*i18n.Message{
-			"no_entry":       &i18n.Message{ID: "no_entry", Other: "Entry not found or you have no access rights."},
-			"no_comment":     &i18n.Message{ID: "no_comment", Other: "Comment not found or you have no access rights."},
-			"no_tlog":        &i18n.Message{ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
-			"no_chat":        &i18n.Message{ID: "no_chat", Other: "Chat not found or you have no access rights."},
-			"no_message":     &i18n.Message{ID: "no_message", Other: "Message not found or you have no access rights."},
-			"no_request":     &i18n.Message{ID: "no_friend_request", Other: "You have no friend request from this user."},
-			"invalid_invite": &i18n.Message{ID: "invalid_invite", Other: "Invite is invalid."},
+			"no_entry":       {ID: "no_entry", Other: "Entry not found or you have no access rights."},
+			"no_comment":     {ID: "no_comment", Other: "Comment not found or you have no access rights."},
+			"no_tlog":        {ID: "no_tlog", Other: "Tlog not found or you have no access rights."},
+			"no_chat":        {ID: "no_chat", Other: "Chat not found or you have no access rights."},
+			"no_message":     {ID: "no_message", Other: "Message not found or you have no access rights."},
+			"no_request":     {ID: "no_friend_request", Other: "You have no friend request from this user."},
+			"invalid_invite": {ID: "invalid_invite", Other: "Invite is invalid."},
 		},
 	}
 
 	srv.Ntf = NewCompositeNotifier(srv)
 
-	scheduler.Every().Day().At("03:10").Run(func() { srv.recalcKarma() })
-	scheduler.Every().Day().At("03:15").Run(func() { srv.giveInvites() })
+	if _, err := scheduler.Every().Day().At("03:10").Run(func() { srv.recalcKarma() }); err != nil {
+		srv.LogSystem().Error(err.Error())
+	}
+	if _, err := scheduler.Every().Day().At("03:15").Run(func() { srv.giveInvites() }); err != nil {
+		srv.LogSystem().Error(err.Error())
+	}
 
 	return srv
 }

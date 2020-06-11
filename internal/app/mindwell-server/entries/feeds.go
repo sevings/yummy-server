@@ -326,14 +326,10 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 	}
 }
 
-func loadAnonymousFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	return &models.Feed{}
-}
-
 func newAnonymousLoader(srv *utils.MindwellServer) func(entries.GetEntriesAnonymousParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesAnonymousParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadAnonymousFeed(tx, userID, *params.Before, *params.After, *params.Limit)
+			feed := &models.Feed{}
 			return entries.NewGetEntriesAnonymousOK().WithPayload(feed)
 		})
 	}
