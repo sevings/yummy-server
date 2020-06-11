@@ -2,6 +2,7 @@ package entries
 
 import (
 	"database/sql"
+	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"regexp"
 	"strings"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	usersAPI "github.com/sevings/mindwell-server/restapi/operations/users"
 
-	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/watchings"
 	"github.com/sevings/mindwell-server/models"
@@ -108,13 +108,13 @@ func entryCategory(entry *models.Entry) string {
 	return "tweet"
 }
 
-func NewEntry(title, content string, hasAttach bool) *models.Entry {
-	title = strings.TrimSpace(title)
+func setEntryTexts(entry *models.Entry, hasAttach bool) {
+	title := strings.TrimSpace(entry.Title)
 	title = bluemonday.StrictPolicy().Sanitize(title)
 
 	cutTitle, isTitleCut := utils.CutText(title, 100)
 
-	content = strings.TrimSpace(content)
+	content := strings.TrimSpace(entry.EditContent)
 
 	contentLength := 500
 	if hasAttach {
@@ -128,17 +128,12 @@ func NewEntry(title, content string, hasAttach bool) *models.Entry {
 		cutContent = ""
 	}
 
-	entry := models.Entry{
-		Title:       title,
-		CutTitle:    cutTitle,
-		Content:     md.RenderToString([]byte(content)),
-		CutContent:  md.RenderToString([]byte(cutContent)),
-		EditContent: content,
-		HasCut:      hasCut,
-		WordCount:   wordCount(content, title),
-	}
-
-	return &entry
+	entry.Title = title
+	entry.CutTitle = cutTitle
+	entry.Content = md.RenderToString([]byte(content))
+	entry.CutContent = md.RenderToString([]byte(cutContent))
+	entry.EditContent = content
+	entry.HasCut = hasCut
 }
 
 func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, title, content, privacy string, isVotable, inLive, hasAttach bool) *models.Entry {
@@ -151,22 +146,21 @@ func myEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID,
 		inLive = false
 	}
 
-	entry := NewEntry(title, content, hasAttach)
+	entry := &models.Entry{
+		Author:     users.LoadUserByID(srv, tx, userID.ID),
+		Privacy:    privacy,
+		IsWatching: true,
+		InLive:     inLive,
+		Rating: &models.Rating{
+			IsVotable: isVotable,
+		},
+		Title:       title,
+		EditContent: content,
+		WordCount:   wordCount(content, title),
+	}
 
-	entry.Author = users.LoadUserByID(srv, tx, userID.ID)
-	entry.Privacy = privacy
-	entry.IsWatching = true
-	entry.InLive = inLive
-	entry.Rating = &models.Rating{
-		IsVotable: isVotable,
-	}
-	entry.Rights = &models.EntryRights{
-		Edit:     true,
-		Delete:   true,
-		Comment:  true,
-		Vote:     false,
-		Complain: false,
-	}
+	setEntryTexts(entry, hasAttach)
+	setEntryRights(entry, userID)
 
 	return entry
 }
@@ -178,15 +172,15 @@ func createEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 	category := entryCategory(entry)
 
 	const q = `
-	INSERT INTO entries (author_id, title, cut_title, content, cut_content, edit_content, 
-		has_cut, word_count, visible_for, is_votable, in_live, category)
-	VALUES ($1, $2, $3, $4, $5, $6,$7, $8,
-		(SELECT id FROM entry_privacy WHERE type = $9), 
-		$10, $11, (SELECT id from categories WHERE type = $12))
+	INSERT INTO entries (author_id, title, edit_content, 
+		word_count, visible_for, is_votable, in_live, category)
+	VALUES ($1, $2, $3, $4,
+		(SELECT id FROM entry_privacy WHERE type = $5), 
+		$6, $7, (SELECT id from categories WHERE type = $8))
 	RETURNING id, extract(epoch from created_at)`
 
-	tx.Query(q, userID.ID, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent,
-		entry.HasCut, entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category).
+	tx.Query(q, userID.ID, entry.Title, entry.EditContent,
+		entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category).
 		Scan(&entry.ID, &entry.CreatedAt)
 
 	entry.Rating.ID = entry.ID
@@ -369,15 +363,15 @@ func editEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 
 	const q = `
 	UPDATE entries
-	SET title = $1, cut_title = $2, content = $3, cut_content = $4, edit_content = $5, has_cut = $6, 
-	word_count = $7, 
-	visible_for = (SELECT id FROM entry_privacy WHERE type = $8), 
-	is_votable = $9, in_live = $10,
-	category = (SELECT id from categories WHERE type = $11)
-	WHERE id = $12 AND author_id = $13
+	SET title = $1, edit_content = $2,
+	word_count = $3, 
+	visible_for = (SELECT id FROM entry_privacy WHERE type = $4), 
+	is_votable = $5, in_live = $6,
+	category = (SELECT id from categories WHERE type = $7)
+	WHERE id = $8 AND author_id = $9
 	RETURNING extract(epoch from created_at)`
 
-	tx.Query(q, entry.Title, entry.CutTitle, entry.Content, entry.CutContent, entry.EditContent, entry.HasCut,
+	tx.Query(q, entry.Title, entry.EditContent,
 		entry.WordCount, entry.Privacy, entry.Rating.IsVotable, entry.InLive, category, entryID, userID.ID).
 		Scan(&entry.CreatedAt)
 
@@ -515,49 +509,18 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 
 	query := feedQuery(userID.ID, 1).
 		Where("entries.id = ?", entryID)
+	tx.QueryStmt(query)
 
-	var entry models.Entry
-	var author models.User
-	var vote sql.NullFloat64
-	var avatar string
-	var rating models.Rating
-	tx.QueryStmt(query).Scan(&entry.ID, &entry.CreatedAt,
-		&rating.Rating, &rating.UpCount, &rating.DownCount,
-		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
-		&entry.HasCut, &entry.WordCount, &entry.Privacy,
-		&rating.IsVotable, &entry.InLive, &entry.CommentCount,
-		&author.ID, &author.Name, &author.ShowName,
-		&author.IsOnline,
-		&avatar,
-		&vote, &entry.IsFavorited, &entry.IsWatching)
+	feed := loadFeed(srv, tx, userID, false)
 
-	if author.ID != userID.ID {
-		entry.EditContent = ""
+	if len(feed.Entries) == 0 {
+		return nil
 	}
-
-	rating.Vote = entryVoteStatus(vote)
-
-	rating.ID = entry.ID
-	entry.Rating = &rating
-
-	author.Avatar = srv.NewAvatar(avatar)
-	entry.Author = &author
 
 	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
-	entry.Comments = cmt
+	feed.Entries[0].Comments = cmt
 
-	var images []int64
-	var imageID int64
-	tx.Query("SELECT image_id from entry_images WHERE entry_id = $1 ORDER BY image_id", entry.ID)
-	for tx.Scan(&imageID) {
-		images = append(images, imageID)
-	}
-
-	loadEntryImages(srv, tx, &entry, images)
-	loadEntryTags(tx, &entry)
-	setEntryRights(&entry, userID)
-
-	return &entry
+	return feed.Entries[0]
 }
 
 func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, *models.UserID) middleware.Responder {

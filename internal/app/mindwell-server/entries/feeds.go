@@ -16,8 +16,8 @@ type addQuery func(stmt *sqlf.Stmt)
 func baseFeedQuery(userID, limit int64) *sqlf.Stmt {
 	return sqlf.Select("entries.id, extract(epoch from entries.created_at) as created_at").
 		Select("rating, entries.up_votes, entries.down_votes").
-		Select("entries.title, cut_title, content, cut_content, edit_content").
-		Select("has_cut, word_count, entry_privacy.type").
+		Select("entries.title, edit_content").
+		Select("word_count, entry_privacy.type").
 		Select("is_votable, in_live, entries.comments_count").
 		Select("users.id, users.name, users.show_name").
 		Select("is_online(users.last_seen_at)").
@@ -204,8 +204,8 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 		var rating models.Rating
 		ok := tx.Scan(&entry.ID, &entry.CreatedAt,
 			&rating.Rating, &rating.UpCount, &rating.DownCount,
-			&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
-			&entry.HasCut, &entry.WordCount, &entry.Privacy,
+			&entry.Title, &entry.EditContent,
+			&entry.WordCount, &entry.Privacy,
 			&rating.IsVotable, &entry.InLive, &entry.CommentCount,
 			&author.ID, &author.Name, &author.ShowName,
 			&author.IsOnline,
@@ -215,16 +215,12 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 			break
 		}
 
-		if author.ID != userID.ID {
-			entry.EditContent = ""
-		}
-
 		rating.Vote = entryVoteStatus(vote)
 		entry.Rating = &rating
 		rating.ID = entry.ID
 		author.Avatar = srv.NewAvatar(avatar)
 		entry.Author = &author
-		setEntryRights(&entry, userID)
+
 		feed.Entries = append(feed.Entries, &entry)
 	}
 
@@ -238,6 +234,15 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 
 		loadEntryImages(srv, tx, entry, images)
 		loadEntryTags(tx, entry)
+	}
+
+	for _, entry := range feed.Entries {
+		setEntryRights(entry, userID)
+		setEntryTexts(entry, len(entry.Images) > 0)
+
+		if entry.Author.ID != userID.ID {
+			entry.EditContent = ""
+		}
 	}
 
 	if reverse {
