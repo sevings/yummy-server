@@ -65,7 +65,7 @@ func HtmlContent(content string) string {
 
 const commentQuery = `
 	SELECT comments.id, entry_id,
-		extract(epoch from comments.created_at), content, edit_content, rating,
+		extract(epoch from comments.created_at), edit_content, rating,
 		up_votes, down_votes, votes.vote,
 		author_id, name, show_name, 
 		is_online(last_seen_at),
@@ -96,6 +96,10 @@ func setCommentRights(tx *utils.AutoTx, comment *models.Comment, userID *models.
 	}
 }
 
+func setCommentText(comment *models.Comment) {
+	comment.Content = HtmlContent(comment.EditContent)
+}
+
 func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, commentID int64) *models.Comment {
 	const q = commentQuery + " WHERE comments.id = $2"
 
@@ -109,7 +113,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 	}
 
 	tx.Query(q, userID.ID, commentID).Scan(&comment.ID, &comment.EntryID,
-		&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
+		&comment.CreatedAt, &comment.EditContent, &comment.Rating.Rating,
 		&comment.Rating.UpCount, &comment.Rating.DownCount, &vote,
 		&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 		&comment.Author.IsOnline,
@@ -117,6 +121,7 @@ func LoadComment(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Use
 
 	entryAuthorID := tx.QueryInt64("SELECT author_id FROM entries WHERE id = $1", comment.EntryID)
 	setCommentRights(tx, &comment, userID, entryAuthorID)
+	setCommentText(&comment)
 
 	if !comment.Rights.Edit {
 		comment.EditContent = ""
@@ -153,10 +158,10 @@ func newCommentLoader(srv *utils.MindwellServer) func(comments.GetCommentsIDPara
 func editComment(tx *utils.AutoTx, comment *models.Comment) {
 	const q = `
 		UPDATE comments
-		SET content = $2, edit_content = $3
+		SET edit_content = $2
 		WHERE id = $1`
 
-	tx.Exec(q, comment.ID, comment.Content, comment.EditContent)
+	tx.Exec(q, comment.ID, comment.EditContent)
 }
 
 func newCommentEditor(srv *utils.MindwellServer) func(comments.PutCommentsIDParams, *models.UserID) middleware.Responder {
@@ -287,7 +292,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		var vote sql.NullFloat64
 		var avatar string
 		ok := tx.Scan(&comment.ID, &comment.EntryID,
-			&comment.CreatedAt, &comment.Content, &comment.EditContent, &comment.Rating.Rating,
+			&comment.CreatedAt, &comment.EditContent, &comment.Rating.Rating,
 			&comment.Rating.UpCount, &comment.Rating.DownCount, &vote,
 			&comment.Author.ID, &comment.Author.Name, &comment.Author.ShowName,
 			&comment.Author.IsOnline,
@@ -297,6 +302,7 @@ func LoadEntryComments(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 		}
 
 		setCommentRights(tx, &comment, userID, entryAuthorID)
+		setCommentText(&comment)
 
 		if !comment.Rights.Edit {
 			comment.EditContent = ""
@@ -378,8 +384,8 @@ func canPostComment(tx *utils.AutoTx, userID *models.UserID, entryID int64) bool
 
 func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content string) *models.Comment {
 	const q = `
-		INSERT INTO comments (author_id, entry_id, content, edit_content)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO comments (author_id, entry_id, edit_content)
+		VALUES ($1, $2, $3)
 		RETURNING id, extract(epoch from created_at)`
 
 	comment := models.Comment{
@@ -397,7 +403,7 @@ func postComment(tx *utils.AutoTx, author *models.User, entryID int64, content s
 		},
 	}
 
-	tx.Query(q, author.ID, entryID, comment.Content, comment.EditContent)
+	tx.Query(q, author.ID, entryID, comment.EditContent)
 	tx.Scan(&comment.ID, &comment.CreatedAt)
 
 	comment.Rating.ID = comment.ID

@@ -9,3 +9,6 @@ DROP COLUMN cut_content;
 
 ALTER TABLE entries
 DROP COLUMN has_cut;
+
+ALTER TABLE comments
+DROP COLUMN content;
