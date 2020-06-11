@@ -3,9 +3,14 @@ package utils
 import (
 	"database/sql"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/leporo/sqlf"
 	goconf "github.com/zpatrick/go-config"
 	"log"
 )
+
+func init() {
+	sqlf.SetDialect(sqlf.PostgreSQL)
+}
 
 func dropTable(tx *sql.Tx, table string) {
 	_, err := tx.Exec("delete from " + table)
@@ -116,6 +121,12 @@ func (tx *AutoTx) Query(query string, args ...interface{}) *AutoTx {
 	tx.query = query
 	tx.rows, tx.err = tx.tx.Query(query, args...)
 
+	return tx
+}
+
+func (tx *AutoTx) QueryStmt(stmt *sqlf.Stmt) *AutoTx {
+	tx.Query(stmt.String(), stmt.Args()...)
+	stmt.Close()
 	return tx
 }
 

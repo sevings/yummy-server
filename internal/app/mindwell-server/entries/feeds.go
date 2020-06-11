@@ -3,6 +3,7 @@ package entries
 import (
 	"database/sql"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/leporo/sqlf"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"
 	"github.com/sevings/mindwell-server/restapi/operations/me"
@@ -10,146 +11,187 @@ import (
 	"github.com/sevings/mindwell-server/utils"
 )
 
-const feedQueryStart = `
-SELECT entries.id, extract(epoch from entries.created_at) as created_at, 
-rating, entries.up_votes, entries.down_votes,
-entries.title, cut_title, content, cut_content, edit_content, 
-has_cut, word_count, entry_privacy.type,
-is_votable, in_live, entries.comments_count,
-users.id, users.name, users.show_name,
-is_online(users.last_seen_at),
-users.avatar, `
+type addQuery func(stmt *sqlf.Stmt)
 
-const tlogFeedQueryStart = feedQueryStart + `
-votes.vote,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) 
-FROM entries
-INNER JOIN users ON entries.author_id = users.id
-INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-INNER JOIN user_privacy ON users.privacy = user_privacy.id
-LEFT JOIN (SELECT entry_id, vote FROM entry_votes WHERE user_id = $1) AS votes ON entries.id = votes.entry_id`
+func baseFeedQuery(userID, limit int64) *sqlf.Stmt {
+	return sqlf.Select("entries.id, extract(epoch from entries.created_at) as created_at").
+		Select("rating, entries.up_votes, entries.down_votes").
+		Select("entries.title, cut_title, content, cut_content, edit_content").
+		Select("has_cut, word_count, entry_privacy.type").
+		Select("is_votable, in_live, entries.comments_count").
+		Select("users.id, users.name, users.show_name").
+		Select("is_online(users.last_seen_at)").
+		Select("users.avatar").
+		From("entries").
+		Join("users", "entries.author_id = users.id").
+		Join("entry_privacy", "entries.visible_for = entry_privacy.id").
+		With("my_favorites",
+			sqlf.Select("entry_id").From("favorites").Where("user_id = ?", userID)).
+		LeftJoin("my_favorites", "my_favorites.entry_id = entries.id").
+		With("my_watching",
+			sqlf.Select("entry_id").From("watching").Where("user_id = ?", userID)).
+		LeftJoin("my_watching", "my_watching.entry_id = entries.id").
+		Limit(limit)
+}
 
-const isInvitedQueryWhere = " (SELECT invited_by IS NOT NULL FROM users WHERE id = $1) "
+func myTlogQuery(userID, limit int64) *sqlf.Stmt {
+	return baseFeedQuery(userID, limit).
+		Select("NULL, my_favorites.entry_id IS NOT NULL, my_watching.entry_id IS NOT NULL").
+		Where("entries.author_id = ?", userID)
+}
 
-const relationFromMeQuery = `
-COALESCE((SELECT relation.type
-	FROM relations
-	INNER JOIN relation ON relations.type = relation.id
-	WHERE from_id = $1 AND to_id = author_id), 'none')
-`
+func feedQuery(userID, limit int64) *sqlf.Stmt {
+	return baseFeedQuery(userID, limit).
+		Select("my_votes.vote, my_favorites.entry_id IS NOT NULL, my_watching.entry_id IS NOT NULL").
+		With("my_votes",
+			sqlf.Select("entry_id, vote").From("entry_votes").Where("user_id = ?", userID)).
+		LeftJoin("my_votes", "my_votes.entry_id = entries.id").
+		Join("user_privacy", "users.privacy = user_privacy.id")
+}
 
-const relationToMeQuery = `
-COALESCE((SELECT relation.type
-	FROM relations
-	INNER JOIN relation ON relations.type = relation.id
-	WHERE from_id = author_id AND to_id = $1), 'none')
-`
+func addRelationsToMeQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return q.
+		With("relations_to_me",
+			sqlf.Select("relation.type, relations.from_id").
+				From("relations").
+				Join("relation", "relations.type = relation.id").
+				Where("relations.to_id = ?", userID)).
+		LeftJoin("relations_to_me", "relations_to_me.from_id = entries.author_id")
+}
 
-const isNotIgnoredQueryWhere = `
-(` + relationToMeQuery + ` <> 'ignored'
-AND ` + relationFromMeQuery + ` <> 'ignored')
-`
+func addRelationsFromMeQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return q.
+		With("relations_from_me",
+			sqlf.Select("relation.type, relations.to_id").
+				From("relations").
+				Join("relation", "relations.type = relation.id").
+				Where("relations.from_id = ?", userID)).
+		LeftJoin("relations_from_me", "relations_from_me.to_id = entries.author_id")
+}
 
-const liveFeedQueryWhere = `
-WHERE entry_privacy.type = 'all' 
-	AND in_live
-	AND (user_privacy.type = 'all' 
-		OR (user_privacy.type = 'invited' 
-			AND ` + isInvitedQueryWhere + `))
-	AND ` + relationToMeQuery + ` <> 'ignored'
-	AND ` + relationFromMeQuery + ` NOT IN ('ignored', 'hidden')
-`
+func addLiveQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	addRelationsToMeQuery(q, userID)
+	addRelationsFromMeQuery(q, userID)
 
-const liveInvitedFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NOT NULL "
-const liveWaitingFeedQueryWhere = liveFeedQueryWhere + "AND users.invited_by IS NULL "
+	return q.
+		Where("entry_privacy.type = 'all'").
+		Where("entries.in_live").
+		Where("(user_privacy.type = 'all' OR (user_privacy.type = 'invited' AND (SELECT invited_by IS NOT NULL FROM users WHERE id = ?)))", userID).
+		Where("(relations_to_me.type IS NULL OR relations_to_me.type <> 'ignored')").
+		Where("(relations_from_me.type IS NULL OR relations_from_me.type NOT IN ('ignored', 'hidden'))")
+}
 
-const liveInvitedFeedQuery = tlogFeedQueryStart + liveInvitedFeedQueryWhere
-const liveWaitingFeedQuery = tlogFeedQueryStart + liveWaitingFeedQueryWhere
+func addLiveInvitedQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return addLiveQuery(q, userID).
+		Where("users.invited_by IS NOT NULL")
+}
 
-const commentsFeedQueryEnd = `
-	AND users.invited_by IS NOT NULL
-	AND entries.comments_count > 0
-ORDER BY last_comment DESC
-LIMIT $2
-`
+func liveInvitedQuery(userID, limit int64) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addLiveInvitedQuery(q, userID)
+}
 
-const liveCommentsFeedQuery = tlogFeedQueryStart + liveFeedQueryWhere + commentsFeedQueryEnd
+func addLiveWaitingQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return addLiveQuery(q, userID).
+		Where("users.invited_by IS NULL")
+}
 
-const anonymousFeedQuery = `
-SELECT entries.id, extract(epoch from entries.created_at), 0, 
-entries.title, content, edit_content, word_count,
-entry_privacy.type,
-false, entries.comments_count,
-0, 'anonymous', 'Аноним',
-true,
-'', NULL,
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
-EXISTS(SELECT 1 FROM watching WHERE user_id = $1 AND entry_id = entries.id) 
-FROM entries
-INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-WHERE entry_privacy.type = 'anonymous' 
-ORDER BY entries.created_at DESC LIMIT $2 OFFSET $3`
+func liveWaitingQuery(userID, limit int64) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addLiveWaitingQuery(q, userID)
+}
 
-const tlogFeedQueryWhere = `
-	WHERE lower(users.name) = lower($2)
-		AND ` + isEntryOpenQueryWhere
+func addLiveCommentsQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return addLiveQuery(q, userID).
+		Where("users.invited_by IS NOT NULL").
+		Where("entries.comments_count > 0").
+		OrderBy("last_comment DESC")
+}
 
-const tlogFeedQuery = tlogFeedQueryStart + tlogFeedQueryWhere
-
-const myTlogFeedQueryWhere = " WHERE entries.author_id = $1 "
-
-const myTlogFeedQuery = feedQueryStart + `
-NULL, 
-EXISTS(SELECT 1 FROM favorites WHERE user_id = $1 AND entry_id = entries.id),
-true
-FROM entries
-INNER JOIN users ON entries.author_id = users.id
-INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-` + myTlogFeedQueryWhere
+func liveCommentsQuery(userID, limit int64) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addLiveCommentsQuery(q, userID)
+}
 
 const isEntryOpenQueryWhere = `
 (entry_privacy.type = 'all' 
 	OR (entry_privacy.type = 'some' 
-		AND (users.id = $1
-			OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = $1 AND entry_id = entries.id))))
+		AND (users.id = ?
+			OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = ? AND entry_id = entries.id))))
 `
 
-const friendsFeedQueryWhere = `
-WHERE (users.id = $1 
-		OR EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
-			AND type = (SELECT id FROM relation WHERE type = 'followed')))
-	AND ` + isEntryOpenQueryWhere + `
-	AND (user_privacy.type != 'invited' OR` + isInvitedQueryWhere + ")"
+func addEntryOpenQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	return q.Where(isEntryOpenQueryWhere, userID, userID)
+}
 
-const friendsFeedQuery = tlogFeedQueryStart + friendsFeedQueryWhere
+func addTlogQuery(q *sqlf.Stmt, userID int64, tlog string) *sqlf.Stmt {
+	q.Where("lower(users.name) = lower(?)", tlog)
+	return addEntryOpenQuery(q, userID)
+}
+
+func tlogQuery(userID, limit int64, tlog string) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addTlogQuery(q, userID, tlog)
+}
+
+func addFriendsQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	addRelationsFromMeQuery(q, userID)
+	addEntryOpenQuery(q, userID)
+	return q.
+		Where("(users.id = ? OR relations_from_me.type = 'followed')", userID).
+		Where("(user_privacy.type != 'invited' OR (SELECT invited_by IS NOT NULL FROM users WHERE id = ?))", userID)
+}
+
+func friendsQuery(userID, limit int64) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addFriendsQuery(q, userID)
+}
+
+func scrollQuery() *sqlf.Stmt {
+	return sqlf.
+		From("entries").
+		Join("users", "entries.author_id = users.id").
+		Join("entry_privacy", "entries.visible_for = entry_privacy.id").
+		Join("user_privacy", "users.privacy = user_privacy.id").
+		Limit(1)
+}
 
 const canViewEntryQueryWhere = `
 (users.id = $1
 	OR (` + isEntryOpenQueryWhere + `
-	AND (user_privacy.type = 'all' 
-		OR (user_privacy.type = 'followers'
-			AND EXISTS(SELECT 1 FROM relations WHERE from_id = $1 AND to_id = users.id 
-				AND type = (SELECT id FROM relation WHERE type = 'followed')))
-		OR (user_privacy.type = 'invited'
-			AND ` + isInvitedQueryWhere + `)
-	)))
-	AND ` + isNotIgnoredQueryWhere
+		AND (user_privacy.type = 'all' 
+			OR (user_privacy.type = 'followers' AND relations_from_me.type = 'followed')
+			OR (user_privacy.type = 'invited' AND (SELECT invited_by IS NOT NULL FROM users WHERE id = ?))
+	)))`
 
-const watchingFeedQuery = tlogFeedQueryStart + `
-INNER JOIN watching ON watching.entry_id = entries.id 
-	AND watching.user_id = $1
-WHERE ` + canViewEntryQueryWhere + commentsFeedQueryEnd
+func addCanViewEntryQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+	addRelationsFromMeQuery(q, userID)
+	addRelationsToMeQuery(q, userID)
+	return q.
+		Where("(relations_to_me.type IS NULL OR relations_to_me.type <> 'ignored')").
+		Where("(relations_from_me.type IS NULL OR relations_from_me.type <> 'ignored')").
+		Where(canViewEntryQueryWhere, userID, userID, userID)
+}
 
-const tlogFavoritesQueryStart = tlogFeedQueryStart + `
-	INNER JOIN favorites ON entries.id = favorites.entry_id
-`
+func watchingQuery(userID, limit int64) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	addCanViewEntryQuery(q, userID)
+	return q.Where("my_watching.entry_id IS NOT NULL").
+		Where("users.invited_by IS NOT NULL").
+		Where("entries.comments_count > 0").
+		OrderBy("last_comment DESC")
+}
 
-const tlogFavoritesQueryWhere = `
-WHERE favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower($2))
-AND ` + canViewEntryQueryWhere
+func addFavoritesQuery(q *sqlf.Stmt, userID int64, tlog string) *sqlf.Stmt {
+	addCanViewEntryQuery(q, userID)
+	return q.Join("favorites", "entries.id = favorites.entry_id").
+		Where("favorites.user_id = (SELECT id FROM users WHERE lower(name) = lower(?))", tlog)
+}
 
-const tlogFavoritesQuery = tlogFavoritesQueryStart + tlogFavoritesQueryWhere
+func favoritesQuery(userID, limit int64, tlog string) *sqlf.Stmt {
+	q := feedQuery(userID, limit)
+	return addFavoritesQuery(q, userID, tlog)
+}
 
 func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, reverse bool) *models.Feed {
 	feed := models.Feed{}
@@ -208,59 +250,53 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 	return &feed
 }
 
-func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, query, queryWhere, beforeS, afterS string, limit int64) *models.Feed {
+func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, query *sqlf.Stmt, addQ addQuery, beforeS, afterS string) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	if after > 0 {
-		q := query + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		tx.Query(q, userID.ID, after, limit)
+		query.Where("entries.created_at > to_timestamp(?)", after).
+			OrderBy("entries.created_at ASC")
 	} else if before > 0 {
-		q := query + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		tx.Query(q, userID.ID, before, limit)
+		query.Where("entries.created_at < to_timestamp(?)", before).
+			OrderBy("entries.created_at DESC")
 	} else {
-		q := query + " ORDER BY entries.created_at DESC LIMIT $2"
-		tx.Query(q, userID.ID, limit)
+		query.OrderBy("entries.created_at DESC")
 	}
 
+	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
 	if len(feed.Entries) == 0 {
 		return feed
 	}
 
+	scrollQ := scrollQuery().Select("TRUE")
+	addQ(scrollQ)
+	defer scrollQ.Close()
+
 	nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 	feed.NextBefore = utils.FormatFloat(nextBefore)
 
-	beforeQuery := `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + queryWhere + " AND entries.created_at < to_timestamp($2))"
+	beforeQuery := scrollQ.Clone().Where("entries.created_at < to_timestamp(?)", nextBefore)
 
-	tx.Query(beforeQuery, userID.ID, nextBefore)
+	tx.QueryStmt(beforeQuery)
 	tx.Scan(&feed.HasBefore)
-
-	afterQuery := `SELECT EXISTS(
-		SELECT 1 
-		FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-	` + queryWhere + " AND entries.created_at > to_timestamp($2))"
 
 	nextAfter := feed.Entries[0].CreatedAt
 	feed.NextAfter = utils.FormatFloat(nextAfter)
-	tx.Query(afterQuery, userID.ID, nextAfter)
+
+	afterQuery := scrollQ.Clone().Where("entries.created_at > to_timestamp(?)", nextAfter)
+
+	tx.QueryStmt(afterQuery)
 	tx.Scan(&feed.HasAfter)
 
 	return feed
 }
 
 func loadLiveCommentsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
-	tx.Query(liveCommentsFeedQuery, userID.ID, limit)
+	query := liveCommentsQuery(userID.ID, limit)
+	tx.QueryStmt(query)
 	return loadFeed(srv, tx, userID, false)
 }
 
@@ -269,11 +305,15 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			var feed *models.Feed
 			if *params.Section == "entries" {
-				feed = loadLiveFeed(srv, tx, userID, liveInvitedFeedQuery, liveInvitedFeedQueryWhere, *params.Before, *params.After, *params.Limit)
+				query := liveInvitedQuery(userID.ID, *params.Limit)
+				add := func(q *sqlf.Stmt) { addLiveInvitedQuery(q, userID.ID) }
+				feed = loadLiveFeed(srv, tx, userID, query, add, *params.Before, *params.After)
 			} else if *params.Section == "comments" {
 				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Limit)
 			} else if *params.Section == "waiting" {
-				feed = loadLiveFeed(srv, tx, userID, liveWaitingFeedQuery, liveWaitingFeedQueryWhere, *params.Before, *params.After, *params.Limit)
+				query := liveWaitingQuery(userID.ID, *params.Limit)
+				add := func(q *sqlf.Stmt) { addLiveWaitingQuery(q, userID.ID) }
+				feed = loadLiveFeed(srv, tx, userID, query, add, *params.Before, *params.After)
 			}
 
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
@@ -282,7 +322,6 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 }
 
 func loadAnonymousFeed(tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
-	//! \todo do not load authors
 	return &models.Feed{}
 }
 
@@ -306,9 +345,15 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		interval = "1 month"
 	}
 
-	q := "SELECT * FROM (" + liveInvitedFeedQuery + " AND entries.created_at >= CURRENT_TIMESTAMP - interval '" +
-		interval + "' ORDER BY entries.rating DESC LIMIT $2) AS feed ORDER BY feed.created_at DESC"
-	tx.Query(q, userID.ID, limit)
+	query := liveInvitedQuery(userID.ID, limit).
+		Where("entries.created_at >= CURRENT_TIMESTAMP - interval '" + interval + "'").
+		OrderBy("entries.rating DESC")
+
+	query = sqlf.Select("*").From("").
+		SubQuery("(", ") AS feed", query).
+		OrderBy("feed.created_at DESC")
+
+	tx.QueryStmt(query)
 
 	feed := loadFeed(srv, tx, userID, false)
 
@@ -332,60 +377,65 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
+	query := tlogQuery(userID.ID, limit, tlog)
+
 	if after > 0 {
-		q := tlogFeedQuery + " AND entries.created_at > to_timestamp($3) ORDER BY entries.created_at ASC LIMIT $4"
-		tx.Query(q, userID.ID, tlog, after, limit)
+		query.Where("entries.created_at > to_timestamp(?)", after).
+			OrderBy("entries.created_at ASC")
 	} else if before > 0 {
-		q := tlogFeedQuery + " AND entries.created_at < to_timestamp($3) ORDER BY entries.created_at DESC LIMIT $4"
-		tx.Query(q, userID.ID, tlog, before, limit)
+		query.Where("entries.created_at < to_timestamp(?)", before).
+			OrderBy("entries.created_at DESC")
 	} else {
-		q := tlogFeedQuery + " ORDER BY entries.created_at DESC LIMIT $3"
-		tx.Query(q, userID.ID, tlog, limit)
+		query.OrderBy("entries.created_at DESC")
 	}
 
+	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
-	const scrollQ = `FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-		` + tlogFeedQueryWhere + " AND entries.created_at "
+	scrollQ := scrollQuery()
+	addTlogQuery(scrollQ, userID.ID, tlog)
+	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
-		if before > 0 {
-			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` >= to_timestamp($3)
-				ORDER BY entries.created_at DESC LIMIT 1`
+		scrollQ.Select("extract(epoch from entries.created_at)").
+			OrderBy("entries.created_at DESC")
 
-			tx.Query(afterQuery, userID.ID, tlog, before)
+		if before > 0 {
+			query := scrollQ.Clone().
+				Where("entries.created_at >= to_timestamp(?)", before)
+			tx.QueryStmt(query)
+
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
-			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` <= to_timestamp($3)
-				ORDER BY entries.created_at DESC LIMIT 1`
+			query := scrollQ.Clone().
+				Where("entries.created_at <= to_timestamp(?)", before)
+			tx.QueryStmt(query)
 
-			tx.Query(beforeQuery, userID.ID, tlog, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "< to_timestamp($3))"
+		scrollQ.Select("TRUE")
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = utils.FormatFloat(nextBefore)
-		tx.Query(beforeQuery, userID.ID, tlog, nextBefore)
-		tx.Scan(&feed.HasBefore)
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "> to_timestamp($3))"
+		beforeQuery := scrollQ.Clone().
+			Where("entries.created_at < to_timestamp(?)", nextBefore)
+		tx.QueryStmt(beforeQuery)
+		tx.Scan(&feed.HasBefore)
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = utils.FormatFloat(nextAfter)
-		tx.Query(afterQuery, userID.ID, tlog, nextAfter)
+
+		afterQuery := scrollQ.Clone().
+			Where("entries.created_at > to_timestamp(?)", nextAfter)
+		tx.QueryStmt(afterQuery)
 		tx.Scan(&feed.HasAfter)
 	}
 
@@ -411,56 +461,64 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
+	query := myTlogQuery(userID.ID, limit)
+
 	if after > 0 {
-		q := myTlogFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		tx.Query(q, userID.ID, after, limit)
+		query.Where("entries.created_at > to_timestamp(?)", after).
+			OrderBy("entries.created_at ASC")
 	} else if before > 0 {
-		q := myTlogFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		tx.Query(q, userID.ID, before, limit)
+		query.Where("entries.created_at < to_timestamp(?)", before).
+			OrderBy("entries.created_at DESC")
 	} else {
-		q := myTlogFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
-		tx.Query(q, userID.ID, limit)
+		query.OrderBy("entries.created_at DESC")
 	}
 
+	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
-	const scrollQ = "FROM entries " + myTlogFeedQueryWhere + " AND created_at "
+	scrollQ := sqlf.From("entries").
+		Where("entries.author_id = ?", userID.ID).
+		Limit(1)
+	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
-		if before > 0 {
-			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` >= to_timestamp($1)
-				ORDER BY entries.created_at DESC LIMIT 1`
+		scrollQ.Select("extract(epoch from entries.created_at)").
+			OrderBy("entries.created_at")
 
-			tx.Query(afterQuery, userID.ID, before)
+		if before > 0 {
+			afterQuery := scrollQ.Clone().Where("created_at >= to_timestamp(?)", before)
+
+			tx.QueryStmt(afterQuery)
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
-			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` <= to_timestamp($1)
-				ORDER BY entries.created_at DESC LIMIT 1`
+			beforeQuery := scrollQ.Clone().Where("created_at <= to_timestamp(?)", after)
 
-			tx.Query(beforeQuery, userID.ID, after)
+			tx.QueryStmt(beforeQuery)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + "	< to_timestamp($2))"
+		scrollQ.Select("TRUE")
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = utils.FormatFloat(nextBefore)
-		tx.Query(beforeQuery, userID.ID, nextBefore)
-		tx.Scan(&feed.HasBefore)
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
+		beforeQuery := scrollQ.Clone().Where("created_at < to_timestamp(?)", nextBefore)
+
+		tx.QueryStmt(beforeQuery)
+		tx.Scan(&feed.HasBefore)
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = utils.FormatFloat(nextAfter)
-		tx.Query(afterQuery, userID.ID, nextAfter)
+
+		afterQuery := scrollQ.Clone().Where("created_at > to_timestamp(?)", nextAfter)
+
+		tx.QueryStmt(afterQuery)
 		tx.Scan(&feed.HasAfter)
 	}
 
@@ -486,60 +544,65 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
+	query := friendsQuery(userID.ID, limit)
+
 	if after > 0 {
-		q := friendsFeedQuery + " AND entries.created_at > to_timestamp($2) ORDER BY entries.created_at ASC LIMIT $3"
-		tx.Query(q, userID.ID, after, limit)
+		query.Where("entries.created_at > to_timestamp(?)", after).
+			OrderBy("entries.created_at ASC")
 	} else if before > 0 {
-		q := friendsFeedQuery + " AND entries.created_at < to_timestamp($2) ORDER BY entries.created_at DESC LIMIT $3"
-		tx.Query(q, userID.ID, before, limit)
+		query.Where("entries.created_at < to_timestamp(?)", before).
+			OrderBy("entries.created_at DESC")
 	} else {
-		q := friendsFeedQuery + " ORDER BY entries.created_at DESC LIMIT $2"
-		tx.Query(q, userID.ID, limit)
+		query.OrderBy("entries.created_at DESC")
 	}
 
+	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
-	const scrollQ = `FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-		` + friendsFeedQueryWhere + " AND entries.created_at"
+	scrollQ := scrollQuery()
+	addFriendsQuery(scrollQ, userID.ID)
+	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
-		if before > 0 {
-			const afterQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` >= to_timestamp($2)
-				ORDER BY entries.created_at DESC LIMIT 1`
+		scrollQ.Select("extract(epoch from entries.created_at)").
+			OrderBy("entries.created_at DESC")
 
-			tx.Query(afterQuery, userID.ID, before)
+		if before > 0 {
+			afterQuery := scrollQ.Clone().
+				Where("entries.created_at >= to_timestamp(?)", before)
+			tx.QueryStmt(afterQuery)
+
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
-			const beforeQuery = `SELECT extract(epoch from entries.created_at) ` + scrollQ +
-				` <= to_timestamp($2)
-				ORDER BY entries.created_at DESC LIMIT 1`
+			beforeQuery := scrollQ.Clone().
+				Where("entries.created_at <= to_timestamp(?)", before)
+			tx.QueryStmt(beforeQuery)
 
-			tx.Query(beforeQuery, userID.ID, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < to_timestamp($2))"
+		scrollQ.Select("TRUE")
 
 		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
 		feed.NextBefore = utils.FormatFloat(nextBefore)
-		tx.Query(beforeQuery, userID.ID, nextBefore)
-		tx.Scan(&feed.HasBefore)
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > to_timestamp($2))"
+		beforeQuery := scrollQ.Clone().Where("entries.created_at < to_timestamp(?)", nextBefore)
+
+		tx.QueryStmt(beforeQuery)
+		tx.Scan(&feed.HasBefore)
 
 		nextAfter := feed.Entries[0].CreatedAt
 		feed.NextAfter = utils.FormatFloat(nextAfter)
-		tx.Query(afterQuery, userID.ID, nextAfter)
+
+		afterQuery := scrollQ.Clone().Where("entries.created_at > to_timestamp(?)", nextAfter)
+
+		tx.QueryStmt(afterQuery)
 		tx.Scan(&feed.HasAfter)
 	}
 
@@ -559,82 +622,77 @@ func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *mode
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
+	query := favoritesQuery(userID.ID, limit, tlog)
+
 	if after > 0 {
-		q := tlogFavoritesQuery + " AND favorites.date > to_timestamp($3) ORDER BY favorites.date ASC LIMIT $4"
-		tx.Query(q, userID.ID, tlog, after, limit)
+		query.Where("favorites.date > to_timestamp(?)", after).
+			OrderBy("favorites.date ASC")
 	} else if before > 0 {
-		q := tlogFavoritesQuery + " AND favorites.date < to_timestamp($3) ORDER BY favorites.date DESC LIMIT $4"
-		tx.Query(q, userID.ID, tlog, before, limit)
+		query.Where("favorites.date < to_timestamp(?)", before).
+			OrderBy("favorites.date DESC")
 	} else {
-		q := tlogFavoritesQuery + " ORDER BY favorites.date DESC LIMIT $3"
-		tx.Query(q, userID.ID, tlog, limit)
+		query.OrderBy("favorites.date DESC")
 	}
 
+	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
-	const scrollQ = `FROM entries
-		INNER JOIN users ON entries.author_id = users.id
-		INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
-		INNER JOIN user_privacy ON users.privacy = user_privacy.id
-		INNER JOIN favorites ON entries.id = favorites.entry_id
-		` + tlogFavoritesQueryWhere + " AND favorites.date "
+	scrollQ := scrollQuery()
+	addFavoritesQuery(scrollQ, userID.ID, tlog)
+	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
-		if before > 0 {
-			const afterQuery = `SELECT extract(epoch from favorites.date) ` + scrollQ +
-				` >= to_timestamp($3)
-				ORDER BY favorites.date DESC LIMIT 1`
+		scrollQ.Select("extract(epoch from favorites.date)").
+			OrderBy("favorites.date DESC")
 
-			tx.Query(afterQuery, userID.ID, tlog, before)
+		if before > 0 {
+			afterQuery := scrollQ.Clone().
+				Where("favorites.date >= to_timestamp(?)", before)
+			tx.QueryStmt(afterQuery)
+
 			var nextAfter float64
 			tx.Scan(&nextAfter)
 			feed.NextAfter = utils.FormatFloat(nextAfter)
 		}
 
 		if after > 0 {
-			const beforeQuery = `SELECT extract(epoch from favorites.date) ` + scrollQ +
-				` <= to_timestamp($3)
-				ORDER BY favorites.date DESC LIMIT 1`
+			beforeQuery := scrollQ.Clone().
+				Where("favorites.date <= to_timestamp(?)", after)
+			tx.QueryStmt(beforeQuery)
 
-			tx.Query(beforeQuery, userID.ID, tlog, after)
 			var nextBefore float64
 			tx.Scan(&nextBefore)
 			feed.NextBefore = utils.FormatFloat(nextBefore)
 		}
 	} else {
-		const dateQuery = `
-			SELECT extract(epoch from date) 
-			FROM favorites 
-			WHERE user_id = (SELECT id FROM users WHERE lower(name) = lower($1)) 
-				AND entry_id = $2`
+		scrollQ.Select("TRUE")
 
-		const queryEnd = ` (
-			SELECT date 
-			FROM favorites 
-			WHERE user_id = (SELECT id FROM users WHERE lower(name) = lower($2)) 
-				AND entry_id = $3))`
-
-		const beforeQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " < " + queryEnd
+		dateQuery := sqlf.Select("extract(epoch from date)").
+			From("favorites").
+			Where("user_id = (SELECT id FROM users WHERE lower(name) = lower(?))", tlog)
+		defer dateQuery.Close()
 
 		lastID := feed.Entries[len(feed.Entries)-1].ID
-		tx.Query(beforeQuery, userID.ID, tlog, lastID).Scan(&feed.HasBefore)
-		if feed.HasBefore {
-			tx.Query(dateQuery, tlog, lastID)
-			var nextBefore float64
-			tx.Scan(&nextBefore)
-			feed.NextBefore = utils.FormatFloat(nextBefore)
-		}
+		tx.QueryStmt(dateQuery.Clone().Where("entry_id = ?", lastID))
+		var nextBefore float64
+		tx.Scan(&nextBefore)
+		feed.NextBefore = utils.FormatFloat(nextBefore)
 
-		const afterQuery = "SELECT EXISTS(SELECT 1 " + scrollQ + " > " + queryEnd
+		beforeQuery := scrollQ.Clone().Where("favorites.date < to_timestamp(?)", nextBefore)
+
+		tx.QueryStmt(beforeQuery)
+		tx.Scan(&feed.HasBefore)
 
 		firstID := feed.Entries[0].ID
-		tx.Query(afterQuery, userID.ID, tlog, firstID).Scan(&feed.HasAfter)
-		if feed.HasAfter {
-			tx.Query(dateQuery, tlog, firstID)
-			var nextAfter float64
-			tx.Scan(&nextAfter)
-			feed.NextAfter = utils.FormatFloat(nextAfter)
-		}
+		tx.QueryStmt(dateQuery.Clone().Where("entry_id = ?", firstID))
+		var nextAfter float64
+		tx.Scan(&nextAfter)
+		feed.NextAfter = utils.FormatFloat(nextAfter)
+
+		afterQuery := scrollQ.Clone().Where("favorites.date > to_timestamp(?)", nextAfter)
+
+		tx.QueryStmt(afterQuery)
+		tx.Scan(&feed.HasAfter)
 	}
 
 	return feed
@@ -665,7 +723,8 @@ func newMyFavoritesLoader(srv *utils.MindwellServer) func(me.GetMeFavoritesParam
 }
 
 func loadWatchingFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
-	tx.Query(watchingFeedQuery, userID.ID, limit)
+	query := watchingQuery(userID.ID, limit)
+	tx.QueryStmt(query)
 	return loadFeed(srv, tx, userID, false)
 }
 

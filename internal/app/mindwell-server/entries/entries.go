@@ -513,14 +513,15 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 		return &models.Entry{}
 	}
 
-	const q = tlogFeedQueryStart + " WHERE entries.id = $2"
+	query := feedQuery(userID.ID, 1).
+		Where("entries.id = ?", entryID)
 
 	var entry models.Entry
 	var author models.User
 	var vote sql.NullFloat64
 	var avatar string
 	var rating models.Rating
-	tx.Query(q, userID.ID, entryID).Scan(&entry.ID, &entry.CreatedAt,
+	tx.QueryStmt(query).Scan(&entry.ID, &entry.CreatedAt,
 		&rating.Rating, &rating.UpCount, &rating.DownCount,
 		&entry.Title, &entry.CutTitle, &entry.Content, &entry.CutContent, &entry.EditContent,
 		&entry.HasCut, &entry.WordCount, &entry.Privacy,
