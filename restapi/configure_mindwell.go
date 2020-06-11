@@ -4,6 +4,7 @@ package restapi
 
 import (
 	"crypto/tls"
+	"go.uber.org/zap"
 	"log"
 	"math/rand"
 	"net/http"
@@ -39,6 +40,17 @@ func configureFlags(api *operations.MindwellAPI) {
 
 func configureAPI(api *operations.MindwellAPI) http.Handler {
 	rand.Seed(time.Now().UTC().UnixNano())
+
+	logger, err := zap.NewProduction(zap.WithCaller(false))
+	if err != nil {
+		log.Println(err)
+	}
+
+	systemLogger := logger.With(zap.String("type", "system"))
+	_, err = zap.RedirectStdLogAt(systemLogger, zap.ErrorLevel)
+	if err != nil {
+		systemLogger.Error(err.Error())
+	}
 
 	srv := utils.NewMindwellServer(api, "configs/server")
 	srv.Eac = utils.NewEmailChecker(srv)

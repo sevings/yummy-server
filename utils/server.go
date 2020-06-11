@@ -67,12 +67,6 @@ func NewMindwellServer(api *operations.MindwellAPI, configPath string) *Mindwell
 		log.Println(err)
 	}
 
-	systemLogger := logger.With(zap.String("type", "system"))
-	_, err = zap.RedirectStdLogAt(systemLogger, zap.ErrorLevel)
-	if err != nil {
-		systemLogger.Error(err.Error())
-	}
-
 	config := LoadConfig(configPath)
 	db := OpenDatabase(config)
 
