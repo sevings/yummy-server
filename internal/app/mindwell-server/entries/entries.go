@@ -200,15 +200,7 @@ func loadEntryImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.
 
 func loadEntryTags(tx *utils.AutoTx, entry *models.Entry) {
 	const q = `SELECT tag FROM entry_tags INNER JOIN tags ON tag_id = tags.id WHERE entry_id = $1 ORDER BY tag`
-	tx.Query(q, entry.ID)
-
-	var tags []string
-	var tag string
-	for tx.Scan(&tag) {
-		tags = append(tags, tag)
-	}
-
-	entry.Tags = tags
+	entry.Tags = tx.QueryStrings(q, entry.ID)
 }
 
 func attachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Entry, images []int64) {
@@ -225,15 +217,26 @@ func attachImages(srv *utils.MindwellServer, tx *utils.AutoTx, entry *models.Ent
 }
 
 func setTags(tx *utils.AutoTx, entry *models.Entry, tags []string) {
-	if len(tags) == 0 {
-		return
-	}
-
 	realTags := make([]string, 0, len(tags))
+tagLoop:
 	for _, tag := range tags {
 		tag = strings.TrimSpace(tag)
 		tag = strings.ToLower(tag)
+		if tag == "" {
+			continue
+		}
+
+		for _, realTag := range realTags {
+			if tag == realTag {
+				continue tagLoop
+			}
+		}
+
 		realTags = append(realTags, tag)
+	}
+
+	if len(realTags) == 0 {
+		return
 	}
 
 	for _, tag := range realTags {
@@ -539,20 +542,14 @@ func newEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesIDParams, 
 }
 
 func deleteEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID, userID int64) bool {
-	var allowed bool
-	tx.Query("SELECT author_id = $2 FROM entries WHERE id = $1", entryID, userID).Scan(&allowed)
+	const allowedQuery = "SELECT author_id = $2 FROM entries WHERE id = $1"
+	allowed := tx.QueryBool(allowedQuery, entryID, userID)
 	if !allowed {
 		return false
 	}
 
-	tx.Query("SELECT id FROM comments WHERE entry_id = $1", entryID)
-
-	commentIds := []int64{}
-
-	var id int64
-	for tx.Scan(&id) {
-		commentIds = append(commentIds, id)
-	}
+	const commentsQuery = "SELECT id FROM comments WHERE entry_id = $1"
+	commentIds := tx.QueryInt64s(commentsQuery, entryID)
 
 	for _, id := range commentIds {
 		srv.Ntf.SendRemoveComment(tx, id)

@@ -27,6 +27,7 @@ func NewGetMeTlogParams() GetMeTlogParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(30)
+		tagDefault    = string("")
 	)
 
 	return GetMeTlogParams{
@@ -35,6 +36,8 @@ func NewGetMeTlogParams() GetMeTlogParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -67,6 +70,7 @@ type GetMeTlogParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -197,6 +201,7 @@ func (o *GetMeTlogParams) bindTag(rawData []string, hasKey bool, formats strfmt.
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetMeTlogParams()
 		return nil
 	}
 

@@ -27,6 +27,7 @@ func NewGetEntriesFriendsParams() GetEntriesFriendsParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(30)
+		tagDefault    = string("")
 	)
 
 	return GetEntriesFriendsParams{
@@ -35,6 +36,8 @@ func NewGetEntriesFriendsParams() GetEntriesFriendsParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -67,6 +70,7 @@ type GetEntriesFriendsParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -197,6 +201,7 @@ func (o *GetEntriesFriendsParams) bindTag(rawData []string, hasKey bool, formats
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesFriendsParams()
 		return nil
 	}
 

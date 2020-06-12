@@ -28,6 +28,7 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 		beforeDefault  = string("")
 		limitDefault   = int64(30)
 		sectionDefault = string("entries")
+		tagDefault     = string("")
 	)
 
 	return GetEntriesLiveParams{
@@ -38,6 +39,8 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 		Limit: &limitDefault,
 
 		Section: &sectionDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -75,6 +78,7 @@ type GetEntriesLiveParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -243,6 +247,7 @@ func (o *GetEntriesLiveParams) bindTag(rawData []string, hasKey bool, formats st
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
 

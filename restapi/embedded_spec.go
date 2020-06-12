@@ -5031,6 +5031,7 @@ func init() {
     "tag": {
       "maxLength": 50,
       "type": "string",
+      "default": "",
       "name": "tag",
       "in": "query"
     }
@@ -6782,6 +6783,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           }
@@ -6888,6 +6890,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           },
@@ -6946,6 +6949,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           }
@@ -6994,6 +6998,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           },
@@ -8373,6 +8378,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           }
@@ -9413,6 +9419,7 @@ func init() {
           {
             "maxLength": 50,
             "type": "string",
+            "default": "",
             "name": "tag",
             "in": "query"
           },
@@ -10525,6 +10532,7 @@ func init() {
     "tag": {
       "maxLength": 50,
       "type": "string",
+      "default": "",
       "name": "tag",
       "in": "query"
     }

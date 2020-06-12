@@ -9,6 +9,7 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/me"
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/utils"
+	"strings"
 )
 
 type addQuery func(stmt *sqlf.Stmt)
@@ -34,8 +35,23 @@ func baseFeedQuery(userID, limit int64) *sqlf.Stmt {
 		Limit(limit)
 }
 
-func myTlogQuery(userID, limit int64) *sqlf.Stmt {
-	return baseFeedQuery(userID, limit).
+func addTagQuery(q *sqlf.Stmt, tag string) *sqlf.Stmt {
+	tag = strings.TrimSpace(tag)
+	tag = strings.ToLower(tag)
+
+	if tag == "" {
+		return q
+	}
+
+	return q.Join("entry_tags", "entries.id = entry_tags.entry_id").
+		Join("tags", "entry_tags.tag_id = tags.id").
+		Where("tags.tag = ?", tag)
+}
+
+func myTlogQuery(userID, limit int64, tag string) *sqlf.Stmt {
+	q := baseFeedQuery(userID, limit)
+	addTagQuery(q, tag)
+	return q.
 		Select("NULL, my_favorites.entry_id IS NOT NULL, my_watching.entry_id IS NOT NULL").
 		Where("entries.author_id = ?", userID)
 }
@@ -69,9 +85,10 @@ func addRelationsFromMeQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
 		LeftJoin("relations_from_me", "relations_from_me.to_id = entries.author_id")
 }
 
-func addLiveQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+func addLiveQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	addRelationsToMeQuery(q, userID)
 	addRelationsFromMeQuery(q, userID)
+	addTagQuery(q, tag)
 
 	return q.
 		Where("entry_privacy.type = 'all'").
@@ -81,36 +98,36 @@ func addLiveQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
 		Where("(relations_from_me.type IS NULL OR relations_from_me.type NOT IN ('ignored', 'hidden'))")
 }
 
-func addLiveInvitedQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
-	return addLiveQuery(q, userID).
+func addLiveInvitedQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
+	return addLiveQuery(q, userID, tag).
 		Where("users.invited_by IS NOT NULL")
 }
 
-func liveInvitedQuery(userID, limit int64) *sqlf.Stmt {
+func liveInvitedQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addLiveInvitedQuery(q, userID)
+	return addLiveInvitedQuery(q, userID, tag)
 }
 
-func addLiveWaitingQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
-	return addLiveQuery(q, userID).
+func addLiveWaitingQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
+	return addLiveQuery(q, userID, tag).
 		Where("users.invited_by IS NULL")
 }
 
-func liveWaitingQuery(userID, limit int64) *sqlf.Stmt {
+func liveWaitingQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addLiveWaitingQuery(q, userID)
+	return addLiveWaitingQuery(q, userID, tag)
 }
 
-func addLiveCommentsQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
-	return addLiveQuery(q, userID).
+func addLiveCommentsQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
+	return addLiveQuery(q, userID, tag).
 		Where("users.invited_by IS NOT NULL").
 		Where("entries.comments_count > 0").
 		OrderBy("last_comment DESC")
 }
 
-func liveCommentsQuery(userID, limit int64) *sqlf.Stmt {
+func liveCommentsQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addLiveCommentsQuery(q, userID)
+	return addLiveCommentsQuery(q, userID, tag)
 }
 
 const isEntryOpenQueryWhere = `
@@ -124,36 +141,29 @@ func addEntryOpenQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
 	return q.Where(isEntryOpenQueryWhere, userID, userID)
 }
 
-func addTlogQuery(q *sqlf.Stmt, userID int64, tlog string) *sqlf.Stmt {
+func addTlogQuery(q *sqlf.Stmt, userID int64, tlog, tag string) *sqlf.Stmt {
 	q.Where("lower(users.name) = lower(?)", tlog)
+	addTagQuery(q, tag)
 	return addEntryOpenQuery(q, userID)
 }
 
-func tlogQuery(userID, limit int64, tlog string) *sqlf.Stmt {
+func tlogQuery(userID, limit int64, tlog, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addTlogQuery(q, userID, tlog)
+	return addTlogQuery(q, userID, tlog, tag)
 }
 
-func addFriendsQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+func addFriendsQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	addRelationsFromMeQuery(q, userID)
 	addEntryOpenQuery(q, userID)
+	addTagQuery(q, tag)
 	return q.
 		Where("(users.id = ? OR relations_from_me.type = 'followed')", userID).
 		Where("(user_privacy.type != 'invited' OR (SELECT invited_by IS NOT NULL FROM users WHERE id = ?))", userID)
 }
 
-func friendsQuery(userID, limit int64) *sqlf.Stmt {
+func friendsQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addFriendsQuery(q, userID)
-}
-
-func scrollQuery() *sqlf.Stmt {
-	return sqlf.
-		From("entries").
-		Join("users", "entries.author_id = users.id").
-		Join("entry_privacy", "entries.visible_for = entry_privacy.id").
-		Join("user_privacy", "users.privacy = user_privacy.id").
-		Limit(1)
+	return addFriendsQuery(q, userID, tag)
 }
 
 const canViewEntryQueryWhere = `
@@ -191,6 +201,15 @@ func addFavoritesQuery(q *sqlf.Stmt, userID int64, tlog string) *sqlf.Stmt {
 func favoritesQuery(userID, limit int64, tlog string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
 	return addFavoritesQuery(q, userID, tlog)
+}
+
+func scrollQuery() *sqlf.Stmt {
+	return sqlf.
+		From("entries").
+		Join("users", "entries.author_id = users.id").
+		Join("entry_privacy", "entries.visible_for = entry_privacy.id").
+		Join("user_privacy", "users.privacy = user_privacy.id").
+		Limit(1)
 }
 
 func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, reverse bool) *models.Feed {
@@ -255,9 +274,13 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 	return &feed
 }
 
-func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, query *sqlf.Stmt, addQ addQuery, beforeS, afterS string) *models.Feed {
+func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, addQ addQuery,
+	beforeS, afterS string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
+
+	query := feedQuery(userID.ID, limit)
+	addQ(query)
 
 	if after > 0 {
 		query.Where("entries.created_at > to_timestamp(?)", after).
@@ -299,8 +322,8 @@ func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	return feed
 }
 
-func loadLiveCommentsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, limit int64) *models.Feed {
-	query := liveCommentsQuery(userID.ID, limit)
+func loadLiveCommentsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tag string, limit int64) *models.Feed {
+	query := liveCommentsQuery(userID.ID, limit, tag)
 	tx.QueryStmt(query)
 	return loadFeed(srv, tx, userID, false)
 }
@@ -310,15 +333,13 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			var feed *models.Feed
 			if *params.Section == "entries" {
-				query := liveInvitedQuery(userID.ID, *params.Limit)
-				add := func(q *sqlf.Stmt) { addLiveInvitedQuery(q, userID.ID) }
-				feed = loadLiveFeed(srv, tx, userID, query, add, *params.Before, *params.After)
+				add := func(q *sqlf.Stmt) { addLiveInvitedQuery(q, userID.ID, *params.Tag) }
+				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Limit)
 			} else if *params.Section == "comments" {
-				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Limit)
+				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Tag, *params.Limit)
 			} else if *params.Section == "waiting" {
-				query := liveWaitingQuery(userID.ID, *params.Limit)
-				add := func(q *sqlf.Stmt) { addLiveWaitingQuery(q, userID.ID) }
-				feed = loadLiveFeed(srv, tx, userID, query, add, *params.Before, *params.After)
+				add := func(q *sqlf.Stmt) { addLiveWaitingQuery(q, userID.ID, *params.Tag) }
+				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Limit)
 			}
 
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
@@ -335,7 +356,7 @@ func newAnonymousLoader(srv *utils.MindwellServer) func(entries.GetEntriesAnonym
 	}
 }
 
-func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, category string, limit int64) *models.Feed {
+func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, category, tag string, limit int64) *models.Feed {
 	var interval string
 	if category == "month" {
 		interval = "1 month"
@@ -346,7 +367,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		interval = "1 month"
 	}
 
-	query := liveInvitedQuery(userID.ID, limit).
+	query := liveInvitedQuery(userID.ID, limit, "").
 		Where("entries.created_at >= CURRENT_TIMESTAMP - interval '" + interval + "'").
 		OrderBy("entries.rating DESC")
 
@@ -354,6 +375,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		SubQuery("(", ") AS feed", query).
 		OrderBy("feed.created_at DESC")
 
+	addTagQuery(query, tag)
 	tx.QueryStmt(query)
 
 	feed := loadFeed(srv, tx, userID, false)
@@ -364,21 +386,21 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadBestFeed(srv, tx, userID, *params.Category, *params.Limit)
+			feed := loadBestFeed(srv, tx, userID, *params.Category, *params.Tag, *params.Limit)
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, tag string, limit int64) *models.Feed {
 	if userID.Name == tlog {
-		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, limit)
+		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, tag, limit)
 	}
 
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
-	query := tlogQuery(userID.ID, limit, tlog)
+	query := tlogQuery(userID.ID, limit, tlog, tag)
 
 	if after > 0 {
 		query.Where("entries.created_at > to_timestamp(?)", after).
@@ -394,7 +416,7 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	feed := loadFeed(srv, tx, userID, after > 0)
 
 	scrollQ := scrollQuery()
-	addTlogQuery(scrollQ, userID.ID, tlog)
+	addTlogQuery(scrollQ, userID.ID, tlog, tag)
 	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
@@ -452,17 +474,17 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
 			}
 
-			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
+			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Tag, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
-	query := myTlogQuery(userID.ID, limit)
+	query := myTlogQuery(userID.ID, limit, tag)
 
 	if after > 0 {
 		query.Where("entries.created_at > to_timestamp(?)", after).
@@ -480,6 +502,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 	scrollQ := sqlf.From("entries").
 		Where("entries.author_id = ?", userID.ID).
 		Limit(1)
+	addTagQuery(scrollQ, tag)
 	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
@@ -529,7 +552,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.GetMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
+			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(nil)
@@ -541,11 +564,11 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models
 	}
 }
 
-func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS string, limit int64) *models.Feed {
+func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
-	query := friendsQuery(userID.ID, limit)
+	query := friendsQuery(userID.ID, limit, tag)
 
 	if after > 0 {
 		query.Where("entries.created_at > to_timestamp(?)", after).
@@ -561,7 +584,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 	feed := loadFeed(srv, tx, userID, after > 0)
 
 	scrollQ := scrollQuery()
-	addFriendsQuery(scrollQ, userID.ID)
+	addFriendsQuery(scrollQ, userID.ID, tag)
 	defer scrollQ.Close()
 
 	if len(feed.Entries) == 0 {
@@ -613,7 +636,7 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesFriendsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Limit)
+			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Limit)
 			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
 		})
 	}

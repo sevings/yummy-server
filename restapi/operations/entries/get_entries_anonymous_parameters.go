@@ -27,6 +27,7 @@ func NewGetEntriesAnonymousParams() GetEntriesAnonymousParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(30)
+		tagDefault    = string("")
 	)
 
 	return GetEntriesAnonymousParams{
@@ -35,6 +36,8 @@ func NewGetEntriesAnonymousParams() GetEntriesAnonymousParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -67,6 +70,7 @@ type GetEntriesAnonymousParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -197,6 +201,7 @@ func (o *GetEntriesAnonymousParams) bindTag(rawData []string, hasKey bool, forma
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
 	}
 

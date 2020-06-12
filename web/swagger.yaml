@@ -706,6 +706,7 @@ parameters:
     name: tag
     type: string
     maxLength: 50
+    default: ""
   sort:
     in: query
     name: sort

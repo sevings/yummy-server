@@ -29,6 +29,7 @@ func NewGetUsersNameTlogParams() GetUsersNameTlogParams {
 		limitDefault  = int64(30)
 
 		sortDefault = string("new")
+		tagDefault  = string("")
 	)
 
 	return GetUsersNameTlogParams{
@@ -39,6 +40,8 @@ func NewGetUsersNameTlogParams() GetUsersNameTlogParams {
 		Limit: &limitDefault,
 
 		Sort: &sortDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -84,6 +87,7 @@ type GetUsersNameTlogParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -294,6 +298,7 @@ func (o *GetUsersNameTlogParams) bindTag(rawData []string, hasKey bool, formats 
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetUsersNameTlogParams()
 		return nil
 	}
 

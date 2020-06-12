@@ -26,12 +26,15 @@ func NewGetEntriesBestParams() GetEntriesBestParams {
 
 		categoryDefault = string("month")
 		limitDefault    = int64(30)
+		tagDefault      = string("")
 	)
 
 	return GetEntriesBestParams{
 		Category: &categoryDefault,
 
 		Limit: &limitDefault,
+
+		Tag: &tagDefault,
 	}
 }
 
@@ -59,6 +62,7 @@ type GetEntriesBestParams struct {
 	/*
 	  Max Length: 50
 	  In: query
+	  Default: ""
 	*/
 	Tag *string
 }
@@ -179,6 +183,7 @@ func (o *GetEntriesBestParams) bindTag(rawData []string, hasKey bool, formats st
 	// Required: false
 	// AllowEmptyValue: false
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesBestParams()
 		return nil
 	}
 
