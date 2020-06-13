@@ -1093,6 +1093,31 @@ func checkPostTaggedEntry(t *testing.T, user *models.UserID, author *models.Auth
 	return body.Payload
 }
 
+func checkEditTaggedEntry(t *testing.T, entry *models.Entry, user *models.AuthProfile, id *models.UserID, tags []string) {
+	params := entries.PutEntriesIDParams{
+		ID:        entry.ID,
+		Content:   entry.EditContent,
+		InLive:    &entry.InLive,
+		IsVotable: &entry.Rating.IsVotable,
+		Privacy:   entry.Privacy,
+		Tags:      tags,
+		Title:     &entry.Title,
+	}
+
+	edit := api.EntriesPutEntriesIDHandler.Handle
+	resp := edit(params, id)
+	body, ok := resp.(*entries.PutEntriesIDOK)
+	require.True(t, ok)
+
+	edited := body.Payload
+	checkEntry(t, edited, user, true, 0, true, entry.WordCount, params.Privacy, *params.IsVotable, *params.InLive,
+		*params.Title, params.Content, params.Tags)
+
+	checkLoadEntry(t, entry.ID, id, true, user,
+		true, 0, true, entry.WordCount, params.Privacy, *params.IsVotable, *params.InLive,
+		*params.Title, params.Content, params.Tags)
+}
+
 func TestEntryTags(t *testing.T) {
 	e2 := checkPostTaggedEntry(t, userIDs[0], profiles[0], "test test test2", 3, []string{"aaa", "bbb"})
 	e1 := checkPostTaggedEntry(t, userIDs[1], profiles[1], "test test test1", 3, []string{" aaa  ", " ccc", "  ", ""})
@@ -1154,4 +1179,11 @@ func TestEntryTags(t *testing.T) {
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
+
+	checkEditTaggedEntry(t, e0, profiles[0], userIDs[0], []string{"bbb", "ccc"})
+	checkEditTaggedEntry(t, e0, profiles[0], userIDs[0], []string{})
+
+	checkDeleteEntry(t, e0.ID, userIDs[0], true)
+	checkDeleteEntry(t, e1.ID, userIDs[1], true)
+	checkDeleteEntry(t, e2.ID, userIDs[0], true)
 }
