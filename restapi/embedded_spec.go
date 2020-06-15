@@ -1842,6 +1842,31 @@ func init() {
         }
       }
     },
+    "/entries/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "popular tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          }
+        }
+      }
+    },
     "/entries/watching": {
       "get": {
         "security": [
@@ -3017,6 +3042,31 @@ func init() {
         }
       }
     },
+    "/me/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "my tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          }
+        }
+      }
+    },
     "/me/tlog": {
       "get": {
         "security": [
@@ -3912,6 +3962,40 @@ func init() {
           "$ref": "#/parameters/pathName"
         }
       ]
+    },
+    "/users/{name}/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/pathName"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     },
     "/users/{name}/tlog": {
       "get": {
@@ -4870,6 +4954,25 @@ func init() {
         },
         "to": {
           "type": "string"
+        }
+      }
+    },
+    "TagList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              },
+              "tag": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
@@ -7024,6 +7127,36 @@ func init() {
         }
       }
     },
+    "/entries/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "popular tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          }
+        }
+      }
+    },
     "/entries/watching": {
       "get": {
         "security": [
@@ -8344,6 +8477,36 @@ func init() {
         }
       }
     },
+    "/me/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "my tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          }
+        }
+      }
+    },
     "/me/tlog": {
       "get": {
         "security": [
@@ -9385,6 +9548,51 @@ func init() {
         }
       ]
     },
+    "/users/{name}/tags": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "maxLength": 20,
+            "minLength": 1,
+            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "type": "string",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "default": 30,
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user tags",
+            "schema": {
+              "$ref": "#/definitions/TagList"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/users/{name}/tlog": {
       "get": {
         "security": [
@@ -10371,6 +10579,25 @@ func init() {
         },
         "to": {
           "type": "string"
+        }
+      }
+    },
+    "TagList": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "count": {
+                "type": "integer"
+              },
+              "tag": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },

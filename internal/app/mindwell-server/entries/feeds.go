@@ -98,14 +98,14 @@ func addLiveQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 		Where("(relations_from_me.type IS NULL OR relations_from_me.type NOT IN ('ignored', 'hidden'))")
 }
 
-func addLiveInvitedQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
+func AddLiveInvitedQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	return addLiveQuery(q, userID, tag).
 		Where("users.invited_by IS NOT NULL")
 }
 
 func liveInvitedQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := feedQuery(userID, limit)
-	return addLiveInvitedQuery(q, userID, tag)
+	return AddLiveInvitedQuery(q, userID, tag)
 }
 
 func addLiveWaitingQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
@@ -133,18 +133,18 @@ func liveCommentsQuery(userID, limit int64, tag string) *sqlf.Stmt {
 const isEntryOpenQueryWhere = `
 (entry_privacy.type = 'all' 
 	OR (entry_privacy.type = 'some' 
-		AND (users.id = ?
+		AND (entries.author_id = ?
 			OR EXISTS(SELECT 1 from entries_privacy WHERE user_id = ? AND entry_id = entries.id))))
 `
 
-func addEntryOpenQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
+func AddEntryOpenQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
 	return q.Where(isEntryOpenQueryWhere, userID, userID)
 }
 
 func addTlogQuery(q *sqlf.Stmt, userID int64, tlog, tag string) *sqlf.Stmt {
 	q.Where("lower(users.name) = lower(?)", tlog)
 	addTagQuery(q, tag)
-	return addEntryOpenQuery(q, userID)
+	return AddEntryOpenQuery(q, userID)
 }
 
 func tlogQuery(userID, limit int64, tlog, tag string) *sqlf.Stmt {
@@ -154,7 +154,7 @@ func tlogQuery(userID, limit int64, tlog, tag string) *sqlf.Stmt {
 
 func addFriendsQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	addRelationsFromMeQuery(q, userID)
-	addEntryOpenQuery(q, userID)
+	AddEntryOpenQuery(q, userID)
 	addTagQuery(q, tag)
 	return q.
 		Where("(users.id = ? OR relations_from_me.type = 'followed')", userID).
@@ -333,7 +333,7 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			var feed *models.Feed
 			if *params.Section == "entries" {
-				add := func(q *sqlf.Stmt) { addLiveInvitedQuery(q, userID.ID, *params.Tag) }
+				add := func(q *sqlf.Stmt) { AddLiveInvitedQuery(q, userID.ID, *params.Tag) }
 				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Limit)
 			} else if *params.Section == "comments" {
 				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Tag, *params.Limit)

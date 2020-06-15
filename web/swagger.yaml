@@ -654,6 +654,18 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  TagList:
+    type: object
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            tag:
+              type: string
+            count:
+              type: integer
 parameters:
   pathId:
     in: path
@@ -1353,6 +1365,24 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /users/{name}/tags:
+    get:
+      parameters:
+        - $ref: '#/parameters/pathName'
+        - $ref: '#/parameters/limit'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - users
+      responses:
+        200:
+          description: user tags
+          schema:
+            $ref: '#/definitions/TagList'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /me:
     get:
       security:
@@ -1687,6 +1717,19 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /me/tags:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - me
+      responses:
+        200:
+          description: my tags
+          schema:
+            $ref: '#/definitions/TagList'
   /design:
     get:
       security:
@@ -2139,6 +2182,19 @@ paths:
           description: Entry not found
           schema:
             $ref: '#/definitions/Error'
+  /entries/tags:
+    get:
+      parameters:
+        - $ref: '#/parameters/limit'
+      security:
+        - ApiKeyHeader: []
+      tags:
+        - entries
+      responses:
+        200:
+          description: popular tags
+          schema:
+            $ref: '#/definitions/TagList'
   /entries/{id}/vote:
     parameters:
       - $ref: '#/parameters/pathId'

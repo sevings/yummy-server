@@ -176,6 +176,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
 		}),
+		EntriesGetEntriesTagsHandler: entries.GetEntriesTagsHandlerFunc(func(params entries.GetEntriesTagsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesTags has not yet been implemented")
+		}),
 		EntriesGetEntriesWatchingHandler: entries.GetEntriesWatchingHandlerFunc(func(params entries.GetEntriesWatchingParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesWatching has not yet been implemented")
 		}),
@@ -208,6 +211,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		MeGetMeRequestedHandler: me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeRequested has not yet been implemented")
+		}),
+		MeGetMeTagsHandler: me.GetMeTagsHandlerFunc(func(params me.GetMeTagsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeTags has not yet been implemented")
 		}),
 		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
@@ -247,6 +253,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		UsersGetUsersNameInvitedHandler: users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameInvited has not yet been implemented")
+		}),
+		UsersGetUsersNameTagsHandler: users.GetUsersNameTagsHandlerFunc(func(params users.GetUsersNameTagsParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameTags has not yet been implemented")
 		}),
 		UsersGetUsersNameTlogHandler: users.GetUsersNameTlogHandlerFunc(func(params users.GetUsersNameTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameTlog has not yet been implemented")
@@ -489,6 +498,8 @@ type MindwellAPI struct {
 	WatchingsGetEntriesIDWatchingHandler watchings.GetEntriesIDWatchingHandler
 	// EntriesGetEntriesLiveHandler sets the operation handler for the get entries live operation
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
+	// EntriesGetEntriesTagsHandler sets the operation handler for the get entries tags operation
+	EntriesGetEntriesTagsHandler entries.GetEntriesTagsHandler
 	// EntriesGetEntriesWatchingHandler sets the operation handler for the get entries watching operation
 	EntriesGetEntriesWatchingHandler entries.GetEntriesWatchingHandler
 	// ImagesGetImagesIDHandler sets the operation handler for the get images ID operation
@@ -511,6 +522,8 @@ type MindwellAPI struct {
 	MeGetMeInvitedHandler me.GetMeInvitedHandler
 	// MeGetMeRequestedHandler sets the operation handler for the get me requested operation
 	MeGetMeRequestedHandler me.GetMeRequestedHandler
+	// MeGetMeTagsHandler sets the operation handler for the get me tags operation
+	MeGetMeTagsHandler me.GetMeTagsHandler
 	// MeGetMeTlogHandler sets the operation handler for the get me tlog operation
 	MeGetMeTlogHandler me.GetMeTlogHandler
 	// ChatsGetMessagesIDHandler sets the operation handler for the get messages ID operation
@@ -537,6 +550,8 @@ type MindwellAPI struct {
 	UsersGetUsersNameImagesHandler users.GetUsersNameImagesHandler
 	// UsersGetUsersNameInvitedHandler sets the operation handler for the get users name invited operation
 	UsersGetUsersNameInvitedHandler users.GetUsersNameInvitedHandler
+	// UsersGetUsersNameTagsHandler sets the operation handler for the get users name tags operation
+	UsersGetUsersNameTagsHandler users.GetUsersNameTagsHandler
 	// UsersGetUsersNameTlogHandler sets the operation handler for the get users name tlog operation
 	UsersGetUsersNameTlogHandler users.GetUsersNameTlogHandler
 	// AccountPostAccountEmailHandler sets the operation handler for the post account email operation
@@ -846,6 +861,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
 	}
 
+	if o.EntriesGetEntriesTagsHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesTagsHandler")
+	}
+
 	if o.EntriesGetEntriesWatchingHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesWatchingHandler")
 	}
@@ -888,6 +907,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.MeGetMeRequestedHandler == nil {
 		unregistered = append(unregistered, "me.GetMeRequestedHandler")
+	}
+
+	if o.MeGetMeTagsHandler == nil {
+		unregistered = append(unregistered, "me.GetMeTagsHandler")
 	}
 
 	if o.MeGetMeTlogHandler == nil {
@@ -940,6 +963,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.UsersGetUsersNameInvitedHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameInvitedHandler")
+	}
+
+	if o.UsersGetUsersNameTagsHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameTagsHandler")
 	}
 
 	if o.UsersGetUsersNameTlogHandler == nil {
@@ -1409,6 +1436,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/entries/tags"] = entries.NewGetEntriesTags(o.context, o.EntriesGetEntriesTagsHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/entries/watching"] = entries.NewGetEntriesWatching(o.context, o.EntriesGetEntriesWatchingHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1460,6 +1492,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/requested"] = me.NewGetMeRequested(o.context, o.MeGetMeRequestedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/me/tags"] = me.NewGetMeTags(o.context, o.MeGetMeTagsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1525,6 +1562,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/invited"] = users.NewGetUsersNameInvited(o.context, o.UsersGetUsersNameInvitedHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/{name}/tags"] = users.NewGetUsersNameTags(o.context, o.UsersGetUsersNameTagsHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
