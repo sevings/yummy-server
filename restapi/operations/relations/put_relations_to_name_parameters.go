@@ -36,7 +36,7 @@ type PutRelationsToNameParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
-	  Pattern: [a-zA-Z][a-zA-Z0-9\-_]*
+	  Pattern: ^[a-zA-Z][a-zA-Z0-9\-_]*$
 	  In: path
 	*/
 	Name string
@@ -104,7 +104,7 @@ func (o *PutRelationsToNameParams) validateName(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.Pattern("name", "path", o.Name, `[a-zA-Z][a-zA-Z0-9\-_]*`); err != nil {
+	if err := validate.Pattern("name", "path", o.Name, `^[a-zA-Z][a-zA-Z0-9\-_]*$`); err != nil {
 		return err
 	}
 

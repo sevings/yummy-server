@@ -49,7 +49,7 @@ type PutDesignParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*
-	  Pattern: #[0-9a-fA-F]{6}
+	  Pattern: ^#[0-9a-fA-F]{6}$
 	  In: formData
 	  Default: "#ffffff"
 	*/
@@ -74,7 +74,7 @@ type PutDesignParams struct {
 	*/
 	TextAlignment string
 	/*
-	  Pattern: #[0-9a-fA-F]{6}
+	  Pattern: ^#[0-9a-fA-F]{6}$
 	  In: formData
 	  Default: "#000000"
 	*/
@@ -161,7 +161,7 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 // validateBackgroundColor carries on validations for parameter BackgroundColor
 func (o *PutDesignParams) validateBackgroundColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `#[0-9a-fA-F]{6}`); err != nil {
+	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `^#[0-9a-fA-F]{6}$`); err != nil {
 		return err
 	}
 
@@ -302,7 +302,7 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 // validateTextColor carries on validations for parameter TextColor
 func (o *PutDesignParams) validateTextColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `#[0-9a-fA-F]{6}`); err != nil {
+	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `^#[0-9a-fA-F]{6}$`); err != nil {
 		return err
 	}
 

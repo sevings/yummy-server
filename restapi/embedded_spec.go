@@ -350,7 +350,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "formData",
@@ -1547,14 +1547,14 @@ func init() {
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-fA-F]{6}",
+            "pattern": "^#[0-9a-fA-F]{6}$",
             "type": "string",
             "default": "#ffffff",
             "name": "backgroundColor",
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-fA-F]{6}",
+            "pattern": "^#[0-9a-fA-F]{6}$",
             "type": "string",
             "default": "#000000",
             "name": "textColor",
@@ -3526,7 +3526,7 @@ func init() {
             "$ref": "#/parameters/pathName"
           },
           {
-            "pattern": "\\s*\\S+\\s+\\S+\\s+\\S+\\s*",
+            "pattern": "^\\s*\\S+\\s+\\S+\\s+\\S+\\s*$",
             "type": "string",
             "name": "invite",
             "in": "formData",
@@ -4188,7 +4188,7 @@ func init() {
     "Color": {
       "description": "color in rgb",
       "type": "string",
-      "pattern": "#[0-9a-fA-F]{6}",
+      "pattern": "^#[0-9a-fA-F]{6}$",
       "example": "#373737"
     },
     "Comment": {
@@ -5114,7 +5114,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
-      "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
       "type": "string",
       "name": "name",
       "in": "path",
@@ -5332,7 +5332,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -5526,7 +5526,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "formData",
@@ -6291,7 +6291,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -6402,7 +6402,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -6453,7 +6453,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -6778,14 +6778,14 @@ func init() {
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-fA-F]{6}",
+            "pattern": "^#[0-9a-fA-F]{6}$",
             "type": "string",
             "default": "#ffffff",
             "name": "backgroundColor",
             "in": "formData"
           },
           {
-            "pattern": "#[0-9a-fA-F]{6}",
+            "pattern": "^#[0-9a-fA-F]{6}$",
             "type": "string",
             "default": "#000000",
             "name": "textColor",
@@ -8981,7 +8981,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9007,14 +9007,14 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
             "required": true
           },
           {
-            "pattern": "\\s*\\S+\\s+\\S+\\s+\\S+\\s*",
+            "pattern": "^\\s*\\S+\\s+\\S+\\s+\\S+\\s*$",
             "type": "string",
             "name": "invite",
             "in": "formData",
@@ -9136,7 +9136,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9227,7 +9227,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9286,7 +9286,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9351,7 +9351,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9416,7 +9416,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9475,7 +9475,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9540,7 +9540,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9562,7 +9562,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -9662,7 +9662,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9813,7 +9813,7 @@ func init() {
     "Color": {
       "description": "color in rgb",
       "type": "string",
-      "pattern": "#[0-9a-fA-F]{6}",
+      "pattern": "^#[0-9a-fA-F]{6}$",
       "example": "#373737"
     },
     "Comment": {
@@ -10739,7 +10739,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
-      "pattern": "[a-zA-Z][a-zA-Z0-9\\-_]*",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
       "type": "string",
       "name": "name",
       "in": "path",

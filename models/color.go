@@ -20,7 +20,7 @@ type Color string
 func (m Color) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := validate.Pattern("", "body", string(m), `#[0-9a-fA-F]{6}`); err != nil {
+	if err := validate.Pattern("", "body", string(m), `^#[0-9a-fA-F]{6}$`); err != nil {
 		return err
 	}
 
