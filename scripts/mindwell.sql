@@ -2082,8 +2082,8 @@ CREATE TABLE "mindwell"."talkers" (
 	"unread_count" Integer DEFAULT 0 NOT NULL,
 	"can_send" Boolean DEFAULT TRUE NOT NULL,
 	CONSTRAINT "unique_talker_chat" PRIMARY KEY( "chat_id", "user_id" ),
-    CONSTRAINT "talkers_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id"),
-    CONSTRAINT "talkers_chat_id" FOREIGN KEY("chat_id") REFERENCES "mindwell"."chats"("id"));
+    CONSTRAINT "talkers_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id") ON DELETE CASCADE,
+    CONSTRAINT "talkers_chat_id" FOREIGN KEY("chat_id") REFERENCES "mindwell"."chats"("id") ON DELETE CASCADE);
  ;
 -- -------------------------------------------------------------
 
