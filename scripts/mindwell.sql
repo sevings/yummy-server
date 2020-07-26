@@ -1295,25 +1295,28 @@ CREATE INDEX "index_entry_tags_entry" ON "mindwell"."entry_tags" USING btree( "e
 CREATE INDEX "index_entry_tags_tag" ON "mindwell"."entry_tags" USING btree( "tag_id" );
 -- -------------------------------------------------------------
 
-CREATE OR REPLACE FUNCTION mindwell.count_tags() RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION mindwell.count_tags_ins() RETURNS TRIGGER AS $$
     BEGIN
-        WITH authors AS 
+        WITH authors AS
         (
             SELECT DISTINCT author_id as id
-            FROM mindwell.entries, changes
-            WHERE entries.id = changes.entry_id
+            FROM changes
+            INNER JOIN mindwell.entries ON changes.entry_id = entries.id
         )
         UPDATE mindwell.users
-        SET tags_count = counts.cnt 
-        FROM authors,
+        SET tags_count = counts.cnt
+        FROM
         (
-            SELECT author_id, COUNT(tag_id) as cnt
-            FROM mindwell.entries, mindwell.entry_tags, authors
-            WHERE authors.id = entries.author_id AND entries.id = entry_tags.entry_id
-            GROUP BY author_id
+            SELECT authors.id, COUNT(DISTINCT tag_id) as cnt
+            FROM authors
+            LEFT JOIN mindwell.entries ON authors.id = entries.author_id
+            LEFT JOIN mindwell.entry_privacy ON entries.visible_for = entry_privacy.id
+            LEFT JOIN mindwell.entry_tags ON entries.id = entry_tags.entry_id
+            WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
+            GROUP BY authors.id
         ) AS counts
-        WHERE authors.id = users.id AND counts.author_id = users.id;
-        
+        WHERE counts.id = users.id;
+
         RETURN NULL;
     END;
 $$ LANGUAGE plpgsql;
@@ -1321,12 +1324,68 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER cnt_tags_ins
     AFTER INSERT ON mindwell.entry_tags
     REFERENCING NEW TABLE as changes
-    FOR EACH STATEMENT EXECUTE PROCEDURE mindwell.count_tags();
+    FOR EACH STATEMENT EXECUTE PROCEDURE mindwell.count_tags_ins();
+
+CREATE OR REPLACE FUNCTION mindwell.count_tags_upd() RETURNS TRIGGER AS $$
+    BEGIN
+        WITH authors AS
+        (
+            SELECT OLD.author_id AS id
+        )
+        UPDATE mindwell.users
+        SET tags_count = counts.cnt
+        FROM
+        (
+            SELECT authors.id, COUNT(DISTINCT tag_id) as cnt
+            FROM authors
+            LEFT JOIN mindwell.entries ON authors.id = entries.author_id
+            LEFT JOIN mindwell.entry_privacy ON entries.visible_for = entry_privacy.id
+            LEFT JOIN mindwell.entry_tags ON entries.id = entry_tags.entry_id
+            WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
+            GROUP BY authors.id
+        ) AS counts
+        WHERE users.id = counts.id;
+
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER cnt_tags_upd
+    AFTER UPDATE ON mindwell.entries
+    FOR EACH ROW
+    WHEN ( OLD.visible_for <> NEW.visible_for )
+    EXECUTE PROCEDURE mindwell.count_tags_upd();
+
+CREATE OR REPLACE FUNCTION mindwell.count_tags_del() RETURNS TRIGGER AS $$
+    BEGIN
+        WITH authors AS
+        (
+            SELECT DISTINCT author_id as id
+            FROM changes
+        )
+        UPDATE mindwell.users
+        SET tags_count = counts.cnt
+        FROM
+        (
+            SELECT authors.id, COUNT(DISTINCT tag_id) as cnt
+            FROM authors
+            LEFT JOIN mindwell.entries ON authors.id = entries.author_id
+            LEFT JOIN mindwell.entry_privacy ON entries.visible_for = entry_privacy.id
+            LEFT JOIN mindwell.entry_tags ON entries.id = entry_tags.entry_id
+            WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
+            GROUP BY authors.id
+        ) AS counts
+        WHERE users.id = counts.id;
+
+        RETURN NULL;
+    END;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER cnt_tags_del
-    AFTER DELETE ON mindwell.entry_tags
-    REFERENCING OLD TABLE as changes
-    FOR EACH STATEMENT EXECUTE PROCEDURE mindwell.count_tags();
+    AFTER DELETE ON mindwell.entries
+    REFERENCING OLD TABLE AS changes
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE mindwell.count_tags_del();
 
 
 

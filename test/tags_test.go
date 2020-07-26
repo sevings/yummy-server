@@ -30,10 +30,40 @@ func postTaggedEntry(t *testing.T, user *models.UserID, privacy string, tags []s
 	return body.Payload
 }
 
+func editTaggedEntry(t *testing.T, user *models.UserID, entry *models.Entry, privacy string, tags []string) *models.Entry {
+	params := entries.PutEntriesIDParams{
+		Content:   entry.EditContent,
+		ID:        entry.ID,
+		InLive:    &entry.InLive,
+		IsVotable: &entry.Rating.IsVotable,
+		Privacy:   privacy,
+		Tags:      tags,
+		Title:     &entry.Title,
+	}
+
+	resp := api.EntriesPutEntriesIDHandler.Handle(params, user)
+	body, ok := resp.(*entries.PutEntriesIDOK)
+	require.True(t, ok)
+
+	return body.Payload
+}
+
+func checkTagCount(t *testing.T, user *models.UserID, count int64) {
+	load := api.MeGetMeHandler.Handle
+	resp := load(me.GetMeParams{}, user)
+	body, ok := resp.(*me.GetMeOK)
+	require.True(t, ok)
+
+	profile := body.Payload
+	require.Equal(t, count, profile.Counts.Tags)
+}
+
 func TestMyTags(t *testing.T) {
 	e2 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "ccc"})
 	e1 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "bbb", "ccc"})
 	e0 := postTaggedEntry(t, userIDs[0], "me", []string{"aaa", "bbb"})
+
+	checkTagCount(t, userIDs[0], 3)
 
 	aaa := &models.TagListDataItems0{Count: 3, Tag: "aaa"}
 	bbb := &models.TagListDataItems0{Count: 2, Tag: "bbb"}
@@ -57,9 +87,18 @@ func TestMyTags(t *testing.T) {
 	load(userIDs[0], 10, []*models.TagListDataItems0{aaa, bbb, ccc})
 	load(userIDs[0], 1, []*models.TagListDataItems0{aaa})
 
+	e2 = editTaggedEntry(t, userIDs[0], e2, e2.Privacy, []string{"aaa"})
+	ccc1 := &models.TagListDataItems0{Count: 1, Tag: "ccc"}
+	load(userIDs[0], 10, []*models.TagListDataItems0{aaa, bbb, ccc1})
+
 	checkDeleteEntry(t, e0.ID, userIDs[0], true)
+	checkTagCount(t, userIDs[0], 3)
+
 	checkDeleteEntry(t, e1.ID, userIDs[0], true)
+	checkTagCount(t, userIDs[0], 1)
+
 	checkDeleteEntry(t, e2.ID, userIDs[0], true)
+	checkTagCount(t, userIDs[0], 0)
 }
 
 func TestUserTags(t *testing.T) {
@@ -67,6 +106,8 @@ func TestUserTags(t *testing.T) {
 	e2 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "ccc"})
 	e1 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "bbb", "ccc"})
 	e0 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "bbb"})
+
+	checkTagCount(t, userIDs[0], 3)
 
 	aaa := &models.TagListDataItems0{Count: 3, Tag: "aaa"}
 	aaa4 := &models.TagListDataItems0{Count: 4, Tag: "aaa"}
@@ -110,10 +151,17 @@ func TestUserTags(t *testing.T) {
 	checkUnfollow(t, userIDs[1], userIDs[0])
 	setUserPrivacy(t, userIDs[0], "all")
 
+	e3 = editTaggedEntry(t, userIDs[0], e3, "all", e3.Tags)
+	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
+	load(userIDs[1], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
+	checkTagCount(t, userIDs[0], 4)
+
 	checkDeleteEntry(t, e0.ID, userIDs[0], true)
 	checkDeleteEntry(t, e1.ID, userIDs[0], true)
 	checkDeleteEntry(t, e2.ID, userIDs[0], true)
 	checkDeleteEntry(t, e3.ID, userIDs[0], true)
+
+	checkTagCount(t, userIDs[0], 0)
 }
 
 func TestLiveTags(t *testing.T) {
@@ -121,6 +169,10 @@ func TestLiveTags(t *testing.T) {
 	e2 := postTaggedEntry(t, userIDs[2], "all", []string{"aaa", "ccc"})
 	e1 := postTaggedEntry(t, userIDs[1], "all", []string{"aaa", "bbb", "ccc"})
 	e0 := postTaggedEntry(t, userIDs[0], "all", []string{"aaa", "bbb"})
+
+	checkTagCount(t, userIDs[0], 2)
+	checkTagCount(t, userIDs[1], 3)
+	checkTagCount(t, userIDs[2], 2)
 
 	aaa := &models.TagListDataItems0{Count: 3, Tag: "aaa"}
 	bbb := &models.TagListDataItems0{Count: 2, Tag: "bbb"}
@@ -148,4 +200,8 @@ func TestLiveTags(t *testing.T) {
 	checkDeleteEntry(t, e1.ID, userIDs[1], true)
 	checkDeleteEntry(t, e2.ID, userIDs[2], true)
 	checkDeleteEntry(t, e3.ID, userIDs[0], true)
+
+	checkTagCount(t, userIDs[0], 0)
+	checkTagCount(t, userIDs[1], 0)
+	checkTagCount(t, userIDs[2], 0)
 }
