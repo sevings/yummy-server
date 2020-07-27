@@ -1315,7 +1315,8 @@ CREATE OR REPLACE FUNCTION mindwell.count_tags_ins() RETURNS TRIGGER AS $$
             WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
             GROUP BY authors.id
         ) AS counts
-        WHERE counts.id = users.id;
+        WHERE counts.id = users.id
+            AND tags_count <> counts.cnt;
 
         RETURN NULL;
     END;
@@ -1344,7 +1345,8 @@ CREATE OR REPLACE FUNCTION mindwell.count_tags_upd() RETURNS TRIGGER AS $$
             WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
             GROUP BY authors.id
         ) AS counts
-        WHERE users.id = counts.id;
+        WHERE users.id = counts.id
+            AND tags_count <> counts.cnt;
 
         RETURN NULL;
     END;
@@ -1375,7 +1377,8 @@ CREATE OR REPLACE FUNCTION mindwell.count_tags_del() RETURNS TRIGGER AS $$
             WHERE (entry_privacy.type = 'all' OR entry_privacy.type IS NULL)
             GROUP BY authors.id
         ) AS counts
-        WHERE users.id = counts.id;
+        WHERE users.id = counts.id
+            AND tags_count <> counts.cnt;
 
         RETURN NULL;
     END;
