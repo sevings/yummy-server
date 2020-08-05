@@ -5114,7 +5114,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
-      "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+      "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
       "type": "string",
       "name": "name",
       "in": "path",
@@ -5332,7 +5332,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+            "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -6291,7 +6291,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -6402,7 +6402,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -6453,7 +6453,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -8981,7 +8981,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9007,7 +9007,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+            "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -9136,7 +9136,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9227,7 +9227,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9286,7 +9286,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9351,7 +9351,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9416,7 +9416,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9475,7 +9475,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9540,7 +9540,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -9562,7 +9562,7 @@ func init() {
           {
             "maxLength": 20,
             "minLength": 1,
-            "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+            "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
             "type": "string",
             "name": "name",
             "in": "path",
@@ -9662,7 +9662,7 @@ func init() {
         {
           "maxLength": 20,
           "minLength": 1,
-          "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
           "type": "string",
           "name": "name",
           "in": "path",
@@ -10739,7 +10739,7 @@ func init() {
     "pathName": {
       "maxLength": 20,
       "minLength": 1,
-      "pattern": "^[a-zA-Z][a-zA-Z0-9\\-_]*$",
+      "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
       "type": "string",
       "name": "name",
       "in": "path",

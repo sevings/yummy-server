@@ -68,7 +68,7 @@ type GetUsersNameFollowersParams struct {
 	  Required: true
 	  Max Length: 20
 	  Min Length: 1
-	  Pattern: ^[a-zA-Z][a-zA-Z0-9\-_]*$
+	  Pattern: ^[0-9\-_]*[a-zA-Z][a-zA-Z0-9\-_]*$
 	  In: path
 	*/
 	Name string
@@ -220,7 +220,7 @@ func (o *GetUsersNameFollowersParams) validateName(formats strfmt.Registry) erro
 		return err
 	}
 
-	if err := validate.Pattern("name", "path", o.Name, `^[a-zA-Z][a-zA-Z0-9\-_]*$`); err != nil {
+	if err := validate.Pattern("name", "path", o.Name, `^[0-9\-_]*[a-zA-Z][a-zA-Z0-9\-_]*$`); err != nil {
 		return err
 	}
 
