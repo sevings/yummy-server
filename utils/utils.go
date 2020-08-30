@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	crypto "crypto/rand"
 	"database/sql"
 	"encoding/base64"
@@ -11,6 +12,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/dgrijalva/jwt-go"
 	goconf "github.com/zpatrick/go-config"
@@ -228,6 +230,179 @@ func CutText(text string, size int) (string, bool) {
 	text += "..."
 
 	return text, true
+}
+
+func CutHtml(text string, maxLineCount, maxLineLen int) (string, bool) {
+	var output bytes.Buffer
+	var tags []string
+	idx := 0
+	lineCount := 0
+	lineLen := 0.
+	koeff := 1.
+	textLen := len(text)
+
+	fontKoeff := func(tag string) (float64, bool) {
+		switch tag {
+		case "h1":
+			return 8.16, true
+		case "h2":
+			return 5.22, true
+		case "h3":
+			return 4, true
+		case "h4":
+			return 2.47, true
+		case "h5":
+			return 1.31, true
+		case "h6":
+			return 1, true
+		case "blockquote":
+			return 4.61, true
+		default:
+			return 0, false
+		}
+	}
+
+	for idx < textLen && lineCount < maxLineCount {
+		c, s := utf8.DecodeRuneInString(text[idx:])
+		if c == utf8.RuneError {
+			idx += s
+			continue
+		}
+
+		idx += s
+		output.WriteRune(c)
+
+		if c != '<' {
+			lineLen += koeff
+			if lineLen > float64(maxLineLen) {
+				lineLen = koeff
+				lineCount++
+			}
+
+			continue
+		}
+
+		if idx >= textLen-1 {
+			break
+		}
+
+		isClosing := text[idx] == '/'
+		if isClosing {
+			idx++
+			output.WriteByte('/')
+		}
+
+		tagStart := idx
+		for idx < textLen {
+			tagChar := text[idx]
+			if tagChar != ' ' && tagChar != '>' {
+				idx++
+			} else {
+				break
+			}
+		}
+
+		tag := text[tagStart:idx]
+		output.WriteString(tag)
+
+		if isClosing {
+			for i := len(tags) - 1; i >= 0; i-- {
+				if tags[i] != tag {
+					continue
+				}
+
+				tags = tags[:i]
+				break
+			}
+
+			_, ok := fontKoeff(tag)
+			if ok {
+				koeff = 1
+			}
+		} else if tag != "br" {
+			tags = append(tags, tag)
+
+			k, ok := fontKoeff(tag)
+			if ok {
+				koeff = k
+			}
+		}
+
+		for idx < textLen {
+			tagChar := text[idx]
+			if tagChar == '>' {
+				break
+			}
+
+			idx++
+			output.WriteByte(tagChar)
+		}
+
+		idx++
+		output.WriteByte('>')
+
+		if tag == "br" || (isClosing && tag == "p") || (isClosing && tag == "blockquote") {
+			lineCount++
+			lineLen = 0
+		}
+	}
+
+	if idx >= textLen {
+		return text, false
+	}
+
+	c, _ := utf8.DecodeRuneInString(text[idx:])
+	wasSpace := unicode.IsSpace(c)
+	for idx = output.Len(); idx > 0; {
+		c, size := utf8.DecodeLastRune(output.Bytes()[:idx])
+
+		isSpace := unicode.IsSpace(c) || unicode.IsPunct(c)
+		if c == '>' {
+			tagStart := idx - 1
+			for ; tagStart >= 0; tagStart-- {
+				if text[tagStart] == '<' {
+					break
+				}
+			}
+
+			tag := text[tagStart:idx]
+			if tag == "</p>" {
+				tags = append(tags, "p")
+				isSpace = true
+				size = 4
+			} else if tag[1] != '/' {
+				isSpace = true
+				size = len(tag)
+			}
+		}
+
+		if wasSpace {
+			if isSpace {
+				idx -= size
+				continue
+			}
+
+			break
+		}
+
+		idx -= size
+		wasSpace = isSpace
+	}
+
+	if idx == 0 {
+		idx = output.Len() - 1
+	}
+
+	output.Truncate(idx)
+	output.WriteString("…")
+
+	for i := len(tags) - 1; i >= 0; i-- {
+		output.WriteString("</")
+		output.WriteString(tags[i])
+		output.WriteString(">")
+	}
+
+	return output.String(), true
 }
 
 func ParseFloat(val string) float64 {

@@ -114,13 +114,14 @@ func setEntryTexts(entry *models.Entry, hasAttach bool) {
 
 	cutTitle, isTitleCut := utils.CutText(title, 100)
 
-	content := strings.TrimSpace(entry.EditContent)
-
-	contentLength := 500
+	lineCount := 15
 	if hasAttach {
-		contentLength = 300
+		lineCount = 5
 	}
-	cutContent, isContentCut := utils.CutText(content, contentLength)
+
+	editContent := strings.TrimSpace(entry.EditContent)
+	content := md.RenderToString([]byte(editContent))
+	cutContent, isContentCut := utils.CutHtml(content, lineCount, 44)
 
 	hasCut := isTitleCut || isContentCut
 	if !hasCut {
@@ -130,9 +131,9 @@ func setEntryTexts(entry *models.Entry, hasAttach bool) {
 
 	entry.Title = title
 	entry.CutTitle = cutTitle
-	entry.Content = md.RenderToString([]byte(content))
-	entry.CutContent = md.RenderToString([]byte(cutContent))
-	entry.EditContent = content
+	entry.Content = content
+	entry.CutContent = cutContent
+	entry.EditContent = editContent
 	entry.HasCut = hasCut
 }
 
