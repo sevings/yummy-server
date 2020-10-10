@@ -2,9 +2,14 @@ package entries
 
 import (
 	"database/sql"
+	"github.com/Workiva/go-datastructures/bitarray"
 	"github.com/sevings/mindwell-server/internal/app/mindwell-server/comments"
+	"log"
+	"math/rand"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -34,6 +39,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.EntriesGetEntriesIDHandler = entries.GetEntriesIDHandlerFunc(newEntryLoader(srv))
 	srv.API.EntriesPutEntriesIDHandler = entries.PutEntriesIDHandlerFunc(newEntryEditor(srv))
 	srv.API.EntriesDeleteEntriesIDHandler = entries.DeleteEntriesIDHandlerFunc(newEntryDeleter(srv))
+	srv.API.EntriesGetEntriesRandomHandler = entries.GetEntriesRandomHandlerFunc(newRandomEntryLoader(srv))
 
 	srv.API.EntriesGetEntriesLiveHandler = entries.GetEntriesLiveHandlerFunc(newLiveLoader(srv))
 	srv.API.EntriesGetEntriesAnonymousHandler = entries.GetEntriesAnonymousHandlerFunc(newAnonymousLoader(srv))
@@ -518,7 +524,7 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 	feed := loadFeed(srv, tx, userID, false)
 
 	if len(feed.Entries) == 0 {
-		return nil
+		return &models.Entry{}
 	}
 
 	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
@@ -577,6 +583,85 @@ func newEntryDeleter(srv *utils.MindwellServer) func(entries.DeleteEntriesIDPara
 
 			err := srv.NewError(&i18n.Message{ID: "delete_not_your_entry", Other: "You can't delete someone else's entries."})
 			return entries.NewDeleteEntriesIDForbidden().WithPayload(err)
+		})
+	}
+}
+
+var (
+	maxID     uint64
+	maxDate   int64
+	idMap     bitarray.BitArray
+	randGuard sync.Mutex
+)
+
+func loadRandomEntry(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID) *models.Entry {
+	randGuard.Lock()
+	defer randGuard.Unlock()
+
+	if idMap == nil {
+		idMap = bitarray.NewSparseBitArray()
+	}
+
+	const oneDay = 24 * 60 * 60
+	now := time.Now().Unix()
+	if now > maxDate+oneDay {
+		prevID := maxID
+		maxDate = now
+
+		tx.Query("SELECT coalesce(max(id), 0) FROM entries")
+		tx.Scan(&maxID)
+
+		tx.Query("SELECT distinct(id / 100) FROM entries WHERE id > $1", prevID)
+		var k uint64
+		for tx.Scan(&k) {
+			err := idMap.SetBit(k)
+			if err != nil {
+				log.Println(err)
+			}
+		}
+	}
+
+	if maxID == 0 {
+		return &models.Entry{}
+	}
+
+	const maxAttempts = 20
+	for i := 0; i < maxAttempts; {
+		entryID := rand.Int63n(int64(maxID))
+
+		k := uint64(entryID) / 100
+		if k < idMap.Capacity() {
+			ok, err := idMap.GetBit(k)
+			if err != nil {
+				log.Println(err)
+			}
+			if !ok {
+				continue
+			}
+		}
+
+		entry := LoadEntry(srv, tx, entryID, userID)
+		if entry.ID > 0 {
+			return entry
+		}
+
+		i++
+	}
+
+	return &models.Entry{}
+}
+
+func newRandomEntryLoader(srv *utils.MindwellServer) func(entries.GetEntriesRandomParams, *models.UserID) middleware.Responder {
+	return func(params entries.GetEntriesRandomParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			entry := loadRandomEntry(srv, tx, userID)
+
+			if entry.ID == 0 {
+				err := srv.StandardError("no_entry")
+				return entries.NewGetEntriesRandomNotFound().WithPayload(err)
+			}
+
+			return entries.NewGetEntriesRandomOK().WithPayload(entry)
 		})
 	}
 }

@@ -947,6 +947,70 @@ func TestLoadWatching(t *testing.T) {
 	checkUnfollow(t, userIDs[2], userIDs[1])
 }
 
+func TestRandomEntry(t *testing.T) {
+	req := require.New(t)
+
+	es := make([]*models.Entry, 0, 100)
+
+	for i := 0; i < 100; i++ {
+		var privacy string
+		if i%20 == 3 {
+			privacy = models.EntryPrivacyMe
+		} else {
+			privacy = models.EntryPrivacyAll
+		}
+
+		e := postEntry(userIDs[i%4], privacy, true)
+
+		if i%20 == 13 {
+			checkDeleteEntry(t, e.ID, userIDs[i%4], true)
+			es = append(es, &models.Entry{})
+		} else {
+			es = append(es, e)
+		}
+	}
+
+	load := func(success bool) bool {
+		load := api.EntriesGetEntriesRandomHandler.Handle
+		resp := load(entries.GetEntriesRandomParams{}, userIDs[0])
+		body, ok := resp.(*entries.GetEntriesRandomOK)
+		req.Equal(success, ok)
+		if !ok {
+			return false
+		}
+
+		entry := body.Payload
+
+		found := false
+		for _, e := range es {
+			if e.ID == entry.ID {
+				req.True(entry.Privacy == models.EntryPrivacyAll || entry.Author.ID == userIDs[0].ID)
+				found = true
+				break
+			}
+		}
+
+		req.True(found)
+		return true
+	}
+
+	ok := false
+	for i := 0; i < 10; i++ {
+		ok = ok || load(true)
+	}
+	req.True(ok)
+
+	for i := 0; i < 100; i++ {
+		if es[i].ID == 0 {
+			continue
+		}
+
+		checkDeleteEntry(t, es[i].ID, userIDs[i%4], true)
+	}
+
+	load(false)
+}
+
 func TestEntryHTML(t *testing.T) {
 	post := func(in, out string) {
 		params := me.PostMeTlogParams{

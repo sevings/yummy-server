@@ -176,6 +176,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
 		}),
+		EntriesGetEntriesRandomHandler: entries.GetEntriesRandomHandlerFunc(func(params entries.GetEntriesRandomParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation EntriesGetEntriesRandom has not yet been implemented")
+		}),
 		EntriesGetEntriesTagsHandler: entries.GetEntriesTagsHandlerFunc(func(params entries.GetEntriesTagsParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation EntriesGetEntriesTags has not yet been implemented")
 		}),
@@ -498,6 +501,8 @@ type MindwellAPI struct {
 	WatchingsGetEntriesIDWatchingHandler watchings.GetEntriesIDWatchingHandler
 	// EntriesGetEntriesLiveHandler sets the operation handler for the get entries live operation
 	EntriesGetEntriesLiveHandler entries.GetEntriesLiveHandler
+	// EntriesGetEntriesRandomHandler sets the operation handler for the get entries random operation
+	EntriesGetEntriesRandomHandler entries.GetEntriesRandomHandler
 	// EntriesGetEntriesTagsHandler sets the operation handler for the get entries tags operation
 	EntriesGetEntriesTagsHandler entries.GetEntriesTagsHandler
 	// EntriesGetEntriesWatchingHandler sets the operation handler for the get entries watching operation
@@ -859,6 +864,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.EntriesGetEntriesLiveHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
+	}
+
+	if o.EntriesGetEntriesRandomHandler == nil {
+		unregistered = append(unregistered, "entries.GetEntriesRandomHandler")
 	}
 
 	if o.EntriesGetEntriesTagsHandler == nil {
@@ -1432,6 +1441,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/live"] = entries.NewGetEntriesLive(o.context, o.EntriesGetEntriesLiveHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/entries/random"] = entries.NewGetEntriesRandom(o.context, o.EntriesGetEntriesRandomHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

@@ -1842,6 +1842,32 @@ func init() {
         }
       }
     },
+    "/entries/random": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry data",
+            "schema": {
+              "$ref": "#/definitions/Entry"
+            }
+          },
+          "404": {
+            "description": "No entries found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/entries/tags": {
       "get": {
         "security": [
@@ -7122,6 +7148,32 @@ func init() {
             "description": "Entry list",
             "schema": {
               "$ref": "#/definitions/Feed"
+            }
+          }
+        }
+      }
+    },
+    "/entries/random": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "entries"
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry data",
+            "schema": {
+              "$ref": "#/definitions/Entry"
+            }
+          },
+          "404": {
+            "description": "No entries found",
+            "schema": {
+              "$ref": "#/definitions/Error"
             }
           }
         }
