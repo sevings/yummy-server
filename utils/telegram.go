@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"go.uber.org/zap"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ type TelegramBot struct {
 	api    *tgbotapi.BotAPI
 	url    string
 	log    *zap.Logger
+	admins []int64
 	logins *cache.Cache
 	cmts   *cache.Cache
 	msgs   *cache.Cache
@@ -50,6 +52,7 @@ func NewTelegramBot(srv *MindwellServer) *TelegramBot {
 		srv:    srv,
 		url:    srv.ConfigString("server.base_url"),
 		log:    srv.LogTelegram(),
+		admins: srv.ConfigInt64s("telegram.admins"),
 		logins: cache.New(10*time.Minute, 10*time.Minute),
 		cmts:   cache.New(12*time.Hour, 1*time.Hour),
 		msgs:   cache.New(12*time.Hour, 1*time.Hour),
@@ -76,6 +79,18 @@ func (bot *TelegramBot) sendMessageNow(chat int64, text string) tgbotapi.Message
 
 func (bot *TelegramBot) sendMessage(chat int64, text string) {
 	bot.send <- func() { bot.sendMessageNow(chat, text) }
+}
+
+func (bot *TelegramBot) isAdmin(upd *tgbotapi.Update) bool {
+	chat := upd.Message.Chat.ID
+
+	for _, admin := range bot.admins {
+		if admin == chat {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (bot *TelegramBot) connectToProxy() *http.Client {
@@ -158,6 +173,8 @@ func (bot *TelegramBot) run() {
 				reply = bot.logout(&upd)
 			case "help":
 				reply = bot.help(&upd)
+			case "hide":
+				reply = bot.hide(&upd)
 			default:
 				reply = unrecognisedText
 			}
@@ -261,10 +278,65 @@ func (bot *TelegramBot) logout(upd *tgbotapi.Update) string {
 }
 
 func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
-	return `Я бот для получения уведомлений из Mindwell. Доступные команды:
-<code>/login &lt;ключ&gt;</code> - авторизоваться с использованием автоматически сгенерированного пароля. Его можно получить на <a href="` + bot.url + `account/notifications">странице настроек</a>.
-/logout - не получать больше уведомления на этот аккаунт.
-/help - вывести данную краткую справку.`
+	text := `Я бот для получения уведомлений из Mindwell. Доступные команды:
+<code>/login &lt;ключ&gt;</code> — авторизоваться с использованием автоматически сгенерированного пароля. Его можно получить на <a href="` + bot.url + `account/notifications">странице настроек</a>.
+/logout — не получать больше уведомления на этот аккаунт.
+/help — вывести данную краткую справку.`
+
+	if bot.isAdmin(upd) {
+		text += `
+
+Команды администрирования:
+<code>/hide {id или ссылка}</code> — скрыть запись.
+<code>/ban {live | vote | comment | invite | adm} {N} {login или ссылка}</code> — запретить пользователю выбранные действия на N дней, в случае adm — навсегда.
+<code>/ban user {login или ссылка}</code> — забанить пользователя.
+<code>/unban user {login или ссылка}</code> — разбанить пользователя.
+<code>/info {email}</code> — информация о пользователе.
+<code>/delete {email}</code> — удалить пользователя.
+/stat — статистика сервера.
+`
+	}
+
+	return text
+}
+
+func (bot *TelegramBot) hide(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	url := upd.Message.CommandArguments()
+	idRe := regexp.MustCompile(`\d+$`)
+	strID := idRe.FindString(url)
+	if strID == "" {
+		return "Укажите ID записи."
+	}
+
+	id, err := strconv.ParseInt(strID, 10, 64)
+	if err != nil {
+		return err.Error()
+	}
+
+	const q = "UPDATE entries SET visible_for = (SELECT id FROM entry_privacy WHERE type = 'me') WHERE id = $1"
+	res, err := bot.srv.DB.Exec(q, id)
+	if err != nil {
+		return err.Error()
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err.Error()
+	}
+
+	if rows < 1 {
+		return "Запись " + strID + " не найдена."
+	}
+
+	return "Запись " + strID + " скрыта."
 }
 
 func idToString(id int64) string {
