@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"github.com/leporo/sqlf"
 	"go.uber.org/zap"
 	"net/http"
 	"regexp"
@@ -367,7 +368,42 @@ func (bot *TelegramBot) ban(upd *tgbotapi.Update) string {
 }
 
 func (bot *TelegramBot) restrictUser(args []string, login string) string {
-	return "unimplemented"
+	dayCount := args[len(args)-1]
+	banUntil := "CURRENT_DATE + interval '" + dayCount + " days'"
+	banTypes := args[:len(args)-1]
+	if len(banTypes) == 0 {
+		return "Укажи необходимые ограничения."
+	}
+
+	q := sqlf.Update("users").
+		Where("lower(name) = lower(?)", login)
+	for _, ban := range banTypes {
+		switch ban {
+		case "live":
+			q.SetExpr("live_ban", banUntil)
+		case "vote":
+			q.SetExpr("vote_ban", banUntil)
+		case "comment":
+			q.SetExpr("comment_ban", banUntil)
+		case "invite":
+			q.SetExpr("invite_ban", banUntil)
+		case "adm":
+			q.Set("adm_ban", true)
+		default:
+			q.Close()
+			return "Неизвестный аргумент: " + ban + "."
+		}
+	}
+
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
+	atx.ExecStmt(q)
+	if atx.RowsAffected() < 1 {
+		return "Пользователь " + login + " не найден."
+	}
+
+	return "Пользователь " + login + " ограничен в правах на " + dayCount + " дней."
 }
 
 func (bot *TelegramBot) banUser(login string) string {

@@ -238,6 +238,12 @@ func (tx *AutoTx) Exec(query string, args ...interface{}) {
 	tx.res, tx.err = tx.tx.Exec(query, args...)
 }
 
+func (tx *AutoTx) ExecStmt(stmt *sqlf.Stmt) *AutoTx {
+	tx.Exec(stmt.String(), stmt.Args()...)
+	stmt.Close()
+	return tx
+}
+
 func (tx *AutoTx) RowsAffected() int64 {
 	var cnt int64
 	if tx.err == nil {
