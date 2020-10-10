@@ -18,7 +18,7 @@ import (
 const errorText = "Что-то пошло не так…"
 const unrecognisedText = "Неизвестная команда. Попробуй /help."
 
-var tgHtmlEsc *strings.Replacer = strings.NewReplacer(
+var tgHtmlEsc = strings.NewReplacer(
 	"<", "&lt;",
 	">", "&gt;",
 	"&", "&amp;",
@@ -26,6 +26,9 @@ var tgHtmlEsc *strings.Replacer = strings.NewReplacer(
 	"'", "&quot;",
 	"\r", "",
 )
+
+var idRe = regexp.MustCompile(`\d+$`)
+var loginRe = regexp.MustCompile(`[0-9\-_]*[a-zA-Z][a-zA-Z0-9\-_]*$`)
 
 type TelegramBot struct {
 	srv    *MindwellServer
@@ -175,6 +178,10 @@ func (bot *TelegramBot) run() {
 				reply = bot.help(&upd)
 			case "hide":
 				reply = bot.hide(&upd)
+			case "ban":
+				reply = bot.ban(&upd)
+			case "unban":
+				reply = bot.unban(&upd)
 			default:
 				reply = unrecognisedText
 			}
@@ -289,8 +296,8 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 Команды администрирования:
 <code>/hide {id или ссылка}</code> — скрыть запись.
 <code>/ban {live | vote | comment | invite | adm} {N} {login или ссылка}</code> — запретить пользователю выбранные действия на N дней, в случае adm — навсегда.
-<code>/ban user {login или ссылка}</code> — забанить пользователя.
-<code>/unban user {login или ссылка}</code> — разбанить пользователя.
+<code>/ban user {login или ссылка}</code> — заблокировать пользователя.
+<code>/unban {login или ссылка}</code> — разблокировать пользователя.
 <code>/info {email}</code> — информация о пользователе.
 <code>/delete {email}</code> — удалить пользователя.
 /stat — статистика сервера.
@@ -310,10 +317,9 @@ func (bot *TelegramBot) hide(upd *tgbotapi.Update) string {
 	}
 
 	url := upd.Message.CommandArguments()
-	idRe := regexp.MustCompile(`\d+$`)
 	strID := idRe.FindString(url)
 	if strID == "" {
-		return "Укажите ID записи."
+		return "Укажи ID записи."
 	}
 
 	id, err := strconv.ParseInt(strID, 10, 64)
@@ -321,22 +327,94 @@ func (bot *TelegramBot) hide(upd *tgbotapi.Update) string {
 		return err.Error()
 	}
 
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
 	const q = "UPDATE entries SET visible_for = (SELECT id FROM entry_privacy WHERE type = 'me') WHERE id = $1"
-	res, err := bot.srv.DB.Exec(q, id)
-	if err != nil {
-		return err.Error()
-	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return err.Error()
-	}
-
-	if rows < 1 {
+	atx.Exec(q, id)
+	if atx.RowsAffected() < 1 {
 		return "Запись " + strID + " не найдена."
 	}
 
 	return "Запись " + strID + " скрыта."
+}
+
+func (bot *TelegramBot) ban(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	args := strings.Split(upd.Message.CommandArguments(), " ")
+	if len(args) < 2 {
+		return "Укажи необходимые аргументы."
+	}
+
+	url := args[len(args)-1]
+	login := loginRe.FindString(url)
+	if login == "" {
+		return "Укажи логин пользователя."
+	}
+
+	if args[0] == "user" {
+		return bot.banUser(login)
+	} else {
+		return bot.restrictUser(args[:len(args)-1], login)
+	}
+}
+
+func (bot *TelegramBot) restrictUser(args []string, login string) string {
+	return "unimplemented"
+}
+
+func (bot *TelegramBot) banUser(login string) string {
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
+	const q = "SELECT ban_user($1)"
+	invitedBy := atx.QueryString(q, login)
+
+	if invitedBy == "" {
+		return "Пользователь не найден."
+	}
+
+	const emailQ = "SELECT email FROM users WHERE lower(name) = lower($1)"
+	email := atx.QueryString(emailQ, login)
+
+	link := bot.url + "users/" + invitedBy
+	return "Пользователь " + login +
+		` заблокирован. Приглашен <a href="` + link + `">` + invitedBy + `</a>. Почта ` + email + "."
+}
+
+func (bot *TelegramBot) unban(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	url := upd.Message.CommandArguments()
+	login := loginRe.FindString(url)
+	if login == "" {
+		return "Укажи логин пользователя."
+	}
+
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
+	const q = "UPDATE users SET verified = true WHERE lower(name) = lower($1) RETURNING email"
+	email := atx.QueryString(q, login)
+	if email == "" {
+		return "Пользователь " + login + " не найден."
+	}
+
+	return "Пользователь " + login +
+		" разблокирован. Теперь можно запросить сброс пароля на почту " + email + "."
 }
 
 func idToString(id int64) string {
