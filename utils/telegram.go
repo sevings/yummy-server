@@ -183,6 +183,8 @@ func (bot *TelegramBot) run() {
 				reply = bot.ban(&upd)
 			case "unban":
 				reply = bot.unban(&upd)
+			case "info":
+				reply = bot.info(&upd)
 			default:
 				reply = unrecognisedText
 			}
@@ -451,6 +453,83 @@ func (bot *TelegramBot) unban(upd *tgbotapi.Update) string {
 
 	return "Пользователь " + login +
 		" разблокирован. Теперь можно запросить сброс пароля на почту " + email + "."
+}
+
+func (bot *TelegramBot) info(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	arg := upd.Message.CommandArguments()
+	if strings.Contains(arg, "/") {
+		arg = loginRe.FindString(arg)
+	}
+	if arg == "" {
+		return "Укажи логин или адрес почты."
+	}
+
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
+	const q = `
+SELECT users.id, users.name, users.show_name, created_at, 
+	email, verified, valid_thru, rank, karma,
+	invited.name, invited.show_name,
+	entries_count, followers_count, followings_count, comments_count, invited_count,
+	invite_ban, vote_ban, comment_ban, live_ban, adm_ban
+FROM users
+JOIN (SELECT id, name, show_name FROM users) AS invited ON users.invited_by = invited.id
+WHERE users.email = lower($1) OR lower(users.name) = lower($1)`
+
+	atx.Query(q, arg)
+
+	var id int64
+	var name, showName, email, invitedByName, invitedByShowName string
+	var verified bool
+	var createdAt, validThru time.Time
+	var rank int64
+	var karma float64
+	var entries, followers, followings, comments, invited int64
+	var inviteBan, voteBan, commentBan, liveBan time.Time
+	var admBan bool
+	atx.Scan(&id, &name, &showName, &createdAt,
+		&email, &verified, &validThru, &rank, &karma,
+		&invitedByName, &invitedByShowName,
+		&entries, &followers, &followings, &comments, &invited,
+		&inviteBan, &voteBan, &commentBan, &liveBan, &admBan)
+
+	if id == 0 {
+		return "Пользователь с логином или адресом почты " + arg + " не найден."
+	}
+
+	today := time.Now()
+
+	var text string
+	text += "\n<b>id</b>: " + strconv.FormatInt(id, 10)
+	text += "\n<b>url</b>: " + `<a href="` + bot.url + "users/" + name + `">` + showName + `</a>`
+	text += "\n<b>email</b>: " + email
+	text += "\n<b>verified</b>: " + strconv.FormatBool(verified)
+	text += "\n<b>created at</b>: " + createdAt.Format("15:04:05 02 Jan 2006 MST")
+	text += "\n<b>valid thru</b>: " + validThru.Format("15:04:05 02 Jan 2006 MST")
+	text += "\n<b>rank</b>: " + strconv.FormatInt(rank, 10)
+	text += "\n<b>karma</b>: " + strconv.FormatFloat(karma, 'f', 2, 64)
+	text += "\n<b>invited by</b>: " + `<a href="` + bot.url + "users/" + invitedByName + `">` + invitedByShowName + `</a>`
+	text += "\n<b>entries</b>: " + strconv.FormatInt(entries, 10)
+	text += "\n<b>followers</b>: " + strconv.FormatInt(followers, 10)
+	text += "\n<b>followings</b>: " + strconv.FormatInt(followings, 10)
+	text += "\n<b>comments</b>: " + strconv.FormatInt(comments, 10)
+	text += "\n<b>invited</b>: " + strconv.FormatInt(invited, 10)
+	text += "\n<b>invite ban</b>: " + strconv.FormatBool(inviteBan.After(today)) + ", " + inviteBan.Format("02 Jan 2006")
+	text += "\n<b>vote ban</b>: " + strconv.FormatBool(voteBan.After(today)) + ", " + voteBan.Format("02 Jan 2006")
+	text += "\n<b>comment ban</b>: " + strconv.FormatBool(commentBan.After(today)) + ", " + commentBan.Format("02 Jan 2006")
+	text += "\n<b>live ban</b>: " + strconv.FormatBool(liveBan.After(today)) + ", " + liveBan.Format("02 Jan 2006")
+	text += "\n<b>adm ban</b>: " + strconv.FormatBool(admBan)
+
+	return text
 }
 
 func idToString(id int64) string {
