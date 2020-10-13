@@ -185,6 +185,8 @@ func (bot *TelegramBot) run() {
 				reply = bot.unban(&upd)
 			case "info":
 				reply = bot.info(&upd)
+			case "stat":
+				reply = bot.stat(&upd)
 			default:
 				reply = unrecognisedText
 			}
@@ -528,6 +530,124 @@ WHERE users.email = lower($1) OR lower(users.name) = lower($1)`
 	text += "\n<b>comment ban</b>: " + strconv.FormatBool(commentBan.After(today)) + ", " + commentBan.Format("02 Jan 2006")
 	text += "\n<b>live ban</b>: " + strconv.FormatBool(liveBan.After(today)) + ", " + liveBan.Format("02 Jan 2006")
 	text += "\n<b>adm ban</b>: " + strconv.FormatBool(admBan)
+
+	return text
+}
+
+func (bot *TelegramBot) stat(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	atx := NewAutoTx(bot.srv.DB)
+	defer atx.Finish()
+
+	var text string
+
+	addInt64 := func(key string, value int64) {
+		text += "\n<b>" + key + "</b>: " + strconv.FormatInt(value, 10)
+	}
+
+	addFloat64 := func(key string, value float64) {
+		text += "\n<b>" + key + "</b>: " + strconv.FormatFloat(value, 'f', 2, 64)
+	}
+
+	const usersQuery = `SELECT count(*) FROM users`
+	users := atx.QueryInt64(usersQuery)
+	addInt64("users", users)
+
+	const invitedUsersQuery = `SELECT count(*) FROM users WHERE invited_by IS NOT NULL`
+	invitedUsers := atx.QueryInt64(invitedUsersQuery)
+	addInt64("invited users", invitedUsers)
+
+	const negKarmaUsersQuery = `SELECT count(*) FROM users WHERE karma < -1`
+	negKarmaUsers := atx.QueryInt64(negKarmaUsersQuery)
+	addInt64("users with karma &lt; -1", negKarmaUsers)
+
+	const posKarmaUsersQuery = `SELECT count(*) FROM users WHERE karma > 1`
+	posKarmaUsers := atx.QueryInt64(posKarmaUsersQuery)
+	addInt64("users with karma &gt; 1", posKarmaUsers)
+
+	const genderUsersQuery = `
+SELECT gender.type AS sex, count(*)
+FROM users
+JOIN gender ON users.gender = gender.id
+GROUP BY sex
+ORDER BY sex`
+	atx.Query(genderUsersQuery)
+	for {
+		var gender string
+		var count int64
+		if !atx.Scan(&gender, &count) {
+			break
+		}
+
+		addInt64(gender+" gender users", count)
+	}
+
+	const newUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - created_at < interval '1 month'`
+	newUsersMonth := atx.QueryInt64(newUsersMonthQuery)
+	addInt64("last month new users", newUsersMonth)
+
+	const onlineUsersNowQuery = `SELECT count(*) FROM users WHERE is_online(last_seen_at)`
+	onlineUsersNow := atx.QueryInt64(onlineUsersNowQuery)
+	addInt64("online users", onlineUsersNow)
+
+	const onlineUsersWeekQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '7 days'`
+	onlineUsersWeek := atx.QueryInt64(onlineUsersWeekQuery)
+	addInt64("last week online users", onlineUsersWeek)
+
+	const onlineUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '1 month'`
+	onlineUsersMonth := atx.QueryInt64(onlineUsersMonthQuery)
+	addInt64("last month online users", onlineUsersMonth)
+
+	const postingUsersMonthQuery = `
+SELECT count(distinct author_id)
+FROM entries
+WHERE now() - created_at < interval '1 month'`
+	postingUsersMonth := atx.QueryInt64(postingUsersMonthQuery)
+	addInt64("last month posting users", postingUsersMonth)
+
+	const chatsQuery = `
+SELECT count(*)
+FROM chats
+JOIN messages ON last_message = messages.id
+WHERE last_message > 0 AND messages.author_id <> 1`
+	chats := atx.QueryInt64(chatsQuery)
+	addInt64("user chats", chats)
+
+	const avgEntriesQuery = `
+SELECT count(*) / 7.0
+FROM entries
+WHERE created_at::date < current_date
+	AND created_at::date >= current_date - interval '7 days'`
+	avgEntries := atx.QueryFloat64(avgEntriesQuery)
+	addFloat64("avg entries", avgEntries)
+
+	const avgCommentsQuery = `
+SELECT count(*) / 7.0
+FROM comments
+WHERE created_at::date < current_date
+	AND created_at::date >= current_date - interval '7 days'`
+	avgComments := atx.QueryFloat64(avgCommentsQuery)
+	addFloat64("avg comments", avgComments)
+
+	const avgMessagesQuery = `
+SELECT count(*) / 7.0
+FROM messages
+WHERE created_at::date < current_date
+	AND created_at::date >= current_date - interval '7 days'
+	AND author_id <> 1`
+	avgMessages := atx.QueryFloat64(avgMessagesQuery)
+	addFloat64("avg user messages", avgMessages)
+
+	if atx.Error() != nil {
+		return errorText
+	}
 
 	return text
 }

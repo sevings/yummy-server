@@ -151,9 +151,9 @@ func (tx *AutoTx) Scan(dest ...interface{}) bool {
 }
 
 func (tx *AutoTx) QueryBool(query string, args ...interface{}) bool {
-	var result bool
+	var result sql.NullBool
 	tx.Query(query, args...).Scan(&result)
-	return result
+	return result.Bool
 }
 
 func (tx *AutoTx) QueryBools(query string, args ...interface{}) []bool {
@@ -169,9 +169,9 @@ func (tx *AutoTx) QueryBools(query string, args ...interface{}) []bool {
 }
 
 func (tx *AutoTx) QueryInt64(query string, args ...interface{}) int64 {
-	var result int64
+	var result sql.NullInt64
 	tx.Query(query, args...).Scan(&result)
-	return result
+	return result.Int64
 }
 
 func (tx *AutoTx) QueryInt64s(query string, args ...interface{}) []int64 {
@@ -187,15 +187,15 @@ func (tx *AutoTx) QueryInt64s(query string, args ...interface{}) []int64 {
 }
 
 func (tx *AutoTx) QueryFloat64(query string, args ...interface{}) float64 {
-	var result float64
+	var result sql.NullFloat64
 	tx.Query(query, args...).Scan(&result)
-	return result
+	return result.Float64
 }
 
 func (tx *AutoTx) QueryString(query string, args ...interface{}) string {
-	var result string
+	var result sql.NullString
 	tx.Query(query, args...).Scan(&result)
-	return result
+	return result.String
 }
 
 func (tx *AutoTx) QueryStrings(query string, args ...interface{}) []string {
