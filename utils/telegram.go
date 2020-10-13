@@ -303,7 +303,7 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 <code>/ban {live | vote | comment | invite | adm} {N} {login или ссылка}</code> — запретить пользователю выбранные действия на N дней, в случае adm — навсегда.
 <code>/ban user {login или ссылка}</code> — заблокировать пользователя.
 <code>/unban {login или ссылка}</code> — разблокировать пользователя.
-<code>/info {email}</code> — информация о пользователе.
+<code>/info {email, login или ссылка}</code> — информация о пользователе.
 <code>/delete {email}</code> — удалить пользователя.
 /stat — статистика сервера.
 `
