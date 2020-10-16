@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -205,6 +206,16 @@ func GenerateString(length int) string {
 	}
 
 	return string(b)
+}
+
+var tagRe = regexp.MustCompile(`<[^>]+>`)
+var imgRe = regexp.MustCompile(`(?i)<img[^>]+>`)
+
+func RemoveHTML(text string) string {
+	text = imgRe.ReplaceAllString(text, "[изображение]")
+	text = tagRe.ReplaceAllString(text, "")
+
+	return text
 }
 
 func CutText(text string, size int) (string, bool) {

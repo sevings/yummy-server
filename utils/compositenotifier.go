@@ -2,11 +2,13 @@ package utils
 
 import (
 	"database/sql"
+	"github.com/golang-commonmark/markdown"
 	"github.com/sevings/mindwell-server/models"
 )
 
 type CompositeNotifier struct {
 	srv  *MindwellServer
+	md   *markdown.Markdown
 	Mail MailSender
 	Ntf  *Notifier
 	Tg   *TelegramBot
@@ -18,6 +20,7 @@ func NewCompositeNotifier(srv *MindwellServer) *CompositeNotifier {
 
 	return &CompositeNotifier{
 		srv: srv,
+		md:  markdown.New(markdown.Typographer(false), markdown.Breaks(true), markdown.Tables(false)),
 		Ntf: NewNotifier(ntfURL, ntfKey),
 		Tg:  NewTelegramBot(srv),
 	}
@@ -121,10 +124,24 @@ func (ntf *CompositeNotifier) SendResetPassword(email, showName, gender string) 
 	ntf.Mail.SendResetPassword(email, showName, gender, code, date)
 }
 
+func (ntf *CompositeNotifier) entryTitle(tx *AutoTx, entryID int64) string {
+	var title, content string
+	tx.Query("SELECT title, edit_content FROM entries WHERE id = $1", entryID)
+	tx.Scan(&title, &content)
+
+	if title != "" {
+		return title
+	}
+
+	content = ntf.md.RenderToString([]byte(content))
+	content = RemoveHTML(content)
+	content, _ = CutText(content, 100)
+
+	return content
+}
+
 func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
-	const titleQ = "SELECT title FROM entries WHERE id = $1"
-	title := tx.QueryString(titleQ, cmt.EntryID)
-	title, _ = CutText(title, 80)
+	title := ntf.entryTitle(tx, cmt.EntryID)
 
 	const fromQ = `
 		SELECT gender.type 
@@ -167,9 +184,7 @@ func (ntf *CompositeNotifier) SendNewComment(tx *AutoTx, cmt *models.Comment) {
 }
 
 func (ntf *CompositeNotifier) SendUpdateComment(tx *AutoTx, cmt *models.Comment) {
-	const titleQ = "SELECT title FROM entries WHERE id = $1"
-	title := tx.QueryString(titleQ, cmt.EntryID)
-	title, _ = CutText(title, 80)
+	title := ntf.entryTitle(tx, cmt.EntryID)
 
 	ntf.Tg.SendUpdateComment(title, cmt)
 	ntf.Ntf.NotifyUpdate(tx, cmt.ID, typeComment)
