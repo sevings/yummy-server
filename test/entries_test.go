@@ -547,12 +547,13 @@ func TestLoadTlog(t *testing.T) {
 	esm.Clear()
 }
 
-func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after, tag string, size int) *models.Feed {
+func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after, tag, sort string, size int) *models.Feed {
 	params := me.GetMeTlogParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 		Tag:    &tag,
+		Sort:   &sort,
 	}
 
 	load := api.MeGetMeTlogHandler.Handle
@@ -577,7 +578,7 @@ func TestLoadMyTlog(t *testing.T) {
 	e1 := postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	e0 := postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	feed := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", 4)
+	feed := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "new", 4)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
@@ -587,14 +588,14 @@ func TestLoadMyTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	checkLoadMyTlog(t, userIDs[1], 10, "", "", "", 0)
+	checkLoadMyTlog(t, userIDs[1], 10, "", "", "", "new", 0)
 
-	feed = checkLoadMyTlog(t, userIDs[0], 1, "", "", "", 1)
+	feed = checkLoadMyTlog(t, userIDs[0], 1, "", "", "", "new", 1)
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadMyTlog(t, userIDs[0], 4, feed.NextBefore, "", "", 3)
+	feed = checkLoadMyTlog(t, userIDs[0], 4, feed.NextBefore, "", "", "new", 3)
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 	compareEntries(t, e3, feed.Entries[2], userIDs[0])
@@ -718,7 +719,7 @@ func TestLoadFavorites(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", 4)
+	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "new", 4)
 
 	favoriteEntry(userIDs[0], tlog.Entries[2].ID)
 	favoriteEntry(userIDs[0], tlog.Entries[1].ID)
