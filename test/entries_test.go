@@ -521,9 +521,11 @@ func TestLoadTlog(t *testing.T) {
 	voteForEntry(userIDs[1], e3.ID, true)
 	voteForEntry(userIDs[2], e0.ID, true)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "best", 2)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "best", 4)
 	req.Equal(e0.ID, feed.Entries[0].ID)
 	req.Equal(e3.ID, feed.Entries[1].ID)
+	req.Equal(e1.ID, feed.Entries[2].ID)
+	req.Equal(e2.ID, feed.Entries[3].ID)
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -610,6 +612,15 @@ func TestLoadMyTlog(t *testing.T) {
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 	compareEntries(t, e3, feed.Entries[2], userIDs[0])
+
+	feed = checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "old", 4)
+	compareEntries(t, e3, feed.Entries[0], userIDs[0])
+	compareEntries(t, e2, feed.Entries[1], userIDs[0])
+	compareEntries(t, e1, feed.Entries[2], userIDs[0])
+	compareEntries(t, e0, feed.Entries[3], userIDs[0])
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
 }
 
 func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before, after, tag string, size int) *models.Feed {

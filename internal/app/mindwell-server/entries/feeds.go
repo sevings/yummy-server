@@ -408,11 +408,12 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 			query.Where("entries.created_at < to_timestamp(?)", before).
 				OrderBy("entries.created_at DESC")
 		} else {
+			reverse = sort == "old"
 			query.OrderBy("entries.created_at DESC")
 		}
 	} else {
-		query.Where("entries.rating > 0").
-			OrderBy("entries.rating DESC")
+		query.OrderBy("entries.rating DESC").
+			OrderBy("entries.created_at DESC")
 	}
 
 	tx.QueryStmt(query)
@@ -507,15 +508,20 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 			query.Where("entries.created_at < to_timestamp(?)", before).
 				OrderBy("entries.created_at DESC")
 		} else {
+			reverse = sort == "old"
 			query.OrderBy("entries.created_at DESC")
 		}
 	} else {
-		query.Where("entries.rating > 0").
-			OrderBy("entries.rating DESC")
+		query.OrderBy("entries.rating DESC").
+			OrderBy("entries.created_at DESC")
 	}
 
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, reverse)
+
+	if sort == "best" {
+		return feed
+	}
 
 	scrollQ := sqlf.From("entries").
 		Where("entries.author_id = ?", userID.ID).
