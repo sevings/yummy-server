@@ -517,6 +517,17 @@ func TestLoadTlog(t *testing.T) {
 	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "", "old", 0)
 	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, feed.NextBefore, "", "", "old", 1)
 
+	voteForEntry(userIDs[1], e0.ID, true)
+	voteForEntry(userIDs[1], e3.ID, true)
+	voteForEntry(userIDs[2], e0.ID, true)
+
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "best", 2)
+	req.Equal(e0.ID, feed.Entries[0].ID)
+	req.Equal(e3.ID, feed.Entries[1].ID)
+
+	req.False(feed.HasBefore)
+	req.False(feed.HasAfter)
+
 	setUserPrivacy(t, userIDs[0], "followers")
 	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", "new", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)

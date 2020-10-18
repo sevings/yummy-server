@@ -396,20 +396,31 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	after := utils.ParseFloat(afterS)
 
 	query := tlogQuery(userID.ID, limit, tlog, tag)
+	reverse := false
 
-	if after > 0 {
-		query.Where("entries.created_at > to_timestamp(?)", after).
-			OrderBy("entries.created_at ASC")
-	} else if before > 0 {
-		query.Where("entries.created_at < to_timestamp(?)", before).
-			OrderBy("entries.created_at DESC")
+	if sort == "new" || sort == "old" {
+		if after > 0 {
+			reverse = sort == "new"
+			query.Where("entries.created_at > to_timestamp(?)", after).
+				OrderBy("entries.created_at ASC")
+		} else if before > 0 {
+			reverse = sort == "old"
+			query.Where("entries.created_at < to_timestamp(?)", before).
+				OrderBy("entries.created_at DESC")
+		} else {
+			query.OrderBy("entries.created_at DESC")
+		}
 	} else {
-		query.OrderBy("entries.created_at DESC")
+		query.Where("entries.rating > 0").
+			OrderBy("entries.rating DESC")
 	}
 
 	tx.QueryStmt(query)
-	reverse := (after > 0) == (sort == "new")
 	feed := loadFeed(srv, tx, userID, reverse)
+
+	if sort == "best" {
+		return feed
+	}
 
 	scrollQ := scrollQuery()
 	addTlogQuery(scrollQ, userID.ID, tlog, tag)
@@ -484,19 +495,26 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 	after := utils.ParseFloat(afterS)
 
 	query := myTlogQuery(userID.ID, limit, tag)
+	reverse := false
 
-	if after > 0 {
-		query.Where("entries.created_at > to_timestamp(?)", after).
-			OrderBy("entries.created_at ASC")
-	} else if before > 0 {
-		query.Where("entries.created_at < to_timestamp(?)", before).
-			OrderBy("entries.created_at DESC")
+	if sort == "new" || sort == "old" {
+		if after > 0 {
+			reverse = sort == "new"
+			query.Where("entries.created_at > to_timestamp(?)", after).
+				OrderBy("entries.created_at ASC")
+		} else if before > 0 {
+			reverse = sort == "old"
+			query.Where("entries.created_at < to_timestamp(?)", before).
+				OrderBy("entries.created_at DESC")
+		} else {
+			query.OrderBy("entries.created_at DESC")
+		}
 	} else {
-		query.OrderBy("entries.created_at DESC")
+		query.Where("entries.rating > 0").
+			OrderBy("entries.rating DESC")
 	}
 
 	tx.QueryStmt(query)
-	reverse := (after > 0) == (sort == "new")
 	feed := loadFeed(srv, tx, userID, reverse)
 
 	scrollQ := sqlf.From("entries").
