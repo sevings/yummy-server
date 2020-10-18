@@ -1606,6 +1606,7 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/sort'
       security:
         - ApiKeyHeader: []
       tags:

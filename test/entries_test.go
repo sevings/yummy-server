@@ -442,13 +442,14 @@ func TestLoadLive(t *testing.T) {
 	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
-func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, tag string, size int) *models.Feed {
+func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, tag, sort string, size int) *models.Feed {
 	params := users.GetUsersNameTlogParams{
 		Name:   tlog.Name,
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 		Tag:    &tag,
+		Sort:   &sort,
 	}
 
 	load := api.UsersGetUsersNameTlogHandler.Handle
@@ -475,7 +476,7 @@ func TestLoadTlog(t *testing.T) {
 	e1 := postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	e0 := postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	feed := checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", 2)
+	feed := checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[1])
 	compareEntries(t, e3, feed.Entries[1], userIDs[1])
 
@@ -483,15 +484,15 @@ func TestLoadTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", 4)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "new", 4)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
 	compareEntries(t, e3, feed.Entries[3], userIDs[0])
 
-	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", "", 0)
+	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", "", "new", 0)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", "", 3)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", "", "new", 3)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
@@ -499,36 +500,47 @@ func TestLoadTlog(t *testing.T) {
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, feed.NextBefore, "", "", 1)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, feed.NextBefore, "", "", "new", 1)
 	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "", "old", 3)
+	compareEntries(t, e0, feed.Entries[2], userIDs[0])
+	compareEntries(t, e1, feed.Entries[1], userIDs[0])
+	compareEntries(t, e2, feed.Entries[0], userIDs[0])
+
+	req.True(feed.HasBefore)
+	req.False(feed.HasAfter)
+
+	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "", "old", 0)
+	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, feed.NextBefore, "", "", "old", 1)
+
 	setUserPrivacy(t, userIDs[0], "followers")
-	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
 	checkPermitFollow(t, userIDs[0], userIDs[1], true)
 
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
 
 	setUserPrivacy(t, userIDs[0], "invited")
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
-	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", "", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -753,7 +765,7 @@ func TestLoadFavorites(t *testing.T) {
 
 	setUserPrivacy(t, userIDs[1], "all")
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", 2)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
 	favoriteEntry(t, userIDs[1], feed.Entries[0].ID)
 	favoriteEntry(t, userIDs[1], feed.Entries[1].ID)
 	favoriteEntry(t, userIDs[1], e4.ID)
@@ -1224,7 +1236,7 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", 2)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
 
 	compareEntries(t, e0, feed.Entries[0], userIDs[1])
 	compareEntries(t, e2, feed.Entries[1], userIDs[1])
@@ -1232,14 +1244,14 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "aaa", 1)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "aaa", "new", 1)
 
 	compareEntries(t, e2, feed.Entries[0], userIDs[1])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "test", 0)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "test", "new", 0)
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)

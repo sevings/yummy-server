@@ -3115,6 +3115,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
+          },
+          {
+            "$ref": "#/parameters/sort"
           }
         ],
         "responses": {
@@ -8595,6 +8598,17 @@ func init() {
             "type": "string",
             "default": "",
             "name": "tag",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "new",
+              "old",
+              "best"
+            ],
+            "type": "string",
+            "default": "new",
+            "name": "sort",
             "in": "query"
           }
         ],

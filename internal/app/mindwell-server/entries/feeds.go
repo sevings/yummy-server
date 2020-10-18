@@ -392,9 +392,9 @@ func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams,
 	}
 }
 
-func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, tag string, limit int64) *models.Feed {
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, tag, sort string, limit int64) *models.Feed {
 	if userID.Name == tlog {
-		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, tag, limit)
+		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, tag, sort, limit)
 	}
 
 	before := utils.ParseFloat(beforeS)
@@ -413,7 +413,8 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	}
 
 	tx.QueryStmt(query)
-	feed := loadFeed(srv, tx, userID, after > 0)
+	reverse := (after > 0) == (sort == "new")
+	feed := loadFeed(srv, tx, userID, reverse)
 
 	scrollQ := scrollQuery()
 	addTlogQuery(scrollQ, userID.ID, tlog, tag)
@@ -445,19 +446,22 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	} else {
 		scrollQ.Select("TRUE")
 
-		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = utils.FormatFloat(nextBefore)
+		oldest := feed.Entries[len(feed.Entries)-1].CreatedAt
+		newest := feed.Entries[0].CreatedAt
 
+		if sort == "old" {
+			oldest, newest = newest, oldest
+		}
+
+		feed.NextBefore = utils.FormatFloat(oldest)
 		beforeQuery := scrollQ.Clone().
-			Where("entries.created_at < to_timestamp(?)", nextBefore)
+			Where("entries.created_at < to_timestamp(?)", oldest)
 		tx.QueryStmt(beforeQuery)
 		tx.Scan(&feed.HasBefore)
 
-		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = utils.FormatFloat(nextAfter)
-
+		feed.NextAfter = utils.FormatFloat(newest)
 		afterQuery := scrollQ.Clone().
-			Where("entries.created_at > to_timestamp(?)", nextAfter)
+			Where("entries.created_at > to_timestamp(?)", newest)
 		tx.QueryStmt(afterQuery)
 		tx.Scan(&feed.HasAfter)
 	}
@@ -474,13 +478,13 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
 			}
 
-			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Tag, *params.Limit)
+			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag string, limit int64) *models.Feed {
+func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag, sort string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
@@ -497,7 +501,8 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 	}
 
 	tx.QueryStmt(query)
-	feed := loadFeed(srv, tx, userID, after > 0)
+	reverse := (after > 0) == (sort == "new")
+	feed := loadFeed(srv, tx, userID, reverse)
 
 	scrollQ := sqlf.From("entries").
 		Where("entries.author_id = ?", userID.ID).
@@ -529,19 +534,20 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 	} else {
 		scrollQ.Select("TRUE")
 
-		nextBefore := feed.Entries[len(feed.Entries)-1].CreatedAt
-		feed.NextBefore = utils.FormatFloat(nextBefore)
+		oldest := feed.Entries[len(feed.Entries)-1].CreatedAt
+		newest := feed.Entries[0].CreatedAt
 
-		beforeQuery := scrollQ.Clone().Where("created_at < to_timestamp(?)", nextBefore)
+		if sort == "old" {
+			oldest, newest = newest, oldest
+		}
 
+		feed.NextBefore = utils.FormatFloat(oldest)
+		beforeQuery := scrollQ.Clone().Where("created_at < to_timestamp(?)", oldest)
 		tx.QueryStmt(beforeQuery)
 		tx.Scan(&feed.HasBefore)
 
-		nextAfter := feed.Entries[0].CreatedAt
-		feed.NextAfter = utils.FormatFloat(nextAfter)
-
-		afterQuery := scrollQ.Clone().Where("created_at > to_timestamp(?)", nextAfter)
-
+		feed.NextAfter = utils.FormatFloat(newest)
+		afterQuery := scrollQ.Clone().Where("created_at > to_timestamp(?)", newest)
 		tx.QueryStmt(afterQuery)
 		tx.Scan(&feed.HasAfter)
 	}
@@ -552,7 +558,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.GetMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Limit)
+			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(nil)

@@ -27,6 +27,7 @@ func NewGetMeTlogParams() GetMeTlogParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(30)
+		sortDefault   = string("new")
 		tagDefault    = string("")
 	)
 
@@ -36,6 +37,8 @@ func NewGetMeTlogParams() GetMeTlogParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Sort: &sortDefault,
 
 		Tag: &tagDefault,
 	}
@@ -68,6 +71,11 @@ type GetMeTlogParams struct {
 	*/
 	Limit *int64
 	/*
+	  In: query
+	  Default: "new"
+	*/
+	Sort *string
+	/*
 	  Max Length: 50
 	  In: query
 	  Default: ""
@@ -98,6 +106,11 @@ func (o *GetMeTlogParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qSort, qhkSort, _ := qs.GetOK("sort")
+	if err := o.bindSort(qSort, qhkSort, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -185,6 +198,39 @@ func (o *GetMeTlogParams) validateLimit(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindSort binds and validates parameter Sort from query.
+func (o *GetMeTlogParams) bindSort(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetMeTlogParams()
+		return nil
+	}
+
+	o.Sort = &raw
+
+	if err := o.validateSort(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateSort carries on validations for parameter Sort
+func (o *GetMeTlogParams) validateSort(formats strfmt.Registry) error {
+
+	if err := validate.Enum("sort", "query", *o.Sort, []interface{}{"new", "old", "best"}); err != nil {
 		return err
 	}
 

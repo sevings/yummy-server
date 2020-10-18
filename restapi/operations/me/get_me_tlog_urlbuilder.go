@@ -18,6 +18,7 @@ type GetMeTlogURL struct {
 	After  *string
 	Before *string
 	Limit  *int64
+	Sort   *string
 	Tag    *string
 
 	_basePath string
@@ -76,6 +77,14 @@ func (o *GetMeTlogURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var sort string
+	if o.Sort != nil {
+		sort = *o.Sort
+	}
+	if sort != "" {
+		qs.Set("sort", sort)
 	}
 
 	var tag string
