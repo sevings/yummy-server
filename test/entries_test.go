@@ -698,7 +698,7 @@ func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, be
 	return feed
 }
 
-func favoriteEntry(t *testing.T, user *models.UserID, entryID int64) {
+func favoriteEntry(user *models.UserID, entryID int64) {
 	put := api.FavoritesPutEntriesIDFavoriteHandler.Handle
 	params := favorites.PutEntriesIDFavoriteParams{
 		ID: entryID,
@@ -720,9 +720,9 @@ func TestLoadFavorites(t *testing.T) {
 
 	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", 4)
 
-	favoriteEntry(t, userIDs[0], tlog.Entries[2].ID)
-	favoriteEntry(t, userIDs[0], tlog.Entries[1].ID)
-	favoriteEntry(t, userIDs[0], tlog.Entries[0].ID)
+	favoriteEntry(userIDs[0], tlog.Entries[2].ID)
+	favoriteEntry(userIDs[0], tlog.Entries[1].ID)
+	favoriteEntry(userIDs[0], tlog.Entries[0].ID)
 
 	req := require.New(t)
 
@@ -758,7 +758,7 @@ func TestLoadFavorites(t *testing.T) {
 
 	setUserPrivacy(t, userIDs[1], "invited")
 	e4 := postEntry(userIDs[1], models.EntryPrivacyAll, true)
-	favoriteEntry(t, userIDs[0], e4.ID)
+	favoriteEntry(userIDs[0], e4.ID)
 
 	checkLoadFavorites(t, userIDs[0], userIDs[0], 10, "", "", 4)
 	checkLoadFavorites(t, userIDs[3], userIDs[0], 10, "", "", 1)
@@ -766,9 +766,9 @@ func TestLoadFavorites(t *testing.T) {
 	setUserPrivacy(t, userIDs[1], "all")
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
-	favoriteEntry(t, userIDs[1], feed.Entries[0].ID)
-	favoriteEntry(t, userIDs[1], feed.Entries[1].ID)
-	favoriteEntry(t, userIDs[1], e4.ID)
+	favoriteEntry(userIDs[1], feed.Entries[0].ID)
+	favoriteEntry(userIDs[1], feed.Entries[1].ID)
+	favoriteEntry(userIDs[1], e4.ID)
 
 	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
 	checkLoadFavorites(t, userIDs[2], userIDs[1], 10, "", "", 1)
@@ -817,25 +817,25 @@ func TestLoadLiveComments(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
-	entries := make([]*models.Entry, 6)
+	es := make([]*models.Entry, 6)
 
-	entries[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
-	entries[1] = postEntry(userIDs[0], models.EntryPrivacyAll, false)
-	entries[2] = postEntry(userIDs[0], models.EntryPrivacySome, true)
-	entries[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
-	entries[4] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
-	entries[5] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
+	es[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
+	es[1] = postEntry(userIDs[0], models.EntryPrivacyAll, false)
+	es[2] = postEntry(userIDs[0], models.EntryPrivacySome, true)
+	es[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
+	es[4] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	es[5] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
 
 	// skip 4
 	comments := make([]int64, 5)
 
-	comments[0] = postComment(userIDs[0], entries[5].ID)
-	comments[1] = postComment(userIDs[0], entries[0].ID)
-	comments[2] = postComment(userIDs[0], entries[3].ID)
-	comments[3] = postComment(userIDs[0], entries[1].ID)
-	comments[4] = postComment(userIDs[0], entries[2].ID)
+	comments[0] = postComment(userIDs[0], es[5].ID)
+	comments[1] = postComment(userIDs[0], es[0].ID)
+	comments[2] = postComment(userIDs[0], es[3].ID)
+	comments[3] = postComment(userIDs[0], es[1].ID)
+	comments[4] = postComment(userIDs[0], es[2].ID)
 
-	for _, e := range entries {
+	for _, e := range es {
 		e.CommentCount = 1
 		e.EditContent = ""
 		e.IsWatching = false
@@ -844,16 +844,16 @@ func TestLoadLiveComments(t *testing.T) {
 
 	feed := checkLoadLive(t, userIDs[2], 10, "comments", "", "", "", 3)
 
-	compareEntries(t, entries[3], feed.Entries[0], userIDs[2])
-	compareEntries(t, entries[0], feed.Entries[1], userIDs[2])
-	compareEntries(t, entries[5], feed.Entries[2], userIDs[2])
+	compareEntries(t, es[3], feed.Entries[0], userIDs[2])
+	compareEntries(t, es[0], feed.Entries[1], userIDs[2])
+	compareEntries(t, es[5], feed.Entries[2], userIDs[2])
 
 	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadLive(t, userIDs[2], 1, "comments", "", "", "", 1)
-	compareEntries(t, entries[3], feed.Entries[0], userIDs[2])
+	compareEntries(t, es[3], feed.Entries[0], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -900,46 +900,46 @@ func TestLoadWatching(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
-	entries := make([]*models.Entry, 4)
+	es := make([]*models.Entry, 4)
 
-	entries[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
-	entries[1] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
-	entries[2] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
-	entries[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
+	es[0] = postEntry(userIDs[0], models.EntryPrivacyAll, true) // 2
+	es[1] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 1
+	es[2] = postEntry(userIDs[1], models.EntryPrivacyAll, true)
+	es[3] = postEntry(userIDs[1], models.EntryPrivacyAll, true) // 3
 
 	// skip 2
-	postComment(userIDs[2], entries[3].ID)
-	postComment(userIDs[2], entries[1].ID)
-	postComment(userIDs[2], entries[0].ID)
-	postComment(userIDs[0], entries[1].ID)
+	postComment(userIDs[2], es[3].ID)
+	postComment(userIDs[2], es[1].ID)
+	postComment(userIDs[2], es[0].ID)
+	postComment(userIDs[0], es[1].ID)
 
-	for _, e := range entries {
+	for _, e := range es {
 		e.CommentCount = 1
 		e.EditContent = ""
 		e.IsWatching = true
 		e.Rating.Vote = 0
 	}
 
-	entries[1].CommentCount = 2
+	es[1].CommentCount = 2
 
 	feed := checkLoadWatching(t, userIDs[2], 10, 3)
 
 	req := require.New(t)
-	compareEntries(t, entries[1], feed.Entries[0], userIDs[2])
-	compareEntries(t, entries[0], feed.Entries[1], userIDs[2])
-	compareEntries(t, entries[3], feed.Entries[2], userIDs[2])
+	compareEntries(t, es[1], feed.Entries[0], userIDs[2])
+	compareEntries(t, es[0], feed.Entries[1], userIDs[2])
+	compareEntries(t, es[3], feed.Entries[2], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
 	feed = checkLoadWatching(t, userIDs[2], 1, 1)
-	compareEntries(t, entries[1], feed.Entries[0], userIDs[2])
+	compareEntries(t, es[1], feed.Entries[0], userIDs[2])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	postComment(userIDs[3], entries[0].ID)
-	postComment(userIDs[3], entries[1].ID)
+	postComment(userIDs[3], es[0].ID)
+	postComment(userIDs[3], es[1].ID)
 
 	checkLoadWatching(t, userIDs[3], 10, 2)
 	setUserPrivacy(t, userIDs[1], "invited")

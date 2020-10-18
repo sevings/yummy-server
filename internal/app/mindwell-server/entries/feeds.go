@@ -113,11 +113,6 @@ func addLiveWaitingQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 		Where("users.invited_by IS NULL")
 }
 
-func liveWaitingQuery(userID, limit int64, tag string) *sqlf.Stmt {
-	q := feedQuery(userID, limit)
-	return addLiveWaitingQuery(q, userID, tag)
-}
-
 func addLiveCommentsQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	return addLiveQuery(q, userID, tag).
 		Where("users.invited_by IS NOT NULL").
