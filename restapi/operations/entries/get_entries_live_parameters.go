@@ -27,6 +27,7 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 		afterDefault   = string("")
 		beforeDefault  = string("")
 		limitDefault   = int64(30)
+		queryDefault   = string("")
 		sectionDefault = string("entries")
 		tagDefault     = string("")
 	)
@@ -37,6 +38,8 @@ func NewGetEntriesLiveParams() GetEntriesLiveParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Query: &queryDefault,
 
 		Section: &sectionDefault,
 
@@ -70,6 +73,12 @@ type GetEntriesLiveParams struct {
 	  Default: 30
 	*/
 	Limit *int64
+	/*
+	  Max Length: 100
+	  In: query
+	  Default: ""
+	*/
+	Query *string
 	/*
 	  In: query
 	  Default: "entries"
@@ -106,6 +115,11 @@ func (o *GetEntriesLiveParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qQuery, qhkQuery, _ := qs.GetOK("query")
+	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -198,6 +212,39 @@ func (o *GetEntriesLiveParams) validateLimit(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindQuery binds and validates parameter Query from query.
+func (o *GetEntriesLiveParams) bindQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesLiveParams()
+		return nil
+	}
+
+	o.Query = &raw
+
+	if err := o.validateQuery(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateQuery carries on validations for parameter Query
+func (o *GetEntriesLiveParams) validateQuery(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
 		return err
 	}
 

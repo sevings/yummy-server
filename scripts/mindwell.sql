@@ -2,7 +2,8 @@
 
 CREATE SCHEMA "mindwell";
 
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS pg_trgm; -- search users
+CREATE EXTENSION IF NOT EXISTS rum;     -- search entries
 
 ALTER DATABASE mindwell SET search_path TO mindwell, public;
 
@@ -1167,6 +1168,13 @@ INSERT INTO "mindwell"."categories" VALUES(3, 'comment');
 
 
 
+CREATE OR REPLACE FUNCTION to_search_vector(title TEXT, content TEXT)
+   RETURNS tsvector AS $$
+BEGIN
+  RETURN to_tsvector(title || '\n' || content);
+END
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 -- CREATE TABLE "entries" --------------------------------------
 CREATE TABLE "mindwell"."entries" (
 	"id" Serial NOT NULL,
@@ -1215,6 +1223,11 @@ CREATE INDEX "index_entry_word_count" ON "mindwell"."entries" USING btree( "word
 
 -- CREATE INDEX "index_last_comment_id" ------------------------
 CREATE INDEX "index_last_comment_id" ON "mindwell"."entries" USING btree( "last_comment" );
+-- -------------------------------------------------------------
+
+-- CREATE INDEX "index_entry_search" ---------------------------
+CREATE INDEX "index_entry_search" ON "mindwell"."entries" USING rum
+    (to_search_vector("title", "edit_content") rum_tsvector_ops);
 -- -------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION mindwell.inc_tlog_entries() RETURNS TRIGGER AS $$

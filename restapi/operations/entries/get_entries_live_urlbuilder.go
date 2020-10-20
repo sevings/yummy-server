@@ -18,6 +18,7 @@ type GetEntriesLiveURL struct {
 	After   *string
 	Before  *string
 	Limit   *int64
+	Query   *string
 	Section *string
 	Tag     *string
 
@@ -77,6 +78,14 @@ func (o *GetEntriesLiveURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var query string
+	if o.Query != nil {
+		query = *o.Query
+	}
+	if query != "" {
+		qs.Set("query", query)
 	}
 
 	var section string

@@ -1643,6 +1643,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -1785,6 +1788,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -1819,6 +1825,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/tag"
+          },
+          {
+            "$ref": "#/parameters/query"
           },
           {
             "enum": [
@@ -2805,6 +2814,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/before"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -3118,6 +3130,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/sort"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -3783,6 +3798,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/before"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -4051,6 +4069,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/sort"
+          },
+          {
+            "$ref": "#/parameters/query"
           }
         ],
         "responses": {
@@ -5148,6 +5169,13 @@ func init() {
       "name": "name",
       "in": "path",
       "required": true
+    },
+    "query": {
+      "maxLength": 100,
+      "type": "string",
+      "default": "",
+      "name": "query",
+      "in": "query"
     },
     "sort": {
       "enum": [
@@ -6918,6 +6946,13 @@ func init() {
             "default": "",
             "name": "tag",
             "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -7084,6 +7119,13 @@ func init() {
             "default": "",
             "name": "tag",
             "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -7132,6 +7174,13 @@ func init() {
             "type": "string",
             "default": "",
             "name": "tag",
+            "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
             "in": "query"
           },
           {
@@ -8192,6 +8241,13 @@ func init() {
             "default": "",
             "name": "before",
             "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -8609,6 +8665,13 @@ func init() {
             "type": "string",
             "default": "new",
             "name": "sort",
+            "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
             "in": "query"
           }
         ],
@@ -9331,6 +9394,13 @@ func init() {
             "default": "",
             "name": "before",
             "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
+            "in": "query"
           }
         ],
         "responses": {
@@ -9706,6 +9776,13 @@ func init() {
             "type": "string",
             "default": "new",
             "name": "sort",
+            "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
             "in": "query"
           }
         ],
@@ -10810,6 +10887,13 @@ func init() {
       "name": "name",
       "in": "path",
       "required": true
+    },
+    "query": {
+      "maxLength": 100,
+      "type": "string",
+      "default": "",
+      "name": "query",
+      "in": "query"
     },
     "sort": {
       "enum": [

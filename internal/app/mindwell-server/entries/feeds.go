@@ -18,10 +18,10 @@ func baseFeedQuery(userID, limit int64) *sqlf.Stmt {
 	return sqlf.Select("entries.id, extract(epoch from entries.created_at) as created_at").
 		Select("rating, entries.up_votes, entries.down_votes").
 		Select("entries.title, edit_content").
-		Select("word_count, entry_privacy.type").
+		Select("word_count, entry_privacy.type as privacy").
 		Select("is_votable, in_live, entries.comments_count").
-		Select("users.id, users.name, users.show_name").
-		Select("is_online(users.last_seen_at)").
+		Select("author_id, users.name, users.show_name").
+		Select("is_online(users.last_seen_at) as is_online").
 		Select("users.avatar").
 		From("entries").
 		Join("users", "entries.author_id = users.id").
@@ -48,17 +48,45 @@ func addTagQuery(q *sqlf.Stmt, tag string) *sqlf.Stmt {
 		Where("tags.tag = ?", tag)
 }
 
+func addSearchQuery(q *sqlf.Stmt, query string) *sqlf.Stmt {
+	query = strings.TrimSpace(query)
+
+	if query == "" {
+		return q
+	}
+
+	sub := q.
+		Select("to_search_vector(entries.title, entries.edit_content) <=> to_tsquery('russian', ?) AS rum_dist", query).
+		Where("to_search_vector(entries.title, entries.edit_content) @@ to_tsquery('russian', ?)", query).
+		OrderBy("rum_dist")
+
+	return sqlf.Select("id, created_at").
+		Select("rating, up_votes, down_votes").
+		Select("title, edit_content").
+		Select("word_count, privacy").
+		Select("is_votable, in_live, comments_count").
+		Select("author_id, name, show_name").
+		Select("is_online").
+		Select("avatar").
+		Select("vote, is_favorite, is_watching").
+		From("").SubQuery("(", ") AS entries", sub)
+}
+
 func myTlogQuery(userID, limit int64, tag string) *sqlf.Stmt {
 	q := baseFeedQuery(userID, limit)
 	addTagQuery(q, tag)
 	return q.
-		Select("NULL, my_favorites.entry_id IS NOT NULL, my_watching.entry_id IS NOT NULL").
+		Select("NULL as vote").
+		Select("my_favorites.entry_id IS NOT NULL as is_favorite").
+		Select("my_watching.entry_id IS NOT NULL as is_watching").
 		Where("entries.author_id = ?", userID)
 }
 
 func feedQuery(userID, limit int64) *sqlf.Stmt {
 	return baseFeedQuery(userID, limit).
-		Select("my_votes.vote, my_favorites.entry_id IS NOT NULL, my_watching.entry_id IS NOT NULL").
+		Select("my_votes.vote").
+		Select("my_favorites.entry_id IS NOT NULL as is_favorite").
+		Select("my_watching.entry_id IS NOT NULL as is_watching").
 		With("my_votes",
 			sqlf.Select("entry_id, vote").From("entry_votes").Where("user_id = ?", userID)).
 		LeftJoin("my_votes", "my_votes.entry_id = entries.id").
@@ -270,27 +298,30 @@ func loadFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID
 }
 
 func loadLiveFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, addQ addQuery,
-	beforeS, afterS string, limit int64) *models.Feed {
+	beforeS, afterS, search string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	query := feedQuery(userID.ID, limit)
 	addQ(query)
 
-	if after > 0 {
-		query.Where("entries.created_at > to_timestamp(?)", after).
-			OrderBy("entries.created_at ASC")
-	} else if before > 0 {
-		query.Where("entries.created_at < to_timestamp(?)", before).
-			OrderBy("entries.created_at DESC")
-	} else {
-		query.OrderBy("entries.created_at DESC")
+	if search == "" {
+		if after > 0 {
+			query.Where("entries.created_at > to_timestamp(?)", after).
+				OrderBy("entries.created_at ASC")
+		} else if before > 0 {
+			query.Where("entries.created_at < to_timestamp(?)", before).
+				OrderBy("entries.created_at DESC")
+		} else {
+			query.OrderBy("entries.created_at DESC")
+		}
 	}
 
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
 
-	if len(feed.Entries) == 0 {
+	if search != "" || len(feed.Entries) == 0 {
 		return feed
 	}
 
@@ -329,12 +360,12 @@ func newLiveLoader(srv *utils.MindwellServer) func(entries.GetEntriesLiveParams,
 			var feed *models.Feed
 			if *params.Section == "entries" {
 				add := func(q *sqlf.Stmt) { AddLiveInvitedQuery(q, userID.ID, *params.Tag) }
-				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Limit)
+				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Query, *params.Limit)
 			} else if *params.Section == "comments" {
 				feed = loadLiveCommentsFeed(srv, tx, userID, *params.Tag, *params.Limit)
 			} else if *params.Section == "waiting" {
 				add := func(q *sqlf.Stmt) { addLiveWaitingQuery(q, userID.ID, *params.Tag) }
-				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Limit)
+				feed = loadLiveFeed(srv, tx, userID, add, *params.Before, *params.After, *params.Query, *params.Limit)
 			}
 
 			return entries.NewGetEntriesLiveOK().WithPayload(feed)
@@ -387,9 +418,9 @@ func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams,
 	}
 }
 
-func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, tag, sort string, limit int64) *models.Feed {
+func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, tag, sort, search string, limit int64) *models.Feed {
 	if userID.Name == tlog {
-		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, tag, sort, limit)
+		return loadMyTlogFeed(srv, tx, userID, beforeS, afterS, tag, sort, search, limit)
 	}
 
 	before := utils.ParseFloat(beforeS)
@@ -398,28 +429,31 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 	query := tlogQuery(userID.ID, limit, tlog, tag)
 	reverse := false
 
-	if sort == "new" || sort == "old" {
-		if after > 0 {
-			reverse = sort == "new"
-			query.Where("entries.created_at > to_timestamp(?)", after).
-				OrderBy("entries.created_at ASC")
-		} else if before > 0 {
-			reverse = sort == "old"
-			query.Where("entries.created_at < to_timestamp(?)", before).
-				OrderBy("entries.created_at DESC")
+	if search == "" {
+		if sort == "new" || sort == "old" {
+			if after > 0 {
+				reverse = sort == "new"
+				query.Where("entries.created_at > to_timestamp(?)", after).
+					OrderBy("entries.created_at ASC")
+			} else if before > 0 {
+				reverse = sort == "old"
+				query.Where("entries.created_at < to_timestamp(?)", before).
+					OrderBy("entries.created_at DESC")
+			} else {
+				reverse = sort == "old"
+				query.OrderBy("entries.created_at DESC")
+			}
 		} else {
-			reverse = sort == "old"
-			query.OrderBy("entries.created_at DESC")
+			query.OrderBy("entries.rating DESC").
+				OrderBy("entries.created_at DESC")
 		}
-	} else {
-		query.OrderBy("entries.rating DESC").
-			OrderBy("entries.created_at DESC")
 	}
 
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, reverse)
 
-	if sort == "best" {
+	if sort == "best" || search != "" {
 		return feed
 	}
 
@@ -485,41 +519,44 @@ func newTlogLoader(srv *utils.MindwellServer) func(users.GetUsersNameTlogParams,
 				return users.NewGetUsersNameTlogNotFound().WithPayload(err)
 			}
 
-			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Limit)
+			feed := loadTlogFeed(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Query, *params.Limit)
 			return users.NewGetUsersNameTlogOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag, sort string, limit int64) *models.Feed {
+func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag, sort, search string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	query := myTlogQuery(userID.ID, limit, tag)
 	reverse := false
 
-	if sort == "new" || sort == "old" {
-		if after > 0 {
-			reverse = sort == "new"
-			query.Where("entries.created_at > to_timestamp(?)", after).
-				OrderBy("entries.created_at ASC")
-		} else if before > 0 {
-			reverse = sort == "old"
-			query.Where("entries.created_at < to_timestamp(?)", before).
-				OrderBy("entries.created_at DESC")
+	if search == "" {
+		if sort == "new" || sort == "old" {
+			if after > 0 {
+				reverse = sort == "new"
+				query.Where("entries.created_at > to_timestamp(?)", after).
+					OrderBy("entries.created_at ASC")
+			} else if before > 0 {
+				reverse = sort == "old"
+				query.Where("entries.created_at < to_timestamp(?)", before).
+					OrderBy("entries.created_at DESC")
+			} else {
+				reverse = sort == "old"
+				query.OrderBy("entries.created_at DESC")
+			}
 		} else {
-			reverse = sort == "old"
-			query.OrderBy("entries.created_at DESC")
+			query.OrderBy("entries.rating DESC").
+				OrderBy("entries.created_at DESC")
 		}
-	} else {
-		query.OrderBy("entries.rating DESC").
-			OrderBy("entries.created_at DESC")
 	}
 
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, reverse)
 
-	if sort == "best" {
+	if sort == "best" || search != "" {
 		return feed
 	}
 
@@ -577,7 +614,7 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models.UserID) middleware.Responder {
 	return func(params me.GetMeTlogParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Limit)
+			feed := loadMyTlogFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Sort, *params.Query, *params.Limit)
 
 			if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 				err := srv.NewError(nil)
@@ -589,24 +626,31 @@ func newMyTlogLoader(srv *utils.MindwellServer) func(me.GetMeTlogParams, *models
 	}
 }
 
-func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag string, limit int64) *models.Feed {
+func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, beforeS, afterS, tag, search string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	query := friendsQuery(userID.ID, limit, tag)
 
-	if after > 0 {
-		query.Where("entries.created_at > to_timestamp(?)", after).
-			OrderBy("entries.created_at ASC")
-	} else if before > 0 {
-		query.Where("entries.created_at < to_timestamp(?)", before).
-			OrderBy("entries.created_at DESC")
-	} else {
-		query.OrderBy("entries.created_at DESC")
+	if search == "" {
+		if after > 0 {
+			query.Where("entries.created_at > to_timestamp(?)", after).
+				OrderBy("entries.created_at ASC")
+		} else if before > 0 {
+			query.Where("entries.created_at < to_timestamp(?)", before).
+				OrderBy("entries.created_at DESC")
+		} else {
+			query.OrderBy("entries.created_at DESC")
+		}
 	}
 
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
+
+	if search != "" {
+		return feed
+	}
 
 	scrollQ := scrollQuery()
 	addFriendsQuery(scrollQ, userID.ID, tag)
@@ -661,30 +705,37 @@ func loadFriendsFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models
 func newFriendsFeedLoader(srv *utils.MindwellServer) func(entries.GetEntriesFriendsParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesFriendsParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Limit)
+			feed := loadFriendsFeed(srv, tx, userID, *params.Before, *params.After, *params.Tag, *params.Query, *params.Limit)
 			return entries.NewGetEntriesFriendsOK().WithPayload(feed)
 		})
 	}
 }
 
-func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS string, limit int64) *models.Feed {
+func loadTlogFavorites(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, tlog, beforeS, afterS, search string, limit int64) *models.Feed {
 	before := utils.ParseFloat(beforeS)
 	after := utils.ParseFloat(afterS)
 
 	query := favoritesQuery(userID.ID, limit, tlog)
 
-	if after > 0 {
-		query.Where("favorites.date > to_timestamp(?)", after).
-			OrderBy("favorites.date ASC")
-	} else if before > 0 {
-		query.Where("favorites.date < to_timestamp(?)", before).
-			OrderBy("favorites.date DESC")
-	} else {
-		query.OrderBy("favorites.date DESC")
+	if search == "" {
+		if after > 0 {
+			query.Where("favorites.date > to_timestamp(?)", after).
+				OrderBy("favorites.date ASC")
+		} else if before > 0 {
+			query.Where("favorites.date < to_timestamp(?)", before).
+				OrderBy("favorites.date DESC")
+		} else {
+			query.OrderBy("favorites.date DESC")
+		}
 	}
 
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 	feed := loadFeed(srv, tx, userID, after > 0)
+
+	if search != "" {
+		return feed
+	}
 
 	scrollQ := scrollQuery()
 	addFavoritesQuery(scrollQ, userID.ID, tlog)
@@ -756,7 +807,7 @@ func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFa
 				return users.NewGetUsersNameFavoritesNotFound().WithPayload(err)
 			}
 
-			feed := loadTlogFavorites(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Limit)
+			feed := loadTlogFavorites(srv, tx, userID, params.Name, *params.Before, *params.After, *params.Query, *params.Limit)
 			return users.NewGetUsersNameFavoritesOK().WithPayload(feed)
 		})
 	}
@@ -765,7 +816,7 @@ func newTlogFavoritesLoader(srv *utils.MindwellServer) func(users.GetUsersNameFa
 func newMyFavoritesLoader(srv *utils.MindwellServer) func(me.GetMeFavoritesParams, *models.UserID) middleware.Responder {
 	return func(params me.GetMeFavoritesParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadTlogFavorites(srv, tx, userID, userID.Name, *params.Before, *params.After, *params.Limit)
+			feed := loadTlogFavorites(srv, tx, userID, userID.Name, *params.Before, *params.After, *params.Query, *params.Limit)
 			return me.NewGetMeFavoritesOK().WithPayload(feed)
 		})
 	}

@@ -18,6 +18,7 @@ type GetEntriesFriendsURL struct {
 	After  *string
 	Before *string
 	Limit  *int64
+	Query  *string
 	Tag    *string
 
 	_basePath string
@@ -76,6 +77,14 @@ func (o *GetEntriesFriendsURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var query string
+	if o.Query != nil {
+		query = *o.Query
+	}
+	if query != "" {
+		qs.Set("query", query)
 	}
 
 	var tag string

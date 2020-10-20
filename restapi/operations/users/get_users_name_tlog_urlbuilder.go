@@ -21,6 +21,7 @@ type GetUsersNameTlogURL struct {
 	After  *string
 	Before *string
 	Limit  *int64
+	Query  *string
 	Sort   *string
 	Tag    *string
 
@@ -87,6 +88,14 @@ func (o *GetUsersNameTlogURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var query string
+	if o.Query != nil {
+		query = *o.Query
+	}
+	if query != "" {
+		qs.Set("query", query)
 	}
 
 	var sort string

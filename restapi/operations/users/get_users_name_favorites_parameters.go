@@ -27,6 +27,8 @@ func NewGetUsersNameFavoritesParams() GetUsersNameFavoritesParams {
 		afterDefault  = string("")
 		beforeDefault = string("")
 		limitDefault  = int64(30)
+
+		queryDefault = string("")
 	)
 
 	return GetUsersNameFavoritesParams{
@@ -35,6 +37,8 @@ func NewGetUsersNameFavoritesParams() GetUsersNameFavoritesParams {
 		Before: &beforeDefault,
 
 		Limit: &limitDefault,
+
+		Query: &queryDefault,
 	}
 }
 
@@ -72,6 +76,12 @@ type GetUsersNameFavoritesParams struct {
 	  In: path
 	*/
 	Name string
+	/*
+	  Max Length: 100
+	  In: query
+	  Default: ""
+	*/
+	Query *string
 }
 
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
@@ -102,6 +112,11 @@ func (o *GetUsersNameFavoritesParams) BindRequest(r *http.Request, route *middle
 
 	rName, rhkName, _ := route.Params.GetOK("name")
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qQuery, qhkQuery, _ := qs.GetOK("query")
+	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -221,6 +236,39 @@ func (o *GetUsersNameFavoritesParams) validateName(formats strfmt.Registry) erro
 	}
 
 	if err := validate.Pattern("name", "path", o.Name, `^[0-9\-_]*[a-zA-Z][a-zA-Z0-9\-_]*$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindQuery binds and validates parameter Query from query.
+func (o *GetUsersNameFavoritesParams) bindQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
+		return nil
+	}
+
+	o.Query = &raw
+
+	if err := o.validateQuery(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateQuery carries on validations for parameter Query
+func (o *GetUsersNameFavoritesParams) validateQuery(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
 		return err
 	}
 

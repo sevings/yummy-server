@@ -326,13 +326,14 @@ func postEntry(id *models.UserID, privacy string, live bool) *models.Entry {
 	return entry
 }
 
-func checkLoadLive(t *testing.T, id *models.UserID, limit int64, section, before, after, tag string, size int) *models.Feed {
+func checkLoadLiveAll(t *testing.T, id *models.UserID, limit int64, section, before, after, tag, query string, size int) *models.Feed {
 	params := entries.GetEntriesLiveParams{
 		Limit:   &limit,
 		Before:  &before,
 		After:   &after,
 		Section: &section,
 		Tag:     &tag,
+		Query:   &query,
 	}
 
 	load := api.EntriesGetEntriesLiveHandler.Handle
@@ -346,6 +347,18 @@ func checkLoadLive(t *testing.T, id *models.UserID, limit int64, section, before
 	require.Equal(t, size, len(feed.Entries))
 
 	return feed
+}
+
+func checkLoadLive(t *testing.T, id *models.UserID, limit int64, section, before, after string, size int) *models.Feed {
+	return checkLoadLiveAll(t, id, limit, section, before, after, "", "", size)
+}
+
+func checkLoadLiveTag(t *testing.T, id *models.UserID, limit int64, section, before, after, tag string, size int) *models.Feed {
+	return checkLoadLiveAll(t, id, limit, section, before, after, tag, "", size)
+}
+
+func checkLoadLiveSearch(t *testing.T, id *models.UserID, limit int64, section, query string, size int) *models.Feed {
+	return checkLoadLiveAll(t, id, limit, section, "", "", "", query, size)
 }
 
 func TestLoadLive(t *testing.T) {
@@ -362,7 +375,7 @@ func TestLoadLive(t *testing.T) {
 	postEntry(userIDs[2], models.EntryPrivacyAll, false)
 	e0 := postEntry(userIDs[2], models.EntryPrivacyAll, true)
 
-	feed := checkLoadLive(t, userIDs[0], 10, "entries", "", "", "", 3)
+	feed := checkLoadLive(t, userIDs[0], 10, "entries", "", "", 3)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
@@ -371,58 +384,58 @@ func TestLoadLive(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 1, "entries", "", "", "", 1)
+	feed = checkLoadLive(t, userIDs[0], 1, "entries", "", "", 1)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 5, "entries", feed.NextBefore, "", "", 2)
+	feed = checkLoadLive(t, userIDs[0], 5, "entries", feed.NextBefore, "", 2)
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 2, "entries", "", "", "", 2)
+	feed = checkLoadLive(t, userIDs[0], 2, "entries", "", "", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 5, "entries", feed.NextBefore, "", "", 1)
+	feed = checkLoadLive(t, userIDs[0], 5, "entries", feed.NextBefore, "", 1)
 	compareEntries(t, e2, feed.Entries[0], userIDs[0])
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 5, "entries", "", feed.NextAfter, "", 2)
+	feed = checkLoadLive(t, userIDs[0], 5, "entries", "", feed.NextAfter, 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	checkLoadLive(t, userIDs[0], 1, "entries", "", feed.NextAfter, "", 0)
-	checkLoadLive(t, userIDs[0], 0, "entries", "", feed.NextAfter, "", 0)
+	checkLoadLive(t, userIDs[0], 1, "entries", "", feed.NextAfter, 0)
+	checkLoadLive(t, userIDs[0], 0, "entries", "", feed.NextAfter, 0)
 
-	feed = checkLoadLive(t, userIDs[0], 10, "waiting", "", "", "", 1)
+	feed = checkLoadLive(t, userIDs[0], 10, "waiting", "", "", 1)
 	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 
 	setUserPrivacy(t, userIDs[0], "invited")
-	feed = checkLoadLive(t, userIDs[3], 10, "entries", "", "", "", 2)
+	feed = checkLoadLive(t, userIDs[3], 10, "entries", "", "", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[3])
 	compareEntries(t, e1, feed.Entries[1], userIDs[3])
 	setUserPrivacy(t, userIDs[0], "all")
 
 	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
 
-	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", "", 2)
+	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[2])
 	compareEntries(t, e1, feed.Entries[1], userIDs[2])
 
-	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", "", 2)
+	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", 2)
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 
@@ -430,19 +443,19 @@ func TestLoadLive(t *testing.T) {
 
 	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationHidden, true)
 
-	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", "", 3)
+	feed = checkLoadLive(t, userIDs[2], 10, "entries", "", "", 3)
 	compareEntries(t, e0, feed.Entries[0], userIDs[2])
 	compareEntries(t, e1, feed.Entries[1], userIDs[2])
 	compareEntries(t, e2, feed.Entries[2], userIDs[2])
 
-	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", "", 2)
+	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", 2)
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 
 	checkUnfollow(t, userIDs[0], userIDs[2])
 }
 
-func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, tag, sort string, size int) *models.Feed {
+func checkLoadTlogAll(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, tag, sort, query string, size int) *models.Feed {
 	params := users.GetUsersNameTlogParams{
 		Name:   tlog.Name,
 		Limit:  &limit,
@@ -450,6 +463,7 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit 
 		After:  &after,
 		Tag:    &tag,
 		Sort:   &sort,
+		Query:  &query,
 	}
 
 	load := api.UsersGetUsersNameTlogHandler.Handle
@@ -466,6 +480,22 @@ func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit 
 	return feed
 }
 
+func checkLoadTlog(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after string, size int) *models.Feed {
+	return checkLoadTlogAll(t, tlog, user, success, limit, before, after, "", "new", "", size)
+}
+
+func checkLoadTlogSort(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, sort string, size int) *models.Feed {
+	return checkLoadTlogAll(t, tlog, user, success, limit, before, after, "", sort, "", size)
+}
+
+func checkLoadTlogTag(t *testing.T, tlog, user *models.UserID, success bool, limit int64, before, after, tag string, size int) *models.Feed {
+	return checkLoadTlogAll(t, tlog, user, success, limit, before, after, tag, "new", "", size)
+}
+
+func checkLoadTlogSearch(t *testing.T, tlog, user *models.UserID, success bool, limit int64, query string, size int) *models.Feed {
+	return checkLoadTlogAll(t, tlog, user, success, limit, "", "", "", "new", query, size)
+}
+
 func TestLoadTlog(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -476,7 +506,7 @@ func TestLoadTlog(t *testing.T) {
 	e1 := postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	e0 := postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	feed := checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
+	feed := checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[1])
 	compareEntries(t, e3, feed.Entries[1], userIDs[1])
 
@@ -484,15 +514,15 @@ func TestLoadTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "new", 4)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", 4)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
 	compareEntries(t, e3, feed.Entries[3], userIDs[0])
 
-	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", "", "new", 0)
+	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", 0)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", "", "new", 3)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", 3)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
@@ -500,13 +530,13 @@ func TestLoadTlog(t *testing.T) {
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, feed.NextBefore, "", "", "new", 1)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, feed.NextBefore, "", 1)
 	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 
 	req.False(feed.HasBefore)
 	req.True(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "", "old", 3)
+	feed = checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "old", 3)
 	compareEntries(t, e0, feed.Entries[2], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[0], userIDs[0])
@@ -514,14 +544,14 @@ func TestLoadTlog(t *testing.T) {
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "", "old", 0)
-	checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, feed.NextBefore, "", "", "old", 1)
+	checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "old", 0)
+	checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, feed.NextBefore, "", "old", 1)
 
 	voteForEntry(userIDs[1], e0.ID, true)
 	voteForEntry(userIDs[1], e3.ID, true)
 	voteForEntry(userIDs[2], e0.ID, true)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 10, "", "", "", "best", 4)
+	feed = checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, "", "", "best", 4)
 	req.Equal(e0.ID, feed.Entries[0].ID)
 	req.Equal(e3.ID, feed.Entries[1].ID)
 	req.Equal(e1.ID, feed.Entries[2].ID)
@@ -531,42 +561,43 @@ func TestLoadTlog(t *testing.T) {
 	req.False(feed.HasAfter)
 
 	setUserPrivacy(t, userIDs[0], "followers")
-	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", "new", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
 	checkPermitFollow(t, userIDs[0], userIDs[1], true)
 
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
 
 	setUserPrivacy(t, userIDs[0], "invited")
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
-	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", "", "new", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", "", "new", 2)
-	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", "", "new", 1)
+	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[2], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
-	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", "", "new", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 }
 
-func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after, tag, sort string, size int) *models.Feed {
+func checkLoadMyTlogAll(t *testing.T, user *models.UserID, limit int64, before, after, tag, sort, query string, size int) *models.Feed {
 	params := me.GetMeTlogParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 		Tag:    &tag,
 		Sort:   &sort,
+		Query:  &query,
 	}
 
 	load := api.MeGetMeTlogHandler.Handle
@@ -582,6 +613,14 @@ func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, aft
 	return feed
 }
 
+func checkLoadMyTlog(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
+	return checkLoadMyTlogAll(t, user, limit, before, after, "", "new", "", size)
+}
+
+func checkLoadMyTlogSort(t *testing.T, user *models.UserID, limit int64, before, after, sort string, size int) *models.Feed {
+	return checkLoadMyTlogAll(t, user, limit, before, after, "", sort, "", size)
+}
+
 func TestLoadMyTlog(t *testing.T) {
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -591,7 +630,7 @@ func TestLoadMyTlog(t *testing.T) {
 	e1 := postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	e0 := postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	feed := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "new", 4)
+	feed := checkLoadMyTlog(t, userIDs[0], 10, "", "", 4)
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
@@ -601,19 +640,19 @@ func TestLoadMyTlog(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	checkLoadMyTlog(t, userIDs[1], 10, "", "", "", "new", 0)
+	checkLoadMyTlog(t, userIDs[1], 10, "", "", 0)
 
-	feed = checkLoadMyTlog(t, userIDs[0], 1, "", "", "", "new", 1)
+	feed = checkLoadMyTlog(t, userIDs[0], 1, "", "", 1)
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadMyTlog(t, userIDs[0], 4, feed.NextBefore, "", "", "new", 3)
+	feed = checkLoadMyTlog(t, userIDs[0], 4, feed.NextBefore, "", 3)
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 	compareEntries(t, e3, feed.Entries[2], userIDs[0])
 
-	feed = checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "old", 4)
+	feed = checkLoadMyTlogSort(t, userIDs[0], 10, "", "", "old", 4)
 	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
 	compareEntries(t, e1, feed.Entries[2], userIDs[0])
@@ -623,12 +662,13 @@ func TestLoadMyTlog(t *testing.T) {
 	req.False(feed.HasAfter)
 }
 
-func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before, after, tag string, size int) *models.Feed {
+func checkLoadFriendsFeedAll(t *testing.T, user *models.UserID, limit int64, before, after, tag, query string, size int) *models.Feed {
 	params := entries.GetEntriesFriendsParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 		Tag:    &tag,
+		Query:  &query,
 	}
 
 	load := api.EntriesGetEntriesFriendsHandler.Handle
@@ -642,6 +682,14 @@ func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before
 	require.Equal(t, size, len(feed.Entries))
 
 	return feed
+}
+
+func checkLoadFriendsFeed(t *testing.T, user *models.UserID, limit int64, before, after string, size int) *models.Feed {
+	return checkLoadFriendsFeedAll(t, user, limit, before, after, "", "", size)
+}
+
+func checkLoadFriendsFeedSearch(t *testing.T, user *models.UserID, limit int64, query string, size int) *models.Feed {
+	return checkLoadFriendsFeedAll(t, user, limit, "", "", "", query, size)
 }
 
 func TestLoadFriendsFeed(t *testing.T) {
@@ -664,7 +712,7 @@ func TestLoadFriendsFeed(t *testing.T) {
 	postEntry(userIDs[2], models.EntryPrivacySome, true)
 	postEntry(userIDs[2], models.EntryPrivacyMe, true)
 
-	feed := checkLoadFriendsFeed(t, userIDs[0], 10, "", "", "", 4)
+	feed := checkLoadFriendsFeed(t, userIDs[0], 10, "", "", 4)
 	compareEntries(t, ea1, feed.Entries[0], userIDs[0])
 	compareEntries(t, ea2, feed.Entries[1], userIDs[0])
 	compareEntries(t, es2, feed.Entries[2], userIDs[0])
@@ -674,19 +722,19 @@ func TestLoadFriendsFeed(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadFriendsFeed(t, userIDs[1], 10, "", "", "", 2)
+	feed = checkLoadFriendsFeed(t, userIDs[1], 10, "", "", 2)
 	compareEntries(t, es1, feed.Entries[0], userIDs[1])
 	compareEntries(t, ea1, feed.Entries[1], userIDs[1])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadFriendsFeed(t, userIDs[0], 1, "", "", "", 1)
+	feed = checkLoadFriendsFeed(t, userIDs[0], 1, "", "", 1)
 
 	req.True(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadFriendsFeed(t, userIDs[0], 4, feed.NextBefore, "", "", 3)
+	feed = checkLoadFriendsFeed(t, userIDs[0], 4, feed.NextBefore, "", 3)
 	compareEntries(t, ea2, feed.Entries[0], userIDs[0])
 	compareEntries(t, es2, feed.Entries[1], userIDs[0])
 	compareEntries(t, ea3, feed.Entries[2], userIDs[0])
@@ -695,17 +743,18 @@ func TestLoadFriendsFeed(t *testing.T) {
 
 	checkFollow(t, userIDs[3], userIDs[1], profiles[1], models.RelationshipRelationFollowed, true)
 	setUserPrivacy(t, userIDs[1], "invited")
-	feed = checkLoadFriendsFeed(t, userIDs[3], 10, "", "", "", 0)
+	feed = checkLoadFriendsFeed(t, userIDs[3], 10, "", "", 0)
 	setUserPrivacy(t, userIDs[0], "all")
 	checkUnfollow(t, userIDs[3], userIDs[1])
 }
 
-func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, before, after string, size int) *models.Feed {
+func checkLoadFavoritesAll(t *testing.T, user, tlog *models.UserID, limit int64, before, after, query string, size int) *models.Feed {
 	params := users.GetUsersNameFavoritesParams{
 		Name:   tlog.Name,
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
+		Query:  &query,
 	}
 
 	load := api.UsersGetUsersNameFavoritesHandler.Handle
@@ -719,6 +768,14 @@ func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, be
 	require.Equal(t, size, len(feed.Entries))
 
 	return feed
+}
+
+func checkLoadFavorites(t *testing.T, user, tlog *models.UserID, limit int64, before, after string, size int) *models.Feed {
+	return checkLoadFavoritesAll(t, user, tlog, limit, before, after, "", size)
+}
+
+func checkLoadFavoritesSearch(t *testing.T, user, tlog *models.UserID, limit int64, query string, size int) *models.Feed {
+	return checkLoadFavoritesAll(t, user, tlog, limit, "", "", query, size)
 }
 
 func favoriteEntry(user *models.UserID, entryID int64) {
@@ -741,7 +798,7 @@ func TestLoadFavorites(t *testing.T) {
 	postEntry(userIDs[0], models.EntryPrivacyMe, true)
 	postEntry(userIDs[0], models.EntryPrivacyAll, false)
 
-	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", "", "new", 4)
+	tlog := checkLoadMyTlog(t, userIDs[0], 10, "", "", 4)
 
 	favoriteEntry(userIDs[0], tlog.Entries[2].ID)
 	favoriteEntry(userIDs[0], tlog.Entries[1].ID)
@@ -788,7 +845,7 @@ func TestLoadFavorites(t *testing.T) {
 
 	setUserPrivacy(t, userIDs[1], "all")
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", 2)
 	favoriteEntry(userIDs[1], feed.Entries[0].ID)
 	favoriteEntry(userIDs[1], feed.Entries[1].ID)
 	favoriteEntry(userIDs[1], e4.ID)
@@ -865,7 +922,7 @@ func TestLoadLiveComments(t *testing.T) {
 		e.Rating.Vote = 0
 	}
 
-	feed := checkLoadLive(t, userIDs[2], 10, "comments", "", "", "", 3)
+	feed := checkLoadLive(t, userIDs[2], 10, "comments", "", "", 3)
 
 	compareEntries(t, es[3], feed.Entries[0], userIDs[2])
 	compareEntries(t, es[0], feed.Entries[1], userIDs[2])
@@ -875,7 +932,7 @@ func TestLoadLiveComments(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[2], 1, "comments", "", "", "", 1)
+	feed = checkLoadLive(t, userIDs[2], 1, "comments", "", "", 1)
 	compareEntries(t, es[3], feed.Entries[0], userIDs[2])
 
 	req.False(feed.HasBefore)
@@ -883,21 +940,21 @@ func TestLoadLiveComments(t *testing.T) {
 
 	checkDeleteComment(t, comments[0], userIDs[0], true)
 	checkDeleteComment(t, comments[3], userIDs[0], true)
-	checkLoadLive(t, userIDs[2], 10, "comments", "", "", "", 2)
+	checkLoadLive(t, userIDs[2], 10, "comments", "", "", 2)
 
-	checkLoadLive(t, userIDs[3], 10, "comments", "", "", "", 2)
+	checkLoadLive(t, userIDs[3], 10, "comments", "", "", 2)
 	setUserPrivacy(t, userIDs[1], "invited")
-	checkLoadLive(t, userIDs[3], 10, "comments", "", "", "", 1)
+	checkLoadLive(t, userIDs[3], 10, "comments", "", "", 1)
 	setUserPrivacy(t, userIDs[1], "all")
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
-	checkLoadLive(t, userIDs[0], 10, "comments", "", "", "", 1)
-	checkLoadLive(t, userIDs[1], 10, "comments", "", "", "", 1)
+	checkLoadLive(t, userIDs[0], 10, "comments", "", "", 1)
+	checkLoadLive(t, userIDs[1], 10, "comments", "", "", 1)
 	checkUnfollow(t, userIDs[0], userIDs[1])
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
-	checkLoadLive(t, userIDs[0], 10, "comments", "", "", "", 1)
-	checkLoadLive(t, userIDs[1], 10, "comments", "", "", "", 2)
+	checkLoadLive(t, userIDs[0], 10, "comments", "", "", 1)
+	checkLoadLive(t, userIDs[1], 10, "comments", "", "", 2)
 	checkUnfollow(t, userIDs[0], userIDs[1])
 }
 
@@ -983,6 +1040,10 @@ func TestLoadWatching(t *testing.T) {
 }
 
 func TestRandomEntry(t *testing.T) {
+	utils.ClearDatabase(db)
+	userIDs, profiles = registerTestUsers(db)
+	esm.Clear()
+
 	req := require.New(t)
 
 	es := make([]*models.Entry, 0, 100)
@@ -1227,7 +1288,7 @@ func TestEntryTags(t *testing.T) {
 	req.NotEqual(e2.ID, e0.ID)
 	req.NotEqual(e1.ID, e0.ID)
 
-	feed := checkLoadLive(t, userIDs[0], 10, "entries", "", "", "", 3)
+	feed := checkLoadLive(t, userIDs[0], 10, "entries", "", "", 3)
 
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
@@ -1236,7 +1297,7 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", "aaa", 2)
+	feed = checkLoadLiveTag(t, userIDs[0], 10, "entries", "", "", "aaa", 2)
 
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
@@ -1244,7 +1305,7 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", "bbb", 2)
+	feed = checkLoadLiveTag(t, userIDs[0], 10, "entries", "", "", "bbb", 2)
 
 	compareEntries(t, e0, feed.Entries[0], userIDs[0])
 	compareEntries(t, e2, feed.Entries[1], userIDs[0])
@@ -1252,14 +1313,14 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadLive(t, userIDs[0], 10, "entries", "", "", "ccc", 1)
+	feed = checkLoadLiveTag(t, userIDs[0], 10, "entries", "", "", "ccc", 1)
 
 	compareEntries(t, e1, feed.Entries[0], userIDs[0])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "", "new", 2)
+	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", 2)
 
 	compareEntries(t, e0, feed.Entries[0], userIDs[1])
 	compareEntries(t, e2, feed.Entries[1], userIDs[1])
@@ -1267,14 +1328,14 @@ func TestEntryTags(t *testing.T) {
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "aaa", "new", 1)
+	feed = checkLoadTlogTag(t, userIDs[0], userIDs[1], true, 10, "", "", "aaa", 1)
 
 	compareEntries(t, e2, feed.Entries[0], userIDs[1])
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
 
-	feed = checkLoadTlog(t, userIDs[0], userIDs[1], true, 10, "", "", "test", "new", 0)
+	feed = checkLoadTlogTag(t, userIDs[0], userIDs[1], true, 10, "", "", "test", 0)
 
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -1285,4 +1346,61 @@ func TestEntryTags(t *testing.T) {
 	checkDeleteEntry(t, e0.ID, userIDs[0], true)
 	checkDeleteEntry(t, e1.ID, userIDs[1], true)
 	checkDeleteEntry(t, e2.ID, userIDs[0], true)
+}
+
+func TestSearchEntries(t *testing.T) {
+	post := func(title, content string, wc int64) int64 {
+		live := true
+		votable := true
+		params := me.PostMeTlogParams{
+			Content:    content,
+			InLive:     &live,
+			IsVotable:  &votable,
+			Privacy:    "all",
+			Tags:       nil,
+			Title:      &title,
+			VisibleFor: nil,
+		}
+
+		return checkPostEntry(t, params, profiles[0], userIDs[0], true, wc)
+	}
+
+	e1 := post("Романтическая дружба",
+		"это очень близкие, эмоционально насыщенные, c оттенком лёгкой влюбленности отношения между друзьями без сексуальной составляющей.",
+		17)
+
+	e2 := post("Романтическая любовь",
+		"выразительное и приятное чувство эмоционального влечения к другому человеку, часто ассоциирующееся с сексуальным влечением.",
+		16)
+
+	e3 := post("Дружба", "устойчивые, личные бескорыстные взаимоотношения между людьми.", 7)
+
+	checkLoadLiveSearch(t, userIDs[0], 10, "entries", "дружба", 2)
+	checkLoadLiveSearch(t, userIDs[0], 10, "entries", "эмоциональный", 2)
+	checkLoadLiveSearch(t, userIDs[0], 10, "comments", "дружба", 0)
+
+	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "дружба", 2)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "эмоциональный", 2)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "с", 0)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "вражда", 0)
+
+	checkLoadTlogSearch(t, userIDs[0], userIDs[0], true, 10, "дружба", 2)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[0], true, 10, "эмоциональный", 2)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[0], true, 10, "с", 0)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[0], true, 10, "вражда", 0)
+
+	checkLoadFriendsFeedSearch(t, userIDs[0], 10, "дружба", 2)
+	checkLoadFriendsFeedSearch(t, userIDs[0], 10, "эмоциональный", 2)
+	checkLoadFriendsFeedSearch(t, userIDs[0], 10, "с", 0)
+	checkLoadFriendsFeedSearch(t, userIDs[0], 10, "вражда", 0)
+
+	favoriteEntry(userIDs[1], e2)
+	favoriteEntry(userIDs[1], e3)
+
+	checkLoadFavoritesSearch(t, userIDs[0], userIDs[1], 10, "дружба", 1)
+	checkLoadFavoritesSearch(t, userIDs[0], userIDs[1], 10, "эмоциональный", 1)
+
+	checkDeleteEntry(t, e1, userIDs[0], true)
+	checkDeleteEntry(t, e2, userIDs[0], true)
+	checkDeleteEntry(t, e3, userIDs[0], true)
 }

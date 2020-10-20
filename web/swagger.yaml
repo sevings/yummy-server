@@ -725,6 +725,12 @@ parameters:
     type: string
     enum: [new, old, best]
     default: new
+  query:
+    in: query
+    name: query
+    type: string
+    maxLength: 100
+    default: ""
 paths:
   /account/email/{email}:
     get:
@@ -1310,6 +1316,7 @@ paths:
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1331,6 +1338,7 @@ paths:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1607,6 +1615,7 @@ paths:
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
         - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1690,6 +1699,7 @@ paths:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:
@@ -1942,6 +1952,7 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/query'
         - in: query
           name: section
           type: string
@@ -1963,6 +1974,7 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:
@@ -2028,6 +2040,7 @@ paths:
         - $ref: '#/parameters/after'
         - $ref: '#/parameters/before'
         - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
       tags:

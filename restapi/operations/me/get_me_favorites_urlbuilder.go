@@ -18,6 +18,7 @@ type GetMeFavoritesURL struct {
 	After  *string
 	Before *string
 	Limit  *int64
+	Query  *string
 
 	_basePath string
 	// avoid unkeyed usage
@@ -75,6 +76,14 @@ func (o *GetMeFavoritesURL) Build() (*url.URL, error) {
 	}
 	if limit != "" {
 		qs.Set("limit", limit)
+	}
+
+	var query string
+	if o.Query != nil {
+		query = *o.Query
+	}
+	if query != "" {
+		qs.Set("query", query)
 	}
 
 	_result.RawQuery = qs.Encode()
