@@ -13,8 +13,7 @@ import (
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-
-	"github.com/golang-commonmark/markdown"
+	"gitlab.com/golang-commonmark/markdown"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/sevings/mindwell-server/restapi/operations/entries"

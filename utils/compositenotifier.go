@@ -2,8 +2,8 @@ package utils
 
 import (
 	"database/sql"
-	"github.com/golang-commonmark/markdown"
 	"github.com/sevings/mindwell-server/models"
+	"gitlab.com/golang-commonmark/markdown"
 )
 
 type CompositeNotifier struct {
