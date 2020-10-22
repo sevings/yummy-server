@@ -48,19 +48,8 @@ func addTagQuery(q *sqlf.Stmt, tag string) *sqlf.Stmt {
 		Where("tags.tag = ?", tag)
 }
 
-func addSearchQuery(q *sqlf.Stmt, query string) *sqlf.Stmt {
-	query = strings.TrimSpace(query)
-
-	if query == "" {
-		return q
-	}
-
-	sub := q.
-		Select("to_search_vector(entries.title, entries.edit_content) <=> to_tsquery('russian', ?) AS rum_dist", query).
-		Where("to_search_vector(entries.title, entries.edit_content) @@ to_tsquery('russian', ?)", query).
-		OrderBy("rum_dist")
-
-	return sqlf.Select("id, created_at").
+func addSubQuery(q *sqlf.Stmt) *sqlf.Stmt {
+	return sqlf.Select("entries.id, entries.created_at").
 		Select("rating, up_votes, down_votes").
 		Select("title, edit_content").
 		Select("word_count, privacy").
@@ -69,7 +58,21 @@ func addSearchQuery(q *sqlf.Stmt, query string) *sqlf.Stmt {
 		Select("is_online").
 		Select("avatar").
 		Select("vote, is_favorite, is_watching").
-		From("").SubQuery("(", ") AS entries", sub)
+		From("").SubQuery("(", ") AS entries", q)
+}
+
+func addSearchQuery(q *sqlf.Stmt, query string) *sqlf.Stmt {
+	query = strings.TrimSpace(query)
+
+	if query == "" {
+		return q
+	}
+
+	q.Select("to_search_vector(entries.title, entries.edit_content) <=> plainto_tsquery('russian', ?) AS rum_dist", query).
+		Where("to_search_vector(entries.title, entries.edit_content) @@ plainto_tsquery('russian', ?)", query).
+		OrderBy("rum_dist")
+
+	return addSubQuery(q)
 }
 
 func myTlogQuery(userID, limit int64, tag string) *sqlf.Stmt {

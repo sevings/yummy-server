@@ -1381,6 +1381,7 @@ func TestSearchEntries(t *testing.T) {
 
 	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "дружба", 2)
 	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "эмоциональный", 2)
+	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "Романтическая любовь", 1)
 	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "с", 0)
 	checkLoadTlogSearch(t, userIDs[0], userIDs[1], true, 10, "вражда", 0)
 
