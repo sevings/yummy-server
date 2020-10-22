@@ -26,6 +26,7 @@ func NewGetEntriesBestParams() GetEntriesBestParams {
 
 		categoryDefault = string("month")
 		limitDefault    = int64(30)
+		queryDefault    = string("")
 		tagDefault      = string("")
 	)
 
@@ -33,6 +34,8 @@ func NewGetEntriesBestParams() GetEntriesBestParams {
 		Category: &categoryDefault,
 
 		Limit: &limitDefault,
+
+		Query: &queryDefault,
 
 		Tag: &tagDefault,
 	}
@@ -60,6 +63,12 @@ type GetEntriesBestParams struct {
 	*/
 	Limit *int64
 	/*
+	  Max Length: 100
+	  In: query
+	  Default: ""
+	*/
+	Query *string
+	/*
 	  Max Length: 50
 	  In: query
 	  Default: ""
@@ -85,6 +94,11 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 
 	qLimit, qhkLimit, _ := qs.GetOK("limit")
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qQuery, qhkQuery, _ := qs.GetOK("query")
+	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -167,6 +181,39 @@ func (o *GetEntriesBestParams) validateLimit(formats strfmt.Registry) error {
 	}
 
 	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// bindQuery binds and validates parameter Query from query.
+func (o *GetEntriesBestParams) bindQuery(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetEntriesBestParams()
+		return nil
+	}
+
+	o.Query = &raw
+
+	if err := o.validateQuery(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateQuery carries on validations for parameter Query
+func (o *GetEntriesBestParams) validateQuery(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
 		return err
 	}
 

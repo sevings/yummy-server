@@ -385,7 +385,7 @@ func newAnonymousLoader(srv *utils.MindwellServer) func(entries.GetEntriesAnonym
 	}
 }
 
-func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, category, tag string, limit int64) *models.Feed {
+func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.UserID, category, tag, search string, limit int64) *models.Feed {
 	var interval string
 	if category == "month" {
 		interval = "1 month"
@@ -400,11 +400,11 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 		Where("entries.created_at >= CURRENT_TIMESTAMP - interval '" + interval + "'").
 		OrderBy("entries.rating DESC")
 
-	query = sqlf.Select("*").From("").
-		SubQuery("(", ") AS feed", query).
-		OrderBy("feed.created_at DESC")
+	query = addSubQuery(query).
+		OrderBy("entries.created_at DESC")
 
 	addTagQuery(query, tag)
+	query = addSearchQuery(query, search)
 	tx.QueryStmt(query)
 
 	feed := loadFeed(srv, tx, userID, false)
@@ -415,7 +415,7 @@ func loadBestFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 func newBestLoader(srv *utils.MindwellServer) func(entries.GetEntriesBestParams, *models.UserID) middleware.Responder {
 	return func(params entries.GetEntriesBestParams, userID *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			feed := loadBestFeed(srv, tx, userID, *params.Category, *params.Tag, *params.Limit)
+			feed := loadBestFeed(srv, tx, userID, *params.Category, *params.Tag, *params.Query, *params.Limit)
 			return entries.NewGetEntriesBestOK().WithPayload(feed)
 		})
 	}

@@ -1746,6 +1746,9 @@ func init() {
             "$ref": "#/parameters/tag"
           },
           {
+            "$ref": "#/parameters/query"
+          },
+          {
             "enum": [
               "month",
               "week"
@@ -7059,6 +7062,13 @@ func init() {
             "type": "string",
             "default": "",
             "name": "tag",
+            "in": "query"
+          },
+          {
+            "maxLength": 100,
+            "type": "string",
+            "default": "",
+            "name": "query",
             "in": "query"
           },
           {

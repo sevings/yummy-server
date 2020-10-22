@@ -2004,6 +2004,7 @@ paths:
       parameters:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/tag'
+        - $ref: '#/parameters/query'
         - in: query
           name: category
           type: string
