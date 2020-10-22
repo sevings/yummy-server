@@ -70,7 +70,8 @@ func addSearchQuery(q *sqlf.Stmt, query string) *sqlf.Stmt {
 
 	q.Select("to_search_vector(entries.title, entries.edit_content) <=> plainto_tsquery('russian', ?) AS rum_dist", query).
 		Where("to_search_vector(entries.title, entries.edit_content) @@ plainto_tsquery('russian', ?)", query).
-		OrderBy("rum_dist")
+		OrderBy("rum_dist DESC").
+		OrderBy("entries.created_at DESC")
 
 	return addSubQuery(q)
 }
