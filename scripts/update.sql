@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS rum;
 CREATE OR REPLACE FUNCTION to_search_vector(title TEXT, content TEXT)
    RETURNS tsvector AS $$
 BEGIN
-  RETURN to_tsvector(title || '\n' || content);
+  RETURN to_tsvector('russian', title || '\n' || content);
 END
 $$ LANGUAGE plpgsql IMMUTABLE;
 
