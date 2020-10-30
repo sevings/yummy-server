@@ -547,6 +547,12 @@ func TestLoadTlog(t *testing.T) {
 	checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, "", feed.NextAfter, "old", 0)
 	checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 10, feed.NextBefore, "", "old", 1)
 
+	feed = checkLoadTlogSort(t, userIDs[0], userIDs[0], true, 1, "", "", "old", 1)
+	compareEntries(t, e3, feed.Entries[0], userIDs[0])
+
+	req.False(feed.HasBefore)
+	req.True(feed.HasAfter)
+
 	voteForEntry(userIDs[1], e0.ID, true)
 	voteForEntry(userIDs[1], e3.ID, true)
 	voteForEntry(userIDs[2], e0.ID, true)

@@ -444,8 +444,11 @@ func loadTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.Us
 				query.Where("entries.created_at < to_timestamp(?)", before).
 					OrderBy("entries.created_at DESC")
 			} else {
-				reverse = sort == "old"
-				query.OrderBy("entries.created_at DESC")
+				if sort == "new" {
+					query.OrderBy("entries.created_at DESC")
+				} else {
+					query.OrderBy("entries.created_at ASC")
+				}
 			}
 		} else {
 			query.OrderBy("entries.rating DESC").
@@ -547,8 +550,11 @@ func loadMyTlogFeed(srv *utils.MindwellServer, tx *utils.AutoTx, userID *models.
 				query.Where("entries.created_at < to_timestamp(?)", before).
 					OrderBy("entries.created_at DESC")
 			} else {
-				reverse = sort == "old"
-				query.OrderBy("entries.created_at DESC")
+				if sort == "new" {
+					query.OrderBy("entries.created_at DESC")
+				} else {
+					query.OrderBy("entries.created_at ASC")
+				}
 			}
 		} else {
 			query.OrderBy("entries.rating DESC").
