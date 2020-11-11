@@ -36,9 +36,9 @@ func tlogCalendarQuery(userID, start, end int64, tlog string) *sqlf.Stmt {
 }
 
 func getPeriod(createdAt float64, start, end int64) (int64, int64) {
-	const maxDuration = 60 * 60 * 24 * 7 * 6 // six weeks
+	const maxDuration = 60*60*24*7*6 + 1 // six weeks
 	minDate := int64(createdAt)
-	maxDate := time.Now().Unix()
+	maxDate := time.Now().Unix() + 1
 
 	if start <= 0 && end <= 0 {
 		start = maxDate - maxDuration
