@@ -191,6 +191,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
 		}),
+		MeGetMeCalendarHandler: me.GetMeCalendarHandlerFunc(func(params me.GetMeCalendarParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation MeGetMeCalendar has not yet been implemented")
+		}),
 		MeGetMeFavoritesHandler: me.GetMeFavoritesHandlerFunc(func(params me.GetMeFavoritesParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation MeGetMeFavorites has not yet been implemented")
 		}),
@@ -241,6 +244,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
+		}),
+		UsersGetUsersNameCalendarHandler: users.GetUsersNameCalendarHandlerFunc(func(params users.GetUsersNameCalendarParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation UsersGetUsersNameCalendar has not yet been implemented")
 		}),
 		UsersGetUsersNameFavoritesHandler: users.GetUsersNameFavoritesHandlerFunc(func(params users.GetUsersNameFavoritesParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation UsersGetUsersNameFavorites has not yet been implemented")
@@ -511,6 +517,8 @@ type MindwellAPI struct {
 	ImagesGetImagesIDHandler images.GetImagesIDHandler
 	// MeGetMeHandler sets the operation handler for the get me operation
 	MeGetMeHandler me.GetMeHandler
+	// MeGetMeCalendarHandler sets the operation handler for the get me calendar operation
+	MeGetMeCalendarHandler me.GetMeCalendarHandler
 	// MeGetMeFavoritesHandler sets the operation handler for the get me favorites operation
 	MeGetMeFavoritesHandler me.GetMeFavoritesHandler
 	// MeGetMeFollowersHandler sets the operation handler for the get me followers operation
@@ -545,6 +553,8 @@ type MindwellAPI struct {
 	UsersGetUsersHandler users.GetUsersHandler
 	// UsersGetUsersNameHandler sets the operation handler for the get users name operation
 	UsersGetUsersNameHandler users.GetUsersNameHandler
+	// UsersGetUsersNameCalendarHandler sets the operation handler for the get users name calendar operation
+	UsersGetUsersNameCalendarHandler users.GetUsersNameCalendarHandler
 	// UsersGetUsersNameFavoritesHandler sets the operation handler for the get users name favorites operation
 	UsersGetUsersNameFavoritesHandler users.GetUsersNameFavoritesHandler
 	// UsersGetUsersNameFollowersHandler sets the operation handler for the get users name followers operation
@@ -886,6 +896,10 @@ func (o *MindwellAPI) Validate() error {
 		unregistered = append(unregistered, "me.GetMeHandler")
 	}
 
+	if o.MeGetMeCalendarHandler == nil {
+		unregistered = append(unregistered, "me.GetMeCalendarHandler")
+	}
+
 	if o.MeGetMeFavoritesHandler == nil {
 		unregistered = append(unregistered, "me.GetMeFavoritesHandler")
 	}
@@ -952,6 +966,10 @@ func (o *MindwellAPI) Validate() error {
 
 	if o.UsersGetUsersNameHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameHandler")
+	}
+
+	if o.UsersGetUsersNameCalendarHandler == nil {
+		unregistered = append(unregistered, "users.GetUsersNameCalendarHandler")
 	}
 
 	if o.UsersGetUsersNameFavoritesHandler == nil {
@@ -1470,6 +1488,11 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/me/calendar"] = me.NewGetMeCalendar(o.context, o.MeGetMeCalendarHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/me/favorites"] = me.NewGetMeFavorites(o.context, o.MeGetMeFavoritesHandler)
 
 	if o.handlers["GET"] == nil {
@@ -1551,6 +1574,11 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}"] = users.NewGetUsersName(o.context, o.UsersGetUsersNameHandler)
+
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/users/{name}/calendar"] = users.NewGetUsersNameCalendar(o.context, o.UsersGetUsersNameCalendarHandler)
 
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)

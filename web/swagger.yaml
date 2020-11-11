@@ -381,6 +381,28 @@ definitions:
         type: string
       hasBefore:
         type: boolean
+  Calendar:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            createdAt:
+              type: number
+              format: double
+            title:
+              type: string
+      start:
+        type: number
+        format: double
+      end:
+        type: number
+        format: double
   Rating:
     type: object
     properties:
@@ -713,6 +735,18 @@ parameters:
     name: before
     type: string
     default: ""
+  start:
+    in: query
+    name: start
+    type: integer
+    format: int64
+    default: 0
+  end:
+    in: query
+    name: end
+    type: integer
+    format: int64
+    default: 0
   tag:
     in: query
     name: tag
@@ -1330,6 +1364,26 @@ paths:
           description: User not found
           schema:
             $ref: '#/definitions/Error'
+  /users/{name}/calendar:
+    parameters:
+      - $ref: '#/parameters/pathName'
+    get:
+      parameters:
+        - $ref: '#/parameters/start'
+        - $ref: '#/parameters/end'
+      security:
+        - ApiKeyHeader: [ ]
+      tags:
+        - users
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Calendar'
+        404:
+          description: User not found
+          schema:
+            $ref: '#/definitions/Error'
   /users/{name}/favorites:
     parameters:
       - $ref: '#/parameters/pathName'
@@ -1693,6 +1747,20 @@ paths:
           description: post in live restriction
           schema:
             $ref: '#/definitions/Error'
+  /me/calendar:
+    get:
+      parameters:
+        - $ref: '#/parameters/start'
+        - $ref: '#/parameters/end'
+      security:
+        - ApiKeyHeader: [ ]
+      tags:
+        - me
+      responses:
+        200:
+          description: Entry list
+          schema:
+            $ref: '#/definitions/Calendar'
   /me/favorites:
     get:
       parameters:

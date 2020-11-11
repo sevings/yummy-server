@@ -1411,3 +1411,75 @@ func TestSearchEntries(t *testing.T) {
 	checkDeleteEntry(t, e2, userIDs[0], true)
 	checkDeleteEntry(t, e3, userIDs[0], true)
 }
+
+func TestLoadTlogCalendar(t *testing.T) {
+	post := func(title, content, privacy string, wc int64) int64 {
+		live := privacy == "all"
+		votable := false
+		params := me.PostMeTlogParams{
+			Content:   content,
+			InLive:    &live,
+			IsVotable: &votable,
+			Privacy:   privacy,
+			Title:     &title,
+		}
+
+		return checkPostEntry(t, params, profiles[0], userIDs[0], true, wc)
+	}
+
+	e1 := post("title", "content1", "all", 2)
+	time.Sleep(10 * time.Millisecond)
+	e2 := post("", "content2", "me", 1)
+	time.Sleep(1 * time.Second)
+	e3 := post("title", "content3", "all", 2)
+
+	req := require.New(t)
+
+	load := func(userID *models.UserID, tlog *models.AuthProfile, start, end int64, count int) []*models.CalendarEntriesItems0 {
+		params := users.GetUsersNameCalendarParams{
+			Name:  tlog.Name,
+			Start: &start,
+			End:   &end,
+		}
+
+		get := api.UsersGetUsersNameCalendarHandler.Handle
+		resp := get(params, userID)
+		body, ok := resp.(*users.GetUsersNameCalendarOK)
+		require.True(t, ok)
+		if !ok {
+			return nil
+		}
+
+		cal := body.Payload
+		req.Equal(tlog.CreatedAt, cal.Start)
+		req.Greater(cal.End, cal.Start)
+		req.Equal(count, len(cal.Entries))
+
+		return cal.Entries
+	}
+
+	now := time.Now().Unix()
+	load(userIDs[0], profiles[0], 0, now-10, 0)
+	load(userIDs[0], profiles[0], now+10, now-10, 0)
+
+	cal := load(userIDs[0], profiles[0], 0, 0, 3)
+	req.Equal(e1, cal[0].ID)
+	req.Equal(e2, cal[1].ID)
+	req.Equal(e3, cal[2].ID)
+
+	cal = load(userIDs[1], profiles[0], 0, 0, 2)
+	req.Equal(e1, cal[0].ID)
+	req.Equal(e3, cal[1].ID)
+
+	last := int64(cal[1].CreatedAt)
+	cal = load(userIDs[0], profiles[0], 0, last, 2)
+	req.Equal(e1, cal[0].ID)
+	req.Equal(e2, cal[1].ID)
+
+	cal = load(userIDs[0], profiles[0], last, 0, 1)
+	req.Equal(e3, cal[0].ID)
+
+	checkDeleteEntry(t, e1, userIDs[0], true)
+	checkDeleteEntry(t, e2, userIDs[0], true)
+	checkDeleteEntry(t, e3, userIDs[0], true)
+}

@@ -2764,6 +2764,34 @@ func init() {
         }
       }
     },
+    "/me/calendar": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/start"
+          },
+          {
+            "$ref": "#/parameters/end"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Calendar"
+            }
+          }
+        }
+      }
+    },
     "/me/cover": {
       "put": {
         "security": [
@@ -3782,6 +3810,45 @@ func init() {
         }
       ]
     },
+    "/users/{name}/calendar": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/start"
+          },
+          {
+            "$ref": "#/parameters/end"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Calendar"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "$ref": "#/parameters/pathName"
+        }
+      ]
+    },
     "/users/{name}/favorites": {
       "get": {
         "security": [
@@ -4183,6 +4250,38 @@ func init() {
         },
         "x92": {
           "type": "string"
+        }
+      }
+    },
+    "Calendar": {
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "number",
+          "format": "double"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "createdAt": {
+                "type": "number",
+                "format": "double"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "start": {
+          "type": "number",
+          "format": "double"
         }
       }
     },
@@ -5132,6 +5231,13 @@ func init() {
       "name": "before",
       "in": "query"
     },
+    "end": {
+      "type": "integer",
+      "format": "int64",
+      "default": 0,
+      "name": "end",
+      "in": "query"
+    },
     "formEmail": {
       "maxLength": 500,
       "pattern": ".+@.+",
@@ -5189,6 +5295,13 @@ func init() {
       "type": "string",
       "default": "new",
       "name": "sort",
+      "in": "query"
+    },
+    "start": {
+      "type": "integer",
+      "format": "int64",
+      "default": 0,
+      "name": "start",
       "in": "query"
     },
     "tag": {
@@ -8187,6 +8300,42 @@ func init() {
         }
       }
     },
+    "/me/calendar": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "me"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "default": 0,
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "default": 0,
+            "name": "end",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Calendar"
+            }
+          }
+        }
+      }
+    },
     "/me/cover": {
       "put": {
         "security": [
@@ -9374,6 +9523,59 @@ func init() {
         }
       ]
     },
+    "/users/{name}/calendar": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "users"
+        ],
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int64",
+            "default": 0,
+            "name": "start",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "default": 0,
+            "name": "end",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry list",
+            "schema": {
+              "$ref": "#/definitions/Calendar"
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "parameters": [
+        {
+          "maxLength": 20,
+          "minLength": 1,
+          "pattern": "^[0-9\\-_]*[a-zA-Z][a-zA-Z0-9\\-_]*$",
+          "type": "string",
+          "name": "name",
+          "in": "path",
+          "required": true
+        }
+      ]
+    },
     "/users/{name}/favorites": {
       "get": {
         "security": [
@@ -9908,6 +10110,38 @@ func init() {
         },
         "x92": {
           "type": "string"
+        }
+      }
+    },
+    "Calendar": {
+      "type": "object",
+      "properties": {
+        "end": {
+          "type": "number",
+          "format": "double"
+        },
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "createdAt": {
+                "type": "number",
+                "format": "double"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "start": {
+          "type": "number",
+          "format": "double"
         }
       }
     },
@@ -10857,6 +11091,13 @@ func init() {
       "name": "before",
       "in": "query"
     },
+    "end": {
+      "type": "integer",
+      "format": "int64",
+      "default": 0,
+      "name": "end",
+      "in": "query"
+    },
     "formEmail": {
       "maxLength": 500,
       "pattern": ".+@.+",
@@ -10914,6 +11155,13 @@ func init() {
       "type": "string",
       "default": "new",
       "name": "sort",
+      "in": "query"
+    },
+    "start": {
+      "type": "integer",
+      "format": "int64",
+      "default": 0,
+      "name": "start",
       "in": "query"
     },
     "tag": {

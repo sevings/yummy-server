@@ -45,6 +45,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.EntriesGetEntriesBestHandler = entries.GetEntriesBestHandlerFunc(newBestLoader(srv))
 	srv.API.EntriesGetEntriesFriendsHandler = entries.GetEntriesFriendsHandlerFunc(newFriendsFeedLoader(srv))
 	srv.API.EntriesGetEntriesWatchingHandler = entries.GetEntriesWatchingHandlerFunc(newWatchingLoader(srv))
+
+	srv.API.MeGetMeCalendarHandler = me.GetMeCalendarHandlerFunc(newMyCalendarLoader(srv))
+	srv.API.UsersGetUsersNameCalendarHandler = usersAPI.GetUsersNameCalendarHandlerFunc(newTlogCalendarLoader(srv))
 }
 
 var wordRe *regexp.Regexp
