@@ -1451,8 +1451,18 @@ func TestLoadTlogCalendar(t *testing.T) {
 		}
 
 		cal := body.Payload
-		req.Equal(tlog.CreatedAt, cal.Start)
-		req.Greater(cal.End, cal.Start)
+
+		createdAt := int64(tlog.CreatedAt)
+		if start < createdAt {
+			req.Equal(createdAt, cal.Start)
+		} else {
+			req.Equal(start, cal.Start)
+		}
+
+		if end > createdAt {
+			req.Equal(end, cal.End)
+		}
+
 		req.Equal(count, len(cal.Entries))
 
 		return cal.Entries

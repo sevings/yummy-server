@@ -4258,7 +4258,7 @@ func init() {
       "properties": {
         "end": {
           "type": "number",
-          "format": "double"
+          "format": "int64"
         },
         "entries": {
           "type": "array",
@@ -4281,7 +4281,7 @@ func init() {
         },
         "start": {
           "type": "number",
-          "format": "double"
+          "format": "int64"
         }
       }
     },
@@ -10118,7 +10118,7 @@ func init() {
       "properties": {
         "end": {
           "type": "number",
-          "format": "double"
+          "format": "int64"
         },
         "entries": {
           "type": "array",
@@ -10141,7 +10141,7 @@ func init() {
         },
         "start": {
           "type": "number",
-          "format": "double"
+          "format": "int64"
         }
       }
     },

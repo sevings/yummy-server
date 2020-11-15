@@ -19,13 +19,13 @@ import (
 type Calendar struct {
 
 	// end
-	End float64 `json:"end,omitempty"`
+	End int64 `json:"end,omitempty"`
 
 	// entries
 	Entries []*CalendarEntriesItems0 `json:"entries"`
 
 	// start
-	Start float64 `json:"start,omitempty"`
+	Start int64 `json:"start,omitempty"`
 }
 
 // Validate validates this calendar

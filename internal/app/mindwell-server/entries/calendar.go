@@ -35,7 +35,11 @@ func tlogCalendarQuery(userID, start, end int64, tlog string) *sqlf.Stmt {
 	return AddEntryOpenQuery(q, userID)
 }
 
-func getPeriod(createdAt float64, start, end int64) (int64, int64) {
+func loadEmptyCalendar(tx *utils.AutoTx, q *sqlf.Stmt, start, end int64) *models.Calendar {
+	var createdAt float64
+	tx.QueryStmt(q)
+	tx.Scan(&createdAt)
+
 	const maxDuration = 60*60*24*7*6 + 1 // six weeks
 	minDate := int64(createdAt)
 	maxDate := time.Now().Unix() + 1
@@ -60,18 +64,10 @@ func getPeriod(createdAt float64, start, end int64) (int64, int64) {
 		end = start + maxDuration
 	}
 
-	return start, end
-}
-
-func loadEmptyCalendar(tx *utils.AutoTx, q *sqlf.Stmt) *models.Calendar {
-	cal := &models.Calendar{
-		End: float64(time.Now().Unix()),
+	return &models.Calendar{
+		Start: start,
+		End:   end,
 	}
-
-	tx.QueryStmt(q)
-	tx.Scan(&cal.Start)
-
-	return cal
 }
 
 func loadCalendar(tx *utils.AutoTx, cal *models.Calendar) {
@@ -108,13 +104,12 @@ func loadTlogCalendar(tx *utils.AutoTx, userID *models.UserID, tlog string, star
 		From("users").
 		Where("lower(name) = lower(?)", tlog)
 
-	cal := loadEmptyCalendar(tx, createdAtQuery)
-	start, end = getPeriod(cal.Start, start, end)
-	if start >= end {
+	cal := loadEmptyCalendar(tx, createdAtQuery, start, end)
+	if cal.Start >= cal.End {
 		return cal
 	}
 
-	q := tlogCalendarQuery(userID.ID, start, end, tlog)
+	q := tlogCalendarQuery(userID.ID, cal.Start, cal.End, tlog)
 	tx.QueryStmt(q)
 	loadCalendar(tx, cal)
 
@@ -141,13 +136,12 @@ func loadMyCalendar(tx *utils.AutoTx, userID *models.UserID, start, end int64) *
 		From("users").
 		Where("id = ?", userID.ID)
 
-	cal := loadEmptyCalendar(tx, createdAtQuery)
-	start, end = getPeriod(cal.Start, start, end)
-	if start >= end {
+	cal := loadEmptyCalendar(tx, createdAtQuery, start, end)
+	if cal.Start >= cal.End {
 		return cal
 	}
 
-	q := myCalendarQuery(userID.ID, start, end)
+	q := myCalendarQuery(userID.ID, cal.Start, cal.End)
 	tx.QueryStmt(q)
 	loadCalendar(tx, cal)
 

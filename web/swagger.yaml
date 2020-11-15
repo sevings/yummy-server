@@ -399,10 +399,10 @@ definitions:
               type: string
       start:
         type: number
-        format: double
+        format: int64
       end:
         type: number
-        format: double
+        format: int64
   Rating:
     type: object
     properties:
