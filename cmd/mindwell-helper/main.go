@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go.uber.org/zap"
 	"log"
 	"os"
 
@@ -9,8 +10,6 @@ import (
 )
 
 const admArg = "adm"
-const commentsArg = "comments"
-const entriesArg = "entries"
 const helpArg = "help"
 
 func printHelp() {
@@ -19,11 +18,9 @@ func printHelp() {
 Usage: mindwell-helper [option]
 
 Options are:
-%s	- update comments content.
-%s		- update entries title and content.
 %s		- set grandfathers in adm and sent emails to them.
 %s		- print this help message.
-`, commentsArg, entriesArg, admArg, helpArg)
+`, admArg, helpArg)
 }
 
 func main() {
@@ -44,22 +41,25 @@ func main() {
 		log.Println("Check config consistency")
 	}
 
-	mail := utils.NewPostman(domain, apiKey, pubKey, baseURL, support)
-
-	db := utils.OpenDatabase(cfg)
-	tx, err := db.Begin()
-	defer tx.Rollback()
+	zapLog, err := zap.NewProduction(zap.WithCaller(false))
 	if err != nil {
 		log.Println(err)
 	}
 
+	emailLog := zapLog.With(zap.String("type", "email"))
+	mail := utils.NewPostman(domain, apiKey, pubKey, baseURL, support, emailLog)
+
+	db := utils.OpenDatabase(cfg)
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer tx.Rollback()
+
 	args := os.Args[1:]
 	for _, arg := range args {
 		switch arg {
-		case commentsArg:
-			helper.UpdateComments(tx)
-		case entriesArg:
-			helper.UpdateEntries(tx)
 		case admArg:
 			helper.UpdateAdm(tx, mail)
 		case helpArg:
