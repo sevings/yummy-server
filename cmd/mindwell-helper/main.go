@@ -50,12 +50,8 @@ func main() {
 	mail := utils.NewPostman(domain, apiKey, pubKey, baseURL, support, emailLog)
 
 	db := utils.OpenDatabase(cfg)
-	tx, err := db.Begin()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer tx.Rollback()
+	tx := utils.NewAutoTx(db)
+	defer tx.Finish()
 
 	args := os.Args[1:]
 	for _, arg := range args {
@@ -67,10 +63,5 @@ func main() {
 		default:
 			log.Printf("Unknown argument: %s\n", arg)
 		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		log.Println(err)
 	}
 }

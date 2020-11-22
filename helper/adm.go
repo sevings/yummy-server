@@ -2,7 +2,6 @@ package helper
 
 import (
 	"bufio"
-	"database/sql"
 	"log"
 	"math/rand"
 	"os"
@@ -17,27 +16,29 @@ type user struct {
 	gender string
 }
 
-func genderNames(tx *sql.Tx) ([][]string, error) {
+func genderNames(tx *utils.AutoTx) [][]string {
 	var names [][]string
-	for i := 0; i < 3; i++ {
-		names = append(names, []string{})
-	}
 
-	rows, err := tx.Query("SELECT users.name, users.gender FROM users, adm " +
+	tx.Query("SELECT users.name, users.gender FROM users, adm " +
 		"WHERE lower(adm.name) = lower(users.name)" +
 		"ORDER BY gender")
-	if err != nil {
-		return names, err
-	}
 
-	for rows.Next() {
+	for {
 		var name string
 		var gender int64
-		rows.Scan(&name, &gender)
+		ok := tx.Scan(&name, &gender)
+		if !ok {
+			break
+		}
+
+		for int(gender) >= len(names) {
+			names = append(names, []string{})
+		}
+
 		names[gender] = append(names[gender], name)
 	}
 
-	return names, nil
+	return names
 }
 
 func mixNames(names [][]string) []string {
@@ -64,50 +65,43 @@ func mixNames(names [][]string) []string {
 	return adm
 }
 
-func setAdm(adm []string, tx *sql.Tx) error {
-	set := func(gs, gf string) error {
-		res, err := tx.Exec("UPDATE adm SET grandfather = $2 WHERE lower(name) = lower($1)", gf, gs)
-		if err != nil {
-			return err
-		}
+func setAdm(adm []string, tx *utils.AutoTx) {
+	set := func(gs, gf string) {
+		tx.Exec("UPDATE adm SET grandfather = $2 WHERE lower(name) = lower($1)", gf, gs)
 
-		rows, err := res.RowsAffected()
+		rows := tx.RowsAffected()
 		if rows != 1 {
 			log.Printf("Couldn't set grandfather for %s\n", gs)
 		}
-
-		return nil
 	}
 
 	for i := 0; i < len(adm)-1; i++ {
-		if err := set(adm[i], adm[i+1]); err != nil {
-			return err
-		}
+		set(adm[i], adm[i+1])
 	}
 
-	return set(adm[len(adm)-1], adm[0])
+	set(adm[len(adm)-1], adm[0])
 }
 
-func loadUsers(adm []string, tx *sql.Tx) ([]user, error) {
+func loadUsers(adm []string, tx *utils.AutoTx) []user {
 	var users []user
 
 	for _, name := range adm {
-		rows, err := tx.Query("SELECT show_name, gender.type, email, verified FROM users, gender "+
+		tx.Query("SELECT show_name, gender.type, email, verified FROM users, gender "+
 			"WHERE lower(name) = lower($1) AND users.gender = gender.id", name)
-		if err != nil {
-			return users, err
-		}
-		for rows.Next() {
+		for {
 			var verified bool
 			var usr user
-			rows.Scan(&usr.name, &usr.gender, &usr.email, &verified)
+			ok := tx.Scan(&usr.name, &usr.gender, &usr.email, &verified)
+			if !ok {
+				break
+			}
 			if verified {
 				users = append(users, usr)
 			}
 		}
 	}
 
-	return users, nil
+	return users
 }
 
 func takeRandom(s []string) (string, []string) {
@@ -117,26 +111,30 @@ func takeRandom(s []string) (string, []string) {
 	return result, s[:len(s)-1]
 }
 
-func UpdateAdm(tx *sql.Tx, mail *utils.Postman) {
+func UpdateAdm(tx *utils.AutoTx, mail *utils.Postman) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	names, err := genderNames(tx)
-	if err != nil {
-		log.Println(err)
+	names := genderNames(tx)
+	if tx.Error() != nil {
+		log.Println(tx.Error())
 		return
 	}
 
 	adm := mixNames(names)
-
-	err = setAdm(adm, tx)
-	if err != nil {
-		log.Println(err)
+	if tx.Error() != nil {
+		log.Println(tx.Error())
 		return
 	}
 
-	users, err := loadUsers(adm, tx)
-	if err != nil {
-		log.Println(err)
+	setAdm(adm, tx)
+	if tx.Error() != nil {
+		log.Println(tx.Error())
+		return
+	}
+
+	users := loadUsers(adm, tx)
+	if tx.Error() != nil {
+		log.Println(tx.Error())
 		return
 	}
 
