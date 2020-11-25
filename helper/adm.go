@@ -2,6 +2,7 @@ package helper
 
 import (
 	"bufio"
+	"database/sql"
 	"log"
 	"math/rand"
 	"os"
@@ -17,7 +18,7 @@ type user struct {
 }
 
 func genderNames(tx *utils.AutoTx) [][]string {
-	var names [][]string
+	names := make([][]string, 3)
 
 	tx.Query("SELECT users.name, users.gender FROM users, adm " +
 		"WHERE lower(adm.name) = lower(users.name)" +
@@ -31,17 +32,45 @@ func genderNames(tx *utils.AutoTx) [][]string {
 			break
 		}
 
-		for int(gender) >= len(names) {
-			names = append(names, []string{})
-		}
-
 		names[gender] = append(names[gender], name)
 	}
 
 	return names
 }
 
-func mixNames(names [][]string) []string {
+func loadIgnored(genderNames [][]string, tx *utils.AutoTx) map[string][]string {
+	const q = `
+SELECT t.name
+FROM relations
+JOIN relation ON relations.type = relation.id
+JOIN users AS f ON relations.from_id = f.id
+JOIN users AS t ON relations.to_id = t.id
+WHERE lower(f.name) = lower($1)
+	AND relation.type = 'ignored'
+`
+
+	ignored := map[string][]string{}
+
+	for _, names := range genderNames {
+		for _, from := range names {
+			tx.Query(q, from)
+			for {
+				var to string
+				ok := tx.Scan(&to)
+				if !ok {
+					break
+				}
+
+				ignored[from] = append(ignored[from], to)
+				ignored[to] = append(ignored[to], from)
+			}
+		}
+	}
+
+	return ignored
+}
+
+func mixNames(names [][]string, ignored map[string][]string) []string {
 	cnt := len(names[0]) + len(names[1]) + len(names[2])
 	log.Printf("Found %d adms...\n", cnt)
 
@@ -49,17 +78,42 @@ func mixNames(names [][]string) []string {
 	var i int
 
 	fillGender := func(gender int) {
-		for ; len(names[gender]) > 0; i += 2 {
+		curNames := names[gender]
+		for ; len(curNames) > 0; i += 2 {
 			if i >= cnt {
 				i = 1
 			}
 
-			adm[i], names[gender] = takeRandom(names[gender])
+			adm[i], curNames = takeRandom(curNames)
 		}
 	}
 
-	for j := 2; j >= 0; j-- {
-		fillGender(j)
+	containsIgnored := func(first, second string) bool {
+		ign := ignored[first]
+		for _, name := range ign {
+			if name == second {
+				log.Printf("Found ignoring pair: %s, %s. Remixing.", first, second)
+				return true
+			}
+		}
+		return false
+	}
+
+remix:
+	for {
+		for j := 2; j >= 0; j-- {
+			fillGender(j)
+		}
+		for i := 0; i < len(adm)-1; i++ {
+			if containsIgnored(adm[i], adm[i+1]) {
+				continue remix
+			}
+		}
+		if containsIgnored(adm[len(adm)-1], adm[0]) {
+			continue remix
+		}
+
+		break
 	}
 
 	return adm
@@ -115,20 +169,18 @@ func UpdateAdm(tx *utils.AutoTx, mail *utils.Postman) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	names := genderNames(tx)
-	if tx.Error() != nil {
-		log.Println(tx.Error())
+	if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 		return
 	}
 
-	adm := mixNames(names)
-	if tx.Error() != nil {
-		log.Println(tx.Error())
+	ignored := loadIgnored(names, tx)
+	if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 		return
 	}
 
+	adm := mixNames(names, ignored)
 	setAdm(adm, tx)
 	if tx.Error() != nil {
-		log.Println(tx.Error())
 		return
 	}
 
@@ -145,5 +197,5 @@ func UpdateAdm(tx *utils.AutoTx, mail *utils.Postman) {
 	log.Println("Completed. Sending emails... (press Enter to exit)")
 
 	reader := bufio.NewReader(os.Stdin)
-	reader.ReadString('\n')
+	_, _ = reader.ReadString('\n')
 }
