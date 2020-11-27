@@ -185,8 +185,7 @@ func UpdateAdm(tx *utils.AutoTx, mail *utils.Postman) {
 	}
 
 	users := loadUsers(adm, tx)
-	if tx.Error() != nil {
-		log.Println(tx.Error())
+	if tx.Error() != nil && tx.Error() != sql.ErrNoRows {
 		return
 	}
 
