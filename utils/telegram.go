@@ -556,7 +556,7 @@ func (bot *TelegramBot) stat(upd *tgbotapi.Update) string {
 		text += "\n<b>" + key + "</b>: " + strconv.FormatFloat(value, 'f', 2, 64)
 	}
 
-	const usersQuery = `SELECT count(*) FROM users`
+	const usersQuery = `SELECT count(*) FROM users WHERE last_seen_at > created_at`
 	users := atx.QueryInt64(usersQuery)
 	addInt64("users", users)
 
@@ -567,10 +567,6 @@ func (bot *TelegramBot) stat(upd *tgbotapi.Update) string {
 	const negKarmaUsersQuery = `SELECT count(*) FROM users WHERE karma < -1`
 	negKarmaUsers := atx.QueryInt64(negKarmaUsersQuery)
 	addInt64("users with karma &lt; -1", negKarmaUsers)
-
-	const posKarmaUsersQuery = `SELECT count(*) FROM users WHERE karma > 1`
-	posKarmaUsers := atx.QueryInt64(posKarmaUsersQuery)
-	addInt64("users with karma &gt; 1", posKarmaUsers)
 
 	const genderUsersQuery = `
 SELECT gender.type AS sex, count(*)
@@ -589,7 +585,7 @@ ORDER BY sex`
 		addInt64(gender+" gender users", count)
 	}
 
-	const newUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - created_at < interval '1 month'`
+	const newUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - created_at < interval '1 month' AND last_seen_at > created_at`
 	newUsersMonth := atx.QueryInt64(newUsersMonthQuery)
 	addInt64("last month new users", newUsersMonth)
 
@@ -597,11 +593,11 @@ ORDER BY sex`
 	onlineUsersNow := atx.QueryInt64(onlineUsersNowQuery)
 	addInt64("online users", onlineUsersNow)
 
-	const onlineUsersWeekQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '7 days'`
+	const onlineUsersWeekQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '7 days' AND last_seen_at > created_at`
 	onlineUsersWeek := atx.QueryInt64(onlineUsersWeekQuery)
 	addInt64("last week online users", onlineUsersWeek)
 
-	const onlineUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '1 month'`
+	const onlineUsersMonthQuery = `SELECT count(*) FROM users WHERE now() - last_seen_at < interval '1 month' AND last_seen_at > created_at`
 	onlineUsersMonth := atx.QueryInt64(onlineUsersMonthQuery)
 	addInt64("last month online users", onlineUsersMonth)
 
