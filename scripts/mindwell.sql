@@ -2586,6 +2586,8 @@ CREATE OR REPLACE FUNCTION mindwell.delete_user(user_name TEXT) RETURNS VOID AS 
                 notifications.subject_id = del_id
             END;
 
+        DELETE FROM complains WHERE user_id = del_id;
+
         DELETE FROM mindwell.images WHERE images.user_id = del_id;
         DELETE FROM mindwell.entries WHERE author_id = del_id;
         DELETE FROM mindwell.comments WHERE author_id = del_id;
