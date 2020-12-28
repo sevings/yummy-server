@@ -212,6 +212,12 @@ CREATE TRIGGER alw_adm_upd
     WHEN (OLD.invited_by IS NULL AND NEW.invited_by IS NOT NULL)
     EXECUTE PROCEDURE mindwell.allow_adm_upd();
 
+CREATE  OR REPLACE FUNCTION mindwell.is_online(last_seen_at TIMESTAMP WITH TIME ZONE) RETURNS BOOLEAN AS $$
+    BEGIN
+        RETURN now() - last_seen_at < interval '5 minutes';
+    END;
+$$ LANGUAGE plpgsql;
+
     
 
 -- CREATE TABLE "adm" ------------------------------------------

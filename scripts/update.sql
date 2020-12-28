@@ -34,3 +34,9 @@ CREATE OR REPLACE FUNCTION mindwell.delete_user(user_name TEXT) RETURNS VOID AS 
         DELETE FROM mindwell.users WHERE id = del_id;
     END;
 $$ LANGUAGE plpgsql;
+
+CREATE  OR REPLACE FUNCTION mindwell.is_online(last_seen_at TIMESTAMP WITH TIME ZONE) RETURNS BOOLEAN AS $$
+    BEGIN
+        RETURN now() - last_seen_at < interval '5 minutes';
+    END;
+$$ LANGUAGE plpgsql;
