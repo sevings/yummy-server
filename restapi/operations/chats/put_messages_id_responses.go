@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PutMessagesIDOKCode is the HTTP code returned for type PutMessagesIDOK

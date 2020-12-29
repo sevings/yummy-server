@@ -59,9 +59,9 @@ func (o *GetAccountVerificationEmailURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	code := o.Code
-	if code != "" {
-		qs.Set("code", code)
+	codeQ := o.Code
+	if codeQ != "" {
+		qs.Set("code", codeQ)
 	}
 
 	_result.RawQuery = qs.Encode()

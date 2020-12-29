@@ -8,7 +8,7 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // PostAccountLoginHandlerFunc turns a function with the right signature into a post account login handler

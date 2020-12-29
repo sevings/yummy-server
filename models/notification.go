@@ -8,14 +8,14 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Notification notification
+//
 // swagger:model Notification
 type Notification struct {
 
@@ -194,7 +194,7 @@ const (
 
 // prop value enum
 func (m *Notification) validateTypeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, notificationTypeTypePropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, notificationTypeTypePropEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -251,6 +251,7 @@ func (m *Notification) UnmarshalBinary(b []byte) error {
 }
 
 // NotificationInfo notification info
+//
 // swagger:model NotificationInfo
 type NotificationInfo struct {
 

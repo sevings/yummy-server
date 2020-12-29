@@ -53,28 +53,28 @@ func (o *GetMeIgnoredURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var after string
+	var afterQ string
 	if o.After != nil {
-		after = *o.After
+		afterQ = *o.After
 	}
-	if after != "" {
-		qs.Set("after", after)
+	if afterQ != "" {
+		qs.Set("after", afterQ)
 	}
 
-	var before string
+	var beforeQ string
 	if o.Before != nil {
-		before = *o.Before
+		beforeQ = *o.Before
 	}
-	if before != "" {
-		qs.Set("before", before)
+	if beforeQ != "" {
+		qs.Set("before", beforeQ)
 	}
 
-	var limit string
+	var limitQ string
 	if o.Limit != nil {
-		limit = swag.FormatInt64(*o.Limit)
+		limitQ = swag.FormatInt64(*o.Limit)
 	}
-	if limit != "" {
-		qs.Set("limit", limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
 	_result.RawQuery = qs.Encode()

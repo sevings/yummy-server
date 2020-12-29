@@ -18,9 +18,6 @@ var (
 
 func init() {
 	SwaggerJSON = json.RawMessage([]byte(`{
-  "consumes": [
-    "application/json"
-  ],
   "produces": [
     "application/json"
   ],
@@ -5321,9 +5318,6 @@ func init() {
   }
 }`))
 	FlatSwaggerJSON = json.RawMessage([]byte(`{
-  "consumes": [
-    "application/json"
-  ],
   "produces": [
     "application/json"
   ],
@@ -5342,8 +5336,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5455,8 +5449,8 @@ func init() {
     "/account/login": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5542,8 +5536,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5583,8 +5577,8 @@ func init() {
     "/account/recover": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5616,8 +5610,8 @@ func init() {
     "/account/recover/password": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5672,8 +5666,8 @@ func init() {
     "/account/register": {
       "post": {
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5790,8 +5784,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -5863,8 +5857,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "account"
@@ -6213,8 +6207,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "adm"
@@ -6672,8 +6666,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "comments"
@@ -6756,8 +6750,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "comments"
@@ -6936,8 +6930,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "design"
@@ -7087,8 +7081,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "entries"
@@ -7464,8 +7458,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "entries"
@@ -7666,8 +7660,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "comments"
@@ -7723,8 +7717,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "entries"
@@ -8177,8 +8171,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "me"
@@ -8850,8 +8844,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "me"
@@ -9285,8 +9279,8 @@ func init() {
           }
         ],
         "consumes": [
-          "multipart/form-data",
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "relations"
@@ -10099,6 +10093,45 @@ func init() {
         }
       ]
     },
+    "AuthProfileAO1Account": {
+      "type": "object",
+      "properties": {
+        "apiKey": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "validThru": {
+          "type": "number",
+          "format": "double"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "AuthProfileAO1Ban": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "number",
+          "format": "double"
+        },
+        "invite": {
+          "type": "number",
+          "format": "double"
+        },
+        "live": {
+          "type": "number",
+          "format": "double"
+        },
+        "vote": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "Avatar": {
       "type": "object",
       "properties": {
@@ -10123,25 +10156,28 @@ func init() {
         "entries": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "createdAt": {
-                "type": "number",
-                "format": "double"
-              },
-              "id": {
-                "type": "integer",
-                "format": "int64"
-              },
-              "title": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/definitions/CalendarEntriesItems0"
           }
         },
         "start": {
           "type": "number",
           "format": "int64"
+        }
+      }
+    },
+    "CalendarEntriesItems0": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "number",
+          "format": "double"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "string"
         }
       }
     },
@@ -10194,6 +10230,14 @@ func init() {
         },
         "unreadCount": {
           "type": "integer"
+        }
+      }
+    },
+    "ChatRights": {
+      "type": "object",
+      "properties": {
+        "send": {
+          "type": "boolean"
         }
       }
     },
@@ -10283,6 +10327,23 @@ func init() {
         },
         "nextBefore": {
           "type": "string"
+        }
+      }
+    },
+    "CommentRights": {
+      "type": "object",
+      "properties": {
+        "complain": {
+          "type": "boolean"
+        },
+        "delete": {
+          "type": "boolean"
+        },
+        "edit": {
+          "type": "boolean"
+        },
+        "vote": {
+          "type": "boolean"
         }
       }
     },
@@ -10457,6 +10518,26 @@ func init() {
         "wordCount": 5
       }
     },
+    "EntryRights": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "boolean"
+        },
+        "complain": {
+          "type": "boolean"
+        },
+        "delete": {
+          "type": "boolean"
+        },
+        "edit": {
+          "type": "boolean"
+        },
+        "vote": {
+          "type": "boolean"
+        }
+      }
+    },
     "Error": {
       "type": "object",
       "properties": {
@@ -10578,6 +10659,38 @@ func init() {
           }
         }
       ]
+    },
+    "FriendAO1Counts": {
+      "type": "object",
+      "properties": {
+        "comments": {
+          "type": "integer"
+        },
+        "days": {
+          "type": "integer"
+        },
+        "entries": {
+          "type": "integer"
+        },
+        "favorites": {
+          "type": "integer"
+        },
+        "followers": {
+          "type": "integer"
+        },
+        "followings": {
+          "type": "integer"
+        },
+        "ignored": {
+          "type": "integer"
+        },
+        "invited": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "integer"
+        }
+      }
     },
     "FriendList": {
       "type": "object",
@@ -10752,6 +10865,17 @@ func init() {
         }
       }
     },
+    "MessageRights": {
+      "type": "object",
+      "properties": {
+        "delete": {
+          "type": "boolean"
+        },
+        "edit": {
+          "type": "boolean"
+        }
+      }
+    },
     "Notification": {
       "type": "object",
       "properties": {
@@ -10801,6 +10925,17 @@ func init() {
         },
         "user": {
           "$ref": "#/definitions/User"
+        }
+      }
+    },
+    "NotificationInfo": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
         }
       }
     },
@@ -10922,6 +11057,34 @@ func init() {
         }
       ]
     },
+    "ProfileAO1Relations": {
+      "type": "object",
+      "properties": {
+        "fromMe": {
+          "type": "string",
+          "enum": [
+            "followed",
+            "requested",
+            "ignored",
+            "hidden",
+            "none"
+          ]
+        },
+        "isOpenForMe": {
+          "type": "boolean"
+        },
+        "toMe": {
+          "type": "string",
+          "enum": [
+            "followed",
+            "requested",
+            "ignored",
+            "hidden",
+            "none"
+          ]
+        }
+      }
+    },
     "Rating": {
       "type": "object",
       "properties": {
@@ -10975,16 +11138,19 @@ func init() {
         "data": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "count": {
-                "type": "integer"
-              },
-              "tag": {
-                "type": "string"
-              }
-            }
+            "$ref": "#/definitions/TagListDataItems0"
           }
+        }
+      }
+    },
+    "TagListDataItems0": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "tag": {
+          "type": "string"
         }
       }
     },
@@ -11060,6 +11226,23 @@ func init() {
           "type": "boolean"
         },
         "verified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "UserIDBan": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "boolean"
+        },
+        "invite": {
+          "type": "boolean"
+        },
+        "live": {
+          "type": "boolean"
+        },
+        "vote": {
           "type": "boolean"
         }
       }

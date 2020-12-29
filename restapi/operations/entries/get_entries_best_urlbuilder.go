@@ -54,36 +54,36 @@ func (o *GetEntriesBestURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var category string
+	var categoryQ string
 	if o.Category != nil {
-		category = *o.Category
+		categoryQ = *o.Category
 	}
-	if category != "" {
-		qs.Set("category", category)
+	if categoryQ != "" {
+		qs.Set("category", categoryQ)
 	}
 
-	var limit string
+	var limitQ string
 	if o.Limit != nil {
-		limit = swag.FormatInt64(*o.Limit)
+		limitQ = swag.FormatInt64(*o.Limit)
 	}
-	if limit != "" {
-		qs.Set("limit", limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
-	var query string
+	var queryQ string
 	if o.Query != nil {
-		query = *o.Query
+		queryQ = *o.Query
 	}
-	if query != "" {
-		qs.Set("query", query)
+	if queryQ != "" {
+		qs.Set("query", queryQ)
 	}
 
-	var tag string
+	var tagQ string
 	if o.Tag != nil {
-		tag = *o.Tag
+		tagQ = *o.Tag
 	}
-	if tag != "" {
-		qs.Set("tag", tag)
+	if tagQ != "" {
+		qs.Set("tag", tagQ)
 	}
 
 	_result.RawQuery = qs.Encode()

@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAdmGrandfatherStatusParams creates a new PostAdmGrandfatherStatusParams object
@@ -65,7 +64,7 @@ func (o *PostAdmGrandfatherStatusParams) BindRequest(r *http.Request, route *mid
 // bindSent binds and validates parameter Sent from query.
 func (o *PostAdmGrandfatherStatusParams) bindSent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("sent", "query")
+		return errors.Required("sent", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

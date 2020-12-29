@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PostRelationsInvitedNameNoContentCode is the HTTP code returned for type PostRelationsInvitedNameNoContent

@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostRelationsInvitedNameParams creates a new PostRelationsInvitedNameParams object
@@ -85,7 +84,7 @@ func (o *PostRelationsInvitedNameParams) BindRequest(r *http.Request, route *mid
 // bindInvite binds and validates parameter Invite from formData.
 func (o *PostRelationsInvitedNameParams) bindInvite(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("invite", "formData")
+		return errors.Required("invite", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

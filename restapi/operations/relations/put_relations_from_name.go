@@ -8,9 +8,9 @@ package relations
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PutRelationsFromNameHandlerFunc turns a function with the right signature into a put relations from name handler

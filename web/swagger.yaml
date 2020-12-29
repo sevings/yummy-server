@@ -1,8 +1,10 @@
-consumes:
-  - application/json
+swagger: '2.0'
 info:
   title: Mindwell
   version: 0.1.0
+basePath: /api/v1
+produces:
+  - application/json
 securityDefinitions:
   ApiKeyHeader:
     type: apiKey
@@ -3141,7 +3143,3 @@ paths:
           description: Image not found
           schema:
             $ref: '#/definitions/Error'
-produces:
-  - application/json
-swagger: '2.0'
-basePath: /api/v1

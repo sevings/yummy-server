@@ -8,11 +8,11 @@ package adm
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetAdmGrandsonHandlerFunc turns a function with the right signature into a get adm grandson handler
@@ -75,6 +75,7 @@ func (o *GetAdmGrandson) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetAdmGrandsonOKBody get adm grandson o k body
+//
 // swagger:model GetAdmGrandsonOKBody
 type GetAdmGrandsonOKBody struct {
 

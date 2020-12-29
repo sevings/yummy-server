@@ -8,14 +8,14 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Friend friend
+//
 // swagger:model Friend
 type Friend struct {
 	User
@@ -100,7 +100,6 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
-
 	var dataAO1 struct {
 		Counts *FriendAO1Counts `json:"counts,omitempty"`
 
@@ -136,7 +135,6 @@ func (m Friend) MarshalJSON() ([]byte, error) {
 		return nil, errAO1
 	}
 	_parts = append(_parts, jsonDataAO1)
-
 	return swag.ConcatJSON(_parts...), nil
 }
 
@@ -225,7 +223,7 @@ func init() {
 
 // property enum
 func (m *Friend) validateGenderEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, friendTypeGenderPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, friendTypeGenderPropEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -259,7 +257,7 @@ func init() {
 
 // property enum
 func (m *Friend) validatePrivacyEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, friendTypePrivacyPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, friendTypePrivacyPropEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -311,6 +309,7 @@ func (m *Friend) UnmarshalBinary(b []byte) error {
 }
 
 // FriendAO1Counts friend a o1 counts
+//
 // swagger:model FriendAO1Counts
 type FriendAO1Counts struct {
 

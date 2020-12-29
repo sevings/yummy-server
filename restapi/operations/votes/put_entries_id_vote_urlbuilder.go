@@ -61,12 +61,12 @@ func (o *PutEntriesIDVoteURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var positive string
+	var positiveQ string
 	if o.Positive != nil {
-		positive = swag.FormatBool(*o.Positive)
+		positiveQ = swag.FormatBool(*o.Positive)
 	}
-	if positive != "" {
-		qs.Set("positive", positive)
+	if positiveQ != "" {
+		qs.Set("positive", positiveQ)
 	}
 
 	_result.RawQuery = qs.Encode()

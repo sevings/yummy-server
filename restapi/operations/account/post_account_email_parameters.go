@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAccountEmailParams creates a new PostAccountEmailParams object
@@ -85,7 +84,7 @@ func (o *PostAccountEmailParams) BindRequest(r *http.Request, route *middleware.
 // bindEmail binds and validates parameter Email from formData.
 func (o *PostAccountEmailParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("email", "formData")
+		return errors.Required("email", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -124,7 +123,7 @@ func (o *PostAccountEmailParams) validateEmail(formats strfmt.Registry) error {
 // bindPassword binds and validates parameter Password from formData.
 func (o *PostAccountEmailParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("password", "formData")
+		return errors.Required("password", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

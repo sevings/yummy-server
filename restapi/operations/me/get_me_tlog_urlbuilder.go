@@ -56,52 +56,52 @@ func (o *GetMeTlogURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var after string
+	var afterQ string
 	if o.After != nil {
-		after = *o.After
+		afterQ = *o.After
 	}
-	if after != "" {
-		qs.Set("after", after)
+	if afterQ != "" {
+		qs.Set("after", afterQ)
 	}
 
-	var before string
+	var beforeQ string
 	if o.Before != nil {
-		before = *o.Before
+		beforeQ = *o.Before
 	}
-	if before != "" {
-		qs.Set("before", before)
+	if beforeQ != "" {
+		qs.Set("before", beforeQ)
 	}
 
-	var limit string
+	var limitQ string
 	if o.Limit != nil {
-		limit = swag.FormatInt64(*o.Limit)
+		limitQ = swag.FormatInt64(*o.Limit)
 	}
-	if limit != "" {
-		qs.Set("limit", limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
-	var query string
+	var queryQ string
 	if o.Query != nil {
-		query = *o.Query
+		queryQ = *o.Query
 	}
-	if query != "" {
-		qs.Set("query", query)
+	if queryQ != "" {
+		qs.Set("query", queryQ)
 	}
 
-	var sort string
+	var sortQ string
 	if o.Sort != nil {
-		sort = *o.Sort
+		sortQ = *o.Sort
 	}
-	if sort != "" {
-		qs.Set("sort", sort)
+	if sortQ != "" {
+		qs.Set("sort", sortQ)
 	}
 
-	var tag string
+	var tagQ string
 	if o.Tag != nil {
-		tag = *o.Tag
+		tagQ = *o.Tag
 	}
-	if tag != "" {
-		qs.Set("tag", tag)
+	if tagQ != "" {
+		qs.Set("tag", tagQ)
 	}
 
 	_result.RawQuery = qs.Encode()

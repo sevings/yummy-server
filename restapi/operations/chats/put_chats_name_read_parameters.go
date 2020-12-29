@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPutChatsNameReadParams creates a new PutChatsNameReadParams object
@@ -78,7 +77,7 @@ func (o *PutChatsNameReadParams) BindRequest(r *http.Request, route *middleware.
 // bindMessage binds and validates parameter Message from query.
 func (o *PutChatsNameReadParams) bindMessage(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("message", "query")
+		return errors.Required("message", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

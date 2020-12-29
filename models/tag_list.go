@@ -8,13 +8,13 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // TagList tag list
+//
 // swagger:model TagList
 type TagList struct {
 
@@ -80,6 +80,7 @@ func (m *TagList) UnmarshalBinary(b []byte) error {
 }
 
 // TagListDataItems0 tag list data items0
+//
 // swagger:model TagListDataItems0
 type TagListDataItems0 struct {
 

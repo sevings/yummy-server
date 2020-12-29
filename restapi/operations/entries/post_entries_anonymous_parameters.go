@@ -12,10 +12,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostEntriesAnonymousParams creates a new PostEntriesAnonymousParams object
@@ -154,7 +153,7 @@ func (o *PostEntriesAnonymousParams) bindAnonymousComments(rawData []string, has
 // bindContent binds and validates parameter Content from formData.
 func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("content", "formData")
+		return errors.Required("content", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

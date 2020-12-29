@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAccountPasswordParams creates a new PostAccountPasswordParams object
@@ -85,7 +84,7 @@ func (o *PostAccountPasswordParams) BindRequest(r *http.Request, route *middlewa
 // bindNewPassword binds and validates parameter NewPassword from formData.
 func (o *PostAccountPasswordParams) bindNewPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("new_password", "formData")
+		return errors.Required("new_password", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -124,7 +123,7 @@ func (o *PostAccountPasswordParams) validateNewPassword(formats strfmt.Registry)
 // bindOldPassword binds and validates parameter OldPassword from formData.
 func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("old_password", "formData")
+		return errors.Required("old_password", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

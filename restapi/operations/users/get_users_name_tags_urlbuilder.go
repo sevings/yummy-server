@@ -61,12 +61,12 @@ func (o *GetUsersNameTagsURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var limit string
+	var limitQ string
 	if o.Limit != nil {
-		limit = swag.FormatInt64(*o.Limit)
+		limitQ = swag.FormatInt64(*o.Limit)
 	}
-	if limit != "" {
-		qs.Set("limit", limit)
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
 	_result.RawQuery = qs.Encode()

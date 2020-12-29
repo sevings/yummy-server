@@ -9,14 +9,14 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Entry entry
+//
 // swagger:model Entry
 type Entry struct {
 
@@ -231,7 +231,7 @@ const (
 
 // prop value enum
 func (m *Entry) validatePrivacyEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, entryTypePrivacyPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, entryTypePrivacyPropEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -331,6 +331,7 @@ func (m *Entry) UnmarshalBinary(b []byte) error {
 }
 
 // EntryRights entry rights
+//
 // swagger:model EntryRights
 type EntryRights struct {
 

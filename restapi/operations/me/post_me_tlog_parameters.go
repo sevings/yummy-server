@@ -12,10 +12,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostMeTlogParams creates a new PostMeTlogParams object
@@ -163,7 +162,7 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 // bindContent binds and validates parameter Content from formData.
 func (o *PostMeTlogParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("content", "formData")
+		return errors.Required("content", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -309,7 +308,7 @@ func (o *PostMeTlogParams) bindIsVotable(rawData []string, hasKey bool, formats 
 // bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PostMeTlogParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("privacy", "formData")
+		return errors.Required("privacy", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -334,7 +333,7 @@ func (o *PostMeTlogParams) bindPrivacy(rawData []string, hasKey bool, formats st
 // validatePrivacy carries on validations for parameter Privacy
 func (o *PostMeTlogParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me"}); err != nil {
+	if err := validate.EnumCase("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me"}, true); err != nil {
 		return err
 	}
 

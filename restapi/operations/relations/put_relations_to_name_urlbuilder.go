@@ -59,9 +59,9 @@ func (o *PutRelationsToNameURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	r := o.R
-	if r != "" {
-		qs.Set("r", r)
+	rQ := o.R
+	if rQ != "" {
+		qs.Set("r", rQ)
 	}
 
 	_result.RawQuery = qs.Encode()

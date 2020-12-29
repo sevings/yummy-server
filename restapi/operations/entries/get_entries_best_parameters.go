@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetEntriesBestParams creates a new GetEntriesBestParams object
@@ -139,7 +138,7 @@ func (o *GetEntriesBestParams) bindCategory(rawData []string, hasKey bool, forma
 // validateCategory carries on validations for parameter Category
 func (o *GetEntriesBestParams) validateCategory(formats strfmt.Registry) error {
 
-	if err := validate.Enum("category", "query", *o.Category, []interface{}{"month", "week"}); err != nil {
+	if err := validate.EnumCase("category", "query", *o.Category, []interface{}{"month", "week"}, true); err != nil {
 		return err
 	}
 

@@ -8,9 +8,9 @@ package comments
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetCommentsIDHandlerFunc turns a function with the right signature into a get comments ID handler

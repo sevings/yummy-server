@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostChatsNameMessagesParams creates a new PostChatsNameMessagesParams object
@@ -98,7 +97,7 @@ func (o *PostChatsNameMessagesParams) BindRequest(r *http.Request, route *middle
 // bindContent binds and validates parameter Content from formData.
 func (o *PostChatsNameMessagesParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("content", "formData")
+		return errors.Required("content", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -178,7 +177,7 @@ func (o *PostChatsNameMessagesParams) validateName(formats strfmt.Registry) erro
 // bindUID binds and validates parameter UID from formData.
 func (o *PostChatsNameMessagesParams) bindUID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("uid", "formData")
+		return errors.Required("uid", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

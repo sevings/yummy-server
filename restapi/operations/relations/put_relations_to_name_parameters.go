@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPutRelationsToNameParams creates a new PutRelationsToNameParams object
@@ -114,7 +113,7 @@ func (o *PutRelationsToNameParams) validateName(formats strfmt.Registry) error {
 // bindR binds and validates parameter R from query.
 func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("r", "query")
+		return errors.Required("r", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -139,7 +138,7 @@ func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats 
 // validateR carries on validations for parameter R
 func (o *PutRelationsToNameParams) validateR(formats strfmt.Registry) error {
 
-	if err := validate.Enum("r", "query", o.R, []interface{}{"followed", "ignored", "hidden"}); err != nil {
+	if err := validate.EnumCase("r", "query", o.R, []interface{}{"followed", "ignored", "hidden"}, true); err != nil {
 		return err
 	}
 

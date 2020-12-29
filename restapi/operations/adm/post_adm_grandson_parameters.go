@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAdmGrandsonParams creates a new PostAdmGrandsonParams object
@@ -138,7 +137,7 @@ func (o *PostAdmGrandsonParams) BindRequest(r *http.Request, route *middleware.M
 // bindAddress binds and validates parameter Address from formData.
 func (o *PostAdmGrandsonParams) bindAddress(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("address", "formData")
+		return errors.Required("address", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -229,7 +228,7 @@ func (o *PostAdmGrandsonParams) validateComment(formats strfmt.Registry) error {
 // bindCountry binds and validates parameter Country from formData.
 func (o *PostAdmGrandsonParams) bindCountry(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("country", "formData")
+		return errors.Required("country", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -264,7 +263,7 @@ func (o *PostAdmGrandsonParams) validateCountry(formats strfmt.Registry) error {
 // bindName binds and validates parameter Name from formData.
 func (o *PostAdmGrandsonParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("name", "formData")
+		return errors.Required("name", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -299,7 +298,7 @@ func (o *PostAdmGrandsonParams) validateName(formats strfmt.Registry) error {
 // bindPostcode binds and validates parameter Postcode from formData.
 func (o *PostAdmGrandsonParams) bindPostcode(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("postcode", "formData")
+		return errors.Required("postcode", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

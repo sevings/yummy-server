@@ -8,9 +8,9 @@ package adm
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PostAdmGrandfatherStatusHandlerFunc turns a function with the right signature into a post adm grandfather status handler

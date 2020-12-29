@@ -6,13 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // AuthProfile auth profile
+//
 // swagger:model AuthProfile
 type AuthProfile struct {
 	Profile
@@ -73,7 +73,6 @@ func (m AuthProfile) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
-
 	var dataAO1 struct {
 		Account *AuthProfileAO1Account `json:"account,omitempty"`
 
@@ -97,7 +96,6 @@ func (m AuthProfile) MarshalJSON() ([]byte, error) {
 		return nil, errAO1
 	}
 	_parts = append(_parts, jsonDataAO1)
-
 	return swag.ConcatJSON(_parts...), nil
 }
 
@@ -179,6 +177,7 @@ func (m *AuthProfile) UnmarshalBinary(b []byte) error {
 }
 
 // AuthProfileAO1Account auth profile a o1 account
+//
 // swagger:model AuthProfileAO1Account
 type AuthProfileAO1Account struct {
 
@@ -219,6 +218,7 @@ func (m *AuthProfileAO1Account) UnmarshalBinary(b []byte) error {
 }
 
 // AuthProfileAO1Ban auth profile a o1 ban
+//
 // swagger:model AuthProfileAO1Ban
 type AuthProfileAO1Ban struct {
 

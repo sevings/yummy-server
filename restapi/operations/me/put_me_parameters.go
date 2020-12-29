@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPutMeParams creates a new PutMeParams object
@@ -294,7 +293,7 @@ func (o *PutMeParams) bindGender(rawData []string, hasKey bool, formats strfmt.R
 // validateGender carries on validations for parameter Gender
 func (o *PutMeParams) validateGender(formats strfmt.Registry) error {
 
-	if err := validate.Enum("gender", "formData", *o.Gender, []interface{}{"male", "female", "not set"}); err != nil {
+	if err := validate.EnumCase("gender", "formData", *o.Gender, []interface{}{"male", "female", "not set"}, true); err != nil {
 		return err
 	}
 
@@ -327,7 +326,7 @@ func (o *PutMeParams) bindIsDaylog(rawData []string, hasKey bool, formats strfmt
 // bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("privacy", "formData")
+		return errors.Required("privacy", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -352,7 +351,7 @@ func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.
 // validatePrivacy carries on validations for parameter Privacy
 func (o *PutMeParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "invited", "followers"}); err != nil {
+	if err := validate.EnumCase("privacy", "formData", o.Privacy, []interface{}{"all", "invited", "followers"}, true); err != nil {
 		return err
 	}
 
@@ -385,7 +384,7 @@ func (o *PutMeParams) bindShowInTops(rawData []string, hasKey bool, formats strf
 // bindShowName binds and validates parameter ShowName from formData.
 func (o *PutMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("showName", "formData")
+		return errors.Required("showName", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

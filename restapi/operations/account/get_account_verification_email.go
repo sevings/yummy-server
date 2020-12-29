@@ -8,7 +8,7 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 // GetAccountVerificationEmailHandlerFunc turns a function with the right signature into a get account verification email handler

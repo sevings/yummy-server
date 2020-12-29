@@ -8,9 +8,9 @@ package chats
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PostChatsNameMessagesHandlerFunc turns a function with the right signature into a post chats name messages handler

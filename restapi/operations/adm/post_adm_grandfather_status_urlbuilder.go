@@ -51,9 +51,9 @@ func (o *PostAdmGrandfatherStatusURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	sent := swag.FormatBool(o.Sent)
-	if sent != "" {
-		qs.Set("sent", sent)
+	sentQ := swag.FormatBool(o.Sent)
+	if sentQ != "" {
+		qs.Set("sent", sentQ)
 	}
 
 	_result.RawQuery = qs.Encode()

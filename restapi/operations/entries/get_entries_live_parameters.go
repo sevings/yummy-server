@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetEntriesLiveParams creates a new GetEntriesLiveParams object
@@ -277,7 +276,7 @@ func (o *GetEntriesLiveParams) bindSection(rawData []string, hasKey bool, format
 // validateSection carries on validations for parameter Section
 func (o *GetEntriesLiveParams) validateSection(formats strfmt.Registry) error {
 
-	if err := validate.Enum("section", "query", *o.Section, []interface{}{"entries", "comments", "waiting"}); err != nil {
+	if err := validate.EnumCase("section", "query", *o.Section, []interface{}{"entries", "comments", "waiting"}, true); err != nil {
 		return err
 	}
 

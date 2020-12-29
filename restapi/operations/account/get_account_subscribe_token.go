@@ -8,11 +8,11 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountSubscribeTokenHandlerFunc turns a function with the right signature into a get account subscribe token handler
@@ -75,6 +75,7 @@ func (o *GetAccountSubscribeToken) ServeHTTP(rw http.ResponseWriter, r *http.Req
 }
 
 // GetAccountSubscribeTokenOKBody get account subscribe token o k body
+//
 // swagger:model GetAccountSubscribeTokenOKBody
 type GetAccountSubscribeTokenOKBody struct {
 

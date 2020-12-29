@@ -8,9 +8,9 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PutAccountSettingsEmailHandlerFunc turns a function with the right signature into a put account settings email handler

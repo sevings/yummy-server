@@ -9,14 +9,14 @@ import (
 	"encoding/json"
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // FriendList friend list
+//
 // swagger:model FriendList
 type FriendList struct {
 
@@ -100,7 +100,7 @@ const (
 
 // prop value enum
 func (m *FriendList) validateRelationEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, friendListTypeRelationPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, friendListTypeRelationPropEnum, true); err != nil {
 		return err
 	}
 	return nil

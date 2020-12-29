@@ -8,11 +8,11 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountInvitesHandlerFunc turns a function with the right signature into a get account invites handler
@@ -75,6 +75,7 @@ func (o *GetAccountInvites) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetAccountInvitesOKBody get account invites o k body
+//
 // swagger:model GetAccountInvitesOKBody
 type GetAccountInvitesOKBody struct {
 

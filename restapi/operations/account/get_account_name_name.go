@@ -8,9 +8,9 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 )
 
 // GetAccountNameNameHandlerFunc turns a function with the right signature into a get account name name handler
@@ -60,6 +60,7 @@ func (o *GetAccountNameName) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 }
 
 // GetAccountNameNameOKBody get account name name o k body
+//
 // swagger:model GetAccountNameNameOKBody
 type GetAccountNameNameOKBody struct {
 

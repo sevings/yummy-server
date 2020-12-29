@@ -6,13 +6,13 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Message message
+//
 // swagger:model Message
 type Message struct {
 
@@ -114,6 +114,7 @@ func (m *Message) UnmarshalBinary(b []byte) error {
 }
 
 // MessageRights message rights
+//
 // swagger:model MessageRights
 type MessageRights struct {
 

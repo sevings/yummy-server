@@ -51,9 +51,9 @@ func (o *PostAdmGrandsonStatusURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	received := swag.FormatBool(o.Received)
-	if received != "" {
-		qs.Set("received", received)
+	receivedQ := swag.FormatBool(o.Received)
+	if receivedQ != "" {
+		qs.Set("received", receivedQ)
 	}
 
 	_result.RawQuery = qs.Encode()

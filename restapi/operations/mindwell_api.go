@@ -10,15 +10,16 @@ import (
 	"net/http"
 	"strings"
 
-	errors "github.com/go-openapi/errors"
-	loads "github.com/go-openapi/loads"
-	runtime "github.com/go-openapi/runtime"
-	middleware "github.com/go-openapi/runtime/middleware"
-	security "github.com/go-openapi/runtime/security"
-	spec "github.com/go-openapi/spec"
-	strfmt "github.com/go-openapi/strfmt"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/loads"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/security"
+	"github.com/go-openapi/spec"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 
+	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/account"
 	"github.com/sevings/mindwell-server/restapi/operations/adm"
 	"github.com/sevings/mindwell-server/restapi/operations/chats"
@@ -33,356 +34,357 @@ import (
 	"github.com/sevings/mindwell-server/restapi/operations/users"
 	"github.com/sevings/mindwell-server/restapi/operations/votes"
 	"github.com/sevings/mindwell-server/restapi/operations/watchings"
-
-	models "github.com/sevings/mindwell-server/models"
 )
 
 // NewMindwellAPI creates a new Mindwell instance
 func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 	return &MindwellAPI{
-		handlers:              make(map[string]map[string]http.Handler),
-		formats:               strfmt.Default,
-		defaultConsumes:       "application/json",
-		defaultProduces:       "application/json",
-		customConsumers:       make(map[string]runtime.Consumer),
-		customProducers:       make(map[string]runtime.Producer),
-		ServerShutdown:        func() {},
-		spec:                  spec,
-		ServeError:            errors.ServeError,
-		BasicAuthenticator:    security.BasicAuth,
-		APIKeyAuthenticator:   security.APIKeyAuth,
-		BearerAuthenticator:   security.BearerAuth,
-		JSONConsumer:          runtime.JSONConsumer(),
-		UrlformConsumer:       runtime.DiscardConsumer,
+		handlers:            make(map[string]map[string]http.Handler),
+		formats:             strfmt.Default,
+		defaultConsumes:     "application/json",
+		defaultProduces:     "application/json",
+		customConsumers:     make(map[string]runtime.Consumer),
+		customProducers:     make(map[string]runtime.Producer),
+		PreServerShutdown:   func() {},
+		ServerShutdown:      func() {},
+		spec:                spec,
+		useSwaggerUI:        false,
+		ServeError:          errors.ServeError,
+		BasicAuthenticator:  security.BasicAuth,
+		APIKeyAuthenticator: security.APIKeyAuth,
+		BearerAuthenticator: security.BearerAuth,
+
 		MultipartformConsumer: runtime.DiscardConsumer,
-		JSONProducer:          runtime.JSONProducer(),
+		UrlformConsumer:       runtime.DiscardConsumer,
+
+		JSONProducer: runtime.JSONProducer(),
+
 		AccountDeleteAccountSubscribeTelegramHandler: account.DeleteAccountSubscribeTelegramHandlerFunc(func(params account.DeleteAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountDeleteAccountSubscribeTelegram has not yet been implemented")
+			return middleware.NotImplemented("operation account.DeleteAccountSubscribeTelegram has not yet been implemented")
 		}),
 		CommentsDeleteCommentsIDHandler: comments.DeleteCommentsIDHandlerFunc(func(params comments.DeleteCommentsIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsDeleteCommentsID has not yet been implemented")
+			return middleware.NotImplemented("operation comments.DeleteCommentsID has not yet been implemented")
 		}),
 		VotesDeleteCommentsIDVoteHandler: votes.DeleteCommentsIDVoteHandlerFunc(func(params votes.DeleteCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesDeleteCommentsIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.DeleteCommentsIDVote has not yet been implemented")
 		}),
 		EntriesDeleteEntriesIDHandler: entries.DeleteEntriesIDHandlerFunc(func(params entries.DeleteEntriesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesDeleteEntriesID has not yet been implemented")
+			return middleware.NotImplemented("operation entries.DeleteEntriesID has not yet been implemented")
 		}),
 		FavoritesDeleteEntriesIDFavoriteHandler: favorites.DeleteEntriesIDFavoriteHandlerFunc(func(params favorites.DeleteEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation FavoritesDeleteEntriesIDFavorite has not yet been implemented")
+			return middleware.NotImplemented("operation favorites.DeleteEntriesIDFavorite has not yet been implemented")
 		}),
 		VotesDeleteEntriesIDVoteHandler: votes.DeleteEntriesIDVoteHandlerFunc(func(params votes.DeleteEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesDeleteEntriesIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.DeleteEntriesIDVote has not yet been implemented")
 		}),
 		WatchingsDeleteEntriesIDWatchingHandler: watchings.DeleteEntriesIDWatchingHandlerFunc(func(params watchings.DeleteEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation WatchingsDeleteEntriesIDWatching has not yet been implemented")
+			return middleware.NotImplemented("operation watchings.DeleteEntriesIDWatching has not yet been implemented")
 		}),
 		ImagesDeleteImagesIDHandler: images.DeleteImagesIDHandlerFunc(func(params images.DeleteImagesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ImagesDeleteImagesID has not yet been implemented")
+			return middleware.NotImplemented("operation images.DeleteImagesID has not yet been implemented")
 		}),
 		ChatsDeleteMessagesIDHandler: chats.DeleteMessagesIDHandlerFunc(func(params chats.DeleteMessagesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsDeleteMessagesID has not yet been implemented")
+			return middleware.NotImplemented("operation chats.DeleteMessagesID has not yet been implemented")
 		}),
 		RelationsDeleteRelationsFromNameHandler: relations.DeleteRelationsFromNameHandlerFunc(func(params relations.DeleteRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsDeleteRelationsFromName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.DeleteRelationsFromName has not yet been implemented")
 		}),
 		RelationsDeleteRelationsToNameHandler: relations.DeleteRelationsToNameHandlerFunc(func(params relations.DeleteRelationsToNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsDeleteRelationsToName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.DeleteRelationsToName has not yet been implemented")
 		}),
 		AccountGetAccountEmailEmailHandler: account.GetAccountEmailEmailHandlerFunc(func(params account.GetAccountEmailEmailParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountEmailEmail has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountEmailEmail has not yet been implemented")
 		}),
 		AccountGetAccountInvitesHandler: account.GetAccountInvitesHandlerFunc(func(params account.GetAccountInvitesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountInvites has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountInvites has not yet been implemented")
 		}),
 		AccountGetAccountNameNameHandler: account.GetAccountNameNameHandlerFunc(func(params account.GetAccountNameNameParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountNameName has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountNameName has not yet been implemented")
 		}),
 		AccountGetAccountSettingsEmailHandler: account.GetAccountSettingsEmailHandlerFunc(func(params account.GetAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountSettingsEmail has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountSettingsEmail has not yet been implemented")
 		}),
 		AccountGetAccountSettingsTelegramHandler: account.GetAccountSettingsTelegramHandlerFunc(func(params account.GetAccountSettingsTelegramParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountSettingsTelegram has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountSettingsTelegram has not yet been implemented")
 		}),
 		AccountGetAccountSubscribeTelegramHandler: account.GetAccountSubscribeTelegramHandlerFunc(func(params account.GetAccountSubscribeTelegramParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountSubscribeTelegram has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountSubscribeTelegram has not yet been implemented")
 		}),
 		AccountGetAccountSubscribeTokenHandler: account.GetAccountSubscribeTokenHandlerFunc(func(params account.GetAccountSubscribeTokenParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountSubscribeToken has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountSubscribeToken has not yet been implemented")
 		}),
 		AccountGetAccountVerificationEmailHandler: account.GetAccountVerificationEmailHandlerFunc(func(params account.GetAccountVerificationEmailParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountGetAccountVerificationEmail has not yet been implemented")
+			return middleware.NotImplemented("operation account.GetAccountVerificationEmail has not yet been implemented")
 		}),
 		AdmGetAdmGrandfatherHandler: adm.GetAdmGrandfatherHandlerFunc(func(params adm.GetAdmGrandfatherParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmGetAdmGrandfather has not yet been implemented")
+			return middleware.NotImplemented("operation adm.GetAdmGrandfather has not yet been implemented")
 		}),
 		AdmGetAdmGrandfatherStatusHandler: adm.GetAdmGrandfatherStatusHandlerFunc(func(params adm.GetAdmGrandfatherStatusParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmGetAdmGrandfatherStatus has not yet been implemented")
+			return middleware.NotImplemented("operation adm.GetAdmGrandfatherStatus has not yet been implemented")
 		}),
 		AdmGetAdmGrandsonHandler: adm.GetAdmGrandsonHandlerFunc(func(params adm.GetAdmGrandsonParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmGetAdmGrandson has not yet been implemented")
+			return middleware.NotImplemented("operation adm.GetAdmGrandson has not yet been implemented")
 		}),
 		AdmGetAdmGrandsonStatusHandler: adm.GetAdmGrandsonStatusHandlerFunc(func(params adm.GetAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmGetAdmGrandsonStatus has not yet been implemented")
+			return middleware.NotImplemented("operation adm.GetAdmGrandsonStatus has not yet been implemented")
 		}),
 		AdmGetAdmStatHandler: adm.GetAdmStatHandlerFunc(func(params adm.GetAdmStatParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmGetAdmStat has not yet been implemented")
+			return middleware.NotImplemented("operation adm.GetAdmStat has not yet been implemented")
 		}),
 		ChatsGetChatsHandler: chats.GetChatsHandlerFunc(func(params chats.GetChatsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsGetChats has not yet been implemented")
+			return middleware.NotImplemented("operation chats.GetChats has not yet been implemented")
 		}),
 		ChatsGetChatsNameHandler: chats.GetChatsNameHandlerFunc(func(params chats.GetChatsNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsGetChatsName has not yet been implemented")
+			return middleware.NotImplemented("operation chats.GetChatsName has not yet been implemented")
 		}),
 		ChatsGetChatsNameMessagesHandler: chats.GetChatsNameMessagesHandlerFunc(func(params chats.GetChatsNameMessagesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsGetChatsNameMessages has not yet been implemented")
+			return middleware.NotImplemented("operation chats.GetChatsNameMessages has not yet been implemented")
 		}),
 		CommentsGetCommentsIDHandler: comments.GetCommentsIDHandlerFunc(func(params comments.GetCommentsIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsGetCommentsID has not yet been implemented")
+			return middleware.NotImplemented("operation comments.GetCommentsID has not yet been implemented")
 		}),
 		VotesGetCommentsIDVoteHandler: votes.GetCommentsIDVoteHandlerFunc(func(params votes.GetCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesGetCommentsIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.GetCommentsIDVote has not yet been implemented")
 		}),
 		DesignGetDesignHandler: design.GetDesignHandlerFunc(func(params design.GetDesignParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation DesignGetDesign has not yet been implemented")
+			return middleware.NotImplemented("operation design.GetDesign has not yet been implemented")
 		}),
 		DesignGetDesignFontsHandler: design.GetDesignFontsHandlerFunc(func(params design.GetDesignFontsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation DesignGetDesignFonts has not yet been implemented")
+			return middleware.NotImplemented("operation design.GetDesignFonts has not yet been implemented")
 		}),
 		EntriesGetEntriesAnonymousHandler: entries.GetEntriesAnonymousHandlerFunc(func(params entries.GetEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesAnonymous has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesAnonymous has not yet been implemented")
 		}),
 		EntriesGetEntriesBestHandler: entries.GetEntriesBestHandlerFunc(func(params entries.GetEntriesBestParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesBest has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesBest has not yet been implemented")
 		}),
 		EntriesGetEntriesFriendsHandler: entries.GetEntriesFriendsHandlerFunc(func(params entries.GetEntriesFriendsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesFriends has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesFriends has not yet been implemented")
 		}),
 		EntriesGetEntriesIDHandler: entries.GetEntriesIDHandlerFunc(func(params entries.GetEntriesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesID has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesID has not yet been implemented")
 		}),
 		CommentsGetEntriesIDCommentsHandler: comments.GetEntriesIDCommentsHandlerFunc(func(params comments.GetEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsGetEntriesIDComments has not yet been implemented")
+			return middleware.NotImplemented("operation comments.GetEntriesIDComments has not yet been implemented")
 		}),
 		FavoritesGetEntriesIDFavoriteHandler: favorites.GetEntriesIDFavoriteHandlerFunc(func(params favorites.GetEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation FavoritesGetEntriesIDFavorite has not yet been implemented")
+			return middleware.NotImplemented("operation favorites.GetEntriesIDFavorite has not yet been implemented")
 		}),
 		VotesGetEntriesIDVoteHandler: votes.GetEntriesIDVoteHandlerFunc(func(params votes.GetEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesGetEntriesIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.GetEntriesIDVote has not yet been implemented")
 		}),
 		WatchingsGetEntriesIDWatchingHandler: watchings.GetEntriesIDWatchingHandlerFunc(func(params watchings.GetEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation WatchingsGetEntriesIDWatching has not yet been implemented")
+			return middleware.NotImplemented("operation watchings.GetEntriesIDWatching has not yet been implemented")
 		}),
 		EntriesGetEntriesLiveHandler: entries.GetEntriesLiveHandlerFunc(func(params entries.GetEntriesLiveParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesLive has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesLive has not yet been implemented")
 		}),
 		EntriesGetEntriesRandomHandler: entries.GetEntriesRandomHandlerFunc(func(params entries.GetEntriesRandomParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesRandom has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesRandom has not yet been implemented")
 		}),
 		EntriesGetEntriesTagsHandler: entries.GetEntriesTagsHandlerFunc(func(params entries.GetEntriesTagsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesTags has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesTags has not yet been implemented")
 		}),
 		EntriesGetEntriesWatchingHandler: entries.GetEntriesWatchingHandlerFunc(func(params entries.GetEntriesWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesGetEntriesWatching has not yet been implemented")
+			return middleware.NotImplemented("operation entries.GetEntriesWatching has not yet been implemented")
 		}),
 		ImagesGetImagesIDHandler: images.GetImagesIDHandlerFunc(func(params images.GetImagesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ImagesGetImagesID has not yet been implemented")
+			return middleware.NotImplemented("operation images.GetImagesID has not yet been implemented")
 		}),
 		MeGetMeHandler: me.GetMeHandlerFunc(func(params me.GetMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMe has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMe has not yet been implemented")
 		}),
 		MeGetMeCalendarHandler: me.GetMeCalendarHandlerFunc(func(params me.GetMeCalendarParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeCalendar has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeCalendar has not yet been implemented")
 		}),
 		MeGetMeFavoritesHandler: me.GetMeFavoritesHandlerFunc(func(params me.GetMeFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeFavorites has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeFavorites has not yet been implemented")
 		}),
 		MeGetMeFollowersHandler: me.GetMeFollowersHandlerFunc(func(params me.GetMeFollowersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeFollowers has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeFollowers has not yet been implemented")
 		}),
 		MeGetMeFollowingsHandler: me.GetMeFollowingsHandlerFunc(func(params me.GetMeFollowingsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeFollowings has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeFollowings has not yet been implemented")
 		}),
 		MeGetMeHiddenHandler: me.GetMeHiddenHandlerFunc(func(params me.GetMeHiddenParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeHidden has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeHidden has not yet been implemented")
 		}),
 		MeGetMeIgnoredHandler: me.GetMeIgnoredHandlerFunc(func(params me.GetMeIgnoredParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeIgnored has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeIgnored has not yet been implemented")
 		}),
 		MeGetMeImagesHandler: me.GetMeImagesHandlerFunc(func(params me.GetMeImagesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeImages has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeImages has not yet been implemented")
 		}),
 		MeGetMeInvitedHandler: me.GetMeInvitedHandlerFunc(func(params me.GetMeInvitedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeInvited has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeInvited has not yet been implemented")
 		}),
 		MeGetMeRequestedHandler: me.GetMeRequestedHandlerFunc(func(params me.GetMeRequestedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeRequested has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeRequested has not yet been implemented")
 		}),
 		MeGetMeTagsHandler: me.GetMeTagsHandlerFunc(func(params me.GetMeTagsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeTags has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeTags has not yet been implemented")
 		}),
 		MeGetMeTlogHandler: me.GetMeTlogHandlerFunc(func(params me.GetMeTlogParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MeGetMeTlog has not yet been implemented")
+			return middleware.NotImplemented("operation me.GetMeTlog has not yet been implemented")
 		}),
 		ChatsGetMessagesIDHandler: chats.GetMessagesIDHandlerFunc(func(params chats.GetMessagesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsGetMessagesID has not yet been implemented")
+			return middleware.NotImplemented("operation chats.GetMessagesID has not yet been implemented")
 		}),
 		NotificationsGetNotificationsHandler: notifications.GetNotificationsHandlerFunc(func(params notifications.GetNotificationsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation NotificationsGetNotifications has not yet been implemented")
+			return middleware.NotImplemented("operation notifications.GetNotifications has not yet been implemented")
 		}),
 		NotificationsGetNotificationsIDHandler: notifications.GetNotificationsIDHandlerFunc(func(params notifications.GetNotificationsIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation NotificationsGetNotificationsID has not yet been implemented")
+			return middleware.NotImplemented("operation notifications.GetNotificationsID has not yet been implemented")
 		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsGetRelationsFromName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.GetRelationsFromName has not yet been implemented")
 		}),
 		RelationsGetRelationsToNameHandler: relations.GetRelationsToNameHandlerFunc(func(params relations.GetRelationsToNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsGetRelationsToName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.GetRelationsToName has not yet been implemented")
 		}),
 		UsersGetUsersHandler: users.GetUsersHandlerFunc(func(params users.GetUsersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsers has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsers has not yet been implemented")
 		}),
 		UsersGetUsersNameHandler: users.GetUsersNameHandlerFunc(func(params users.GetUsersNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersName has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersName has not yet been implemented")
 		}),
 		UsersGetUsersNameCalendarHandler: users.GetUsersNameCalendarHandlerFunc(func(params users.GetUsersNameCalendarParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameCalendar has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameCalendar has not yet been implemented")
 		}),
 		UsersGetUsersNameFavoritesHandler: users.GetUsersNameFavoritesHandlerFunc(func(params users.GetUsersNameFavoritesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameFavorites has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameFavorites has not yet been implemented")
 		}),
 		UsersGetUsersNameFollowersHandler: users.GetUsersNameFollowersHandlerFunc(func(params users.GetUsersNameFollowersParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameFollowers has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameFollowers has not yet been implemented")
 		}),
 		UsersGetUsersNameFollowingsHandler: users.GetUsersNameFollowingsHandlerFunc(func(params users.GetUsersNameFollowingsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameFollowings has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameFollowings has not yet been implemented")
 		}),
 		UsersGetUsersNameImagesHandler: users.GetUsersNameImagesHandlerFunc(func(params users.GetUsersNameImagesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameImages has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameImages has not yet been implemented")
 		}),
 		UsersGetUsersNameInvitedHandler: users.GetUsersNameInvitedHandlerFunc(func(params users.GetUsersNameInvitedParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameInvited has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameInvited has not yet been implemented")
 		}),
 		UsersGetUsersNameTagsHandler: users.GetUsersNameTagsHandlerFunc(func(params users.GetUsersNameTagsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameTags has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameTags has not yet been implemented")
 		}),
 		UsersGetUsersNameTlogHandler: users.GetUsersNameTlogHandlerFunc(func(params users.GetUsersNameTlogParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation UsersGetUsersNameTlog has not yet been implemented")
+			return middleware.NotImplemented("operation users.GetUsersNameTlog has not yet been implemented")
 		}),
 		AccountPostAccountEmailHandler: account.PostAccountEmailHandlerFunc(func(params account.PostAccountEmailParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountEmail has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountEmail has not yet been implemented")
 		}),
 		AccountPostAccountLoginHandler: account.PostAccountLoginHandlerFunc(func(params account.PostAccountLoginParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountLogin has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountLogin has not yet been implemented")
 		}),
 		AccountPostAccountPasswordHandler: account.PostAccountPasswordHandlerFunc(func(params account.PostAccountPasswordParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountPassword has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountPassword has not yet been implemented")
 		}),
 		AccountPostAccountRecoverHandler: account.PostAccountRecoverHandlerFunc(func(params account.PostAccountRecoverParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountRecover has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountRecover has not yet been implemented")
 		}),
 		AccountPostAccountRecoverPasswordHandler: account.PostAccountRecoverPasswordHandlerFunc(func(params account.PostAccountRecoverPasswordParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountRecoverPassword has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountRecoverPassword has not yet been implemented")
 		}),
 		AccountPostAccountRegisterHandler: account.PostAccountRegisterHandlerFunc(func(params account.PostAccountRegisterParams) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountRegister has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountRegister has not yet been implemented")
 		}),
 		AccountPostAccountVerificationHandler: account.PostAccountVerificationHandlerFunc(func(params account.PostAccountVerificationParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPostAccountVerification has not yet been implemented")
+			return middleware.NotImplemented("operation account.PostAccountVerification has not yet been implemented")
 		}),
 		AdmPostAdmGrandfatherStatusHandler: adm.PostAdmGrandfatherStatusHandlerFunc(func(params adm.PostAdmGrandfatherStatusParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmPostAdmGrandfatherStatus has not yet been implemented")
+			return middleware.NotImplemented("operation adm.PostAdmGrandfatherStatus has not yet been implemented")
 		}),
 		AdmPostAdmGrandsonHandler: adm.PostAdmGrandsonHandlerFunc(func(params adm.PostAdmGrandsonParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmPostAdmGrandson has not yet been implemented")
+			return middleware.NotImplemented("operation adm.PostAdmGrandson has not yet been implemented")
 		}),
 		AdmPostAdmGrandsonStatusHandler: adm.PostAdmGrandsonStatusHandlerFunc(func(params adm.PostAdmGrandsonStatusParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AdmPostAdmGrandsonStatus has not yet been implemented")
+			return middleware.NotImplemented("operation adm.PostAdmGrandsonStatus has not yet been implemented")
 		}),
 		ChatsPostChatsNameMessagesHandler: chats.PostChatsNameMessagesHandlerFunc(func(params chats.PostChatsNameMessagesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsPostChatsNameMessages has not yet been implemented")
+			return middleware.NotImplemented("operation chats.PostChatsNameMessages has not yet been implemented")
 		}),
 		CommentsPostCommentsIDComplainHandler: comments.PostCommentsIDComplainHandlerFunc(func(params comments.PostCommentsIDComplainParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsPostCommentsIDComplain has not yet been implemented")
+			return middleware.NotImplemented("operation comments.PostCommentsIDComplain has not yet been implemented")
 		}),
 		EntriesPostEntriesAnonymousHandler: entries.PostEntriesAnonymousHandlerFunc(func(params entries.PostEntriesAnonymousParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesPostEntriesAnonymous has not yet been implemented")
+			return middleware.NotImplemented("operation entries.PostEntriesAnonymous has not yet been implemented")
 		}),
 		CommentsPostEntriesIDCommentsHandler: comments.PostEntriesIDCommentsHandlerFunc(func(params comments.PostEntriesIDCommentsParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsPostEntriesIDComments has not yet been implemented")
+			return middleware.NotImplemented("operation comments.PostEntriesIDComments has not yet been implemented")
 		}),
 		EntriesPostEntriesIDComplainHandler: entries.PostEntriesIDComplainHandlerFunc(func(params entries.PostEntriesIDComplainParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesPostEntriesIDComplain has not yet been implemented")
+			return middleware.NotImplemented("operation entries.PostEntriesIDComplain has not yet been implemented")
 		}),
 		ImagesPostImagesHandler: images.PostImagesHandlerFunc(func(params images.PostImagesParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ImagesPostImages has not yet been implemented")
+			return middleware.NotImplemented("operation images.PostImages has not yet been implemented")
 		}),
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePostMeTlog has not yet been implemented")
+			return middleware.NotImplemented("operation me.PostMeTlog has not yet been implemented")
 		}),
 		RelationsPostRelationsInvitedNameHandler: relations.PostRelationsInvitedNameHandlerFunc(func(params relations.PostRelationsInvitedNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsPostRelationsInvitedName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.PostRelationsInvitedName has not yet been implemented")
 		}),
 		AccountPutAccountSettingsEmailHandler: account.PutAccountSettingsEmailHandlerFunc(func(params account.PutAccountSettingsEmailParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPutAccountSettingsEmail has not yet been implemented")
+			return middleware.NotImplemented("operation account.PutAccountSettingsEmail has not yet been implemented")
 		}),
 		AccountPutAccountSettingsTelegramHandler: account.PutAccountSettingsTelegramHandlerFunc(func(params account.PutAccountSettingsTelegramParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation AccountPutAccountSettingsTelegram has not yet been implemented")
+			return middleware.NotImplemented("operation account.PutAccountSettingsTelegram has not yet been implemented")
 		}),
 		ChatsPutChatsNameReadHandler: chats.PutChatsNameReadHandlerFunc(func(params chats.PutChatsNameReadParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsPutChatsNameRead has not yet been implemented")
+			return middleware.NotImplemented("operation chats.PutChatsNameRead has not yet been implemented")
 		}),
 		CommentsPutCommentsIDHandler: comments.PutCommentsIDHandlerFunc(func(params comments.PutCommentsIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation CommentsPutCommentsID has not yet been implemented")
+			return middleware.NotImplemented("operation comments.PutCommentsID has not yet been implemented")
 		}),
 		VotesPutCommentsIDVoteHandler: votes.PutCommentsIDVoteHandlerFunc(func(params votes.PutCommentsIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesPutCommentsIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.PutCommentsIDVote has not yet been implemented")
 		}),
 		DesignPutDesignHandler: design.PutDesignHandlerFunc(func(params design.PutDesignParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation DesignPutDesign has not yet been implemented")
+			return middleware.NotImplemented("operation design.PutDesign has not yet been implemented")
 		}),
 		EntriesPutEntriesIDHandler: entries.PutEntriesIDHandlerFunc(func(params entries.PutEntriesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation EntriesPutEntriesID has not yet been implemented")
+			return middleware.NotImplemented("operation entries.PutEntriesID has not yet been implemented")
 		}),
 		FavoritesPutEntriesIDFavoriteHandler: favorites.PutEntriesIDFavoriteHandlerFunc(func(params favorites.PutEntriesIDFavoriteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation FavoritesPutEntriesIDFavorite has not yet been implemented")
+			return middleware.NotImplemented("operation favorites.PutEntriesIDFavorite has not yet been implemented")
 		}),
 		VotesPutEntriesIDVoteHandler: votes.PutEntriesIDVoteHandlerFunc(func(params votes.PutEntriesIDVoteParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation VotesPutEntriesIDVote has not yet been implemented")
+			return middleware.NotImplemented("operation votes.PutEntriesIDVote has not yet been implemented")
 		}),
 		WatchingsPutEntriesIDWatchingHandler: watchings.PutEntriesIDWatchingHandlerFunc(func(params watchings.PutEntriesIDWatchingParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation WatchingsPutEntriesIDWatching has not yet been implemented")
+			return middleware.NotImplemented("operation watchings.PutEntriesIDWatching has not yet been implemented")
 		}),
 		MePutMeHandler: me.PutMeHandlerFunc(func(params me.PutMeParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutMe has not yet been implemented")
+			return middleware.NotImplemented("operation me.PutMe has not yet been implemented")
 		}),
 		MePutMeAvatarHandler: me.PutMeAvatarHandlerFunc(func(params me.PutMeAvatarParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutMeAvatar has not yet been implemented")
+			return middleware.NotImplemented("operation me.PutMeAvatar has not yet been implemented")
 		}),
 		MePutMeCoverHandler: me.PutMeCoverHandlerFunc(func(params me.PutMeCoverParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutMeCover has not yet been implemented")
+			return middleware.NotImplemented("operation me.PutMeCover has not yet been implemented")
 		}),
 		MePutMeOnlineHandler: me.PutMeOnlineHandlerFunc(func(params me.PutMeOnlineParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation MePutMeOnline has not yet been implemented")
+			return middleware.NotImplemented("operation me.PutMeOnline has not yet been implemented")
 		}),
 		ChatsPutMessagesIDHandler: chats.PutMessagesIDHandlerFunc(func(params chats.PutMessagesIDParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation ChatsPutMessagesID has not yet been implemented")
+			return middleware.NotImplemented("operation chats.PutMessagesID has not yet been implemented")
 		}),
 		NotificationsPutNotificationsReadHandler: notifications.PutNotificationsReadHandlerFunc(func(params notifications.PutNotificationsReadParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation NotificationsPutNotificationsRead has not yet been implemented")
+			return middleware.NotImplemented("operation notifications.PutNotificationsRead has not yet been implemented")
 		}),
 		RelationsPutRelationsFromNameHandler: relations.PutRelationsFromNameHandlerFunc(func(params relations.PutRelationsFromNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsPutRelationsFromName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.PutRelationsFromName has not yet been implemented")
 		}),
 		RelationsPutRelationsToNameHandler: relations.PutRelationsToNameHandlerFunc(func(params relations.PutRelationsToNameParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation RelationsPutRelationsToName has not yet been implemented")
+			return middleware.NotImplemented("operation relations.PutRelationsToName has not yet been implemented")
 		}),
 
 		// Applies when the "X-User-Key" header is set
 		APIKeyHeaderAuth: func(token string) (*models.UserID, error) {
 			return nil, errors.NotImplemented("api key auth (ApiKeyHeader) X-User-Key from header param [X-User-Key] has not yet been implemented")
 		},
-
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -399,6 +401,7 @@ type MindwellAPI struct {
 	defaultConsumes string
 	defaultProduces string
 	Middleware      func(middleware.Builder) http.Handler
+	useSwaggerUI    bool
 
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
@@ -410,14 +413,15 @@ type MindwellAPI struct {
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
 
-	// JSONConsumer registers a consumer for a "application/json" mime type
-	JSONConsumer runtime.Consumer
-	// UrlformConsumer registers a consumer for a "application/x-www-form-urlencoded" mime type
-	UrlformConsumer runtime.Consumer
-	// MultipartformConsumer registers a consumer for a "multipart/form-data" mime type
+	// MultipartformConsumer registers a consumer for the following mime types:
+	//   - multipart/form-data
 	MultipartformConsumer runtime.Consumer
+	// UrlformConsumer registers a consumer for the following mime types:
+	//   - application/x-www-form-urlencoded
+	UrlformConsumer runtime.Consumer
 
-	// JSONProducer registers a producer for a "application/json" mime type
+	// JSONProducer registers a producer for the following mime types:
+	//   - application/json
 	JSONProducer runtime.Producer
 
 	// APIKeyHeaderAuth registers a function that takes a token and returns a principal
@@ -641,10 +645,13 @@ type MindwellAPI struct {
 	RelationsPutRelationsFromNameHandler relations.PutRelationsFromNameHandler
 	// RelationsPutRelationsToNameHandler sets the operation handler for the put relations to name operation
 	RelationsPutRelationsToNameHandler relations.PutRelationsToNameHandler
-
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
+
+	// PreServerShutdown is called before the HTTP(S) server is shutdown
+	// This allows for custom functions to get executed before the HTTP(S) server stops accepting traffic
+	PreServerShutdown func()
 
 	// ServerShutdown is called when the HTTP(S) server is shut down and done
 	// handling all active connections and does not accept connections any more
@@ -655,6 +662,16 @@ type MindwellAPI struct {
 
 	// User defined logger function.
 	Logger func(string, ...interface{})
+}
+
+// UseRedoc for documentation at /docs
+func (o *MindwellAPI) UseRedoc() {
+	o.useSwaggerUI = false
+}
+
+// UseSwaggerUI for documentation at /docs
+func (o *MindwellAPI) UseSwaggerUI() {
+	o.useSwaggerUI = true
 }
 
 // SetDefaultProduces sets the default produces media type
@@ -696,16 +713,11 @@ func (o *MindwellAPI) RegisterFormat(name string, format strfmt.Format, validato
 func (o *MindwellAPI) Validate() error {
 	var unregistered []string
 
-	if o.JSONConsumer == nil {
-		unregistered = append(unregistered, "JSONConsumer")
-	}
-
-	if o.UrlformConsumer == nil {
-		unregistered = append(unregistered, "UrlformConsumer")
-	}
-
 	if o.MultipartformConsumer == nil {
 		unregistered = append(unregistered, "MultipartformConsumer")
+	}
+	if o.UrlformConsumer == nil {
+		unregistered = append(unregistered, "UrlformConsumer")
 	}
 
 	if o.JSONProducer == nil {
@@ -719,427 +731,321 @@ func (o *MindwellAPI) Validate() error {
 	if o.AccountDeleteAccountSubscribeTelegramHandler == nil {
 		unregistered = append(unregistered, "account.DeleteAccountSubscribeTelegramHandler")
 	}
-
 	if o.CommentsDeleteCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.DeleteCommentsIDHandler")
 	}
-
 	if o.VotesDeleteCommentsIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.DeleteCommentsIDVoteHandler")
 	}
-
 	if o.EntriesDeleteEntriesIDHandler == nil {
 		unregistered = append(unregistered, "entries.DeleteEntriesIDHandler")
 	}
-
 	if o.FavoritesDeleteEntriesIDFavoriteHandler == nil {
 		unregistered = append(unregistered, "favorites.DeleteEntriesIDFavoriteHandler")
 	}
-
 	if o.VotesDeleteEntriesIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.DeleteEntriesIDVoteHandler")
 	}
-
 	if o.WatchingsDeleteEntriesIDWatchingHandler == nil {
 		unregistered = append(unregistered, "watchings.DeleteEntriesIDWatchingHandler")
 	}
-
 	if o.ImagesDeleteImagesIDHandler == nil {
 		unregistered = append(unregistered, "images.DeleteImagesIDHandler")
 	}
-
 	if o.ChatsDeleteMessagesIDHandler == nil {
 		unregistered = append(unregistered, "chats.DeleteMessagesIDHandler")
 	}
-
 	if o.RelationsDeleteRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.DeleteRelationsFromNameHandler")
 	}
-
 	if o.RelationsDeleteRelationsToNameHandler == nil {
 		unregistered = append(unregistered, "relations.DeleteRelationsToNameHandler")
 	}
-
 	if o.AccountGetAccountEmailEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountEmailEmailHandler")
 	}
-
 	if o.AccountGetAccountInvitesHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountInvitesHandler")
 	}
-
 	if o.AccountGetAccountNameNameHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountNameNameHandler")
 	}
-
 	if o.AccountGetAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsEmailHandler")
 	}
-
 	if o.AccountGetAccountSettingsTelegramHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSettingsTelegramHandler")
 	}
-
 	if o.AccountGetAccountSubscribeTelegramHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSubscribeTelegramHandler")
 	}
-
 	if o.AccountGetAccountSubscribeTokenHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountSubscribeTokenHandler")
 	}
-
 	if o.AccountGetAccountVerificationEmailHandler == nil {
 		unregistered = append(unregistered, "account.GetAccountVerificationEmailHandler")
 	}
-
 	if o.AdmGetAdmGrandfatherHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandfatherHandler")
 	}
-
 	if o.AdmGetAdmGrandfatherStatusHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandfatherStatusHandler")
 	}
-
 	if o.AdmGetAdmGrandsonHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandsonHandler")
 	}
-
 	if o.AdmGetAdmGrandsonStatusHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmGrandsonStatusHandler")
 	}
-
 	if o.AdmGetAdmStatHandler == nil {
 		unregistered = append(unregistered, "adm.GetAdmStatHandler")
 	}
-
 	if o.ChatsGetChatsHandler == nil {
 		unregistered = append(unregistered, "chats.GetChatsHandler")
 	}
-
 	if o.ChatsGetChatsNameHandler == nil {
 		unregistered = append(unregistered, "chats.GetChatsNameHandler")
 	}
-
 	if o.ChatsGetChatsNameMessagesHandler == nil {
 		unregistered = append(unregistered, "chats.GetChatsNameMessagesHandler")
 	}
-
 	if o.CommentsGetCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.GetCommentsIDHandler")
 	}
-
 	if o.VotesGetCommentsIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.GetCommentsIDVoteHandler")
 	}
-
 	if o.DesignGetDesignHandler == nil {
 		unregistered = append(unregistered, "design.GetDesignHandler")
 	}
-
 	if o.DesignGetDesignFontsHandler == nil {
 		unregistered = append(unregistered, "design.GetDesignFontsHandler")
 	}
-
 	if o.EntriesGetEntriesAnonymousHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesAnonymousHandler")
 	}
-
 	if o.EntriesGetEntriesBestHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesBestHandler")
 	}
-
 	if o.EntriesGetEntriesFriendsHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesFriendsHandler")
 	}
-
 	if o.EntriesGetEntriesIDHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesIDHandler")
 	}
-
 	if o.CommentsGetEntriesIDCommentsHandler == nil {
 		unregistered = append(unregistered, "comments.GetEntriesIDCommentsHandler")
 	}
-
 	if o.FavoritesGetEntriesIDFavoriteHandler == nil {
 		unregistered = append(unregistered, "favorites.GetEntriesIDFavoriteHandler")
 	}
-
 	if o.VotesGetEntriesIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.GetEntriesIDVoteHandler")
 	}
-
 	if o.WatchingsGetEntriesIDWatchingHandler == nil {
 		unregistered = append(unregistered, "watchings.GetEntriesIDWatchingHandler")
 	}
-
 	if o.EntriesGetEntriesLiveHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesLiveHandler")
 	}
-
 	if o.EntriesGetEntriesRandomHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesRandomHandler")
 	}
-
 	if o.EntriesGetEntriesTagsHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesTagsHandler")
 	}
-
 	if o.EntriesGetEntriesWatchingHandler == nil {
 		unregistered = append(unregistered, "entries.GetEntriesWatchingHandler")
 	}
-
 	if o.ImagesGetImagesIDHandler == nil {
 		unregistered = append(unregistered, "images.GetImagesIDHandler")
 	}
-
 	if o.MeGetMeHandler == nil {
 		unregistered = append(unregistered, "me.GetMeHandler")
 	}
-
 	if o.MeGetMeCalendarHandler == nil {
 		unregistered = append(unregistered, "me.GetMeCalendarHandler")
 	}
-
 	if o.MeGetMeFavoritesHandler == nil {
 		unregistered = append(unregistered, "me.GetMeFavoritesHandler")
 	}
-
 	if o.MeGetMeFollowersHandler == nil {
 		unregistered = append(unregistered, "me.GetMeFollowersHandler")
 	}
-
 	if o.MeGetMeFollowingsHandler == nil {
 		unregistered = append(unregistered, "me.GetMeFollowingsHandler")
 	}
-
 	if o.MeGetMeHiddenHandler == nil {
 		unregistered = append(unregistered, "me.GetMeHiddenHandler")
 	}
-
 	if o.MeGetMeIgnoredHandler == nil {
 		unregistered = append(unregistered, "me.GetMeIgnoredHandler")
 	}
-
 	if o.MeGetMeImagesHandler == nil {
 		unregistered = append(unregistered, "me.GetMeImagesHandler")
 	}
-
 	if o.MeGetMeInvitedHandler == nil {
 		unregistered = append(unregistered, "me.GetMeInvitedHandler")
 	}
-
 	if o.MeGetMeRequestedHandler == nil {
 		unregistered = append(unregistered, "me.GetMeRequestedHandler")
 	}
-
 	if o.MeGetMeTagsHandler == nil {
 		unregistered = append(unregistered, "me.GetMeTagsHandler")
 	}
-
 	if o.MeGetMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.GetMeTlogHandler")
 	}
-
 	if o.ChatsGetMessagesIDHandler == nil {
 		unregistered = append(unregistered, "chats.GetMessagesIDHandler")
 	}
-
 	if o.NotificationsGetNotificationsHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsHandler")
 	}
-
 	if o.NotificationsGetNotificationsIDHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsIDHandler")
 	}
-
 	if o.RelationsGetRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
-
 	if o.RelationsGetRelationsToNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsToNameHandler")
 	}
-
 	if o.UsersGetUsersHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersHandler")
 	}
-
 	if o.UsersGetUsersNameHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameHandler")
 	}
-
 	if o.UsersGetUsersNameCalendarHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameCalendarHandler")
 	}
-
 	if o.UsersGetUsersNameFavoritesHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameFavoritesHandler")
 	}
-
 	if o.UsersGetUsersNameFollowersHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameFollowersHandler")
 	}
-
 	if o.UsersGetUsersNameFollowingsHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameFollowingsHandler")
 	}
-
 	if o.UsersGetUsersNameImagesHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameImagesHandler")
 	}
-
 	if o.UsersGetUsersNameInvitedHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameInvitedHandler")
 	}
-
 	if o.UsersGetUsersNameTagsHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameTagsHandler")
 	}
-
 	if o.UsersGetUsersNameTlogHandler == nil {
 		unregistered = append(unregistered, "users.GetUsersNameTlogHandler")
 	}
-
 	if o.AccountPostAccountEmailHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountEmailHandler")
 	}
-
 	if o.AccountPostAccountLoginHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountLoginHandler")
 	}
-
 	if o.AccountPostAccountPasswordHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountPasswordHandler")
 	}
-
 	if o.AccountPostAccountRecoverHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountRecoverHandler")
 	}
-
 	if o.AccountPostAccountRecoverPasswordHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountRecoverPasswordHandler")
 	}
-
 	if o.AccountPostAccountRegisterHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountRegisterHandler")
 	}
-
 	if o.AccountPostAccountVerificationHandler == nil {
 		unregistered = append(unregistered, "account.PostAccountVerificationHandler")
 	}
-
 	if o.AdmPostAdmGrandfatherStatusHandler == nil {
 		unregistered = append(unregistered, "adm.PostAdmGrandfatherStatusHandler")
 	}
-
 	if o.AdmPostAdmGrandsonHandler == nil {
 		unregistered = append(unregistered, "adm.PostAdmGrandsonHandler")
 	}
-
 	if o.AdmPostAdmGrandsonStatusHandler == nil {
 		unregistered = append(unregistered, "adm.PostAdmGrandsonStatusHandler")
 	}
-
 	if o.ChatsPostChatsNameMessagesHandler == nil {
 		unregistered = append(unregistered, "chats.PostChatsNameMessagesHandler")
 	}
-
 	if o.CommentsPostCommentsIDComplainHandler == nil {
 		unregistered = append(unregistered, "comments.PostCommentsIDComplainHandler")
 	}
-
 	if o.EntriesPostEntriesAnonymousHandler == nil {
 		unregistered = append(unregistered, "entries.PostEntriesAnonymousHandler")
 	}
-
 	if o.CommentsPostEntriesIDCommentsHandler == nil {
 		unregistered = append(unregistered, "comments.PostEntriesIDCommentsHandler")
 	}
-
 	if o.EntriesPostEntriesIDComplainHandler == nil {
 		unregistered = append(unregistered, "entries.PostEntriesIDComplainHandler")
 	}
-
 	if o.ImagesPostImagesHandler == nil {
 		unregistered = append(unregistered, "images.PostImagesHandler")
 	}
-
 	if o.MePostMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.PostMeTlogHandler")
 	}
-
 	if o.RelationsPostRelationsInvitedNameHandler == nil {
 		unregistered = append(unregistered, "relations.PostRelationsInvitedNameHandler")
 	}
-
 	if o.AccountPutAccountSettingsEmailHandler == nil {
 		unregistered = append(unregistered, "account.PutAccountSettingsEmailHandler")
 	}
-
 	if o.AccountPutAccountSettingsTelegramHandler == nil {
 		unregistered = append(unregistered, "account.PutAccountSettingsTelegramHandler")
 	}
-
 	if o.ChatsPutChatsNameReadHandler == nil {
 		unregistered = append(unregistered, "chats.PutChatsNameReadHandler")
 	}
-
 	if o.CommentsPutCommentsIDHandler == nil {
 		unregistered = append(unregistered, "comments.PutCommentsIDHandler")
 	}
-
 	if o.VotesPutCommentsIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.PutCommentsIDVoteHandler")
 	}
-
 	if o.DesignPutDesignHandler == nil {
 		unregistered = append(unregistered, "design.PutDesignHandler")
 	}
-
 	if o.EntriesPutEntriesIDHandler == nil {
 		unregistered = append(unregistered, "entries.PutEntriesIDHandler")
 	}
-
 	if o.FavoritesPutEntriesIDFavoriteHandler == nil {
 		unregistered = append(unregistered, "favorites.PutEntriesIDFavoriteHandler")
 	}
-
 	if o.VotesPutEntriesIDVoteHandler == nil {
 		unregistered = append(unregistered, "votes.PutEntriesIDVoteHandler")
 	}
-
 	if o.WatchingsPutEntriesIDWatchingHandler == nil {
 		unregistered = append(unregistered, "watchings.PutEntriesIDWatchingHandler")
 	}
-
 	if o.MePutMeHandler == nil {
 		unregistered = append(unregistered, "me.PutMeHandler")
 	}
-
 	if o.MePutMeAvatarHandler == nil {
 		unregistered = append(unregistered, "me.PutMeAvatarHandler")
 	}
-
 	if o.MePutMeCoverHandler == nil {
 		unregistered = append(unregistered, "me.PutMeCoverHandler")
 	}
-
 	if o.MePutMeOnlineHandler == nil {
 		unregistered = append(unregistered, "me.PutMeOnlineHandler")
 	}
-
 	if o.ChatsPutMessagesIDHandler == nil {
 		unregistered = append(unregistered, "chats.PutMessagesIDHandler")
 	}
-
 	if o.NotificationsPutNotificationsReadHandler == nil {
 		unregistered = append(unregistered, "notifications.PutNotificationsReadHandler")
 	}
-
 	if o.RelationsPutRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.PutRelationsFromNameHandler")
 	}
-
 	if o.RelationsPutRelationsToNameHandler == nil {
 		unregistered = append(unregistered, "relations.PutRelationsToNameHandler")
 	}
@@ -1158,13 +1064,11 @@ func (o *MindwellAPI) ServeErrorFor(operationID string) func(http.ResponseWriter
 
 // AuthenticatorsFor gets the authenticators for the specified security schemes
 func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) map[string]runtime.Authenticator {
-
 	result := make(map[string]runtime.Authenticator)
-	for name, scheme := range schemes {
+	for name := range schemes {
 		switch name {
-
 		case "ApiKeyHeader":
-
+			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.APIKeyHeaderAuth(token)
 			})
@@ -1172,32 +1076,23 @@ func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 		}
 	}
 	return result
-
 }
 
 // Authorizer returns the registered authorizer
 func (o *MindwellAPI) Authorizer() runtime.Authorizer {
-
 	return o.APIAuthorizer
-
 }
 
-// ConsumersFor gets the consumers for the specified media types
+// ConsumersFor gets the consumers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *MindwellAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consumer {
-
-	result := make(map[string]runtime.Consumer)
+	result := make(map[string]runtime.Consumer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
-		case "application/json":
-			result["application/json"] = o.JSONConsumer
-
-		case "application/x-www-form-urlencoded":
-			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
-
 		case "multipart/form-data":
 			result["multipart/form-data"] = o.MultipartformConsumer
-
+		case "application/x-www-form-urlencoded":
+			result["application/x-www-form-urlencoded"] = o.UrlformConsumer
 		}
 
 		if c, ok := o.customConsumers[mt]; ok {
@@ -1205,19 +1100,16 @@ func (o *MindwellAPI) ConsumersFor(mediaTypes []string) map[string]runtime.Consu
 		}
 	}
 	return result
-
 }
 
-// ProducersFor gets the producers for the specified media types
+// ProducersFor gets the producers for the specified media types.
+// MIME type parameters are ignored here.
 func (o *MindwellAPI) ProducersFor(mediaTypes []string) map[string]runtime.Producer {
-
-	result := make(map[string]runtime.Producer)
+	result := make(map[string]runtime.Producer, len(mediaTypes))
 	for _, mt := range mediaTypes {
 		switch mt {
-
 		case "application/json":
 			result["application/json"] = o.JSONProducer
-
 		}
 
 		if p, ok := o.customProducers[mt]; ok {
@@ -1225,7 +1117,6 @@ func (o *MindwellAPI) ProducersFor(mediaTypes []string) map[string]runtime.Produ
 		}
 	}
 	return result
-
 }
 
 // HandlerFor gets a http.Handler for the provided operation method and path
@@ -1255,7 +1146,6 @@ func (o *MindwellAPI) Context() *middleware.Context {
 
 func (o *MindwellAPI) initHandlerCache() {
 	o.Context() // don't care about the result, just that the initialization happened
-
 	if o.handlers == nil {
 		o.handlers = make(map[string]map[string]http.Handler)
 	}
@@ -1264,537 +1154,430 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/account/subscribe/telegram"] = account.NewDeleteAccountSubscribeTelegram(o.context, o.AccountDeleteAccountSubscribeTelegramHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/comments/{id}"] = comments.NewDeleteCommentsID(o.context, o.CommentsDeleteCommentsIDHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/comments/{id}/vote"] = votes.NewDeleteCommentsIDVote(o.context, o.VotesDeleteCommentsIDVoteHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/entries/{id}"] = entries.NewDeleteEntriesID(o.context, o.EntriesDeleteEntriesIDHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/entries/{id}/favorite"] = favorites.NewDeleteEntriesIDFavorite(o.context, o.FavoritesDeleteEntriesIDFavoriteHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/entries/{id}/vote"] = votes.NewDeleteEntriesIDVote(o.context, o.VotesDeleteEntriesIDVoteHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/entries/{id}/watching"] = watchings.NewDeleteEntriesIDWatching(o.context, o.WatchingsDeleteEntriesIDWatchingHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/images/{id}"] = images.NewDeleteImagesID(o.context, o.ImagesDeleteImagesIDHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/messages/{id}"] = chats.NewDeleteMessagesID(o.context, o.ChatsDeleteMessagesIDHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/relations/from/{name}"] = relations.NewDeleteRelationsFromName(o.context, o.RelationsDeleteRelationsFromNameHandler)
-
 	if o.handlers["DELETE"] == nil {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/relations/to/{name}"] = relations.NewDeleteRelationsToName(o.context, o.RelationsDeleteRelationsToNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/email/{email}"] = account.NewGetAccountEmailEmail(o.context, o.AccountGetAccountEmailEmailHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/invites"] = account.NewGetAccountInvites(o.context, o.AccountGetAccountInvitesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/name/{name}"] = account.NewGetAccountNameName(o.context, o.AccountGetAccountNameNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/email"] = account.NewGetAccountSettingsEmail(o.context, o.AccountGetAccountSettingsEmailHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/settings/telegram"] = account.NewGetAccountSettingsTelegram(o.context, o.AccountGetAccountSettingsTelegramHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/subscribe/telegram"] = account.NewGetAccountSubscribeTelegram(o.context, o.AccountGetAccountSubscribeTelegramHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/subscribe/token"] = account.NewGetAccountSubscribeToken(o.context, o.AccountGetAccountSubscribeTokenHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/account/verification/{email}"] = account.NewGetAccountVerificationEmail(o.context, o.AccountGetAccountVerificationEmailHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/grandfather"] = adm.NewGetAdmGrandfather(o.context, o.AdmGetAdmGrandfatherHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/grandfather/status"] = adm.NewGetAdmGrandfatherStatus(o.context, o.AdmGetAdmGrandfatherStatusHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/grandson"] = adm.NewGetAdmGrandson(o.context, o.AdmGetAdmGrandsonHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/grandson/status"] = adm.NewGetAdmGrandsonStatus(o.context, o.AdmGetAdmGrandsonStatusHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/adm/stat"] = adm.NewGetAdmStat(o.context, o.AdmGetAdmStatHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/chats"] = chats.NewGetChats(o.context, o.ChatsGetChatsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/chats/{name}"] = chats.NewGetChatsName(o.context, o.ChatsGetChatsNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/chats/{name}/messages"] = chats.NewGetChatsNameMessages(o.context, o.ChatsGetChatsNameMessagesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/comments/{id}"] = comments.NewGetCommentsID(o.context, o.CommentsGetCommentsIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/comments/{id}/vote"] = votes.NewGetCommentsIDVote(o.context, o.VotesGetCommentsIDVoteHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/design"] = design.NewGetDesign(o.context, o.DesignGetDesignHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/design/fonts"] = design.NewGetDesignFonts(o.context, o.DesignGetDesignFontsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/anonymous"] = entries.NewGetEntriesAnonymous(o.context, o.EntriesGetEntriesAnonymousHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/best"] = entries.NewGetEntriesBest(o.context, o.EntriesGetEntriesBestHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/friends"] = entries.NewGetEntriesFriends(o.context, o.EntriesGetEntriesFriendsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/{id}"] = entries.NewGetEntriesID(o.context, o.EntriesGetEntriesIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/{id}/comments"] = comments.NewGetEntriesIDComments(o.context, o.CommentsGetEntriesIDCommentsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/{id}/favorite"] = favorites.NewGetEntriesIDFavorite(o.context, o.FavoritesGetEntriesIDFavoriteHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/{id}/vote"] = votes.NewGetEntriesIDVote(o.context, o.VotesGetEntriesIDVoteHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/{id}/watching"] = watchings.NewGetEntriesIDWatching(o.context, o.WatchingsGetEntriesIDWatchingHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/live"] = entries.NewGetEntriesLive(o.context, o.EntriesGetEntriesLiveHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/random"] = entries.NewGetEntriesRandom(o.context, o.EntriesGetEntriesRandomHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/tags"] = entries.NewGetEntriesTags(o.context, o.EntriesGetEntriesTagsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/entries/watching"] = entries.NewGetEntriesWatching(o.context, o.EntriesGetEntriesWatchingHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/images/{id}"] = images.NewGetImagesID(o.context, o.ImagesGetImagesIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me"] = me.NewGetMe(o.context, o.MeGetMeHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/calendar"] = me.NewGetMeCalendar(o.context, o.MeGetMeCalendarHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/favorites"] = me.NewGetMeFavorites(o.context, o.MeGetMeFavoritesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/followers"] = me.NewGetMeFollowers(o.context, o.MeGetMeFollowersHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/followings"] = me.NewGetMeFollowings(o.context, o.MeGetMeFollowingsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/hidden"] = me.NewGetMeHidden(o.context, o.MeGetMeHiddenHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/ignored"] = me.NewGetMeIgnored(o.context, o.MeGetMeIgnoredHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/images"] = me.NewGetMeImages(o.context, o.MeGetMeImagesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/invited"] = me.NewGetMeInvited(o.context, o.MeGetMeInvitedHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/requested"] = me.NewGetMeRequested(o.context, o.MeGetMeRequestedHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/tags"] = me.NewGetMeTags(o.context, o.MeGetMeTagsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/me/tlog"] = me.NewGetMeTlog(o.context, o.MeGetMeTlogHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/messages/{id}"] = chats.NewGetMessagesID(o.context, o.ChatsGetMessagesIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/notifications"] = notifications.NewGetNotifications(o.context, o.NotificationsGetNotificationsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/notifications/{id}"] = notifications.NewGetNotificationsID(o.context, o.NotificationsGetNotificationsIDHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/relations/to/{name}"] = relations.NewGetRelationsToName(o.context, o.RelationsGetRelationsToNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users"] = users.NewGetUsers(o.context, o.UsersGetUsersHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}"] = users.NewGetUsersName(o.context, o.UsersGetUsersNameHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/calendar"] = users.NewGetUsersNameCalendar(o.context, o.UsersGetUsersNameCalendarHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/favorites"] = users.NewGetUsersNameFavorites(o.context, o.UsersGetUsersNameFavoritesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/followers"] = users.NewGetUsersNameFollowers(o.context, o.UsersGetUsersNameFollowersHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/followings"] = users.NewGetUsersNameFollowings(o.context, o.UsersGetUsersNameFollowingsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/images"] = users.NewGetUsersNameImages(o.context, o.UsersGetUsersNameImagesHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/invited"] = users.NewGetUsersNameInvited(o.context, o.UsersGetUsersNameInvitedHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/tags"] = users.NewGetUsersNameTags(o.context, o.UsersGetUsersNameTagsHandler)
-
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/users/{name}/tlog"] = users.NewGetUsersNameTlog(o.context, o.UsersGetUsersNameTlogHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/email"] = account.NewPostAccountEmail(o.context, o.AccountPostAccountEmailHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/login"] = account.NewPostAccountLogin(o.context, o.AccountPostAccountLoginHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/password"] = account.NewPostAccountPassword(o.context, o.AccountPostAccountPasswordHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/recover"] = account.NewPostAccountRecover(o.context, o.AccountPostAccountRecoverHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/recover/password"] = account.NewPostAccountRecoverPassword(o.context, o.AccountPostAccountRecoverPasswordHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/register"] = account.NewPostAccountRegister(o.context, o.AccountPostAccountRegisterHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/account/verification"] = account.NewPostAccountVerification(o.context, o.AccountPostAccountVerificationHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/adm/grandfather/status"] = adm.NewPostAdmGrandfatherStatus(o.context, o.AdmPostAdmGrandfatherStatusHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/adm/grandson"] = adm.NewPostAdmGrandson(o.context, o.AdmPostAdmGrandsonHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/adm/grandson/status"] = adm.NewPostAdmGrandsonStatus(o.context, o.AdmPostAdmGrandsonStatusHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/chats/{name}/messages"] = chats.NewPostChatsNameMessages(o.context, o.ChatsPostChatsNameMessagesHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/comments/{id}/complain"] = comments.NewPostCommentsIDComplain(o.context, o.CommentsPostCommentsIDComplainHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/entries/anonymous"] = entries.NewPostEntriesAnonymous(o.context, o.EntriesPostEntriesAnonymousHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/entries/{id}/comments"] = comments.NewPostEntriesIDComments(o.context, o.CommentsPostEntriesIDCommentsHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/entries/{id}/complain"] = entries.NewPostEntriesIDComplain(o.context, o.EntriesPostEntriesIDComplainHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/images"] = images.NewPostImages(o.context, o.ImagesPostImagesHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/me/tlog"] = me.NewPostMeTlog(o.context, o.MePostMeTlogHandler)
-
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/relations/invited/{name}"] = relations.NewPostRelationsInvitedName(o.context, o.RelationsPostRelationsInvitedNameHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/account/settings/email"] = account.NewPutAccountSettingsEmail(o.context, o.AccountPutAccountSettingsEmailHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/account/settings/telegram"] = account.NewPutAccountSettingsTelegram(o.context, o.AccountPutAccountSettingsTelegramHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/chats/{name}/read"] = chats.NewPutChatsNameRead(o.context, o.ChatsPutChatsNameReadHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/comments/{id}"] = comments.NewPutCommentsID(o.context, o.CommentsPutCommentsIDHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/comments/{id}/vote"] = votes.NewPutCommentsIDVote(o.context, o.VotesPutCommentsIDVoteHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/design"] = design.NewPutDesign(o.context, o.DesignPutDesignHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/entries/{id}"] = entries.NewPutEntriesID(o.context, o.EntriesPutEntriesIDHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/entries/{id}/favorite"] = favorites.NewPutEntriesIDFavorite(o.context, o.FavoritesPutEntriesIDFavoriteHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/entries/{id}/vote"] = votes.NewPutEntriesIDVote(o.context, o.VotesPutEntriesIDVoteHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/entries/{id}/watching"] = watchings.NewPutEntriesIDWatching(o.context, o.WatchingsPutEntriesIDWatchingHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me"] = me.NewPutMe(o.context, o.MePutMeHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me/avatar"] = me.NewPutMeAvatar(o.context, o.MePutMeAvatarHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me/cover"] = me.NewPutMeCover(o.context, o.MePutMeCoverHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/me/online"] = me.NewPutMeOnline(o.context, o.MePutMeOnlineHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/messages/{id}"] = chats.NewPutMessagesID(o.context, o.ChatsPutMessagesIDHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/notifications/read"] = notifications.NewPutNotificationsRead(o.context, o.NotificationsPutNotificationsReadHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/relations/from/{name}"] = relations.NewPutRelationsFromName(o.context, o.RelationsPutRelationsFromNameHandler)
-
 	if o.handlers["PUT"] == nil {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/relations/to/{name}"] = relations.NewPutRelationsToName(o.context, o.RelationsPutRelationsToNameHandler)
-
 }
 
 // Serve creates a http handler to serve the API over HTTP
@@ -1804,6 +1587,9 @@ func (o *MindwellAPI) Serve(builder middleware.Builder) http.Handler {
 
 	if o.Middleware != nil {
 		return o.Middleware(builder)
+	}
+	if o.useSwaggerUI {
+		return o.context.APIHandlerSwaggerUI(builder)
 	}
 	return o.context.APIHandler(builder)
 }
@@ -1823,4 +1609,16 @@ func (o *MindwellAPI) RegisterConsumer(mediaType string, consumer runtime.Consum
 // RegisterProducer allows you to add (or override) a producer for a media type.
 func (o *MindwellAPI) RegisterProducer(mediaType string, producer runtime.Producer) {
 	o.customProducers[mediaType] = producer
+}
+
+// AddMiddlewareFor adds a http middleware to existing handler
+func (o *MindwellAPI) AddMiddlewareFor(method, path string, builder middleware.Builder) {
+	um := strings.ToUpper(method)
+	if path == "/" {
+		path = ""
+	}
+	o.Init()
+	if h, ok := o.handlers[um][path]; ok {
+		o.handlers[method][path] = builder(h)
+	}
 }

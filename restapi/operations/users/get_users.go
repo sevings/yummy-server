@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"strconv"
 
-	errors "github.com/go-openapi/errors"
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersHandlerFunc turns a function with the right signature into a get users handler
@@ -77,6 +77,7 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 // GetUsersOKBody get users o k body
+//
 // swagger:model GetUsersOKBody
 type GetUsersOKBody struct {
 

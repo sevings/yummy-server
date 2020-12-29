@@ -8,11 +8,11 @@ package notifications
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PutNotificationsReadHandlerFunc turns a function with the right signature into a put notifications read handler
@@ -75,6 +75,7 @@ func (o *PutNotificationsRead) ServeHTTP(rw http.ResponseWriter, r *http.Request
 }
 
 // PutNotificationsReadOKBody put notifications read o k body
+//
 // swagger:model PutNotificationsReadOKBody
 type PutNotificationsReadOKBody struct {
 

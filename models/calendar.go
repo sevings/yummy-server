@@ -8,13 +8,13 @@ package models
 import (
 	"strconv"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 )
 
 // Calendar calendar
+//
 // swagger:model Calendar
 type Calendar struct {
 
@@ -86,6 +86,7 @@ func (m *Calendar) UnmarshalBinary(b []byte) error {
 }
 
 // CalendarEntriesItems0 calendar entries items0
+//
 // swagger:model CalendarEntriesItems0
 type CalendarEntriesItems0 struct {
 

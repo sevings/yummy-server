@@ -8,9 +8,9 @@ package entries
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetEntriesBestHandlerFunc turns a function with the right signature into a get entries best handler

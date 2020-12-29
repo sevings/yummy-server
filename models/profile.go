@@ -8,14 +8,14 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Profile profile
+//
 // swagger:model Profile
 type Profile struct {
 	Friend
@@ -113,7 +113,6 @@ func (m Profile) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 	_parts = append(_parts, aO0)
-
 	var dataAO1 struct {
 		AgeLowerBound int64 `json:"ageLowerBound,omitempty"`
 
@@ -157,7 +156,6 @@ func (m Profile) MarshalJSON() ([]byte, error) {
 		return nil, errAO1
 	}
 	_parts = append(_parts, jsonDataAO1)
-
 	return swag.ConcatJSON(_parts...), nil
 }
 
@@ -295,6 +293,7 @@ func (m *Profile) UnmarshalBinary(b []byte) error {
 }
 
 // ProfileAO1Relations profile a o1 relations
+//
 // swagger:model ProfileAO1Relations
 type ProfileAO1Relations struct {
 
@@ -360,7 +359,7 @@ const (
 
 // prop value enum
 func (m *ProfileAO1Relations) validateFromMeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, profileAO1RelationsTypeFromMePropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, profileAO1RelationsTypeFromMePropEnum, true); err != nil {
 		return err
 	}
 	return nil
@@ -412,7 +411,7 @@ const (
 
 // prop value enum
 func (m *ProfileAO1Relations) validateToMeEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, profileAO1RelationsTypeToMePropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, profileAO1RelationsTypeToMePropEnum, true); err != nil {
 		return err
 	}
 	return nil

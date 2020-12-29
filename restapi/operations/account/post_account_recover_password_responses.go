@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-openapi/runtime"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // PostAccountRecoverPasswordOKCode is the HTTP code returned for type PostAccountRecoverPasswordOK

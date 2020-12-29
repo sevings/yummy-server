@@ -50,20 +50,20 @@ func (o *GetUsersURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var query string
+	var queryQ string
 	if o.Query != nil {
-		query = *o.Query
+		queryQ = *o.Query
 	}
-	if query != "" {
-		qs.Set("query", query)
+	if queryQ != "" {
+		qs.Set("query", queryQ)
 	}
 
-	var top string
+	var topQ string
 	if o.Top != nil {
-		top = *o.Top
+		topQ = *o.Top
 	}
-	if top != "" {
-		qs.Set("top", top)
+	if topQ != "" {
+		qs.Set("top", topQ)
 	}
 
 	_result.RawQuery = qs.Encode()

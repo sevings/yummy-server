@@ -8,9 +8,9 @@ package users
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/runtime/middleware"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetUsersNameImagesHandlerFunc turns a function with the right signature into a get users name images handler

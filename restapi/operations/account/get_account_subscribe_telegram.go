@@ -8,11 +8,11 @@ package account
 import (
 	"net/http"
 
-	middleware "github.com/go-openapi/runtime/middleware"
-	strfmt "github.com/go-openapi/strfmt"
-	swag "github.com/go-openapi/swag"
+	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 
-	models "github.com/sevings/mindwell-server/models"
+	"github.com/sevings/mindwell-server/models"
 )
 
 // GetAccountSubscribeTelegramHandlerFunc turns a function with the right signature into a get account subscribe telegram handler
@@ -75,6 +75,7 @@ func (o *GetAccountSubscribeTelegram) ServeHTTP(rw http.ResponseWriter, r *http.
 }
 
 // GetAccountSubscribeTelegramOKBody get account subscribe telegram o k body
+//
 // swagger:model GetAccountSubscribeTelegramOKBody
 type GetAccountSubscribeTelegramOKBody struct {
 

@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAccountRecoverParams creates a new PostAccountRecoverParams object
@@ -73,7 +72,7 @@ func (o *PostAccountRecoverParams) BindRequest(r *http.Request, route *middlewar
 // bindEmail binds and validates parameter Email from formData.
 func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("email", "formData")
+		return errors.Required("email", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

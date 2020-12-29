@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPutDesignParams creates a new PutDesignParams object
@@ -244,7 +243,7 @@ func (o *PutDesignParams) bindFontSize(rawData []string, hasKey bool, formats st
 // bindTextAlignment binds and validates parameter TextAlignment from formData.
 func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("textAlignment", "formData")
+		return errors.Required("textAlignment", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -269,7 +268,7 @@ func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, forma
 // validateTextAlignment carries on validations for parameter TextAlignment
 func (o *PutDesignParams) validateTextAlignment(formats strfmt.Registry) error {
 
-	if err := validate.Enum("textAlignment", "formData", o.TextAlignment, []interface{}{"left", "right", "center", "justify"}); err != nil {
+	if err := validate.EnumCase("textAlignment", "formData", o.TextAlignment, []interface{}{"left", "right", "center", "justify"}, true); err != nil {
 		return err
 	}
 

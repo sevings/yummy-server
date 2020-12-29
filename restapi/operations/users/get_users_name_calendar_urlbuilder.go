@@ -62,20 +62,20 @@ func (o *GetUsersNameCalendarURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var end string
+	var endQ string
 	if o.End != nil {
-		end = swag.FormatInt64(*o.End)
+		endQ = swag.FormatInt64(*o.End)
 	}
-	if end != "" {
-		qs.Set("end", end)
+	if endQ != "" {
+		qs.Set("end", endQ)
 	}
 
-	var start string
+	var startQ string
 	if o.Start != nil {
-		start = swag.FormatInt64(*o.Start)
+		startQ = swag.FormatInt64(*o.Start)
 	}
-	if start != "" {
-		qs.Set("start", start)
+	if startQ != "" {
+		qs.Set("start", startQ)
 	}
 
 	_result.RawQuery = qs.Encode()

@@ -61,9 +61,9 @@ func (o *PutChatsNameReadURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	message := swag.FormatInt64(o.Message)
-	if message != "" {
-		qs.Set("message", message)
+	messageQ := swag.FormatInt64(o.Message)
+	if messageQ != "" {
+		qs.Set("message", messageQ)
 	}
 
 	_result.RawQuery = qs.Encode()

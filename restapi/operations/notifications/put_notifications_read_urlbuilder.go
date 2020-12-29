@@ -51,12 +51,12 @@ func (o *PutNotificationsReadURL) Build() (*url.URL, error) {
 
 	qs := make(url.Values)
 
-	var time string
+	var timeQ string
 	if o.Time != nil {
-		time = swag.FormatFloat64(*o.Time)
+		timeQ = swag.FormatFloat64(*o.Time)
 	}
-	if time != "" {
-		qs.Set("time", time)
+	if timeQ != "" {
+		qs.Set("time", timeQ)
 	}
 
 	_result.RawQuery = qs.Encode()

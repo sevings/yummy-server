@@ -11,10 +11,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetMeTlogParams creates a new GetMeTlogParams object
@@ -277,7 +276,7 @@ func (o *GetMeTlogParams) bindSort(rawData []string, hasKey bool, formats strfmt
 // validateSort carries on validations for parameter Sort
 func (o *GetMeTlogParams) validateSort(formats strfmt.Registry) error {
 
-	if err := validate.Enum("sort", "query", *o.Sort, []interface{}{"new", "old", "best"}); err != nil {
+	if err := validate.EnumCase("sort", "query", *o.Sort, []interface{}{"new", "old", "best"}, true); err != nil {
 		return err
 	}
 

@@ -8,14 +8,14 @@ package models
 import (
 	"encoding/json"
 
-	strfmt "github.com/go-openapi/strfmt"
-
 	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
 )
 
 // Relationship relationship
+//
 // swagger:model Relationship
 type Relationship struct {
 
@@ -76,7 +76,7 @@ const (
 
 // prop value enum
 func (m *Relationship) validateRelationEnum(path, location string, value string) error {
-	if err := validate.Enum(path, location, value, relationshipTypeRelationPropEnum); err != nil {
+	if err := validate.EnumCase(path, location, value, relationshipTypeRelationPropEnum, true); err != nil {
 		return err
 	}
 	return nil

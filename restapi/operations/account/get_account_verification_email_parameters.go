@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetAccountVerificationEmailParams creates a new GetAccountVerificationEmailParams object
@@ -78,7 +77,7 @@ func (o *GetAccountVerificationEmailParams) BindRequest(r *http.Request, route *
 // bindCode binds and validates parameter Code from query.
 func (o *GetAccountVerificationEmailParams) bindCode(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("code", "query")
+		return errors.Required("code", "query", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

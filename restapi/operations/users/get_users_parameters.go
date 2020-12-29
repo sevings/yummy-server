@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewGetUsersParams creates a new GetUsersParams object
@@ -142,7 +141,7 @@ func (o *GetUsersParams) bindTop(rawData []string, hasKey bool, formats strfmt.R
 // validateTop carries on validations for parameter Top
 func (o *GetUsersParams) validateTop(formats strfmt.Registry) error {
 
-	if err := validate.Enum("top", "query", *o.Top, []interface{}{"new", "rank", "waiting"}); err != nil {
+	if err := validate.EnumCase("top", "query", *o.Top, []interface{}{"new", "rank", "waiting"}, true); err != nil {
 		return err
 	}
 

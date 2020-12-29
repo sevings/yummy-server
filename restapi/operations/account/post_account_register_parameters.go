@@ -11,9 +11,8 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPostAccountRegisterParams creates a new PostAccountRegisterParams object
@@ -238,7 +237,7 @@ func (o *PostAccountRegisterParams) validateCountry(formats strfmt.Registry) err
 // bindEmail binds and validates parameter Email from formData.
 func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("email", "formData")
+		return errors.Required("email", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -300,7 +299,7 @@ func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, fo
 // validateGender carries on validations for parameter Gender
 func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) error {
 
-	if err := validate.Enum("gender", "formData", *o.Gender, []interface{}{"not set", "male", "female"}); err != nil {
+	if err := validate.EnumCase("gender", "formData", *o.Gender, []interface{}{"not set", "male", "female"}, true); err != nil {
 		return err
 	}
 
@@ -310,7 +309,7 @@ func (o *PostAccountRegisterParams) validateGender(formats strfmt.Registry) erro
 // bindName binds and validates parameter Name from formData.
 func (o *PostAccountRegisterParams) bindName(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("name", "formData")
+		return errors.Required("name", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -353,7 +352,7 @@ func (o *PostAccountRegisterParams) validateName(formats strfmt.Registry) error 
 // bindPassword binds and validates parameter Password from formData.
 func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("password", "formData")
+		return errors.Required("password", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {

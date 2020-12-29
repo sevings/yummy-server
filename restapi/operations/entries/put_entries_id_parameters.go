@@ -12,10 +12,9 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
 	"github.com/go-openapi/validate"
-
-	strfmt "github.com/go-openapi/strfmt"
 )
 
 // NewPutEntriesIDParams creates a new PutEntriesIDParams object
@@ -211,7 +210,7 @@ func (o *PutEntriesIDParams) bindAnonymousComments(rawData []string, hasKey bool
 // bindContent binds and validates parameter Content from formData.
 func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("content", "formData")
+		return errors.Required("content", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -390,7 +389,7 @@ func (o *PutEntriesIDParams) bindIsVotable(rawData []string, hasKey bool, format
 // bindPrivacy binds and validates parameter Privacy from formData.
 func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("privacy", "formData")
+		return errors.Required("privacy", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -415,7 +414,7 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 // validatePrivacy carries on validations for parameter Privacy
 func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 
-	if err := validate.Enum("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}); err != nil {
+	if err := validate.EnumCase("privacy", "formData", o.Privacy, []interface{}{"all", "followers", "some", "me", "anonymous"}, true); err != nil {
 		return err
 	}
 
