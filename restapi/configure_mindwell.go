@@ -82,7 +82,6 @@ func configureAPI(api *operations.MindwellAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
 	api.Logger = srv.LogSystem().Sugar().Infof
-	api.JSONConsumer = runtime.JSONConsumer()
 	api.UrlformConsumer = runtime.DiscardConsumer
 	api.MultipartformConsumer = runtime.DiscardConsumer
 	api.JSONProducer = runtime.JSONProducer()
