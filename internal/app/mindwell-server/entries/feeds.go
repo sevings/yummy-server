@@ -125,7 +125,10 @@ func addLiveQuery(q *sqlf.Stmt, userID int64, tag string) *sqlf.Stmt {
 	return q.
 		Where("entry_privacy.type = 'all'").
 		Where("entries.in_live").
-		Where("(user_privacy.type = 'all' OR (user_privacy.type = 'invited' AND (SELECT invited_by IS NOT NULL FROM users WHERE id = ?)))", userID).
+		Where(`
+(user_privacy.type = 'all' 
+OR (user_privacy.type = 'registered' AND ? > 0) 
+OR (user_privacy.type = 'invited' AND (SELECT invited_by IS NOT NULL FROM users WHERE id = ?)))`, userID, userID).
 		Where("(relations_to_me.type IS NULL OR relations_to_me.type <> 'ignored')").
 		Where("(relations_from_me.type IS NULL OR relations_from_me.type NOT IN ('ignored', 'hidden'))")
 }
@@ -194,9 +197,10 @@ func friendsQuery(userID, limit int64, tag string) *sqlf.Stmt {
 }
 
 const canViewEntryQueryWhere = `
-(users.id = $1
+(users.id = ?
 	OR (` + isEntryOpenQueryWhere + `
 		AND (user_privacy.type = 'all' 
+			OR (user_privacy.type = 'registered' AND ? > 0) 
 			OR (user_privacy.type = 'followers' AND relations_from_me.type = 'followed')
 			OR (user_privacy.type = 'invited' AND (SELECT invited_by IS NOT NULL FROM users WHERE id = ?))
 	)))`
@@ -207,7 +211,7 @@ func addCanViewEntryQuery(q *sqlf.Stmt, userID int64) *sqlf.Stmt {
 	return q.
 		Where("(relations_to_me.type IS NULL OR relations_to_me.type <> 'ignored')").
 		Where("(relations_from_me.type IS NULL OR relations_from_me.type <> 'ignored')").
-		Where(canViewEntryQueryWhere, userID, userID, userID)
+		Where(canViewEntryQueryWhere, userID, userID, userID, userID, userID)
 }
 
 func watchingQuery(userID, limit int64) *sqlf.Stmt {

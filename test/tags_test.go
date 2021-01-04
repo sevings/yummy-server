@@ -132,14 +132,18 @@ func TestUserTags(t *testing.T) {
 		return tags.Payload
 	}
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+
 	load(userIDs[0], userIDs[1].Name, 10, true, nil)
 	load(userIDs[1], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa, bbb, ccc})
+	load(noAuthUser, userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa, bbb, ccc})
 	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
 	load(userIDs[1], userIDs[0].Name, 1, true, []*models.TagListDataItems0{aaa})
 
 	setUserPrivacy(t, userIDs[0], "followers")
 
 	load(userIDs[1], userIDs[0].Name, 10, false, nil)
+	load(noAuthUser, userIDs[0].Name, 10, false, nil)
 	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
 
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
@@ -149,6 +153,12 @@ func TestUserTags(t *testing.T) {
 	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
 
 	checkUnfollow(t, userIDs[1], userIDs[0])
+	setUserPrivacy(t, userIDs[0], "registered")
+
+	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
+	load(noAuthUser, userIDs[0].Name, 10, false, nil)
+	load(userIDs[0], userIDs[0].Name, 10, true, []*models.TagListDataItems0{aaa4, bbb, ccc, ddd})
+
 	setUserPrivacy(t, userIDs[0], "all")
 
 	e3 = editTaggedEntry(t, userIDs[0], e3, "all", e3.Tags)

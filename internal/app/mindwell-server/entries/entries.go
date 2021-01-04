@@ -529,8 +529,10 @@ func LoadEntry(srv *utils.MindwellServer, tx *utils.AutoTx, entryID int64, userI
 		return &models.Entry{}
 	}
 
-	cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
-	feed.Entries[0].Comments = cmt
+	if userID.ID > 0 {
+		cmt := comments.LoadEntryComments(srv, tx, userID, entryID, 5, "", "")
+		feed.Entries[0].Comments = cmt
+	}
 
 	return feed.Entries[0]
 }

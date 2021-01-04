@@ -1938,6 +1938,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -2675,7 +2678,8 @@ func init() {
             "enum": [
               "all",
               "invited",
-              "followers"
+              "followers",
+              "registered"
             ],
             "type": "string",
             "name": "privacy",
@@ -3781,6 +3785,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -3812,6 +3819,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -4082,6 +4092,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -4116,6 +4129,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -4701,7 +4717,8 @@ func init() {
               "enum": [
                 "all",
                 "followers",
-                "invited"
+                "invited",
+                "registered"
               ]
             },
             "rank": {
@@ -5311,6 +5328,11 @@ func init() {
   },
   "securityDefinitions": {
     "ApiKeyHeader": {
+      "type": "apiKey",
+      "name": "X-User-Key",
+      "in": "header"
+    },
+    "NoApiKey": {
       "type": "apiKey",
       "name": "X-User-Key",
       "in": "header"
@@ -7425,6 +7447,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -8208,7 +8233,8 @@ func init() {
             "enum": [
               "all",
               "invited",
-              "followers"
+              "followers",
+              "registered"
             ],
             "type": "string",
             "name": "privacy",
@@ -9485,6 +9511,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -9522,6 +9551,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -9895,6 +9927,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -9940,6 +9975,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
           }
         ],
         "tags": [
@@ -10645,7 +10683,8 @@ func init() {
               "enum": [
                 "all",
                 "followers",
-                "invited"
+                "invited",
+                "registered"
               ]
             },
             "rank": {
@@ -11357,6 +11396,11 @@ func init() {
   },
   "securityDefinitions": {
     "ApiKeyHeader": {
+      "type": "apiKey",
+      "name": "X-User-Key",
+      "in": "header"
+    },
+    "NoApiKey": {
       "type": "apiKey",
       "name": "X-User-Key",
       "in": "header"

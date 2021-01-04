@@ -136,6 +136,10 @@ func readUserID(secret []byte, tokenString string) (int64, error) {
 
 func NewKeyAuth(db *sql.DB, secret []byte) func(apiKey string) (*models.UserID, error) {
 	return func(apiKey string) (*models.UserID, error) {
+		if len(apiKey) < 32 {
+			return nil, fmt.Errorf("api token is invalid: %s", apiKey)
+		}
+
 		tx := NewAutoTx(db)
 		defer tx.Finish()
 
@@ -150,6 +154,17 @@ func NewKeyAuth(db *sql.DB, secret []byte) func(apiKey string) (*models.UserID, 
 
 		return LoadUserIDByID(tx, id)
 	}
+}
+
+func NoApiKeyAuth(string) (*models.UserID, error) {
+	return &models.UserID{
+		Ban: &models.UserIDBan{
+			Comment: true,
+			Invite:  true,
+			Live:    true,
+			Vote:    true,
+		},
+	}, nil
 }
 
 func BuildApiToken(secret []byte, userID int64) (string, int64) {

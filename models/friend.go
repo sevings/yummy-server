@@ -34,7 +34,7 @@ type Friend struct {
 	LastSeenAt float64 `json:"lastSeenAt,omitempty"`
 
 	// privacy
-	// Enum: [all followers invited]
+	// Enum: [all followers invited registered]
 	Privacy string `json:"privacy,omitempty"`
 
 	// rank
@@ -247,7 +247,7 @@ var friendTypePrivacyPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["all","followers","invited"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["all","followers","invited","registered"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {

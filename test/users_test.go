@@ -27,6 +27,16 @@ func TestKeyAuth(t *testing.T) {
 	req.NotNil(err)
 }
 
+func TestNoKeyAuth(t *testing.T) {
+	auth := api.NoAPIKeyAuth
+	req := require.New(t)
+
+	id, err := auth("no auth")
+	req.Nil(err)
+	req.NotNil(id)
+	req.Zero(id.ID)
+}
+
 func TestGetMe(t *testing.T) {
 	req := require.New(t)
 
@@ -108,8 +118,11 @@ func compareUsers(t *testing.T, user *models.AuthProfile, profile *models.Profil
 
 func TestGetUser(t *testing.T) {
 	get := api.UsersGetUsersNameHandler.Handle
+	params := users.GetUsersNameParams{}
+
 	for i, user := range profiles {
-		resp := get(users.GetUsersNameParams{Name: strings.ToUpper(user.Name)}, userIDs[i])
+		params.Name = strings.ToUpper(user.Name)
+		resp := get(params, userIDs[i])
 		body, ok := resp.(*users.GetUsersNameOK)
 		if !ok {
 			badBody, ok := resp.(*users.GetUsersNameNotFound)
@@ -123,9 +136,24 @@ func TestGetUser(t *testing.T) {
 		compareUsers(t, user, body.Payload)
 	}
 
-	resp := get(users.GetUsersNameParams{Name: "trolol not found"}, userIDs[0])
+	params.Name = "trolol not found"
+	resp := get(params, userIDs[0])
 	_, ok := resp.(*users.GetUsersNameNotFound)
 	require.True(t, ok)
+
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+	params.Name = userIDs[0].Name
+
+	setUserPrivacy(t, userIDs[0], "registered")
+	resp = get(params, noAuthUser)
+	_, ok = resp.(*users.GetUsersNameNotFound)
+	require.True(t, ok)
+
+	setUserPrivacy(t, userIDs[0], "all")
+	resp = get(params, noAuthUser)
+	body, ok := resp.(*users.GetUsersNameOK)
+	require.True(t, ok)
+	require.Equal(t, userIDs[0].ID, body.Payload.ID)
 }
 
 func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutMeParams) {
@@ -144,7 +172,7 @@ func checkEditProfile(t *testing.T, user *models.AuthProfile, params me.PutMePar
 
 func setUserPrivacy(t *testing.T, userID *models.UserID, privacy string) {
 	params := me.PutMeParams{
-		Privacy: privacy,
+		Privacy:  privacy,
 		ShowName: userID.Name,
 	}
 	edit := api.MePutMeHandler.Handle
@@ -195,10 +223,13 @@ func TestIsOpenForMe(t *testing.T) {
 		req.Equal(res, utils.IsOpenForMe(tx, userID, name))
 	}
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+
 	check(userIDs[0], userIDs[0].Name, true)
 	check(userIDs[1], userIDs[0].Name, true)
 	check(userIDs[2], userIDs[0].Name, true)
 	check(userIDs[3], userIDs[0].Name, true)
+	check(noAuthUser, userIDs[0].Name, true)
 
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationFollowed, true)
 	setUserPrivacy(t, userIDs[0], "followers")
@@ -208,6 +239,7 @@ func TestIsOpenForMe(t *testing.T) {
 	check(userIDs[1], userIDs[0].Name, true)
 	check(userIDs[2], userIDs[0].Name, false)
 	check(userIDs[3], userIDs[0].Name, false)
+	check(noAuthUser, userIDs[0].Name, false)
 
 	setUserPrivacy(t, userIDs[0], "invited")
 
@@ -215,6 +247,7 @@ func TestIsOpenForMe(t *testing.T) {
 	check(userIDs[1], userIDs[0].Name, true)
 	check(userIDs[2], userIDs[0].Name, true)
 	check(userIDs[3], userIDs[0].Name, false)
+	check(noAuthUser, userIDs[0].Name, false)
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
 
@@ -222,6 +255,15 @@ func TestIsOpenForMe(t *testing.T) {
 	check(userIDs[1], userIDs[0].Name, false)
 	check(userIDs[2], userIDs[0].Name, true)
 	check(userIDs[3], userIDs[0].Name, false)
+	check(noAuthUser, userIDs[0].Name, false)
+
+	setUserPrivacy(t, userIDs[0], "registered")
+
+	check(userIDs[0], userIDs[0].Name, true)
+	check(userIDs[1], userIDs[0].Name, false)
+	check(userIDs[2], userIDs[0].Name, true)
+	check(userIDs[3], userIDs[0].Name, true)
+	check(noAuthUser, userIDs[0].Name, false)
 
 	setUserPrivacy(t, userIDs[0], "all")
 
@@ -229,6 +271,7 @@ func TestIsOpenForMe(t *testing.T) {
 	check(userIDs[1], userIDs[0].Name, false)
 	check(userIDs[2], userIDs[0].Name, true)
 	check(userIDs[3], userIDs[0].Name, true)
+	check(noAuthUser, userIDs[0].Name, true)
 
 	checkUnfollow(t, userIDs[0], userIDs[1])
 	checkUnfollow(t, userIDs[1], userIDs[0])

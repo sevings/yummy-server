@@ -27,6 +27,7 @@ CREATE TABLE "mindwell"."user_privacy" (
 INSERT INTO "mindwell"."user_privacy" VALUES(0, 'all');
 INSERT INTO "mindwell"."user_privacy" VALUES(1, 'followers');
 INSERT INTO "mindwell"."user_privacy" VALUES(2, 'invited');
+INSERT INTO "mindwell"."user_privacy" VALUES(3, 'registered');
 -- -------------------------------------------------------------
 
 
@@ -2422,6 +2423,19 @@ $$ LANGUAGE plpgsql;
 
 
 
+CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(tlog_id INTEGER) RETURNS BOOLEAN AS $$
+    BEGIN
+        RETURN (
+            SELECT user_privacy.type = 'all'
+            FROM users
+            LEFT JOIN user_privacy ON users.privacy = user_privacy.id
+            WHERE users.id = tlog_id
+        );
+    END;
+$$ LANGUAGE plpgsql;
+
+
+
 CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEGER) RETURNS BOOLEAN AS $$
     DECLARE
         privacy TEXT;
@@ -2429,6 +2443,10 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEG
         is_invited BOOLEAN;
         is_follower BOOLEAN;
     BEGIN
+        IF user_id <= 0 THEN
+            RETURN (SELECT can_view_tlog(tlog_id));
+        END IF;
+
         IF user_id = tlog_id THEN
             RETURN TRUE;
         END IF;
@@ -2452,8 +2470,10 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_tlog(user_id INTEGER, tlog_id INTEG
         CASE privacy
         WHEN 'all' THEN 
             RETURN TRUE;
+        WHEN 'registered' THEN
+            RETURN TRUE;
         WHEN 'invited' THEN
-            SELECT invited_by IS NOT NULL 
+            SELECT invited_by IS NOT NULL
             INTO is_invited
             FROM users
             WHERE users.id = user_id;
@@ -2502,7 +2522,7 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_entry(user_id INTEGER, entry_id INT
         END IF;
 
         IF entry_privacy = 'anonymous' THEN
-            RETURN TRUE;
+            RETURN user_id > 0;
         END IF;
 
         allowed = (SELECT can_view_tlog(user_id, author_id));
@@ -2515,14 +2535,18 @@ CREATE OR REPLACE FUNCTION mindwell.can_view_entry(user_id INTEGER, entry_id INT
         WHEN 'all' THEN
             RETURN TRUE;
         WHEN 'some' THEN
-            SELECT TRUE
-            INTO allowed
-			FROM entries_privacy 
-			WHERE entries_privacy.user_id = can_view_entry.user_id 
-                AND entries_privacy.entry_id = can_view_entry.entry_id;
-            
-            allowed = COALESCE(allowed, FALSE);
-            RETURN allowed;
+            IF user_id > 0 THEN
+                SELECT TRUE
+                INTO allowed
+                FROM entries_privacy
+                WHERE entries_privacy.user_id = can_view_entry.user_id
+                    AND entries_privacy.entry_id = can_view_entry.entry_id;
+
+                allowed = COALESCE(allowed, FALSE);
+                RETURN allowed;
+            ELSE
+                RETURN FALSE;
+            END IF;
         WHEN 'me' THEN
             RETURN FALSE;
         ELSE

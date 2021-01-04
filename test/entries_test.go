@@ -501,6 +501,8 @@ func TestLoadTlog(t *testing.T) {
 	userIDs, profiles = registerTestUsers(db)
 	esm.Clear()
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+
 	e3 := postEntry(userIDs[0], models.EntryPrivacyAll, true)
 	e2 := postEntry(userIDs[0], models.EntryPrivacySome, true)
 	e1 := postEntry(userIDs[0], models.EntryPrivacyMe, true)
@@ -520,6 +522,7 @@ func TestLoadTlog(t *testing.T) {
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
 	compareEntries(t, e3, feed.Entries[3], userIDs[0])
 
+	checkLoadTlog(t, userIDs[0], noAuthUser, true, 10, "", "", 2)
 	checkLoadTlog(t, userIDs[1], userIDs[0], true, 10, "", "", 0)
 
 	feed = checkLoadTlog(t, userIDs[0], userIDs[0], true, 3, "", "", 3)
@@ -569,6 +572,7 @@ func TestLoadTlog(t *testing.T) {
 	setUserPrivacy(t, userIDs[0], "followers")
 	checkLoadTlog(t, userIDs[0], userIDs[1], false, 3, "", "", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+	checkLoadTlog(t, userIDs[0], noAuthUser, false, 10, "", "", 2)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
@@ -580,6 +584,7 @@ func TestLoadTlog(t *testing.T) {
 	setUserPrivacy(t, userIDs[0], "invited")
 	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
 	checkLoadTlog(t, userIDs[0], userIDs[3], false, 3, "", "", 1)
+	checkLoadTlog(t, userIDs[0], noAuthUser, false, 10, "", "", 2)
 
 	checkLoadEntry(t, feed.Entries[0].ID, userIDs[3], false, profiles[0], false, 0, false, 0, "", false, false, "", "", []string{})
 
@@ -590,6 +595,11 @@ func TestLoadTlog(t *testing.T) {
 
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationHidden, true)
 	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
+
+	setUserPrivacy(t, userIDs[0], "registered")
+	checkLoadTlog(t, userIDs[0], userIDs[1], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], userIDs[3], true, 3, "", "", 2)
+	checkLoadTlog(t, userIDs[0], noAuthUser, false, 10, "", "", 2)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -1159,6 +1169,8 @@ func TestCanViewEntry(t *testing.T) {
 		req.Equal(res, utils.CanViewEntry(tx, userID, entryID))
 	}
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+
 	e1 := createTlogEntry(t, userIDs[0], models.EntryPrivacyAll, true, true)
 	e2 := createTlogEntry(t, userIDs[0], models.EntryPrivacyMe, true, true)
 	e3 := createTlogEntry(t, userIDs[0], models.EntryPrivacyAnonymous, true, true)
@@ -1171,6 +1183,10 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[1].ID, e2.ID, false)
 	check(userIDs[1].ID, e3.ID, true)
 
+	check(noAuthUser.ID, e1.ID, true)
+	check(noAuthUser.ID, e2.ID, false)
+	check(noAuthUser.ID, e3.ID, false)
+
 	setUserPrivacy(t, userIDs[0], "followers")
 
 	check(userIDs[0].ID, e1.ID, true)
@@ -1180,6 +1196,10 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[1].ID, e1.ID, false)
 	check(userIDs[1].ID, e2.ID, false)
 	check(userIDs[1].ID, e3.ID, true)
+
+	check(noAuthUser.ID, e1.ID, false)
+	check(noAuthUser.ID, e2.ID, false)
+	check(noAuthUser.ID, e3.ID, false)
 
 	checkFollow(t, userIDs[1], userIDs[0], profiles[0], models.RelationshipRelationRequested, true)
 	checkPermitFollow(t, userIDs[0], userIDs[1], true)
@@ -1202,11 +1222,37 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[3].ID, e2.ID, false)
 	check(userIDs[3].ID, e3.ID, true)
 
+	check(noAuthUser.ID, e1.ID, false)
+	check(noAuthUser.ID, e2.ID, false)
+	check(noAuthUser.ID, e3.ID, false)
+
 	checkFollow(t, userIDs[0], userIDs[1], profiles[1], models.RelationshipRelationIgnored, true)
 
 	check(userIDs[1].ID, e1.ID, false)
 	check(userIDs[1].ID, e2.ID, false)
 	check(userIDs[1].ID, e3.ID, true)
+
+	setUserPrivacy(t, userIDs[0], "registered")
+
+	check(userIDs[0].ID, e1.ID, true)
+	check(userIDs[0].ID, e2.ID, true)
+	check(userIDs[0].ID, e3.ID, true)
+
+	check(userIDs[1].ID, e1.ID, false)
+	check(userIDs[1].ID, e2.ID, false)
+	check(userIDs[1].ID, e3.ID, true)
+
+	check(userIDs[2].ID, e1.ID, true)
+	check(userIDs[2].ID, e2.ID, false)
+	check(userIDs[2].ID, e3.ID, true)
+
+	check(userIDs[3].ID, e1.ID, true)
+	check(userIDs[3].ID, e2.ID, false)
+	check(userIDs[3].ID, e3.ID, true)
+
+	check(noAuthUser.ID, e1.ID, false)
+	check(noAuthUser.ID, e2.ID, false)
+	check(noAuthUser.ID, e3.ID, false)
 
 	setUserPrivacy(t, userIDs[0], "all")
 
@@ -1225,6 +1271,10 @@ func TestCanViewEntry(t *testing.T) {
 	check(userIDs[3].ID, e1.ID, true)
 	check(userIDs[3].ID, e2.ID, false)
 	check(userIDs[3].ID, e3.ID, true)
+
+	check(noAuthUser.ID, e1.ID, true)
+	check(noAuthUser.ID, e2.ID, false)
+	check(noAuthUser.ID, e3.ID, false)
 
 	utils.ClearDatabase(db)
 	userIDs, profiles = registerTestUsers(db)
@@ -1445,7 +1495,9 @@ func TestLoadTlogCalendar(t *testing.T) {
 		get := api.UsersGetUsersNameCalendarHandler.Handle
 		resp := get(params, userID)
 		body, ok := resp.(*users.GetUsersNameCalendarOK)
-		require.True(t, ok)
+		if count > 0 {
+			require.True(t, ok)
+		}
 		if !ok {
 			return nil
 		}
@@ -1468,6 +1520,8 @@ func TestLoadTlogCalendar(t *testing.T) {
 		return cal.Entries
 	}
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+
 	now := time.Now().Unix()
 	load(userIDs[0], profiles[0], 0, now-10, 0)
 	load(userIDs[0], profiles[0], now+10, now-10, 0)
@@ -1481,6 +1535,10 @@ func TestLoadTlogCalendar(t *testing.T) {
 	req.Equal(e1, cal[0].ID)
 	req.Equal(e3, cal[1].ID)
 
+	cal = load(noAuthUser, profiles[0], 0, 0, 2)
+	req.Equal(e1, cal[0].ID)
+	req.Equal(e3, cal[1].ID)
+
 	last := int64(cal[1].CreatedAt)
 	cal = load(userIDs[0], profiles[0], 0, last, 2)
 	req.Equal(e1, cal[0].ID)
@@ -1488,6 +1546,16 @@ func TestLoadTlogCalendar(t *testing.T) {
 
 	cal = load(userIDs[0], profiles[0], last, 0, 1)
 	req.Equal(e3, cal[0].ID)
+
+	setUserPrivacy(t, userIDs[0], "registered")
+
+	cal = load(userIDs[1], profiles[0], 0, 0, 2)
+	req.NotNil(cal)
+
+	cal = load(noAuthUser, profiles[0], 0, 0, 0)
+	req.Nil(cal)
+
+	setUserPrivacy(t, userIDs[0], "all")
 
 	checkDeleteEntry(t, e1, userIDs[0], true)
 	checkDeleteEntry(t, e2, userIDs[0], true)

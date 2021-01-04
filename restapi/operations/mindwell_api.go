@@ -385,6 +385,10 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		APIKeyHeaderAuth: func(token string) (*models.UserID, error) {
 			return nil, errors.NotImplemented("api key auth (ApiKeyHeader) X-User-Key from header param [X-User-Key] has not yet been implemented")
 		},
+		// Applies when the "X-User-Key" header is set
+		NoAPIKeyAuth: func(token string) (*models.UserID, error) {
+			return nil, errors.NotImplemented("api key auth (NoApiKey) X-User-Key from header param [X-User-Key] has not yet been implemented")
+		},
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -427,6 +431,10 @@ type MindwellAPI struct {
 	// APIKeyHeaderAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-User-Key provided in the header
 	APIKeyHeaderAuth func(string) (*models.UserID, error)
+
+	// NoAPIKeyAuth registers a function that takes a token and returns a principal
+	// it performs authentication based on an api key X-User-Key provided in the header
+	NoAPIKeyAuth func(string) (*models.UserID, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -725,6 +733,9 @@ func (o *MindwellAPI) Validate() error {
 	}
 
 	if o.APIKeyHeaderAuth == nil {
+		unregistered = append(unregistered, "XUserKeyAuth")
+	}
+	if o.NoAPIKeyAuth == nil {
 		unregistered = append(unregistered, "XUserKeyAuth")
 	}
 
@@ -1071,6 +1082,12 @@ func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.APIKeyHeaderAuth(token)
+			})
+
+		case "NoApiKey":
+			scheme := schemes[name]
+			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
+				return o.NoAPIKeyAuth(token)
 			})
 
 		}

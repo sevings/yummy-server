@@ -10,6 +10,10 @@ securityDefinitions:
     type: apiKey
     in: header
     name: X-User-Key
+  NoApiKey:
+    type: apiKey
+    in: header
+    name: X-User-Key
 definitions:
   UserID:
     type: object
@@ -108,7 +112,7 @@ definitions:
             enum: [male, female, not set]
           privacy:
             type: string
-            enum: [all, followers, invited]
+            enum: [all, followers, invited, registered]
           title:
             type: string
             maxLength: 260
@@ -1256,6 +1260,7 @@ paths:
     get:
       security:
         - ApiKeyHeader: []
+        - NoApiKey: []
       tags:
         - users
       responses:
@@ -1355,6 +1360,7 @@ paths:
         - $ref: '#/parameters/query'
       security:
         - ApiKeyHeader: []
+        - NoApiKey: []
       tags:
         - users
       responses:
@@ -1375,6 +1381,7 @@ paths:
         - $ref: '#/parameters/end'
       security:
         - ApiKeyHeader: [ ]
+        - NoApiKey: []
       tags:
         - users
       responses:
@@ -1436,6 +1443,7 @@ paths:
         - $ref: '#/parameters/limit'
       security:
         - ApiKeyHeader: []
+        - NoApiKey: []
       tags:
         - users
       responses:
@@ -1486,7 +1494,7 @@ paths:
         - in: formData
           name: privacy
           type: string
-          enum: [all, invited, followers]
+          enum: [all, invited, followers, registered]
           required: true
         - in: formData
           name: title
@@ -2175,6 +2183,7 @@ paths:
     get:
       security:
         - ApiKeyHeader: []
+        - NoApiKey: []
       tags:
         - entries
       responses:

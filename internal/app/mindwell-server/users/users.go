@@ -97,6 +97,10 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		&invitedByIsOnline,
 		&invitedByAvatar)
 
+	if userID.ID == 0 && profile.Privacy != "all" {
+		return &models.Profile{}
+	}
+
 	profile.Design.BackgroundColor = models.Color(backColor)
 	profile.Design.TextColor = models.Color(textColor)
 
@@ -122,11 +126,10 @@ func loadUserProfile(srv *utils.MindwellServer, tx *utils.AutoTx, query string, 
 		profile.AgeUpperBound = profile.AgeLowerBound + 5
 	}
 
-	profile.Relations = &models.ProfileAO1Relations{
-		IsOpenForMe: profile.ID == userID.ID,
-	}
+	profile.Relations = &models.ProfileAO1Relations{}
 
 	if profile.ID == userID.ID {
+		profile.Relations.IsOpenForMe = true
 		return &profile
 	}
 
@@ -156,6 +159,8 @@ func isOpenForMe(profile *models.Profile, me *models.UserID) bool {
 	switch profile.Privacy {
 	case "all":
 		return true
+	case "registered":
+		return me.ID > 0
 	case "followers":
 		return profile.Relations.FromMe == models.RelationshipRelationFollowed
 	case "invited":
@@ -165,7 +170,11 @@ func isOpenForMe(profile *models.Profile, me *models.UserID) bool {
 	return false
 }
 
-func relationship(tx *utils.AutoTx, query string, from int64, to interface{}) string {
+func relationship(tx *utils.AutoTx, query string, from, to int64) string {
+	if from == 0 || to == 0 {
+		return models.RelationshipRelationNone
+	}
+
 	var relation string
 	tx.Query(query, from, to).Scan(&relation)
 	if tx.Error() == sql.ErrNoRows {
