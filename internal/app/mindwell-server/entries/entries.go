@@ -510,7 +510,7 @@ func setEntryRights(entry *models.Entry, userID *models.UserID) {
 		Delete:   entry.Author.ID == userID.ID,
 		Comment:  entry.Author.ID == userID.ID || !userID.Ban.Comment,
 		Vote:     entry.Author.ID != userID.ID && !userID.Ban.Vote && entry.Rating.IsVotable,
-		Complain: entry.Author.ID != userID.ID,
+		Complain: entry.Author.ID != userID.ID && userID.ID > 0,
 	}
 }
 
