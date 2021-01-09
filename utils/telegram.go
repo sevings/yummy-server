@@ -485,7 +485,7 @@ SELECT users.id, users.name, users.show_name, created_at,
 	invite_ban, vote_ban, comment_ban, live_ban, adm_ban
 FROM users
 JOIN (SELECT id, name, show_name FROM users) AS invited ON users.invited_by = invited.id
-WHERE users.email = lower($1) OR lower(users.name) = lower($1)`
+WHERE lower(users.email) = lower($1) OR lower(users.name) = lower($1)`
 
 	atx.Query(q, arg)
 
@@ -572,6 +572,7 @@ func (bot *TelegramBot) stat(upd *tgbotapi.Update) string {
 SELECT gender.type AS sex, count(*)
 FROM users
 JOIN gender ON users.gender = gender.id
+WHERE users.last_seen_at > users.created_at
 GROUP BY sex
 ORDER BY sex`
 	atx.Query(genderUsersQuery)
