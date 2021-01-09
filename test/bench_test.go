@@ -32,11 +32,15 @@ func BenchmarkLoadLive(b *testing.B) {
 	before := "0"
 	after := "0"
 	section := "entries"
+	query := ""
+	tag := ""
 	params := entries.GetEntriesLiveParams{
 		Limit:   &limit,
 		Before:  &before,
 		After:   &after,
 		Section: &section,
+		Query:   &query,
+		Tag:     &tag,
 	}
 
 	load := api.EntriesGetEntriesLiveHandler.Handle
@@ -78,11 +82,13 @@ func BenchmarkLoadFavorite(b *testing.B) {
 	var limit int64 = 30
 	before := "0"
 	after := "0"
+	query := ""
 	params := users.GetUsersNameFavoritesParams{
 		Limit:  &limit,
 		Before: &before,
 		After:  &after,
 		Name:   userIDs[1].Name,
+		Query:  &query,
 	}
 
 	load := api.UsersGetUsersNameFavoritesHandler.Handle
