@@ -47,7 +47,7 @@ func loadTopUsers(srv *utils.MindwellServer, tx *utils.AutoTx, params users.GetU
 					INNER JOIN entry_privacy ON entries.visible_for = entry_privacy.id
 					INNER JOIN user_privacy ON users.privacy = user_privacy.id
 					WHERE entry_privacy.type = 'all' 
-						AND (user_privacy.type = 'all' OR user_privacy.type = 'invited')
+						AND user_privacy.type <> 'followers'
 					GROUP BY author_id
 				) AS last_entries ON users.id = last_entries.author_id
 				WHERE invited_by IS NULL
