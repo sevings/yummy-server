@@ -31,7 +31,7 @@ func NewDeleteRelationsFromName(ctx *middleware.Context, handler DeleteRelations
 	return &DeleteRelationsFromName{Context: ctx, Handler: handler}
 }
 
-/*DeleteRelationsFromName swagger:route DELETE /relations/from/{name} relations deleteRelationsFromName
+/* DeleteRelationsFromName swagger:route DELETE /relations/from/{name} relations deleteRelationsFromName
 
 cancel following request or unsubscribe the user
 
@@ -47,7 +47,6 @@ func (o *DeleteRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 		r = rCtx
 	}
 	var Params = NewDeleteRelationsFromNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

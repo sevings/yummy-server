@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAdmGrandsonStatusParams creates a new GetAdmGrandsonStatusParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAdmGrandsonStatusParams() GetAdmGrandsonStatusParams {
 
 	return GetAdmGrandsonStatusParams{}

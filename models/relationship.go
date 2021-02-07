@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -83,7 +84,6 @@ func (m *Relationship) validateRelationEnum(path, location string, value string)
 }
 
 func (m *Relationship) validateRelation(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Relation) { // not required
 		return nil
 	}
@@ -93,6 +93,11 @@ func (m *Relationship) validateRelation(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this relationship based on context it is used
+func (m *Relationship) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -6,6 +6,7 @@ package adm
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAdmGrandsonStatus(ctx *middleware.Context, handler GetAdmGrandsonStat
 	return &GetAdmGrandsonStatus{Context: ctx, Handler: handler}
 }
 
-/*GetAdmGrandsonStatus swagger:route GET /adm/grandson/status adm getAdmGrandsonStatus
+/* GetAdmGrandsonStatus swagger:route GET /adm/grandson/status adm getAdmGrandsonStatus
 
 GetAdmGrandsonStatus get adm grandson status API
 
@@ -49,7 +50,6 @@ func (o *GetAdmGrandsonStatus) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetAdmGrandsonStatusParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAdmGrandsonStatus) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -88,6 +87,11 @@ type GetAdmGrandsonStatusOKBody struct {
 
 // Validate validates this get adm grandson status o k body
 func (o *GetAdmGrandsonStatusOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get adm grandson status o k body based on context it is used
+func (o *GetAdmGrandsonStatusOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

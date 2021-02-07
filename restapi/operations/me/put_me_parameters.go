@@ -16,6 +16,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PutMeMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutMeMaxParseMemory int64 = 32 << 20
+
 // NewPutMeParams creates a new PutMeParams object
 // with the default values initialized.
 func NewPutMeParams() PutMeParams {
@@ -122,7 +129,7 @@ func (o *PutMeParams) BindRequest(r *http.Request, route *middleware.MatchedRout
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutMeMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -175,7 +182,6 @@ func (o *PutMeParams) BindRequest(r *http.Request, route *middleware.MatchedRout
 	if err := o.bindTitle(fdTitle, fdhkTitle, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -195,7 +201,6 @@ func (o *PutMeParams) bindBirthday(rawData []string, hasKey bool, formats strfmt
 		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
-
 	o.Birthday = &raw
 
 	return nil
@@ -214,7 +219,6 @@ func (o *PutMeParams) bindCity(rawData []string, hasKey bool, formats strfmt.Reg
 		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
-
 	o.City = &raw
 
 	if err := o.validateCity(formats); err != nil {
@@ -227,7 +231,7 @@ func (o *PutMeParams) bindCity(rawData []string, hasKey bool, formats strfmt.Reg
 // validateCity carries on validations for parameter City
 func (o *PutMeParams) validateCity(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("city", "formData", (*o.City), 50); err != nil {
+	if err := validate.MaxLength("city", "formData", *o.City, 50); err != nil {
 		return err
 	}
 
@@ -247,7 +251,6 @@ func (o *PutMeParams) bindCountry(rawData []string, hasKey bool, formats strfmt.
 		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
-
 	o.Country = &raw
 
 	if err := o.validateCountry(formats); err != nil {
@@ -260,7 +263,7 @@ func (o *PutMeParams) bindCountry(rawData []string, hasKey bool, formats strfmt.
 // validateCountry carries on validations for parameter Country
 func (o *PutMeParams) validateCountry(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("country", "formData", (*o.Country), 50); err != nil {
+	if err := validate.MaxLength("country", "formData", *o.Country, 50); err != nil {
 		return err
 	}
 
@@ -280,7 +283,6 @@ func (o *PutMeParams) bindGender(rawData []string, hasKey bool, formats strfmt.R
 		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
-
 	o.Gender = &raw
 
 	if err := o.validateGender(formats); err != nil {
@@ -338,7 +340,6 @@ func (o *PutMeParams) bindPrivacy(rawData []string, hasKey bool, formats strfmt.
 	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
@@ -396,7 +397,6 @@ func (o *PutMeParams) bindShowName(rawData []string, hasKey bool, formats strfmt
 	if err := validate.RequiredString("showName", "formData", raw); err != nil {
 		return err
 	}
-
 	o.ShowName = raw
 
 	if err := o.validateShowName(formats); err != nil {
@@ -437,7 +437,6 @@ func (o *PutMeParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Re
 		// Default values have been previously initialized by NewPutMeParams()
 		return nil
 	}
-
 	o.Title = &raw
 
 	if err := o.validateTitle(formats); err != nil {
@@ -450,7 +449,7 @@ func (o *PutMeParams) bindTitle(rawData []string, hasKey bool, formats strfmt.Re
 // validateTitle carries on validations for parameter Title
 func (o *PutMeParams) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+	if err := validate.MaxLength("title", "formData", *o.Title, 500); err != nil {
 		return err
 	}
 

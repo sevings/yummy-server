@@ -6,6 +6,7 @@ package users
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -35,7 +36,7 @@ func NewGetUsers(ctx *middleware.Context, handler GetUsersHandler) *GetUsers {
 	return &GetUsers{Context: ctx, Handler: handler}
 }
 
-/*GetUsers swagger:route GET /users users getUsers
+/* GetUsers swagger:route GET /users users getUsers
 
 GetUsers get users API
 
@@ -51,7 +52,6 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetUsersParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -71,7 +71,6 @@ func (o *GetUsers) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -106,7 +105,6 @@ func (o *GetUsersOKBody) Validate(formats strfmt.Registry) error {
 }
 
 func (o *GetUsersOKBody) validateUsers(formats strfmt.Registry) error {
-
 	if swag.IsZero(o.Users) { // not required
 		return nil
 	}
@@ -118,6 +116,38 @@ func (o *GetUsersOKBody) validateUsers(formats strfmt.Registry) error {
 
 		if o.Users[i] != nil {
 			if err := o.Users[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("getUsersOK" + "." + "users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this get users o k body based on the context it is used
+func (o *GetUsersOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *GetUsersOKBody) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.Users); i++ {
+
+		if o.Users[i] != nil {
+			if err := o.Users[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("getUsersOK" + "." + "users" + "." + strconv.Itoa(i))
 				}

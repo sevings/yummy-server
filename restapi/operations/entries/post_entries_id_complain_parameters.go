@@ -16,6 +16,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostEntriesIDComplainMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostEntriesIDComplainMaxParseMemory int64 = 32 << 20
+
 // NewPostEntriesIDComplainParams creates a new PostEntriesIDComplainParams object
 // with the default values initialized.
 func NewPostEntriesIDComplainParams() PostEntriesIDComplainParams {
@@ -63,7 +70,7 @@ func (o *PostEntriesIDComplainParams) BindRequest(r *http.Request, route *middle
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostEntriesIDComplainMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -81,7 +88,6 @@ func (o *PostEntriesIDComplainParams) BindRequest(r *http.Request, route *middle
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -101,7 +107,6 @@ func (o *PostEntriesIDComplainParams) bindContent(rawData []string, hasKey bool,
 		// Default values have been previously initialized by NewPostEntriesIDComplainParams()
 		return nil
 	}
-
 	o.Content = &raw
 
 	if err := o.validateContent(formats); err != nil {
@@ -114,7 +119,7 @@ func (o *PostEntriesIDComplainParams) bindContent(rawData []string, hasKey bool,
 // validateContent carries on validations for parameter Content
 func (o *PostEntriesIDComplainParams) validateContent(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("content", "formData", (*o.Content), 1000); err != nil {
+	if err := validate.MaxLength("content", "formData", *o.Content, 1000); err != nil {
 		return err
 	}
 
@@ -147,7 +152,7 @@ func (o *PostEntriesIDComplainParams) bindID(rawData []string, hasKey bool, form
 // validateID carries on validations for parameter ID
 func (o *PostEntriesIDComplainParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

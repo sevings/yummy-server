@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -60,7 +62,6 @@ func (m *Message) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Message) validateAuthor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Author) { // not required
 		return nil
 	}
@@ -78,13 +79,58 @@ func (m *Message) validateAuthor(formats strfmt.Registry) error {
 }
 
 func (m *Message) validateRights(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
 
 	if m.Rights != nil {
 		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this message based on the context it is used
+func (m *Message) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Message) contextValidateAuthor(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Author != nil {
+		if err := m.Author.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Message) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rights")
 			}
@@ -127,6 +173,11 @@ type MessageRights struct {
 
 // Validate validates this message rights
 func (m *MessageRights) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this message rights based on context it is used
+func (m *MessageRights) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

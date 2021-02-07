@@ -15,6 +15,13 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+// PutAccountSettingsTelegramMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutAccountSettingsTelegramMaxParseMemory int64 = 32 << 20
+
 // NewPutAccountSettingsTelegramParams creates a new PutAccountSettingsTelegramParams object
 // with the default values initialized.
 func NewPutAccountSettingsTelegramParams() PutAccountSettingsTelegramParams {
@@ -79,7 +86,7 @@ func (o *PutAccountSettingsTelegramParams) BindRequest(r *http.Request, route *m
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutAccountSettingsTelegramMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -107,7 +114,6 @@ func (o *PutAccountSettingsTelegramParams) BindRequest(r *http.Request, route *m
 	if err := o.bindMessages(fdMessages, fdhkMessages, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

@@ -31,7 +31,7 @@ func NewPostMeTlog(ctx *middleware.Context, handler PostMeTlogHandler) *PostMeTl
 	return &PostMeTlog{Context: ctx, Handler: handler}
 }
 
-/*PostMeTlog swagger:route POST /me/tlog me postMeTlog
+/* PostMeTlog swagger:route POST /me/tlog me postMeTlog
 
 PostMeTlog post me tlog API
 
@@ -47,7 +47,6 @@ func (o *PostMeTlog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPostMeTlogParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostMeTlog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -31,7 +31,7 @@ func NewDeleteEntriesIDFavorite(ctx *middleware.Context, handler DeleteEntriesID
 	return &DeleteEntriesIDFavorite{Context: ctx, Handler: handler}
 }
 
-/*DeleteEntriesIDFavorite swagger:route DELETE /entries/{id}/favorite favorites deleteEntriesIdFavorite
+/* DeleteEntriesIDFavorite swagger:route DELETE /entries/{id}/favorite favorites deleteEntriesIdFavorite
 
 DeleteEntriesIDFavorite delete entries ID favorite API
 
@@ -47,7 +47,6 @@ func (o *DeleteEntriesIDFavorite) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 		r = rCtx
 	}
 	var Params = NewDeleteEntriesIDFavoriteParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteEntriesIDFavorite) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

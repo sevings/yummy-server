@@ -6,6 +6,7 @@ package account
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAccountSettingsTelegram(ctx *middleware.Context, handler GetAccountSe
 	return &GetAccountSettingsTelegram{Context: ctx, Handler: handler}
 }
 
-/*GetAccountSettingsTelegram swagger:route GET /account/settings/telegram account getAccountSettingsTelegram
+/* GetAccountSettingsTelegram swagger:route GET /account/settings/telegram account getAccountSettingsTelegram
 
 GetAccountSettingsTelegram get account settings telegram API
 
@@ -49,7 +50,6 @@ func (o *GetAccountSettingsTelegram) ServeHTTP(rw http.ResponseWriter, r *http.R
 		r = rCtx
 	}
 	var Params = NewGetAccountSettingsTelegramParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAccountSettingsTelegram) ServeHTTP(rw http.ResponseWriter, r *http.R
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -94,6 +93,11 @@ type GetAccountSettingsTelegramOKBody struct {
 
 // Validate validates this get account settings telegram o k body
 func (o *GetAccountSettingsTelegramOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get account settings telegram o k body based on context it is used
+func (o *GetAccountSettingsTelegramOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

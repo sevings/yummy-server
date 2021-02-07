@@ -13,7 +13,8 @@ import (
 )
 
 // NewPostAccountVerificationParams creates a new PostAccountVerificationParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostAccountVerificationParams() PostAccountVerificationParams {
 
 	return PostAccountVerificationParams{}

@@ -15,8 +15,16 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 )
 
+// PutMeAvatarMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutMeAvatarMaxParseMemory int64 = 32 << 20
+
 // NewPutMeAvatarParams creates a new PutMeAvatarParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPutMeAvatarParams() PutMeAvatarParams {
 
 	return PutMeAvatarParams{}
@@ -47,7 +55,7 @@ func (o *PutMeAvatarParams) BindRequest(r *http.Request, route *middleware.Match
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutMeAvatarMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -64,7 +72,6 @@ func (o *PutMeAvatarParams) BindRequest(r *http.Request, route *middleware.Match
 	} else {
 		o.File = &runtime.File{Data: file, Header: fileHeader}
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

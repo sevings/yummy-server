@@ -31,7 +31,7 @@ func NewPostChatsNameMessages(ctx *middleware.Context, handler PostChatsNameMess
 	return &PostChatsNameMessages{Context: ctx, Handler: handler}
 }
 
-/*PostChatsNameMessages swagger:route POST /chats/{name}/messages chats postChatsNameMessages
+/* PostChatsNameMessages swagger:route POST /chats/{name}/messages chats postChatsNameMessages
 
 PostChatsNameMessages post chats name messages API
 
@@ -47,7 +47,6 @@ func (o *PostChatsNameMessages) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		r = rCtx
 	}
 	var Params = NewPostChatsNameMessagesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostChatsNameMessages) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

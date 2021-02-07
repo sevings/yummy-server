@@ -31,7 +31,7 @@ func NewPutAccountSettingsTelegram(ctx *middleware.Context, handler PutAccountSe
 	return &PutAccountSettingsTelegram{Context: ctx, Handler: handler}
 }
 
-/*PutAccountSettingsTelegram swagger:route PUT /account/settings/telegram account putAccountSettingsTelegram
+/* PutAccountSettingsTelegram swagger:route PUT /account/settings/telegram account putAccountSettingsTelegram
 
 PutAccountSettingsTelegram put account settings telegram API
 
@@ -47,7 +47,6 @@ func (o *PutAccountSettingsTelegram) ServeHTTP(rw http.ResponseWriter, r *http.R
 		r = rCtx
 	}
 	var Params = NewPutAccountSettingsTelegramParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutAccountSettingsTelegram) ServeHTTP(rw http.ResponseWriter, r *http.R
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

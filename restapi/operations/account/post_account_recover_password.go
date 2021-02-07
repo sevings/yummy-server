@@ -29,7 +29,7 @@ func NewPostAccountRecoverPassword(ctx *middleware.Context, handler PostAccountR
 	return &PostAccountRecoverPassword{Context: ctx, Handler: handler}
 }
 
-/*PostAccountRecoverPassword swagger:route POST /account/recover/password account postAccountRecoverPassword
+/* PostAccountRecoverPassword swagger:route POST /account/recover/password account postAccountRecoverPassword
 
 reset password
 
@@ -45,14 +45,12 @@ func (o *PostAccountRecoverPassword) ServeHTTP(rw http.ResponseWriter, r *http.R
 		r = rCtx
 	}
 	var Params = NewPostAccountRecoverPasswordParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

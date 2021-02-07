@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAccountSubscribeTokenParams creates a new GetAccountSubscribeTokenParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountSubscribeTokenParams() GetAccountSubscribeTokenParams {
 
 	return GetAccountSubscribeTokenParams{}

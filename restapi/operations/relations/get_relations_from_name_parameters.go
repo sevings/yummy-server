@@ -15,7 +15,8 @@ import (
 )
 
 // NewGetRelationsFromNameParams creates a new GetRelationsFromNameParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetRelationsFromNameParams() GetRelationsFromNameParams {
 
 	return GetRelationsFromNameParams{}
@@ -53,7 +54,6 @@ func (o *GetRelationsFromNameParams) BindRequest(r *http.Request, route *middlew
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -69,7 +69,6 @@ func (o *GetRelationsFromNameParams) bindName(rawData []string, hasKey bool, for
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -72,7 +74,6 @@ func (m *Image) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Image) validateAuthor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Author) { // not required
 		return nil
 	}
@@ -90,7 +91,6 @@ func (m *Image) validateAuthor(formats strfmt.Registry) error {
 }
 
 func (m *Image) validateLarge(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Large) { // not required
 		return nil
 	}
@@ -108,7 +108,6 @@ func (m *Image) validateLarge(formats strfmt.Registry) error {
 }
 
 func (m *Image) validateMedium(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Medium) { // not required
 		return nil
 	}
@@ -126,7 +125,6 @@ func (m *Image) validateMedium(formats strfmt.Registry) error {
 }
 
 func (m *Image) validateSmall(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Small) { // not required
 		return nil
 	}
@@ -144,13 +142,112 @@ func (m *Image) validateSmall(formats strfmt.Registry) error {
 }
 
 func (m *Image) validateThumbnail(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Thumbnail) { // not required
 		return nil
 	}
 
 	if m.Thumbnail != nil {
 		if err := m.Thumbnail.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("thumbnail")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this image based on the context it is used
+func (m *Image) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateLarge(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateMedium(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateSmall(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateThumbnail(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Image) contextValidateAuthor(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Author != nil {
+		if err := m.Author.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) contextValidateLarge(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Large != nil {
+		if err := m.Large.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("large")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) contextValidateMedium(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Medium != nil {
+		if err := m.Medium.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("medium")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) contextValidateSmall(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Small != nil {
+		if err := m.Small.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("small")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Image) contextValidateThumbnail(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Thumbnail != nil {
+		if err := m.Thumbnail.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("thumbnail")
 			}

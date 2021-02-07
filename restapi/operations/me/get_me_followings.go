@@ -31,7 +31,7 @@ func NewGetMeFollowings(ctx *middleware.Context, handler GetMeFollowingsHandler)
 	return &GetMeFollowings{Context: ctx, Handler: handler}
 }
 
-/*GetMeFollowings swagger:route GET /me/followings me getMeFollowings
+/* GetMeFollowings swagger:route GET /me/followings me getMeFollowings
 
 GetMeFollowings get me followings API
 
@@ -47,7 +47,6 @@ func (o *GetMeFollowings) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeFollowingsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeFollowings) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

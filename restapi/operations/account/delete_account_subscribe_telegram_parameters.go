@@ -13,7 +13,8 @@ import (
 )
 
 // NewDeleteAccountSubscribeTelegramParams creates a new DeleteAccountSubscribeTelegramParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteAccountSubscribeTelegramParams() DeleteAccountSubscribeTelegramParams {
 
 	return DeleteAccountSubscribeTelegramParams{}

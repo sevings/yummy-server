@@ -17,7 +17,8 @@ import (
 )
 
 // NewPostAdmGrandsonStatusParams creates a new PostAdmGrandsonStatusParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostAdmGrandsonStatusParams() PostAdmGrandsonStatusParams {
 
 	return PostAdmGrandsonStatusParams{}
@@ -54,7 +55,6 @@ func (o *PostAdmGrandsonStatusParams) BindRequest(r *http.Request, route *middle
 	if err := o.bindReceived(qReceived, qhkReceived, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -73,6 +73,7 @@ func (o *PostAdmGrandsonStatusParams) bindReceived(rawData []string, hasKey bool
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("received", "query", raw); err != nil {
 		return err
 	}

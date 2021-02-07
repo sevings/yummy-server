@@ -31,7 +31,7 @@ func NewDeleteEntriesIDWatching(ctx *middleware.Context, handler DeleteEntriesID
 	return &DeleteEntriesIDWatching{Context: ctx, Handler: handler}
 }
 
-/*DeleteEntriesIDWatching swagger:route DELETE /entries/{id}/watching watchings deleteEntriesIdWatching
+/* DeleteEntriesIDWatching swagger:route DELETE /entries/{id}/watching watchings deleteEntriesIdWatching
 
 DeleteEntriesIDWatching delete entries ID watching API
 
@@ -47,7 +47,6 @@ func (o *DeleteEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 		r = rCtx
 	}
 	var Params = NewDeleteEntriesIDWatchingParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

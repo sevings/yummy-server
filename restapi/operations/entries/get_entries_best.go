@@ -31,7 +31,7 @@ func NewGetEntriesBest(ctx *middleware.Context, handler GetEntriesBestHandler) *
 	return &GetEntriesBest{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesBest swagger:route GET /entries/best entries getEntriesBest
+/* GetEntriesBest swagger:route GET /entries/best entries getEntriesBest
 
 GetEntriesBest get entries best API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesBest) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesBestParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesBest) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

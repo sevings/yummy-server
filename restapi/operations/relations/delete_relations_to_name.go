@@ -31,7 +31,7 @@ func NewDeleteRelationsToName(ctx *middleware.Context, handler DeleteRelationsTo
 	return &DeleteRelationsToName{Context: ctx, Handler: handler}
 }
 
-/*DeleteRelationsToName swagger:route DELETE /relations/to/{name} relations deleteRelationsToName
+/* DeleteRelationsToName swagger:route DELETE /relations/to/{name} relations deleteRelationsToName
 
 DeleteRelationsToName delete relations to name API
 
@@ -47,7 +47,6 @@ func (o *DeleteRelationsToName) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		r = rCtx
 	}
 	var Params = NewDeleteRelationsToNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteRelationsToName) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

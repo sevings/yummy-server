@@ -16,8 +16,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostAccountRecoverPasswordMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostAccountRecoverPasswordMaxParseMemory int64 = 32 << 20
+
 // NewPostAccountRecoverPasswordParams creates a new PostAccountRecoverPasswordParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostAccountRecoverPasswordParams() PostAccountRecoverPasswordParams {
 
 	return PostAccountRecoverPasswordParams{}
@@ -69,7 +77,7 @@ func (o *PostAccountRecoverPasswordParams) BindRequest(r *http.Request, route *m
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostAccountRecoverPasswordMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -97,7 +105,6 @@ func (o *PostAccountRecoverPasswordParams) BindRequest(r *http.Request, route *m
 	if err := o.bindPassword(fdPassword, fdhkPassword, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,7 +126,6 @@ func (o *PostAccountRecoverPasswordParams) bindCode(rawData []string, hasKey boo
 	if err := validate.RequiredString("code", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Code = raw
 
 	if err := o.validateCode(formats); err != nil {
@@ -183,7 +189,6 @@ func (o *PostAccountRecoverPasswordParams) bindEmail(rawData []string, hasKey bo
 	if err := validate.RequiredString("email", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Email = raw
 
 	if err := o.validateEmail(formats); err != nil {
@@ -222,7 +227,6 @@ func (o *PostAccountRecoverPasswordParams) bindPassword(rawData []string, hasKey
 	if err := validate.RequiredString("password", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Password = raw
 
 	if err := o.validatePassword(formats); err != nil {

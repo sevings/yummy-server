@@ -31,7 +31,7 @@ func NewGetEntriesWatching(ctx *middleware.Context, handler GetEntriesWatchingHa
 	return &GetEntriesWatching{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesWatching swagger:route GET /entries/watching entries getEntriesWatching
+/* GetEntriesWatching swagger:route GET /entries/watching entries getEntriesWatching
 
 GetEntriesWatching get entries watching API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 		r = rCtx
 	}
 	var Params = NewGetEntriesWatchingParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

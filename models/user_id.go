@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -60,7 +62,6 @@ func (m *UserID) Validate(formats strfmt.Registry) error {
 }
 
 func (m *UserID) validateBan(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Ban) { // not required
 		return nil
 	}
@@ -78,17 +79,44 @@ func (m *UserID) validateBan(formats strfmt.Registry) error {
 }
 
 func (m *UserID) validateName(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", string(m.Name), 1); err != nil {
+	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
+	if err := validate.MaxLength("name", "body", m.Name, 20); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this user ID based on the context it is used
+func (m *UserID) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBan(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *UserID) contextValidateBan(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ban != nil {
+		if err := m.Ban.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ban")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -132,6 +160,11 @@ type UserIDBan struct {
 
 // Validate validates this user ID ban
 func (m *UserIDBan) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this user ID ban based on context it is used
+func (m *UserIDBan) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

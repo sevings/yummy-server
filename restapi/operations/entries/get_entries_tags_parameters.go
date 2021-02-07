@@ -64,7 +64,6 @@ func (o *GetEntriesTagsParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -80,6 +79,7 @@ func (o *GetEntriesTagsParams) bindLimit(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesTagsParams()
 		return nil
@@ -101,11 +101,11 @@ func (o *GetEntriesTagsParams) bindLimit(rawData []string, hasKey bool, formats 
 // validateLimit carries on validations for parameter Limit
 func (o *GetEntriesTagsParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 

@@ -6,6 +6,7 @@ package account
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -31,7 +32,7 @@ func NewGetAccountEmailEmail(ctx *middleware.Context, handler GetAccountEmailEma
 	return &GetAccountEmailEmail{Context: ctx, Handler: handler}
 }
 
-/*GetAccountEmailEmail swagger:route GET /account/email/{email} account getAccountEmailEmail
+/* GetAccountEmailEmail swagger:route GET /account/email/{email} account getAccountEmailEmail
 
 check if email is used
 
@@ -47,19 +48,18 @@ func (o *GetAccountEmailEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetAccountEmailEmailParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
 
 // GetAccountEmailEmailOKBody get account email email o k body
+// Example: {"email":"mail@example.com","isFree":true}
 //
 // swagger:model GetAccountEmailEmailOKBody
 type GetAccountEmailEmailOKBody struct {
@@ -73,6 +73,11 @@ type GetAccountEmailEmailOKBody struct {
 
 // Validate validates this get account email email o k body
 func (o *GetAccountEmailEmailOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get account email email o k body based on context it is used
+func (o *GetAccountEmailEmailOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

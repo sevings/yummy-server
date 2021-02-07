@@ -103,7 +103,6 @@ func (o *GetChatsNameMessagesParams) BindRequest(r *http.Request, route *middlew
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,11 +118,11 @@ func (o *GetChatsNameMessagesParams) bindAfter(rawData []string, hasKey bool, fo
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetChatsNameMessagesParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -138,11 +137,11 @@ func (o *GetChatsNameMessagesParams) bindBefore(rawData []string, hasKey bool, f
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetChatsNameMessagesParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -157,6 +156,7 @@ func (o *GetChatsNameMessagesParams) bindLimit(rawData []string, hasKey bool, fo
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetChatsNameMessagesParams()
 		return nil
@@ -178,11 +178,11 @@ func (o *GetChatsNameMessagesParams) bindLimit(rawData []string, hasKey bool, fo
 // validateLimit carries on validations for parameter Limit
 func (o *GetChatsNameMessagesParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -198,7 +198,6 @@ func (o *GetChatsNameMessagesParams) bindName(rawData []string, hasKey bool, for
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

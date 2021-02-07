@@ -103,7 +103,6 @@ func (o *GetUsersNameFollowingsParams) BindRequest(r *http.Request, route *middl
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,11 +118,11 @@ func (o *GetUsersNameFollowingsParams) bindAfter(rawData []string, hasKey bool, 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFollowingsParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -138,11 +137,11 @@ func (o *GetUsersNameFollowingsParams) bindBefore(rawData []string, hasKey bool,
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFollowingsParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -157,6 +156,7 @@ func (o *GetUsersNameFollowingsParams) bindLimit(rawData []string, hasKey bool, 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFollowingsParams()
 		return nil
@@ -178,11 +178,11 @@ func (o *GetUsersNameFollowingsParams) bindLimit(rawData []string, hasKey bool, 
 // validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameFollowingsParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -198,7 +198,6 @@ func (o *GetUsersNameFollowingsParams) bindName(rawData []string, hasKey bool, f
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

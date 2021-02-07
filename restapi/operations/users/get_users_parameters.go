@@ -72,7 +72,6 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	if err := o.bindTop(qTop, qhkTop, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -88,10 +87,10 @@ func (o *GetUsersParams) bindQuery(rawData []string, hasKey bool, formats strfmt
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -104,11 +103,11 @@ func (o *GetUsersParams) bindQuery(rawData []string, hasKey bool, formats strfmt
 // validateQuery carries on validations for parameter Query
 func (o *GetUsersParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MinLength("query", "query", (*o.Query), 1); err != nil {
+	if err := validate.MinLength("query", "query", *o.Query, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 50); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 50); err != nil {
 		return err
 	}
 
@@ -124,11 +123,11 @@ func (o *GetUsersParams) bindTop(rawData []string, hasKey bool, formats strfmt.R
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersParams()
 		return nil
 	}
-
 	o.Top = &raw
 
 	if err := o.validateTop(formats); err != nil {

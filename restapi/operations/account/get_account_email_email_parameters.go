@@ -15,7 +15,8 @@ import (
 )
 
 // NewGetAccountEmailEmailParams creates a new GetAccountEmailEmailParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountEmailEmailParams() GetAccountEmailEmailParams {
 
 	return GetAccountEmailEmailParams{}
@@ -52,7 +53,6 @@ func (o *GetAccountEmailEmailParams) BindRequest(r *http.Request, route *middlew
 	if err := o.bindEmail(rEmail, rhkEmail, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -68,7 +68,6 @@ func (o *GetAccountEmailEmailParams) bindEmail(rawData []string, hasKey bool, fo
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Email = raw
 
 	if err := o.validateEmail(formats); err != nil {

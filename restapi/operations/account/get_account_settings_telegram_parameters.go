@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAccountSettingsTelegramParams creates a new GetAccountSettingsTelegramParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountSettingsTelegramParams() GetAccountSettingsTelegramParams {
 
 	return GetAccountSettingsTelegramParams{}

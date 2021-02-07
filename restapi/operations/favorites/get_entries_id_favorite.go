@@ -31,7 +31,7 @@ func NewGetEntriesIDFavorite(ctx *middleware.Context, handler GetEntriesIDFavori
 	return &GetEntriesIDFavorite{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesIDFavorite swagger:route GET /entries/{id}/favorite favorites getEntriesIdFavorite
+/* GetEntriesIDFavorite swagger:route GET /entries/{id}/favorite favorites getEntriesIdFavorite
 
 GetEntriesIDFavorite get entries ID favorite API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesIDFavorite) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetEntriesIDFavoriteParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesIDFavorite) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

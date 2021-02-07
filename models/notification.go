@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -81,7 +82,6 @@ func (m *Notification) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Notification) validateComment(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Comment) { // not required
 		return nil
 	}
@@ -99,7 +99,6 @@ func (m *Notification) validateComment(formats strfmt.Registry) error {
 }
 
 func (m *Notification) validateEntry(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Entry) { // not required
 		return nil
 	}
@@ -117,12 +116,11 @@ func (m *Notification) validateEntry(formats strfmt.Registry) error {
 }
 
 func (m *Notification) validateID(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -130,7 +128,6 @@ func (m *Notification) validateID(formats strfmt.Registry) error {
 }
 
 func (m *Notification) validateInfo(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Info) { // not required
 		return nil
 	}
@@ -201,7 +198,6 @@ func (m *Notification) validateTypeEnum(path, location string, value string) err
 }
 
 func (m *Notification) validateType(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Type) { // not required
 		return nil
 	}
@@ -215,13 +211,94 @@ func (m *Notification) validateType(formats strfmt.Registry) error {
 }
 
 func (m *Notification) validateUser(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.User) { // not required
 		return nil
 	}
 
 	if m.User != nil {
 		if err := m.User.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("user")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this notification based on the context it is used
+func (m *Notification) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateComment(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateEntry(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInfo(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUser(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Notification) contextValidateComment(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Comment != nil {
+		if err := m.Comment.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("comment")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Notification) contextValidateEntry(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Entry != nil {
+		if err := m.Entry.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("entry")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Notification) contextValidateInfo(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Info != nil {
+		if err := m.Info.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("info")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Notification) contextValidateUser(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.User != nil {
+		if err := m.User.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("user")
 			}
@@ -264,6 +341,11 @@ type NotificationInfo struct {
 
 // Validate validates this notification info
 func (m *NotificationInfo) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this notification info based on context it is used
+func (m *NotificationInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

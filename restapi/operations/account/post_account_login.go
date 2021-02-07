@@ -29,7 +29,7 @@ func NewPostAccountLogin(ctx *middleware.Context, handler PostAccountLoginHandle
 	return &PostAccountLogin{Context: ctx, Handler: handler}
 }
 
-/*PostAccountLogin swagger:route POST /account/login account postAccountLogin
+/* PostAccountLogin swagger:route POST /account/login account postAccountLogin
 
 PostAccountLogin post account login API
 
@@ -45,14 +45,12 @@ func (o *PostAccountLogin) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPostAccountLoginParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

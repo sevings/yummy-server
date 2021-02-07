@@ -16,7 +16,8 @@ import (
 )
 
 // NewGetImagesIDParams creates a new GetImagesIDParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetImagesIDParams() GetImagesIDParams {
 
 	return GetImagesIDParams{}
@@ -52,7 +53,6 @@ func (o *GetImagesIDParams) BindRequest(r *http.Request, route *middleware.Match
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,7 @@ func (o *GetImagesIDParams) bindID(rawData []string, hasKey bool, formats strfmt
 // validateID carries on validations for parameter ID
 func (o *GetImagesIDParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

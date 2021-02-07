@@ -17,7 +17,8 @@ import (
 )
 
 // NewPutChatsNameReadParams creates a new PutChatsNameReadParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPutChatsNameReadParams() PutChatsNameReadParams {
 
 	return PutChatsNameReadParams{}
@@ -67,7 +68,6 @@ func (o *PutChatsNameReadParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -86,6 +86,7 @@ func (o *PutChatsNameReadParams) bindMessage(rawData []string, hasKey bool, form
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("message", "query", raw); err != nil {
 		return err
 	}
@@ -108,7 +109,6 @@ func (o *PutChatsNameReadParams) bindName(rawData []string, hasKey bool, formats
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

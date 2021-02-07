@@ -31,7 +31,7 @@ func NewGetEntriesID(ctx *middleware.Context, handler GetEntriesIDHandler) *GetE
 	return &GetEntriesID{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesID swagger:route GET /entries/{id} entries getEntriesId
+/* GetEntriesID swagger:route GET /entries/{id} entries getEntriesId
 
 GetEntriesID get entries ID API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

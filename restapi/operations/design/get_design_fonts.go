@@ -6,6 +6,7 @@ package design
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetDesignFonts(ctx *middleware.Context, handler GetDesignFontsHandler) *
 	return &GetDesignFonts{Context: ctx, Handler: handler}
 }
 
-/*GetDesignFonts swagger:route GET /design/fonts design getDesignFonts
+/* GetDesignFonts swagger:route GET /design/fonts design getDesignFonts
 
 GetDesignFonts get design fonts API
 
@@ -49,7 +50,6 @@ func (o *GetDesignFonts) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetDesignFontsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetDesignFonts) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -85,6 +84,11 @@ type GetDesignFontsOKBody struct {
 
 // Validate validates this get design fonts o k body
 func (o *GetDesignFontsOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get design fonts o k body based on context it is used
+func (o *GetDesignFontsOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

@@ -31,7 +31,7 @@ func NewGetEntriesIDVote(ctx *middleware.Context, handler GetEntriesIDVoteHandle
 	return &GetEntriesIDVote{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesIDVote swagger:route GET /entries/{id}/vote votes getEntriesIdVote
+/* GetEntriesIDVote swagger:route GET /entries/{id}/vote votes getEntriesIdVote
 
 GetEntriesIDVote get entries ID vote API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesIDVoteParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

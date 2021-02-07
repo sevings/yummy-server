@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -13,6 +15,7 @@ import (
 )
 
 // Comment comment
+// Example: {"content":"some multiline text \u003cbr\u003e with html","createdAt":1531029717.333,"editContent":"some multiline text \\n with html","entryId":152,"id":999,"rights":{"delete":true,"edit":true,"vote":false}}
 //
 // swagger:model Comment
 type Comment struct {
@@ -75,7 +78,6 @@ func (m *Comment) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Comment) validateAuthor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Author) { // not required
 		return nil
 	}
@@ -93,12 +95,11 @@ func (m *Comment) validateAuthor(formats strfmt.Registry) error {
 }
 
 func (m *Comment) validateEntryID(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.EntryID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("entryId", "body", int64(m.EntryID), 1, false); err != nil {
+	if err := validate.MinimumInt("entryId", "body", m.EntryID, 1, false); err != nil {
 		return err
 	}
 
@@ -106,12 +107,11 @@ func (m *Comment) validateEntryID(formats strfmt.Registry) error {
 }
 
 func (m *Comment) validateID(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -119,7 +119,6 @@ func (m *Comment) validateID(formats strfmt.Registry) error {
 }
 
 func (m *Comment) validateRating(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rating) { // not required
 		return nil
 	}
@@ -137,13 +136,76 @@ func (m *Comment) validateRating(formats strfmt.Registry) error {
 }
 
 func (m *Comment) validateRights(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
 
 	if m.Rights != nil {
 		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this comment based on the context it is used
+func (m *Comment) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRating(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Comment) contextValidateAuthor(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Author != nil {
+		if err := m.Author.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Comment) contextValidateRating(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rating != nil {
+		if err := m.Rating.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rating")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Comment) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rights")
 			}
@@ -192,6 +254,11 @@ type CommentRights struct {
 
 // Validate validates this comment rights
 func (m *CommentRights) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this comment rights based on context it is used
+func (m *CommentRights) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

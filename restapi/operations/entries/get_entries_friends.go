@@ -31,7 +31,7 @@ func NewGetEntriesFriends(ctx *middleware.Context, handler GetEntriesFriendsHand
 	return &GetEntriesFriends{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesFriends swagger:route GET /entries/friends entries getEntriesFriends
+/* GetEntriesFriends swagger:route GET /entries/friends entries getEntriesFriends
 
 GetEntriesFriends get entries friends API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesFriends) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesFriendsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesFriends) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

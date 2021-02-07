@@ -15,7 +15,8 @@ import (
 )
 
 // NewDeleteRelationsFromNameParams creates a new DeleteRelationsFromNameParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteRelationsFromNameParams() DeleteRelationsFromNameParams {
 
 	return DeleteRelationsFromNameParams{}
@@ -53,7 +54,6 @@ func (o *DeleteRelationsFromNameParams) BindRequest(r *http.Request, route *midd
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -69,7 +69,6 @@ func (o *DeleteRelationsFromNameParams) bindName(rawData []string, hasKey bool, 
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

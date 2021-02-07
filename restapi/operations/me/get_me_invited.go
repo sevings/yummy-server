@@ -31,7 +31,7 @@ func NewGetMeInvited(ctx *middleware.Context, handler GetMeInvitedHandler) *GetM
 	return &GetMeInvited{Context: ctx, Handler: handler}
 }
 
-/*GetMeInvited swagger:route GET /me/invited me getMeInvited
+/* GetMeInvited swagger:route GET /me/invited me getMeInvited
 
 GetMeInvited get me invited API
 
@@ -47,7 +47,6 @@ func (o *GetMeInvited) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeInvitedParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeInvited) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

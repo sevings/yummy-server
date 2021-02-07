@@ -17,6 +17,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PutEntriesIDMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutEntriesIDMaxParseMemory int64 = 32 << 20
+
 // NewPutEntriesIDParams creates a new PutEntriesIDParams object
 // with the default values initialized.
 func NewPutEntriesIDParams() PutEntriesIDParams {
@@ -119,7 +126,7 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutEntriesIDMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -177,7 +184,6 @@ func (o *PutEntriesIDParams) BindRequest(r *http.Request, route *middleware.Matc
 	if err := o.bindVisibleFor(fdVisibleFor, fdhkVisibleFor, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -222,7 +228,6 @@ func (o *PutEntriesIDParams) bindContent(rawData []string, hasKey bool, formats 
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Content = raw
 
 	if err := o.validateContent(formats); err != nil {
@@ -276,7 +281,7 @@ func (o *PutEntriesIDParams) bindID(rawData []string, hasKey bool, formats strfm
 // validateID carries on validations for parameter ID
 func (o *PutEntriesIDParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -287,7 +292,6 @@ func (o *PutEntriesIDParams) validateID(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PutEntriesIDParams) bindImages(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvImages string
 	if len(rawData) > 0 {
 		qvImages = rawData[len(rawData)-1]
@@ -307,7 +311,7 @@ func (o *PutEntriesIDParams) bindImages(rawData []string, hasKey bool, formats s
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "images", i), "formData", "int64", imagesI)
 		}
 
-		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", int64(imagesI), 1, false); err != nil {
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", imagesI, 1, false); err != nil {
 			return err
 		}
 
@@ -336,7 +340,6 @@ func (o *PutEntriesIDParams) validateImages(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("images", "formData", o.Images); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -401,7 +404,6 @@ func (o *PutEntriesIDParams) bindPrivacy(rawData []string, hasKey bool, formats 
 	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
@@ -425,7 +427,6 @@ func (o *PutEntriesIDParams) validatePrivacy(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PutEntriesIDParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvTags string
 	if len(rawData) > 0 {
 		qvTags = rawData[len(rawData)-1]
@@ -474,7 +475,6 @@ func (o *PutEntriesIDParams) validateTags(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("tags", "formData", o.Tags); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -491,7 +491,6 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 		// Default values have been previously initialized by NewPutEntriesIDParams()
 		return nil
 	}
-
 	o.Title = &raw
 
 	if err := o.validateTitle(formats); err != nil {
@@ -504,7 +503,7 @@ func (o *PutEntriesIDParams) bindTitle(rawData []string, hasKey bool, formats st
 // validateTitle carries on validations for parameter Title
 func (o *PutEntriesIDParams) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+	if err := validate.MaxLength("title", "formData", *o.Title, 500); err != nil {
 		return err
 	}
 
@@ -515,7 +514,6 @@ func (o *PutEntriesIDParams) validateTitle(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvVisibleFor string
 	if len(rawData) > 0 {
 		qvVisibleFor = rawData[len(rawData)-1]
@@ -535,7 +533,7 @@ func (o *PutEntriesIDParams) bindVisibleFor(rawData []string, hasKey bool, forma
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", "int64", visibleForI)
 		}
 
-		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", int64(visibleForI), 1, false); err != nil {
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", visibleForI, 1, false); err != nil {
 			return err
 		}
 

@@ -16,7 +16,8 @@ import (
 )
 
 // NewGetEntriesIDVoteParams creates a new GetEntriesIDVoteParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetEntriesIDVoteParams() GetEntriesIDVoteParams {
 
 	return GetEntriesIDVoteParams{}
@@ -52,7 +53,6 @@ func (o *GetEntriesIDVoteParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,7 @@ func (o *GetEntriesIDVoteParams) bindID(rawData []string, hasKey bool, formats s
 // validateID carries on validations for parameter ID
 func (o *GetEntriesIDVoteParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

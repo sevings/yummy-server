@@ -16,7 +16,8 @@ import (
 )
 
 // NewGetCommentsIDParams creates a new GetCommentsIDParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetCommentsIDParams() GetCommentsIDParams {
 
 	return GetCommentsIDParams{}
@@ -52,7 +53,6 @@ func (o *GetCommentsIDParams) BindRequest(r *http.Request, route *middleware.Mat
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,7 @@ func (o *GetCommentsIDParams) bindID(rawData []string, hasKey bool, formats strf
 // validateID carries on validations for parameter ID
 func (o *GetCommentsIDParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

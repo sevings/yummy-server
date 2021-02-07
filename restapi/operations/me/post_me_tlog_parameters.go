@@ -17,6 +17,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostMeTlogMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostMeTlogMaxParseMemory int64 = 32 << 20
+
 // NewPostMeTlogParams creates a new PostMeTlogParams object
 // with the default values initialized.
 func NewPostMeTlogParams() PostMeTlogParams {
@@ -104,7 +111,7 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostMeTlogMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -152,7 +159,6 @@ func (o *PostMeTlogParams) BindRequest(r *http.Request, route *middleware.Matche
 	if err := o.bindVisibleFor(fdVisibleFor, fdhkVisibleFor, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -174,7 +180,6 @@ func (o *PostMeTlogParams) bindContent(rawData []string, hasKey bool, formats st
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Content = raw
 
 	if err := o.validateContent(formats); err != nil {
@@ -206,7 +211,6 @@ func (o *PostMeTlogParams) validateContent(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostMeTlogParams) bindImages(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvImages string
 	if len(rawData) > 0 {
 		qvImages = rawData[len(rawData)-1]
@@ -226,7 +230,7 @@ func (o *PostMeTlogParams) bindImages(rawData []string, hasKey bool, formats str
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "images", i), "formData", "int64", imagesI)
 		}
 
-		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", int64(imagesI), 1, false); err != nil {
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", imagesI, 1, false); err != nil {
 			return err
 		}
 
@@ -255,7 +259,6 @@ func (o *PostMeTlogParams) validateImages(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("images", "formData", o.Images); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -320,7 +323,6 @@ func (o *PostMeTlogParams) bindPrivacy(rawData []string, hasKey bool, formats st
 	if err := validate.RequiredString("privacy", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Privacy = raw
 
 	if err := o.validatePrivacy(formats); err != nil {
@@ -344,7 +346,6 @@ func (o *PostMeTlogParams) validatePrivacy(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostMeTlogParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvTags string
 	if len(rawData) > 0 {
 		qvTags = rawData[len(rawData)-1]
@@ -393,7 +394,6 @@ func (o *PostMeTlogParams) validateTags(formats strfmt.Registry) error {
 	if err := validate.UniqueItems("tags", "formData", o.Tags); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -410,7 +410,6 @@ func (o *PostMeTlogParams) bindTitle(rawData []string, hasKey bool, formats strf
 		// Default values have been previously initialized by NewPostMeTlogParams()
 		return nil
 	}
-
 	o.Title = &raw
 
 	if err := o.validateTitle(formats); err != nil {
@@ -423,7 +422,7 @@ func (o *PostMeTlogParams) bindTitle(rawData []string, hasKey bool, formats strf
 // validateTitle carries on validations for parameter Title
 func (o *PostMeTlogParams) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+	if err := validate.MaxLength("title", "formData", *o.Title, 500); err != nil {
 		return err
 	}
 
@@ -434,7 +433,6 @@ func (o *PostMeTlogParams) validateTitle(formats strfmt.Registry) error {
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostMeTlogParams) bindVisibleFor(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvVisibleFor string
 	if len(rawData) > 0 {
 		qvVisibleFor = rawData[len(rawData)-1]
@@ -454,7 +452,7 @@ func (o *PostMeTlogParams) bindVisibleFor(rawData []string, hasKey bool, formats
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", "int64", visibleForI)
 		}
 
-		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", int64(visibleForI), 1, false); err != nil {
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "visibleFor", i), "formData", visibleForI, 1, false); err != nil {
 			return err
 		}
 

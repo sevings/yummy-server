@@ -131,7 +131,6 @@ func (o *GetEntriesLiveParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindTag(qTag, qhkTag, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -147,11 +146,11 @@ func (o *GetEntriesLiveParams) bindAfter(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -166,11 +165,11 @@ func (o *GetEntriesLiveParams) bindBefore(rawData []string, hasKey bool, formats
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -185,6 +184,7 @@ func (o *GetEntriesLiveParams) bindLimit(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
@@ -206,11 +206,11 @@ func (o *GetEntriesLiveParams) bindLimit(rawData []string, hasKey bool, formats 
 // validateLimit carries on validations for parameter Limit
 func (o *GetEntriesLiveParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -226,11 +226,11 @@ func (o *GetEntriesLiveParams) bindQuery(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -243,7 +243,7 @@ func (o *GetEntriesLiveParams) bindQuery(rawData []string, hasKey bool, formats 
 // validateQuery carries on validations for parameter Query
 func (o *GetEntriesLiveParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 100); err != nil {
 		return err
 	}
 
@@ -259,11 +259,11 @@ func (o *GetEntriesLiveParams) bindSection(rawData []string, hasKey bool, format
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
-
 	o.Section = &raw
 
 	if err := o.validateSection(formats); err != nil {
@@ -292,11 +292,11 @@ func (o *GetEntriesLiveParams) bindTag(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesLiveParams()
 		return nil
 	}
-
 	o.Tag = &raw
 
 	if err := o.validateTag(formats); err != nil {
@@ -309,7 +309,7 @@ func (o *GetEntriesLiveParams) bindTag(rawData []string, hasKey bool, formats st
 // validateTag carries on validations for parameter Tag
 func (o *GetEntriesLiveParams) validateTag(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {
+	if err := validate.MaxLength("tag", "query", *o.Tag, 50); err != nil {
 		return err
 	}
 

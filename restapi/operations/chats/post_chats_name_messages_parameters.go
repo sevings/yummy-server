@@ -16,8 +16,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostChatsNameMessagesMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostChatsNameMessagesMaxParseMemory int64 = 32 << 20
+
 // NewPostChatsNameMessagesParams creates a new PostChatsNameMessagesParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostChatsNameMessagesParams() PostChatsNameMessagesParams {
 
 	return PostChatsNameMessagesParams{}
@@ -64,7 +72,7 @@ func (o *PostChatsNameMessagesParams) BindRequest(r *http.Request, route *middle
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostChatsNameMessagesMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -87,7 +95,6 @@ func (o *PostChatsNameMessagesParams) BindRequest(r *http.Request, route *middle
 	if err := o.bindUID(fdUID, fdhkUID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -109,7 +116,6 @@ func (o *PostChatsNameMessagesParams) bindContent(rawData []string, hasKey bool,
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Content = raw
 
 	if err := o.validateContent(formats); err != nil {
@@ -146,7 +152,6 @@ func (o *PostChatsNameMessagesParams) bindName(rawData []string, hasKey bool, fo
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

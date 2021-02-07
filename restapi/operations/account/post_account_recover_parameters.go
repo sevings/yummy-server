@@ -15,8 +15,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostAccountRecoverMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostAccountRecoverMaxParseMemory int64 = 32 << 20
+
 // NewPostAccountRecoverParams creates a new PostAccountRecoverParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostAccountRecoverParams() PostAccountRecoverParams {
 
 	return PostAccountRecoverParams{}
@@ -49,7 +57,7 @@ func (o *PostAccountRecoverParams) BindRequest(r *http.Request, route *middlewar
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostAccountRecoverMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -62,7 +70,6 @@ func (o *PostAccountRecoverParams) BindRequest(r *http.Request, route *middlewar
 	if err := o.bindEmail(fdEmail, fdhkEmail, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -84,7 +91,6 @@ func (o *PostAccountRecoverParams) bindEmail(rawData []string, hasKey bool, form
 	if err := validate.RequiredString("email", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Email = raw
 
 	if err := o.validateEmail(formats); err != nil {

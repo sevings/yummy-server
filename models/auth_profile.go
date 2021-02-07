@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -158,6 +160,57 @@ func (m *AuthProfile) validateBan(formats strfmt.Registry) error {
 	return nil
 }
 
+// ContextValidate validate this auth profile based on the context it is used
+func (m *AuthProfile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with Profile
+	if err := m.Profile.ContextValidate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateAccount(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateBan(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *AuthProfile) contextValidateAccount(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Account != nil {
+		if err := m.Account.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("account")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *AuthProfile) contextValidateBan(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Ban != nil {
+		if err := m.Ban.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("ban")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *AuthProfile) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -199,6 +252,11 @@ func (m *AuthProfileAO1Account) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
+// ContextValidate validates this auth profile a o1 account based on context it is used
+func (m *AuthProfileAO1Account) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	return nil
+}
+
 // MarshalBinary interface implementation
 func (m *AuthProfileAO1Account) MarshalBinary() ([]byte, error) {
 	if m == nil {
@@ -237,6 +295,11 @@ type AuthProfileAO1Ban struct {
 
 // Validate validates this auth profile a o1 ban
 func (m *AuthProfileAO1Ban) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this auth profile a o1 ban based on context it is used
+func (m *AuthProfileAO1Ban) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

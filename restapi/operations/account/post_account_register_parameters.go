@@ -15,6 +15,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostAccountRegisterMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostAccountRegisterMaxParseMemory int64 = 32 << 20
+
 // NewPostAccountRegisterParams creates a new PostAccountRegisterParams object
 // with the default values initialized.
 func NewPostAccountRegisterParams() PostAccountRegisterParams {
@@ -100,7 +107,7 @@ func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middlewa
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostAccountRegisterMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -143,7 +150,6 @@ func (o *PostAccountRegisterParams) BindRequest(r *http.Request, route *middlewa
 	if err := o.bindPassword(fdPassword, fdhkPassword, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -162,7 +168,6 @@ func (o *PostAccountRegisterParams) bindBirthday(rawData []string, hasKey bool, 
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.Birthday = &raw
 
 	return nil
@@ -181,7 +186,6 @@ func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, form
 		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
-
 	o.City = &raw
 
 	if err := o.validateCity(formats); err != nil {
@@ -194,7 +198,7 @@ func (o *PostAccountRegisterParams) bindCity(rawData []string, hasKey bool, form
 // validateCity carries on validations for parameter City
 func (o *PostAccountRegisterParams) validateCity(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("city", "formData", (*o.City), 50); err != nil {
+	if err := validate.MaxLength("city", "formData", *o.City, 50); err != nil {
 		return err
 	}
 
@@ -214,7 +218,6 @@ func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, f
 		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
-
 	o.Country = &raw
 
 	if err := o.validateCountry(formats); err != nil {
@@ -227,7 +230,7 @@ func (o *PostAccountRegisterParams) bindCountry(rawData []string, hasKey bool, f
 // validateCountry carries on validations for parameter Country
 func (o *PostAccountRegisterParams) validateCountry(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("country", "formData", (*o.Country), 50); err != nil {
+	if err := validate.MaxLength("country", "formData", *o.Country, 50); err != nil {
 		return err
 	}
 
@@ -249,7 +252,6 @@ func (o *PostAccountRegisterParams) bindEmail(rawData []string, hasKey bool, for
 	if err := validate.RequiredString("email", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Email = raw
 
 	if err := o.validateEmail(formats); err != nil {
@@ -286,7 +288,6 @@ func (o *PostAccountRegisterParams) bindGender(rawData []string, hasKey bool, fo
 		// Default values have been previously initialized by NewPostAccountRegisterParams()
 		return nil
 	}
-
 	o.Gender = &raw
 
 	if err := o.validateGender(formats); err != nil {
@@ -321,7 +322,6 @@ func (o *PostAccountRegisterParams) bindName(rawData []string, hasKey bool, form
 	if err := validate.RequiredString("name", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -364,7 +364,6 @@ func (o *PostAccountRegisterParams) bindPassword(rawData []string, hasKey bool, 
 	if err := validate.RequiredString("password", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Password = raw
 
 	if err := o.validatePassword(formats); err != nil {

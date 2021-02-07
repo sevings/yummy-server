@@ -104,7 +104,6 @@ func (o *GetMeFavoritesParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -120,11 +119,11 @@ func (o *GetMeFavoritesParams) bindAfter(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeFavoritesParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -139,11 +138,11 @@ func (o *GetMeFavoritesParams) bindBefore(rawData []string, hasKey bool, formats
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeFavoritesParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -158,6 +157,7 @@ func (o *GetMeFavoritesParams) bindLimit(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeFavoritesParams()
 		return nil
@@ -179,11 +179,11 @@ func (o *GetMeFavoritesParams) bindLimit(rawData []string, hasKey bool, formats 
 // validateLimit carries on validations for parameter Limit
 func (o *GetMeFavoritesParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -199,11 +199,11 @@ func (o *GetMeFavoritesParams) bindQuery(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeFavoritesParams()
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -216,7 +216,7 @@ func (o *GetMeFavoritesParams) bindQuery(rawData []string, hasKey bool, formats 
 // validateQuery carries on validations for parameter Query
 func (o *GetMeFavoritesParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 100); err != nil {
 		return err
 	}
 

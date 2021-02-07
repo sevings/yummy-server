@@ -31,7 +31,7 @@ func NewGetEntriesIDComments(ctx *middleware.Context, handler GetEntriesIDCommen
 	return &GetEntriesIDComments{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesIDComments swagger:route GET /entries/{id}/comments comments getEntriesIdComments
+/* GetEntriesIDComments swagger:route GET /entries/{id}/comments comments getEntriesIdComments
 
 GetEntriesIDComments get entries ID comments API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesIDComments) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetEntriesIDCommentsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesIDComments) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

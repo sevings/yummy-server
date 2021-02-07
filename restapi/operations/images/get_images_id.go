@@ -31,7 +31,7 @@ func NewGetImagesID(ctx *middleware.Context, handler GetImagesIDHandler) *GetIma
 	return &GetImagesID{Context: ctx, Handler: handler}
 }
 
-/*GetImagesID swagger:route GET /images/{id} images getImagesId
+/* GetImagesID swagger:route GET /images/{id} images getImagesId
 
 GetImagesID get images ID API
 
@@ -47,7 +47,6 @@ func (o *GetImagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetImagesIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetImagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

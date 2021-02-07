@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetEntriesRandomParams creates a new GetEntriesRandomParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetEntriesRandomParams() GetEntriesRandomParams {
 
 	return GetEntriesRandomParams{}

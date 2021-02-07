@@ -31,7 +31,7 @@ func NewGetMessagesID(ctx *middleware.Context, handler GetMessagesIDHandler) *Ge
 	return &GetMessagesID{Context: ctx, Handler: handler}
 }
 
-/*GetMessagesID swagger:route GET /messages/{id} chats getMessagesId
+/* GetMessagesID swagger:route GET /messages/{id} chats getMessagesId
 
 GetMessagesID get messages ID API
 
@@ -47,7 +47,6 @@ func (o *GetMessagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMessagesIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMessagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -13,7 +13,8 @@ import (
 )
 
 // NewPutMeOnlineParams creates a new PutMeOnlineParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPutMeOnlineParams() PutMeOnlineParams {
 
 	return PutMeOnlineParams{}

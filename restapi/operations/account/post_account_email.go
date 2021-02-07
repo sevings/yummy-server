@@ -31,7 +31,7 @@ func NewPostAccountEmail(ctx *middleware.Context, handler PostAccountEmailHandle
 	return &PostAccountEmail{Context: ctx, Handler: handler}
 }
 
-/*PostAccountEmail swagger:route POST /account/email account postAccountEmail
+/* PostAccountEmail swagger:route POST /account/email account postAccountEmail
 
 set new email
 
@@ -47,7 +47,6 @@ func (o *PostAccountEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPostAccountEmailParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostAccountEmail) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

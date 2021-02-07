@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -200,7 +201,7 @@ func (m *Profile) validateCity(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MaxLength("city", "body", string(m.City), 50); err != nil {
+	if err := validate.MaxLength("city", "body", m.City, 50); err != nil {
 		return err
 	}
 
@@ -213,7 +214,7 @@ func (m *Profile) validateCountry(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MaxLength("country", "body", string(m.Country), 50); err != nil {
+	if err := validate.MaxLength("country", "body", m.Country, 50); err != nil {
 		return err
 	}
 
@@ -264,6 +265,75 @@ func (m *Profile) validateRelations(formats strfmt.Registry) error {
 
 	if m.Relations != nil {
 		if err := m.Relations.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("relations")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this profile based on the context it is used
+func (m *Profile) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with Friend
+	if err := m.Friend.ContextValidate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateDesign(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateInvitedBy(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRelations(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Profile) contextValidateDesign(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Design != nil {
+		if err := m.Design.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("design")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Profile) contextValidateInvitedBy(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.InvitedBy != nil {
+		if err := m.InvitedBy.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("invitedBy")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Profile) contextValidateRelations(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Relations != nil {
+		if err := m.Relations.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("relations")
 			}
@@ -366,7 +436,6 @@ func (m *ProfileAO1Relations) validateFromMeEnum(path, location string, value st
 }
 
 func (m *ProfileAO1Relations) validateFromMe(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.FromMe) { // not required
 		return nil
 	}
@@ -418,7 +487,6 @@ func (m *ProfileAO1Relations) validateToMeEnum(path, location string, value stri
 }
 
 func (m *ProfileAO1Relations) validateToMe(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ToMe) { // not required
 		return nil
 	}
@@ -428,6 +496,11 @@ func (m *ProfileAO1Relations) validateToMe(formats strfmt.Registry) error {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this profile a o1 relations based on context it is used
+func (m *ProfileAO1Relations) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

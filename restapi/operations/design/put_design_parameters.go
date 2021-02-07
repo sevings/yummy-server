@@ -16,6 +16,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PutDesignMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutDesignMaxParseMemory int64 = 32 << 20
+
 // NewPutDesignParams creates a new PutDesignParams object
 // with the default values initialized.
 func NewPutDesignParams() PutDesignParams {
@@ -89,7 +96,7 @@ func (o *PutDesignParams) BindRequest(r *http.Request, route *middleware.Matched
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutDesignMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -127,7 +134,6 @@ func (o *PutDesignParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindTextColor(fdTextColor, fdhkTextColor, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -147,7 +153,6 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
-
 	o.BackgroundColor = &raw
 
 	if err := o.validateBackgroundColor(formats); err != nil {
@@ -160,7 +165,7 @@ func (o *PutDesignParams) bindBackgroundColor(rawData []string, hasKey bool, for
 // validateBackgroundColor carries on validations for parameter BackgroundColor
 func (o *PutDesignParams) validateBackgroundColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("backgroundColor", "formData", (*o.BackgroundColor), `^#[0-9a-fA-F]{6}$`); err != nil {
+	if err := validate.Pattern("backgroundColor", "formData", *o.BackgroundColor, `^#[0-9a-fA-F]{6}$`); err != nil {
 		return err
 	}
 
@@ -180,7 +185,6 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
-
 	o.CSS = &raw
 
 	if err := o.validateCSS(formats); err != nil {
@@ -193,7 +197,7 @@ func (o *PutDesignParams) bindCSS(rawData []string, hasKey bool, formats strfmt.
 // validateCSS carries on validations for parameter CSS
 func (o *PutDesignParams) validateCSS(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("css", "formData", (*o.CSS), 10000); err != nil {
+	if err := validate.MaxLength("css", "formData", *o.CSS, 10000); err != nil {
 		return err
 	}
 
@@ -212,7 +216,6 @@ func (o *PutDesignParams) bindFontFamily(rawData []string, hasKey bool, formats 
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
-
 	o.FontFamily = &raw
 
 	return nil
@@ -255,7 +258,6 @@ func (o *PutDesignParams) bindTextAlignment(rawData []string, hasKey bool, forma
 	if err := validate.RequiredString("textAlignment", "formData", raw); err != nil {
 		return err
 	}
-
 	o.TextAlignment = raw
 
 	if err := o.validateTextAlignment(formats); err != nil {
@@ -288,7 +290,6 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 		// Default values have been previously initialized by NewPutDesignParams()
 		return nil
 	}
-
 	o.TextColor = &raw
 
 	if err := o.validateTextColor(formats); err != nil {
@@ -301,7 +302,7 @@ func (o *PutDesignParams) bindTextColor(rawData []string, hasKey bool, formats s
 // validateTextColor carries on validations for parameter TextColor
 func (o *PutDesignParams) validateTextColor(formats strfmt.Registry) error {
 
-	if err := validate.Pattern("textColor", "formData", (*o.TextColor), `^#[0-9a-fA-F]{6}$`); err != nil {
+	if err := validate.Pattern("textColor", "formData", *o.TextColor, `^#[0-9a-fA-F]{6}$`); err != nil {
 		return err
 	}
 

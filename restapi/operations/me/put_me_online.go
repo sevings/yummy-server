@@ -6,6 +6,7 @@ package me
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewPutMeOnline(ctx *middleware.Context, handler PutMeOnlineHandler) *PutMeO
 	return &PutMeOnline{Context: ctx, Handler: handler}
 }
 
-/*PutMeOnline swagger:route PUT /me/online me putMeOnline
+/* PutMeOnline swagger:route PUT /me/online me putMeOnline
 
 PutMeOnline put me online API
 
@@ -49,7 +50,6 @@ func (o *PutMeOnline) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPutMeOnlineParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *PutMeOnline) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -88,6 +87,11 @@ type PutMeOnlineOKBody struct {
 
 // Validate validates this put me online o k body
 func (o *PutMeOnlineOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this put me online o k body based on context it is used
+func (o *PutMeOnlineOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

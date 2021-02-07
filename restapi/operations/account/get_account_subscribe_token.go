@@ -6,6 +6,7 @@ package account
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAccountSubscribeToken(ctx *middleware.Context, handler GetAccountSubs
 	return &GetAccountSubscribeToken{Context: ctx, Handler: handler}
 }
 
-/*GetAccountSubscribeToken swagger:route GET /account/subscribe/token account getAccountSubscribeToken
+/* GetAccountSubscribeToken swagger:route GET /account/subscribe/token account getAccountSubscribeToken
 
 GetAccountSubscribeToken get account subscribe token API
 
@@ -49,7 +50,6 @@ func (o *GetAccountSubscribeToken) ServeHTTP(rw http.ResponseWriter, r *http.Req
 		r = rCtx
 	}
 	var Params = NewGetAccountSubscribeTokenParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAccountSubscribeToken) ServeHTTP(rw http.ResponseWriter, r *http.Req
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -85,6 +84,11 @@ type GetAccountSubscribeTokenOKBody struct {
 
 // Validate validates this get account subscribe token o k body
 func (o *GetAccountSubscribeTokenOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get account subscribe token o k body based on context it is used
+func (o *GetAccountSubscribeTokenOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

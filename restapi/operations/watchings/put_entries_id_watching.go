@@ -31,7 +31,7 @@ func NewPutEntriesIDWatching(ctx *middleware.Context, handler PutEntriesIDWatchi
 	return &PutEntriesIDWatching{Context: ctx, Handler: handler}
 }
 
-/*PutEntriesIDWatching swagger:route PUT /entries/{id}/watching watchings putEntriesIdWatching
+/* PutEntriesIDWatching swagger:route PUT /entries/{id}/watching watchings putEntriesIdWatching
 
 PutEntriesIDWatching put entries ID watching API
 
@@ -47,7 +47,6 @@ func (o *PutEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewPutEntriesIDWatchingParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

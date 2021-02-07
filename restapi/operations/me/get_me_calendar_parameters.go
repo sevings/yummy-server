@@ -74,7 +74,6 @@ func (o *GetMeCalendarParams) BindRequest(r *http.Request, route *middleware.Mat
 	if err := o.bindStart(qStart, qhkStart, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -90,6 +89,7 @@ func (o *GetMeCalendarParams) bindEnd(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeCalendarParams()
 		return nil
@@ -113,6 +113,7 @@ func (o *GetMeCalendarParams) bindStart(rawData []string, hasKey bool, formats s
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeCalendarParams()
 		return nil

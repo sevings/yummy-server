@@ -31,7 +31,7 @@ func NewGetEntriesIDWatching(ctx *middleware.Context, handler GetEntriesIDWatchi
 	return &GetEntriesIDWatching{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesIDWatching swagger:route GET /entries/{id}/watching watchings getEntriesIdWatching
+/* GetEntriesIDWatching swagger:route GET /entries/{id}/watching watchings getEntriesIdWatching
 
 GetEntriesIDWatching get entries ID watching API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetEntriesIDWatchingParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesIDWatching) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

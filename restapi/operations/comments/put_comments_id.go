@@ -31,7 +31,7 @@ func NewPutCommentsID(ctx *middleware.Context, handler PutCommentsIDHandler) *Pu
 	return &PutCommentsID{Context: ctx, Handler: handler}
 }
 
-/*PutCommentsID swagger:route PUT /comments/{id} comments putCommentsId
+/* PutCommentsID swagger:route PUT /comments/{id} comments putCommentsId
 
 PutCommentsID put comments ID API
 
@@ -47,7 +47,6 @@ func (o *PutCommentsID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPutCommentsIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutCommentsID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

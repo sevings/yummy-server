@@ -31,7 +31,7 @@ func NewPutAccountSettingsEmail(ctx *middleware.Context, handler PutAccountSetti
 	return &PutAccountSettingsEmail{Context: ctx, Handler: handler}
 }
 
-/*PutAccountSettingsEmail swagger:route PUT /account/settings/email account putAccountSettingsEmail
+/* PutAccountSettingsEmail swagger:route PUT /account/settings/email account putAccountSettingsEmail
 
 PutAccountSettingsEmail put account settings email API
 
@@ -47,7 +47,6 @@ func (o *PutAccountSettingsEmail) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 		r = rCtx
 	}
 	var Params = NewPutAccountSettingsEmailParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutAccountSettingsEmail) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

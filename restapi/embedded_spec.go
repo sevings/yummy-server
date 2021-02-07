@@ -1937,6 +1937,21 @@ func init() {
       "get": {
         "security": [
           {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "read"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
+          {
             "ApiKeyHeader": []
           },
           {
@@ -1969,6 +1984,21 @@ func init() {
       },
       "put": {
         "security": [
+          {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "writeEntries"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
           {
             "ApiKeyHeader": []
           }
@@ -2086,6 +2116,21 @@ func init() {
       },
       "delete": {
         "security": [
+          {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "writeEntries"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
           {
             "ApiKeyHeader": []
           }
@@ -3485,6 +3530,258 @@ func init() {
             "description": "not found",
             "schema": {
               "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/auth": {
+      "get": {
+        "security": [
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "code"
+            ],
+            "type": "string",
+            "name": "response_type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "read",
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "code_challenge",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "S256"
+            ],
+            "type": "string",
+            "name": "code_challenge_method",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "auth code",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_redirect",
+                    "access_denied",
+                    "invalid_request",
+                    "unauthorized_client",
+                    "unsupported_response_type",
+                    "invalid_scope",
+                    "server_error",
+                    "temporarily_unavailable"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_client"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/token": {
+      "post": {
+        "security": [
+          {
+            "NoApiKey": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAth2Code": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "authorization_code",
+              "password",
+              "client_credentials",
+              "refresh_token"
+            ],
+            "type": "string",
+            "name": "grant_type",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "client_id",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "code",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "client_secret",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "code_verifier",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "refresh_token",
+            "in": "formData"
+          },
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "username",
+            "in": "formData"
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access_token": {
+                  "type": "string"
+                },
+                "expires_in": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "refresh_token": {
+                  "type": "string"
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "token_type": {
+                  "type": "string",
+                  "enum": [
+                    "bearer"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_request",
+                    "invalid_grant",
+                    "invalid_scope",
+                    "unauthorized_client",
+                    "unsupported_grant_type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_client"
+                  ]
+                }
+              }
             }
           }
         }
@@ -5336,6 +5633,34 @@ func init() {
       "type": "apiKey",
       "name": "X-User-Key",
       "in": "header"
+    },
+    "OAuth2App": {
+      "type": "oauth2",
+      "flow": "application",
+      "authorizationUrl": "",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "all": "access all data"
+      }
+    },
+    "OAuth2Code": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "/oauth2/auth",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "read": "base read access",
+        "writeEntries": "create and edit tlog entries"
+      }
+    },
+    "OAuth2Password": {
+      "type": "oauth2",
+      "flow": "password",
+      "authorizationUrl": "",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "all": "access all data"
+      }
     }
   }
 }`))
@@ -7446,6 +7771,21 @@ func init() {
       "get": {
         "security": [
           {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "read"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
+          {
             "ApiKeyHeader": []
           },
           {
@@ -7478,6 +7818,21 @@ func init() {
       },
       "put": {
         "security": [
+          {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "writeEntries"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
           {
             "ApiKeyHeader": []
           }
@@ -7595,6 +7950,21 @@ func init() {
       },
       "delete": {
         "security": [
+          {
+            "OAuth2Password": [
+              "all"
+            ]
+          },
+          {
+            "OAuth2Code": [
+              "writeEntries"
+            ]
+          },
+          {
+            "Oauth2App": [
+              "all"
+            ]
+          },
           {
             "ApiKeyHeader": []
           }
@@ -9193,6 +9563,258 @@ func init() {
             "description": "not found",
             "schema": {
               "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/auth": {
+      "get": {
+        "security": [
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "code"
+            ],
+            "type": "string",
+            "name": "response_type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "read",
+            "name": "scope",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "state",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "code_challenge",
+            "in": "query"
+          },
+          {
+            "enum": [
+              "S256"
+            ],
+            "type": "string",
+            "name": "code_challenge_method",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "auth code",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "state": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_redirect",
+                    "access_denied",
+                    "invalid_request",
+                    "unauthorized_client",
+                    "unsupported_response_type",
+                    "invalid_scope",
+                    "server_error",
+                    "temporarily_unavailable"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_client"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/token": {
+      "post": {
+        "security": [
+          {
+            "NoApiKey": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAth2Code": []
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "account"
+        ],
+        "parameters": [
+          {
+            "enum": [
+              "authorization_code",
+              "password",
+              "client_credentials",
+              "refresh_token"
+            ],
+            "type": "string",
+            "name": "grant_type",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "client_id",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "code",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "client_secret",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "code_verifier",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "name": "refresh_token",
+            "in": "formData"
+          },
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "username",
+            "in": "formData"
+          },
+          {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string",
+            "name": "password",
+            "in": "formData"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authorized",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access_token": {
+                  "type": "string"
+                },
+                "expires_in": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "refresh_token": {
+                  "type": "string"
+                },
+                "scope": {
+                  "type": "string"
+                },
+                "token_type": {
+                  "type": "string",
+                  "enum": [
+                    "bearer"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_request",
+                    "invalid_grant",
+                    "invalid_scope",
+                    "unauthorized_client",
+                    "unsupported_grant_type"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "enum": [
+                    "invalid_client"
+                  ]
+                }
+              }
             }
           }
         }
@@ -11404,6 +12026,34 @@ func init() {
       "type": "apiKey",
       "name": "X-User-Key",
       "in": "header"
+    },
+    "OAuth2App": {
+      "type": "oauth2",
+      "flow": "application",
+      "authorizationUrl": "",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "all": "access all data"
+      }
+    },
+    "OAuth2Code": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "/oauth2/auth",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "read": "base read access",
+        "writeEntries": "create and edit tlog entries"
+      }
+    },
+    "OAuth2Password": {
+      "type": "oauth2",
+      "flow": "password",
+      "authorizationUrl": "",
+      "tokenUrl": "/oauth2/token",
+      "scopes": {
+        "all": "access all data"
+      }
     }
   }
 }`))

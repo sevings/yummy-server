@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -283,8 +284,59 @@ func (m *Friend) validateTitle(formats strfmt.Registry) error {
 		return nil
 	}
 
-	if err := validate.MaxLength("title", "body", string(m.Title), 260); err != nil {
+	if err := validate.MaxLength("title", "body", m.Title, 260); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this friend based on the context it is used
+func (m *Friend) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	// validation for a type composition with User
+	if err := m.User.ContextValidate(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCounts(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateCover(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Friend) contextValidateCounts(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Counts != nil {
+		if err := m.Counts.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("counts")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Friend) contextValidateCover(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Cover != nil {
+		if err := m.Cover.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("cover")
+			}
+			return err
+		}
 	}
 
 	return nil
@@ -343,6 +395,11 @@ type FriendAO1Counts struct {
 
 // Validate validates this friend a o1 counts
 func (m *FriendAO1Counts) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this friend a o1 counts based on context it is used
+func (m *FriendAO1Counts) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

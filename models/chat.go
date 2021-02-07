@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -55,7 +57,6 @@ func (m *Chat) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Chat) validateLastMessage(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.LastMessage) { // not required
 		return nil
 	}
@@ -73,7 +74,6 @@ func (m *Chat) validateLastMessage(formats strfmt.Registry) error {
 }
 
 func (m *Chat) validatePartner(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Partner) { // not required
 		return nil
 	}
@@ -91,13 +91,76 @@ func (m *Chat) validatePartner(formats strfmt.Registry) error {
 }
 
 func (m *Chat) validateRights(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
 
 	if m.Rights != nil {
 		if err := m.Rights.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this chat based on the context it is used
+func (m *Chat) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateLastMessage(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidatePartner(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Chat) contextValidateLastMessage(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.LastMessage != nil {
+		if err := m.LastMessage.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("lastMessage")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Chat) contextValidatePartner(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Partner != nil {
+		if err := m.Partner.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("partner")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Chat) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
 			if ve, ok := err.(*errors.Validation); ok {
 				return ve.ValidateName("rights")
 			}
@@ -137,6 +200,11 @@ type ChatRights struct {
 
 // Validate validates this chat rights
 func (m *ChatRights) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this chat rights based on context it is used
+func (m *ChatRights) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

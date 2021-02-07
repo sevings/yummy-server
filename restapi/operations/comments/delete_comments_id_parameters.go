@@ -16,7 +16,8 @@ import (
 )
 
 // NewDeleteCommentsIDParams creates a new DeleteCommentsIDParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteCommentsIDParams() DeleteCommentsIDParams {
 
 	return DeleteCommentsIDParams{}
@@ -52,7 +53,6 @@ func (o *DeleteCommentsIDParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,7 @@ func (o *DeleteCommentsIDParams) bindID(rawData []string, hasKey bool, formats s
 // validateID carries on validations for parameter ID
 func (o *DeleteCommentsIDParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

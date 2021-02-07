@@ -31,7 +31,7 @@ func NewGetMe(ctx *middleware.Context, handler GetMeHandler) *GetMe {
 	return &GetMe{Context: ctx, Handler: handler}
 }
 
-/*GetMe swagger:route GET /me me getMe
+/* GetMe swagger:route GET /me me getMe
 
 GetMe get me API
 
@@ -47,7 +47,6 @@ func (o *GetMe) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMe) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAccountInvitesParams creates a new GetAccountInvitesParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountInvitesParams() GetAccountInvitesParams {
 
 	return GetAccountInvitesParams{}

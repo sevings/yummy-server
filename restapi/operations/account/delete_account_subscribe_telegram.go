@@ -31,7 +31,7 @@ func NewDeleteAccountSubscribeTelegram(ctx *middleware.Context, handler DeleteAc
 	return &DeleteAccountSubscribeTelegram{Context: ctx, Handler: handler}
 }
 
-/*DeleteAccountSubscribeTelegram swagger:route DELETE /account/subscribe/telegram account deleteAccountSubscribeTelegram
+/* DeleteAccountSubscribeTelegram swagger:route DELETE /account/subscribe/telegram account deleteAccountSubscribeTelegram
 
 DeleteAccountSubscribeTelegram delete account subscribe telegram API
 
@@ -47,7 +47,6 @@ func (o *DeleteAccountSubscribeTelegram) ServeHTTP(rw http.ResponseWriter, r *ht
 		r = rCtx
 	}
 	var Params = NewDeleteAccountSubscribeTelegramParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteAccountSubscribeTelegram) ServeHTTP(rw http.ResponseWriter, r *ht
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

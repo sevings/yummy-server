@@ -15,8 +15,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostAccountPasswordMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostAccountPasswordMaxParseMemory int64 = 32 << 20
+
 // NewPostAccountPasswordParams creates a new PostAccountPasswordParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPostAccountPasswordParams() PostAccountPasswordParams {
 
 	return PostAccountPasswordParams{}
@@ -56,7 +64,7 @@ func (o *PostAccountPasswordParams) BindRequest(r *http.Request, route *middlewa
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostAccountPasswordMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -74,7 +82,6 @@ func (o *PostAccountPasswordParams) BindRequest(r *http.Request, route *middlewa
 	if err := o.bindOldPassword(fdOldPassword, fdhkOldPassword, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -96,7 +103,6 @@ func (o *PostAccountPasswordParams) bindNewPassword(rawData []string, hasKey boo
 	if err := validate.RequiredString("new_password", "formData", raw); err != nil {
 		return err
 	}
-
 	o.NewPassword = raw
 
 	if err := o.validateNewPassword(formats); err != nil {
@@ -135,7 +141,6 @@ func (o *PostAccountPasswordParams) bindOldPassword(rawData []string, hasKey boo
 	if err := validate.RequiredString("old_password", "formData", raw); err != nil {
 		return err
 	}
-
 	o.OldPassword = raw
 
 	if err := o.validateOldPassword(formats); err != nil {

@@ -31,7 +31,7 @@ func NewDeleteEntriesIDVote(ctx *middleware.Context, handler DeleteEntriesIDVote
 	return &DeleteEntriesIDVote{Context: ctx, Handler: handler}
 }
 
-/*DeleteEntriesIDVote swagger:route DELETE /entries/{id}/vote votes deleteEntriesIdVote
+/* DeleteEntriesIDVote swagger:route DELETE /entries/{id}/vote votes deleteEntriesIdVote
 
 DeleteEntriesIDVote delete entries ID vote API
 
@@ -47,7 +47,6 @@ func (o *DeleteEntriesIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 		r = rCtx
 	}
 	var Params = NewDeleteEntriesIDVoteParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteEntriesIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request)
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

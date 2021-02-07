@@ -31,7 +31,7 @@ func NewGetMeHidden(ctx *middleware.Context, handler GetMeHiddenHandler) *GetMeH
 	return &GetMeHidden{Context: ctx, Handler: handler}
 }
 
-/*GetMeHidden swagger:route GET /me/hidden me getMeHidden
+/* GetMeHidden swagger:route GET /me/hidden me getMeHidden
 
 GetMeHidden get me hidden API
 
@@ -47,7 +47,6 @@ func (o *GetMeHidden) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeHiddenParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeHidden) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

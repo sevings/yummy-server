@@ -16,7 +16,8 @@ import (
 )
 
 // NewPutRelationsToNameParams creates a new PutRelationsToNameParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewPutRelationsToNameParams() PutRelationsToNameParams {
 
 	return PutRelationsToNameParams{}
@@ -66,7 +67,6 @@ func (o *PutRelationsToNameParams) BindRequest(r *http.Request, route *middlewar
 	if err := o.bindR(qR, qhkR, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -82,7 +82,6 @@ func (o *PutRelationsToNameParams) bindName(rawData []string, hasKey bool, forma
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -122,10 +121,10 @@ func (o *PutRelationsToNameParams) bindR(rawData []string, hasKey bool, formats 
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("r", "query", raw); err != nil {
 		return err
 	}
-
 	o.R = raw
 
 	if err := o.validateR(formats); err != nil {

@@ -236,6 +236,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		NotificationsGetNotificationsIDHandler: notifications.GetNotificationsIDHandlerFunc(func(params notifications.GetNotificationsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation notifications.GetNotificationsID has not yet been implemented")
 		}),
+		AccountGetOauth2AuthHandler: account.GetOauth2AuthHandlerFunc(func(params account.GetOauth2AuthParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation account.GetOauth2Auth has not yet been implemented")
+		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation relations.GetRelationsFromName has not yet been implemented")
 		}),
@@ -323,6 +326,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation me.PostMeTlog has not yet been implemented")
 		}),
+		AccountPostOauth2TokenHandler: account.PostOauth2TokenHandlerFunc(func(params account.PostOauth2TokenParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation account.PostOauth2Token has not yet been implemented")
+		}),
 		RelationsPostRelationsInvitedNameHandler: relations.PostRelationsInvitedNameHandlerFunc(func(params relations.PostRelationsInvitedNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation relations.PostRelationsInvitedName has not yet been implemented")
 		}),
@@ -389,6 +395,12 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		NoAPIKeyAuth: func(token string) (*models.UserID, error) {
 			return nil, errors.NotImplemented("api key auth (NoApiKey) X-User-Key from header param [X-User-Key] has not yet been implemented")
 		},
+		OAuth2CodeAuth: func(token string, scopes []string) (*models.UserID, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (OAuth2Code) has not yet been implemented")
+		},
+		OAuth2PasswordAuth: func(token string, scopes []string) (*models.UserID, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (OAuth2Password) has not yet been implemented")
+		},
 		// default authorizer is authorized meaning no requests are blocked
 		APIAuthorizer: security.Authorized(),
 	}
@@ -410,9 +422,11 @@ type MindwellAPI struct {
 	// BasicAuthenticator generates a runtime.Authenticator from the supplied basic auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BasicAuthenticator func(security.UserPassAuthentication) runtime.Authenticator
+
 	// APIKeyAuthenticator generates a runtime.Authenticator from the supplied token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	APIKeyAuthenticator func(string, string, security.TokenAuthentication) runtime.Authenticator
+
 	// BearerAuthenticator generates a runtime.Authenticator from the supplied bearer token auth function.
 	// It has a default implementation in the security package, however you can replace it for your particular usage.
 	BearerAuthenticator func(string, security.ScopedTokenAuthentication) runtime.Authenticator
@@ -435,6 +449,14 @@ type MindwellAPI struct {
 	// NoAPIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-User-Key provided in the header
 	NoAPIKeyAuth func(string) (*models.UserID, error)
+
+	// OAuth2CodeAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	OAuth2CodeAuth func(string, []string) (*models.UserID, error)
+
+	// OAuth2PasswordAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	OAuth2PasswordAuth func(string, []string) (*models.UserID, error)
 
 	// APIAuthorizer provides access control (ACL/RBAC/ABAC) by providing access to the request and authenticated principal
 	APIAuthorizer runtime.Authorizer
@@ -557,6 +579,8 @@ type MindwellAPI struct {
 	NotificationsGetNotificationsHandler notifications.GetNotificationsHandler
 	// NotificationsGetNotificationsIDHandler sets the operation handler for the get notifications ID operation
 	NotificationsGetNotificationsIDHandler notifications.GetNotificationsIDHandler
+	// AccountGetOauth2AuthHandler sets the operation handler for the get oauth2 auth operation
+	AccountGetOauth2AuthHandler account.GetOauth2AuthHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
@@ -615,6 +639,8 @@ type MindwellAPI struct {
 	ImagesPostImagesHandler images.PostImagesHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
 	MePostMeTlogHandler me.PostMeTlogHandler
+	// AccountPostOauth2TokenHandler sets the operation handler for the post oauth2 token operation
+	AccountPostOauth2TokenHandler account.PostOauth2TokenHandler
 	// RelationsPostRelationsInvitedNameHandler sets the operation handler for the post relations invited name operation
 	RelationsPostRelationsInvitedNameHandler relations.PostRelationsInvitedNameHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
@@ -653,6 +679,7 @@ type MindwellAPI struct {
 	RelationsPutRelationsFromNameHandler relations.PutRelationsFromNameHandler
 	// RelationsPutRelationsToNameHandler sets the operation handler for the put relations to name operation
 	RelationsPutRelationsToNameHandler relations.PutRelationsToNameHandler
+
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -737,6 +764,12 @@ func (o *MindwellAPI) Validate() error {
 	}
 	if o.NoAPIKeyAuth == nil {
 		unregistered = append(unregistered, "XUserKeyAuth")
+	}
+	if o.OAuth2CodeAuth == nil {
+		unregistered = append(unregistered, "OAuth2CodeAuth")
+	}
+	if o.OAuth2PasswordAuth == nil {
+		unregistered = append(unregistered, "OAuth2PasswordAuth")
 	}
 
 	if o.AccountDeleteAccountSubscribeTelegramHandler == nil {
@@ -916,6 +949,9 @@ func (o *MindwellAPI) Validate() error {
 	if o.NotificationsGetNotificationsIDHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsIDHandler")
 	}
+	if o.AccountGetOauth2AuthHandler == nil {
+		unregistered = append(unregistered, "account.GetOauth2AuthHandler")
+	}
 	if o.RelationsGetRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
@@ -1003,6 +1039,9 @@ func (o *MindwellAPI) Validate() error {
 	if o.MePostMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.PostMeTlogHandler")
 	}
+	if o.AccountPostOauth2TokenHandler == nil {
+		unregistered = append(unregistered, "account.PostOauth2TokenHandler")
+	}
 	if o.RelationsPostRelationsInvitedNameHandler == nil {
 		unregistered = append(unregistered, "relations.PostRelationsInvitedNameHandler")
 	}
@@ -1088,6 +1127,16 @@ func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.NoAPIKeyAuth(token)
+			})
+
+		case "OAuth2Code":
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+				return o.OAuth2CodeAuth(token, scopes)
+			})
+
+		case "OAuth2Password":
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+				return o.OAuth2PasswordAuth(token, scopes)
 			})
 
 		}
@@ -1406,6 +1455,10 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/oauth2/auth"] = account.NewGetOauth2Auth(o.context, o.AccountGetOauth2AuthHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1519,6 +1572,10 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/me/tlog"] = me.NewPostMeTlog(o.context, o.MePostMeTlogHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/oauth2/token"] = account.NewPostOauth2Token(o.context, o.AccountPostOauth2TokenHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

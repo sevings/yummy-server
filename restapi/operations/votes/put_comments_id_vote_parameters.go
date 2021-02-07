@@ -73,7 +73,6 @@ func (o *PutCommentsIDVoteParams) BindRequest(r *http.Request, route *middleware
 	if err := o.bindPositive(qPositive, qhkPositive, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -106,7 +105,7 @@ func (o *PutCommentsIDVoteParams) bindID(rawData []string, hasKey bool, formats 
 // validateID carries on validations for parameter ID
 func (o *PutCommentsIDVoteParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -122,6 +121,7 @@ func (o *PutCommentsIDVoteParams) bindPositive(rawData []string, hasKey bool, fo
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewPutCommentsIDVoteParams()
 		return nil

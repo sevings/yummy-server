@@ -15,6 +15,13 @@ import (
 	"github.com/go-openapi/swag"
 )
 
+// PutAccountSettingsEmailMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PutAccountSettingsEmailMaxParseMemory int64 = 32 << 20
+
 // NewPutAccountSettingsEmailParams creates a new PutAccountSettingsEmailParams object
 // with the default values initialized.
 func NewPutAccountSettingsEmailParams() PutAccountSettingsEmailParams {
@@ -71,7 +78,7 @@ func (o *PutAccountSettingsEmailParams) BindRequest(r *http.Request, route *midd
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PutAccountSettingsEmailMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -94,7 +101,6 @@ func (o *PutAccountSettingsEmailParams) BindRequest(r *http.Request, route *midd
 	if err := o.bindInvites(fdInvites, fdhkInvites, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}

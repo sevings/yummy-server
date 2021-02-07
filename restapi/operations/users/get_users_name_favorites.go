@@ -31,7 +31,7 @@ func NewGetUsersNameFavorites(ctx *middleware.Context, handler GetUsersNameFavor
 	return &GetUsersNameFavorites{Context: ctx, Handler: handler}
 }
 
-/*GetUsersNameFavorites swagger:route GET /users/{name}/favorites users getUsersNameFavorites
+/* GetUsersNameFavorites swagger:route GET /users/{name}/favorites users getUsersNameFavorites
 
 GetUsersNameFavorites get users name favorites API
 
@@ -47,7 +47,6 @@ func (o *GetUsersNameFavorites) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		r = rCtx
 	}
 	var Params = NewGetUsersNameFavoritesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetUsersNameFavorites) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

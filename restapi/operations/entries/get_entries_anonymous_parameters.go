@@ -118,7 +118,6 @@ func (o *GetEntriesAnonymousParams) BindRequest(r *http.Request, route *middlewa
 	if err := o.bindTag(qTag, qhkTag, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -134,11 +133,11 @@ func (o *GetEntriesAnonymousParams) bindAfter(rawData []string, hasKey bool, for
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -153,11 +152,11 @@ func (o *GetEntriesAnonymousParams) bindBefore(rawData []string, hasKey bool, fo
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -172,6 +171,7 @@ func (o *GetEntriesAnonymousParams) bindLimit(rawData []string, hasKey bool, for
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
@@ -193,11 +193,11 @@ func (o *GetEntriesAnonymousParams) bindLimit(rawData []string, hasKey bool, for
 // validateLimit carries on validations for parameter Limit
 func (o *GetEntriesAnonymousParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -213,11 +213,11 @@ func (o *GetEntriesAnonymousParams) bindQuery(rawData []string, hasKey bool, for
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -230,7 +230,7 @@ func (o *GetEntriesAnonymousParams) bindQuery(rawData []string, hasKey bool, for
 // validateQuery carries on validations for parameter Query
 func (o *GetEntriesAnonymousParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 100); err != nil {
 		return err
 	}
 
@@ -246,11 +246,11 @@ func (o *GetEntriesAnonymousParams) bindTag(rawData []string, hasKey bool, forma
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesAnonymousParams()
 		return nil
 	}
-
 	o.Tag = &raw
 
 	if err := o.validateTag(formats); err != nil {
@@ -263,7 +263,7 @@ func (o *GetEntriesAnonymousParams) bindTag(rawData []string, hasKey bool, forma
 // validateTag carries on validations for parameter Tag
 func (o *GetEntriesAnonymousParams) validateTag(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {
+	if err := validate.MaxLength("tag", "query", *o.Tag, 50); err != nil {
 		return err
 	}
 

@@ -31,7 +31,7 @@ func NewGetUsersNameCalendar(ctx *middleware.Context, handler GetUsersNameCalend
 	return &GetUsersNameCalendar{Context: ctx, Handler: handler}
 }
 
-/*GetUsersNameCalendar swagger:route GET /users/{name}/calendar users getUsersNameCalendar
+/* GetUsersNameCalendar swagger:route GET /users/{name}/calendar users getUsersNameCalendar
 
 GetUsersNameCalendar get users name calendar API
 
@@ -47,7 +47,6 @@ func (o *GetUsersNameCalendar) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetUsersNameCalendarParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetUsersNameCalendar) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

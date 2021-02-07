@@ -118,7 +118,6 @@ func (o *GetUsersNameFavoritesParams) BindRequest(r *http.Request, route *middle
 	if err := o.bindQuery(qQuery, qhkQuery, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -134,11 +133,11 @@ func (o *GetUsersNameFavoritesParams) bindAfter(rawData []string, hasKey bool, f
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -153,11 +152,11 @@ func (o *GetUsersNameFavoritesParams) bindBefore(rawData []string, hasKey bool, 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -172,6 +171,7 @@ func (o *GetUsersNameFavoritesParams) bindLimit(rawData []string, hasKey bool, f
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
@@ -193,11 +193,11 @@ func (o *GetUsersNameFavoritesParams) bindLimit(rawData []string, hasKey bool, f
 // validateLimit carries on validations for parameter Limit
 func (o *GetUsersNameFavoritesParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -213,7 +213,6 @@ func (o *GetUsersNameFavoritesParams) bindName(rawData []string, hasKey bool, fo
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -250,11 +249,11 @@ func (o *GetUsersNameFavoritesParams) bindQuery(rawData []string, hasKey bool, f
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameFavoritesParams()
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -267,7 +266,7 @@ func (o *GetUsersNameFavoritesParams) bindQuery(rawData []string, hasKey bool, f
 // validateQuery carries on validations for parameter Query
 func (o *GetUsersNameFavoritesParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 100); err != nil {
 		return err
 	}
 

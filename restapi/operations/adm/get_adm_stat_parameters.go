@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAdmStatParams creates a new GetAdmStatParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAdmStatParams() GetAdmStatParams {
 
 	return GetAdmStatParams{}

@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 
@@ -16,6 +17,7 @@ import (
 )
 
 // Entry entry
+// Example: {"commentCount":0,"content":"\u003cp\u003esome text with \u003cb\u003ehtml\u003c/b\u003e tags\u003c/p\u003e","createdAt":1531029717.333,"editContent":"some text with *html* tags","hasCut":false,"id":152,"inLive":true,"isFavorited":false,"isVotable":true,"isWatching":true,"privacy":"all","rating":-3,"rights":{"comment":true,"delete":false,"edit":false,"vote":true},"title":"example title","wordCount":5}
 //
 // swagger:model Entry
 type Entry struct {
@@ -129,7 +131,6 @@ func (m *Entry) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateAuthor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Author) { // not required
 		return nil
 	}
@@ -147,7 +148,6 @@ func (m *Entry) validateAuthor(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateComments(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Comments) { // not required
 		return nil
 	}
@@ -165,12 +165,11 @@ func (m *Entry) validateComments(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateID(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -178,7 +177,6 @@ func (m *Entry) validateID(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateImages(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Images) { // not required
 		return nil
 	}
@@ -238,7 +236,6 @@ func (m *Entry) validatePrivacyEnum(path, location string, value string) error {
 }
 
 func (m *Entry) validatePrivacy(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Privacy) { // not required
 		return nil
 	}
@@ -252,7 +249,6 @@ func (m *Entry) validatePrivacy(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateRating(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rating) { // not required
 		return nil
 	}
@@ -270,7 +266,6 @@ func (m *Entry) validateRating(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateRights(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Rights) { // not required
 		return nil
 	}
@@ -288,7 +283,6 @@ func (m *Entry) validateRights(formats strfmt.Registry) error {
 }
 
 func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.VisibleFor) { // not required
 		return nil
 	}
@@ -300,6 +294,132 @@ func (m *Entry) validateVisibleFor(formats strfmt.Registry) error {
 
 		if m.VisibleFor[i] != nil {
 			if err := m.VisibleFor[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("visibleFor" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this entry based on the context it is used
+func (m *Entry) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAuthor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateComments(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateImages(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRating(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateRights(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateVisibleFor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Entry) contextValidateAuthor(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Author != nil {
+		if err := m.Author.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("author")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Entry) contextValidateComments(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Comments != nil {
+		if err := m.Comments.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("comments")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Entry) contextValidateImages(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Images); i++ {
+
+		if m.Images[i] != nil {
+			if err := m.Images[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("images" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func (m *Entry) contextValidateRating(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rating != nil {
+		if err := m.Rating.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rating")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Entry) contextValidateRights(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Rights != nil {
+		if err := m.Rights.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("rights")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Entry) contextValidateVisibleFor(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.VisibleFor); i++ {
+
+		if m.VisibleFor[i] != nil {
+			if err := m.VisibleFor[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("visibleFor" + "." + strconv.Itoa(i))
 				}
@@ -353,6 +473,11 @@ type EntryRights struct {
 
 // Validate validates this entry rights
 func (m *EntryRights) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this entry rights based on context it is used
+func (m *EntryRights) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

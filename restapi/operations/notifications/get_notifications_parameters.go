@@ -103,7 +103,6 @@ func (o *GetNotificationsParams) BindRequest(r *http.Request, route *middleware.
 	if err := o.bindUnread(qUnread, qhkUnread, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -119,11 +118,11 @@ func (o *GetNotificationsParams) bindAfter(rawData []string, hasKey bool, format
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetNotificationsParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -138,11 +137,11 @@ func (o *GetNotificationsParams) bindBefore(rawData []string, hasKey bool, forma
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetNotificationsParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -157,6 +156,7 @@ func (o *GetNotificationsParams) bindLimit(rawData []string, hasKey bool, format
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetNotificationsParams()
 		return nil
@@ -178,11 +178,11 @@ func (o *GetNotificationsParams) bindLimit(rawData []string, hasKey bool, format
 // validateLimit carries on validations for parameter Limit
 func (o *GetNotificationsParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -198,6 +198,7 @@ func (o *GetNotificationsParams) bindUnread(rawData []string, hasKey bool, forma
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetNotificationsParams()
 		return nil

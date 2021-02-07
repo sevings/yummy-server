@@ -6,6 +6,7 @@ package account
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAccountInvites(ctx *middleware.Context, handler GetAccountInvitesHand
 	return &GetAccountInvites{Context: ctx, Handler: handler}
 }
 
-/*GetAccountInvites swagger:route GET /account/invites account getAccountInvites
+/* GetAccountInvites swagger:route GET /account/invites account getAccountInvites
 
 GetAccountInvites get account invites API
 
@@ -49,7 +50,6 @@ func (o *GetAccountInvites) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetAccountInvitesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAccountInvites) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -85,6 +84,11 @@ type GetAccountInvitesOKBody struct {
 
 // Validate validates this get account invites o k body
 func (o *GetAccountInvitesOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get account invites o k body based on context it is used
+func (o *GetAccountInvitesOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

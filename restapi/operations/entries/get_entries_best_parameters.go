@@ -105,7 +105,6 @@ func (o *GetEntriesBestParams) BindRequest(r *http.Request, route *middleware.Ma
 	if err := o.bindTag(qTag, qhkTag, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -121,11 +120,11 @@ func (o *GetEntriesBestParams) bindCategory(rawData []string, hasKey bool, forma
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesBestParams()
 		return nil
 	}
-
 	o.Category = &raw
 
 	if err := o.validateCategory(formats); err != nil {
@@ -154,6 +153,7 @@ func (o *GetEntriesBestParams) bindLimit(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesBestParams()
 		return nil
@@ -175,11 +175,11 @@ func (o *GetEntriesBestParams) bindLimit(rawData []string, hasKey bool, formats 
 // validateLimit carries on validations for parameter Limit
 func (o *GetEntriesBestParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 
@@ -195,11 +195,11 @@ func (o *GetEntriesBestParams) bindQuery(rawData []string, hasKey bool, formats 
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesBestParams()
 		return nil
 	}
-
 	o.Query = &raw
 
 	if err := o.validateQuery(formats); err != nil {
@@ -212,7 +212,7 @@ func (o *GetEntriesBestParams) bindQuery(rawData []string, hasKey bool, formats 
 // validateQuery carries on validations for parameter Query
 func (o *GetEntriesBestParams) validateQuery(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("query", "query", (*o.Query), 100); err != nil {
+	if err := validate.MaxLength("query", "query", *o.Query, 100); err != nil {
 		return err
 	}
 
@@ -228,11 +228,11 @@ func (o *GetEntriesBestParams) bindTag(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetEntriesBestParams()
 		return nil
 	}
-
 	o.Tag = &raw
 
 	if err := o.validateTag(formats); err != nil {
@@ -245,7 +245,7 @@ func (o *GetEntriesBestParams) bindTag(rawData []string, hasKey bool, formats st
 // validateTag carries on validations for parameter Tag
 func (o *GetEntriesBestParams) validateTag(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("tag", "query", (*o.Tag), 50); err != nil {
+	if err := validate.MaxLength("tag", "query", *o.Tag, 50); err != nil {
 		return err
 	}
 

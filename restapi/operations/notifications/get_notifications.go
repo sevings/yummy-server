@@ -31,7 +31,7 @@ func NewGetNotifications(ctx *middleware.Context, handler GetNotificationsHandle
 	return &GetNotifications{Context: ctx, Handler: handler}
 }
 
-/*GetNotifications swagger:route GET /notifications notifications getNotifications
+/* GetNotifications swagger:route GET /notifications notifications getNotifications
 
 GetNotifications get notifications API
 
@@ -47,7 +47,6 @@ func (o *GetNotifications) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetNotificationsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetNotifications) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

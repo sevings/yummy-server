@@ -90,7 +90,6 @@ func (o *GetMeImagesParams) BindRequest(r *http.Request, route *middleware.Match
 	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -106,11 +105,11 @@ func (o *GetMeImagesParams) bindAfter(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeImagesParams()
 		return nil
 	}
-
 	o.After = &raw
 
 	return nil
@@ -125,11 +124,11 @@ func (o *GetMeImagesParams) bindBefore(rawData []string, hasKey bool, formats st
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeImagesParams()
 		return nil
 	}
-
 	o.Before = &raw
 
 	return nil
@@ -144,6 +143,7 @@ func (o *GetMeImagesParams) bindLimit(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetMeImagesParams()
 		return nil
@@ -165,11 +165,11 @@ func (o *GetMeImagesParams) bindLimit(rawData []string, hasKey bool, formats str
 // validateLimit carries on validations for parameter Limit
 func (o *GetMeImagesParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 1, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
 		return err
 	}
 
-	if err := validate.MaximumInt("limit", "query", int64(*o.Limit), 100, false); err != nil {
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 100, false); err != nil {
 		return err
 	}
 

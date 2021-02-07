@@ -31,7 +31,7 @@ func NewPutRelationsToName(ctx *middleware.Context, handler PutRelationsToNameHa
 	return &PutRelationsToName{Context: ctx, Handler: handler}
 }
 
-/*PutRelationsToName swagger:route PUT /relations/to/{name} relations putRelationsToName
+/* PutRelationsToName swagger:route PUT /relations/to/{name} relations putRelationsToName
 
 PutRelationsToName put relations to name API
 
@@ -47,7 +47,6 @@ func (o *PutRelationsToName) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 		r = rCtx
 	}
 	var Params = NewPutRelationsToNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutRelationsToName) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

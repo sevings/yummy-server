@@ -6,6 +6,7 @@ package adm
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAdmGrandfather(ctx *middleware.Context, handler GetAdmGrandfatherHand
 	return &GetAdmGrandfather{Context: ctx, Handler: handler}
 }
 
-/*GetAdmGrandfather swagger:route GET /adm/grandfather adm getAdmGrandfather
+/* GetAdmGrandfather swagger:route GET /adm/grandfather adm getAdmGrandfather
 
 GetAdmGrandfather get adm grandfather API
 
@@ -49,7 +50,6 @@ func (o *GetAdmGrandfather) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetAdmGrandfatherParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAdmGrandfather) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -100,6 +99,11 @@ type GetAdmGrandfatherOKBody struct {
 
 // Validate validates this get adm grandfather o k body
 func (o *GetAdmGrandfatherOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get adm grandfather o k body based on context it is used
+func (o *GetAdmGrandfatherOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

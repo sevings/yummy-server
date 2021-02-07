@@ -16,7 +16,8 @@ import (
 )
 
 // NewGetAccountVerificationEmailParams creates a new GetAccountVerificationEmailParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountVerificationEmailParams() GetAccountVerificationEmailParams {
 
 	return GetAccountVerificationEmailParams{}
@@ -67,7 +68,6 @@ func (o *GetAccountVerificationEmailParams) BindRequest(r *http.Request, route *
 	if err := o.bindEmail(rEmail, rhkEmail, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -86,10 +86,10 @@ func (o *GetAccountVerificationEmailParams) bindCode(rawData []string, hasKey bo
 
 	// Required: true
 	// AllowEmptyValue: false
+
 	if err := validate.RequiredString("code", "query", raw); err != nil {
 		return err
 	}
-
 	o.Code = raw
 
 	if err := o.validateCode(formats); err != nil {
@@ -122,7 +122,6 @@ func (o *GetAccountVerificationEmailParams) bindEmail(rawData []string, hasKey b
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Email = raw
 
 	if err := o.validateEmail(formats); err != nil {

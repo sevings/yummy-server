@@ -31,7 +31,7 @@ func NewGetMeTags(ctx *middleware.Context, handler GetMeTagsHandler) *GetMeTags 
 	return &GetMeTags{Context: ctx, Handler: handler}
 }
 
-/*GetMeTags swagger:route GET /me/tags me getMeTags
+/* GetMeTags swagger:route GET /me/tags me getMeTags
 
 GetMeTags get me tags API
 
@@ -47,7 +47,6 @@ func (o *GetMeTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeTagsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

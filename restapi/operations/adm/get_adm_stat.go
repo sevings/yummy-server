@@ -6,6 +6,7 @@ package adm
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -33,7 +34,7 @@ func NewGetAdmStat(ctx *middleware.Context, handler GetAdmStatHandler) *GetAdmSt
 	return &GetAdmStat{Context: ctx, Handler: handler}
 }
 
-/*GetAdmStat swagger:route GET /adm/stat adm getAdmStat
+/* GetAdmStat swagger:route GET /adm/stat adm getAdmStat
 
 GetAdmStat get adm stat API
 
@@ -49,7 +50,6 @@ func (o *GetAdmStat) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetAdmStatParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -69,7 +69,6 @@ func (o *GetAdmStat) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -91,6 +90,11 @@ type GetAdmStatOKBody struct {
 
 // Validate validates this get adm stat o k body
 func (o *GetAdmStatOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get adm stat o k body based on context it is used
+func (o *GetAdmStatOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

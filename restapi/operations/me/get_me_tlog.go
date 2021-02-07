@@ -31,7 +31,7 @@ func NewGetMeTlog(ctx *middleware.Context, handler GetMeTlogHandler) *GetMeTlog 
 	return &GetMeTlog{Context: ctx, Handler: handler}
 }
 
-/*GetMeTlog swagger:route GET /me/tlog me getMeTlog
+/* GetMeTlog swagger:route GET /me/tlog me getMeTlog
 
 GetMeTlog get me tlog API
 
@@ -47,7 +47,6 @@ func (o *GetMeTlog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeTlogParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeTlog) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

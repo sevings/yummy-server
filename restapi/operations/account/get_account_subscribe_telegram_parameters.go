@@ -13,7 +13,8 @@ import (
 )
 
 // NewGetAccountSubscribeTelegramParams creates a new GetAccountSubscribeTelegramParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetAccountSubscribeTelegramParams() GetAccountSubscribeTelegramParams {
 
 	return GetAccountSubscribeTelegramParams{}

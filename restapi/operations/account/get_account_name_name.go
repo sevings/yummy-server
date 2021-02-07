@@ -6,6 +6,7 @@ package account
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/go-openapi/runtime/middleware"
@@ -31,7 +32,7 @@ func NewGetAccountNameName(ctx *middleware.Context, handler GetAccountNameNameHa
 	return &GetAccountNameName{Context: ctx, Handler: handler}
 }
 
-/*GetAccountNameName swagger:route GET /account/name/{name} account getAccountNameName
+/* GetAccountNameName swagger:route GET /account/name/{name} account getAccountNameName
 
 check if name is used
 
@@ -47,19 +48,18 @@ func (o *GetAccountNameName) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 		r = rCtx
 	}
 	var Params = NewGetAccountNameNameParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
 
 // GetAccountNameNameOKBody get account name name o k body
+// Example: {"isFree":false,"name":"example"}
 //
 // swagger:model GetAccountNameNameOKBody
 type GetAccountNameNameOKBody struct {
@@ -73,6 +73,11 @@ type GetAccountNameNameOKBody struct {
 
 // Validate validates this get account name name o k body
 func (o *GetAccountNameNameOKBody) Validate(formats strfmt.Registry) error {
+	return nil
+}
+
+// ContextValidate validates this get account name name o k body based on context it is used
+func (o *GetAccountNameNameOKBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

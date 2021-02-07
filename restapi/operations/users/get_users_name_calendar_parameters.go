@@ -89,7 +89,6 @@ func (o *GetUsersNameCalendarParams) BindRequest(r *http.Request, route *middlew
 	if err := o.bindStart(qStart, qhkStart, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -105,6 +104,7 @@ func (o *GetUsersNameCalendarParams) bindEnd(rawData []string, hasKey bool, form
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameCalendarParams()
 		return nil
@@ -128,7 +128,6 @@ func (o *GetUsersNameCalendarParams) bindName(rawData []string, hasKey bool, for
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -165,6 +164,7 @@ func (o *GetUsersNameCalendarParams) bindStart(rawData []string, hasKey bool, fo
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		// Default values have been previously initialized by NewGetUsersNameCalendarParams()
 		return nil

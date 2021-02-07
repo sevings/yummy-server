@@ -31,7 +31,7 @@ func NewGetEntriesLive(ctx *middleware.Context, handler GetEntriesLiveHandler) *
 	return &GetEntriesLive{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesLive swagger:route GET /entries/live entries getEntriesLive
+/* GetEntriesLive swagger:route GET /entries/live entries getEntriesLive
 
 GetEntriesLive get entries live API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesLive) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesLiveParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesLive) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

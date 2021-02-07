@@ -31,7 +31,7 @@ func NewPostAdmGrandsonStatus(ctx *middleware.Context, handler PostAdmGrandsonSt
 	return &PostAdmGrandsonStatus{Context: ctx, Handler: handler}
 }
 
-/*PostAdmGrandsonStatus swagger:route POST /adm/grandson/status adm postAdmGrandsonStatus
+/* PostAdmGrandsonStatus swagger:route POST /adm/grandson/status adm postAdmGrandsonStatus
 
 PostAdmGrandsonStatus post adm grandson status API
 
@@ -47,7 +47,6 @@ func (o *PostAdmGrandsonStatus) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		r = rCtx
 	}
 	var Params = NewPostAdmGrandsonStatusParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostAdmGrandsonStatus) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

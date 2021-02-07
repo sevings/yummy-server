@@ -31,7 +31,7 @@ func NewPutRelationsFromName(ctx *middleware.Context, handler PutRelationsFromNa
 	return &PutRelationsFromName{Context: ctx, Handler: handler}
 }
 
-/*PutRelationsFromName swagger:route PUT /relations/from/{name} relations putRelationsFromName
+/* PutRelationsFromName swagger:route PUT /relations/from/{name} relations putRelationsFromName
 
 permit the user to follow you
 
@@ -47,7 +47,6 @@ func (o *PutRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewPutRelationsFromNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

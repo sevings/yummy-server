@@ -31,7 +31,7 @@ func NewGetCommentsIDVote(ctx *middleware.Context, handler GetCommentsIDVoteHand
 	return &GetCommentsIDVote{Context: ctx, Handler: handler}
 }
 
-/*GetCommentsIDVote swagger:route GET /comments/{id}/vote votes getCommentsIdVote
+/* GetCommentsIDVote swagger:route GET /comments/{id}/vote votes getCommentsIdVote
 
 GetCommentsIDVote get comments ID vote API
 
@@ -47,7 +47,6 @@ func (o *GetCommentsIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetCommentsIDVoteParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetCommentsIDVote) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

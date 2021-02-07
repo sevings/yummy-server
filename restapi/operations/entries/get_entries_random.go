@@ -31,7 +31,7 @@ func NewGetEntriesRandom(ctx *middleware.Context, handler GetEntriesRandomHandle
 	return &GetEntriesRandom{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesRandom swagger:route GET /entries/random entries getEntriesRandom
+/* GetEntriesRandom swagger:route GET /entries/random entries getEntriesRandom
 
 GetEntriesRandom get entries random API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesRandom) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesRandomParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesRandom) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -31,7 +31,7 @@ func NewGetEntriesTags(ctx *middleware.Context, handler GetEntriesTagsHandler) *
 	return &GetEntriesTags{Context: ctx, Handler: handler}
 }
 
-/*GetEntriesTags swagger:route GET /entries/tags entries getEntriesTags
+/* GetEntriesTags swagger:route GET /entries/tags entries getEntriesTags
 
 GetEntriesTags get entries tags API
 
@@ -47,7 +47,6 @@ func (o *GetEntriesTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetEntriesTagsParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetEntriesTags) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

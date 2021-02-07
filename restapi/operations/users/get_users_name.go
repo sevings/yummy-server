@@ -31,7 +31,7 @@ func NewGetUsersName(ctx *middleware.Context, handler GetUsersNameHandler) *GetU
 	return &GetUsersName{Context: ctx, Handler: handler}
 }
 
-/*GetUsersName swagger:route GET /users/{name} users getUsersName
+/* GetUsersName swagger:route GET /users/{name} users getUsersName
 
 GetUsersName get users name API
 
@@ -47,7 +47,6 @@ func (o *GetUsersName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetUsersNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetUsersName) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

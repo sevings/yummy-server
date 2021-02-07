@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 	"strconv"
 
@@ -107,7 +108,6 @@ func (m *FriendList) validateRelationEnum(path, location string, value string) e
 }
 
 func (m *FriendList) validateRelation(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Relation) { // not required
 		return nil
 	}
@@ -121,7 +121,6 @@ func (m *FriendList) validateRelation(formats strfmt.Registry) error {
 }
 
 func (m *FriendList) validateSubject(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Subject) { // not required
 		return nil
 	}
@@ -139,7 +138,6 @@ func (m *FriendList) validateSubject(formats strfmt.Registry) error {
 }
 
 func (m *FriendList) validateUsers(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Users) { // not required
 		return nil
 	}
@@ -151,6 +149,56 @@ func (m *FriendList) validateUsers(formats strfmt.Registry) error {
 
 		if m.Users[i] != nil {
 			if err := m.Users[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("users" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// ContextValidate validate this friend list based on the context it is used
+func (m *FriendList) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateSubject(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateUsers(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *FriendList) contextValidateSubject(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Subject != nil {
+		if err := m.Subject.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("subject")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *FriendList) contextValidateUsers(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(m.Users); i++ {
+
+		if m.Users[i] != nil {
+			if err := m.Users[i].ContextValidate(ctx, formats); err != nil {
 				if ve, ok := err.(*errors.Validation); ok {
 					return ve.ValidateName("users" + "." + strconv.Itoa(i))
 				}

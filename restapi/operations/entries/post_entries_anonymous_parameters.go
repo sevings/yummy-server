@@ -17,6 +17,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostEntriesAnonymousMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostEntriesAnonymousMaxParseMemory int64 = 32 << 20
+
 // NewPostEntriesAnonymousParams creates a new PostEntriesAnonymousParams object
 // with the default values initialized.
 func NewPostEntriesAnonymousParams() PostEntriesAnonymousParams {
@@ -87,7 +94,7 @@ func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middlew
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostEntriesAnonymousMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -120,7 +127,6 @@ func (o *PostEntriesAnonymousParams) BindRequest(r *http.Request, route *middlew
 	if err := o.bindTitle(fdTitle, fdhkTitle, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -165,7 +171,6 @@ func (o *PostEntriesAnonymousParams) bindContent(rawData []string, hasKey bool, 
 	if err := validate.RequiredString("content", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Content = raw
 
 	if err := o.validateContent(formats); err != nil {
@@ -197,7 +202,6 @@ func (o *PostEntriesAnonymousParams) validateContent(formats strfmt.Registry) er
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostEntriesAnonymousParams) bindImages(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvImages string
 	if len(rawData) > 0 {
 		qvImages = rawData[len(rawData)-1]
@@ -217,7 +221,7 @@ func (o *PostEntriesAnonymousParams) bindImages(rawData []string, hasKey bool, f
 			return errors.InvalidType(fmt.Sprintf("%s.%v", "images", i), "formData", "int64", imagesI)
 		}
 
-		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", int64(imagesI), 1, false); err != nil {
+		if err := validate.MinimumInt(fmt.Sprintf("%s.%v", "images", i), "formData", imagesI, 1, false); err != nil {
 			return err
 		}
 
@@ -246,7 +250,6 @@ func (o *PostEntriesAnonymousParams) validateImages(formats strfmt.Registry) err
 	if err := validate.UniqueItems("images", "formData", o.Images); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -254,7 +257,6 @@ func (o *PostEntriesAnonymousParams) validateImages(formats strfmt.Registry) err
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *PostEntriesAnonymousParams) bindTags(rawData []string, hasKey bool, formats strfmt.Registry) error {
-
 	var qvTags string
 	if len(rawData) > 0 {
 		qvTags = rawData[len(rawData)-1]
@@ -303,7 +305,6 @@ func (o *PostEntriesAnonymousParams) validateTags(formats strfmt.Registry) error
 	if err := validate.UniqueItems("tags", "formData", o.Tags); err != nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -320,7 +321,6 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 		// Default values have been previously initialized by NewPostEntriesAnonymousParams()
 		return nil
 	}
-
 	o.Title = &raw
 
 	if err := o.validateTitle(formats); err != nil {
@@ -333,7 +333,7 @@ func (o *PostEntriesAnonymousParams) bindTitle(rawData []string, hasKey bool, fo
 // validateTitle carries on validations for parameter Title
 func (o *PostEntriesAnonymousParams) validateTitle(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("title", "formData", (*o.Title), 500); err != nil {
+	if err := validate.MaxLength("title", "formData", *o.Title, 500); err != nil {
 		return err
 	}
 

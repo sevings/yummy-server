@@ -31,7 +31,7 @@ func NewGetRelationsFromName(ctx *middleware.Context, handler GetRelationsFromNa
 	return &GetRelationsFromName{Context: ctx, Handler: handler}
 }
 
-/*GetRelationsFromName swagger:route GET /relations/from/{name} relations getRelationsFromName
+/* GetRelationsFromName swagger:route GET /relations/from/{name} relations getRelationsFromName
 
 GetRelationsFromName get relations from name API
 
@@ -47,7 +47,6 @@ func (o *GetRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetRelationsFromNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetRelationsFromName) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

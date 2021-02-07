@@ -29,7 +29,7 @@ func NewGetAccountVerificationEmail(ctx *middleware.Context, handler GetAccountV
 	return &GetAccountVerificationEmail{Context: ctx, Handler: handler}
 }
 
-/*GetAccountVerificationEmail swagger:route GET /account/verification/{email} account getAccountVerificationEmail
+/* GetAccountVerificationEmail swagger:route GET /account/verification/{email} account getAccountVerificationEmail
 
 verify account email
 
@@ -45,14 +45,12 @@ func (o *GetAccountVerificationEmail) ServeHTTP(rw http.ResponseWriter, r *http.
 		r = rCtx
 	}
 	var Params = NewGetAccountVerificationEmailParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

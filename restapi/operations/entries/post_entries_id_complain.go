@@ -31,7 +31,7 @@ func NewPostEntriesIDComplain(ctx *middleware.Context, handler PostEntriesIDComp
 	return &PostEntriesIDComplain{Context: ctx, Handler: handler}
 }
 
-/*PostEntriesIDComplain swagger:route POST /entries/{id}/complain entries postEntriesIdComplain
+/* PostEntriesIDComplain swagger:route POST /entries/{id}/complain entries postEntriesIdComplain
 
 PostEntriesIDComplain post entries ID complain API
 
@@ -47,7 +47,6 @@ func (o *PostEntriesIDComplain) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 		r = rCtx
 	}
 	var Params = NewPostEntriesIDComplainParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostEntriesIDComplain) ServeHTTP(rw http.ResponseWriter, r *http.Reques
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

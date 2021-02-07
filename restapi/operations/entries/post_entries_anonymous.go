@@ -31,7 +31,7 @@ func NewPostEntriesAnonymous(ctx *middleware.Context, handler PostEntriesAnonymo
 	return &PostEntriesAnonymous{Context: ctx, Handler: handler}
 }
 
-/*PostEntriesAnonymous swagger:route POST /entries/anonymous entries postEntriesAnonymous
+/* PostEntriesAnonymous swagger:route POST /entries/anonymous entries postEntriesAnonymous
 
 PostEntriesAnonymous post entries anonymous API
 
@@ -47,7 +47,6 @@ func (o *PostEntriesAnonymous) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewPostEntriesAnonymousParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostEntriesAnonymous) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

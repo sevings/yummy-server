@@ -31,7 +31,7 @@ func NewPostRelationsInvitedName(ctx *middleware.Context, handler PostRelationsI
 	return &PostRelationsInvitedName{Context: ctx, Handler: handler}
 }
 
-/*PostRelationsInvitedName swagger:route POST /relations/invited/{name} relations postRelationsInvitedName
+/* PostRelationsInvitedName swagger:route POST /relations/invited/{name} relations postRelationsInvitedName
 
 PostRelationsInvitedName post relations invited name API
 
@@ -47,7 +47,6 @@ func (o *PostRelationsInvitedName) ServeHTTP(rw http.ResponseWriter, r *http.Req
 		r = rCtx
 	}
 	var Params = NewPostRelationsInvitedNameParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostRelationsInvitedName) ServeHTTP(rw http.ResponseWriter, r *http.Req
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -31,7 +31,7 @@ func NewDeleteMessagesID(ctx *middleware.Context, handler DeleteMessagesIDHandle
 	return &DeleteMessagesID{Context: ctx, Handler: handler}
 }
 
-/*DeleteMessagesID swagger:route DELETE /messages/{id} chats deleteMessagesId
+/* DeleteMessagesID swagger:route DELETE /messages/{id} chats deleteMessagesId
 
 DeleteMessagesID delete messages ID API
 
@@ -47,7 +47,6 @@ func (o *DeleteMessagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDeleteMessagesIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteMessagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

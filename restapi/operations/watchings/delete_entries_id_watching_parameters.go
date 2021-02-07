@@ -16,7 +16,8 @@ import (
 )
 
 // NewDeleteEntriesIDWatchingParams creates a new DeleteEntriesIDWatchingParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewDeleteEntriesIDWatchingParams() DeleteEntriesIDWatchingParams {
 
 	return DeleteEntriesIDWatchingParams{}
@@ -52,7 +53,6 @@ func (o *DeleteEntriesIDWatchingParams) BindRequest(r *http.Request, route *midd
 	if err := o.bindID(rID, rhkID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -85,7 +85,7 @@ func (o *DeleteEntriesIDWatchingParams) bindID(rawData []string, hasKey bool, fo
 // validateID carries on validations for parameter ID
 func (o *DeleteEntriesIDWatchingParams) validateID(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("id", "path", int64(o.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "path", o.ID, 1, false); err != nil {
 		return err
 	}
 

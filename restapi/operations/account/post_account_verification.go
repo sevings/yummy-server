@@ -31,7 +31,7 @@ func NewPostAccountVerification(ctx *middleware.Context, handler PostAccountVeri
 	return &PostAccountVerification{Context: ctx, Handler: handler}
 }
 
-/*PostAccountVerification swagger:route POST /account/verification account postAccountVerification
+/* PostAccountVerification swagger:route POST /account/verification account postAccountVerification
 
 request verification email
 
@@ -47,7 +47,6 @@ func (o *PostAccountVerification) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 		r = rCtx
 	}
 	var Params = NewPostAccountVerificationParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PostAccountVerification) ServeHTTP(rw http.ResponseWriter, r *http.Requ
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -13,6 +15,7 @@ import (
 )
 
 // User user
+// Example: {"id":1,"isOnline":false,"name":"Mindwell","showName":"Майндвелл"}
 //
 // swagger:model User
 type User struct {
@@ -65,7 +68,6 @@ func (m *User) Validate(formats strfmt.Registry) error {
 }
 
 func (m *User) validateAvatar(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Avatar) { // not required
 		return nil
 	}
@@ -83,12 +85,11 @@ func (m *User) validateAvatar(formats strfmt.Registry) error {
 }
 
 func (m *User) validateID(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ID) { // not required
 		return nil
 	}
 
-	if err := validate.MinimumInt("id", "body", int64(m.ID), 1, false); err != nil {
+	if err := validate.MinimumInt("id", "body", m.ID, 1, false); err != nil {
 		return err
 	}
 
@@ -96,16 +97,15 @@ func (m *User) validateID(formats strfmt.Registry) error {
 }
 
 func (m *User) validateName(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Name) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("name", "body", string(m.Name), 1); err != nil {
+	if err := validate.MinLength("name", "body", m.Name, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("name", "body", string(m.Name), 20); err != nil {
+	if err := validate.MaxLength("name", "body", m.Name, 20); err != nil {
 		return err
 	}
 
@@ -113,17 +113,44 @@ func (m *User) validateName(formats strfmt.Registry) error {
 }
 
 func (m *User) validateShowName(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.ShowName) { // not required
 		return nil
 	}
 
-	if err := validate.MinLength("showName", "body", string(m.ShowName), 1); err != nil {
+	if err := validate.MinLength("showName", "body", m.ShowName, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("showName", "body", string(m.ShowName), 20); err != nil {
+	if err := validate.MaxLength("showName", "body", m.ShowName, 20); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this user based on the context it is used
+func (m *User) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAvatar(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *User) contextValidateAvatar(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Avatar != nil {
+		if err := m.Avatar.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("avatar")
+			}
+			return err
+		}
 	}
 
 	return nil

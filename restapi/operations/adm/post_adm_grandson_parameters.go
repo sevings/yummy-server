@@ -16,6 +16,13 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+// PostAdmGrandsonMaxParseMemory sets the maximum size in bytes for
+// the multipart form parser for this operation.
+//
+// The default value is 32 MB.
+// The multipart parser stores up to this + 10MB.
+var PostAdmGrandsonMaxParseMemory int64 = 32 << 20
+
 // NewPostAdmGrandsonParams creates a new PostAdmGrandsonParams object
 // with the default values initialized.
 func NewPostAdmGrandsonParams() PostAdmGrandsonParams {
@@ -89,7 +96,7 @@ func (o *PostAdmGrandsonParams) BindRequest(r *http.Request, route *middleware.M
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
+	if err := r.ParseMultipartForm(PostAdmGrandsonMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -127,7 +134,6 @@ func (o *PostAdmGrandsonParams) BindRequest(r *http.Request, route *middleware.M
 	if err := o.bindPostcode(fdPostcode, fdhkPostcode, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -149,7 +155,6 @@ func (o *PostAdmGrandsonParams) bindAddress(rawData []string, hasKey bool, forma
 	if err := validate.RequiredString("address", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Address = raw
 
 	if err := o.validateAddress(formats); err != nil {
@@ -205,7 +210,6 @@ func (o *PostAdmGrandsonParams) bindComment(rawData []string, hasKey bool, forma
 		// Default values have been previously initialized by NewPostAdmGrandsonParams()
 		return nil
 	}
-
 	o.Comment = &raw
 
 	if err := o.validateComment(formats); err != nil {
@@ -218,7 +222,7 @@ func (o *PostAdmGrandsonParams) bindComment(rawData []string, hasKey bool, forma
 // validateComment carries on validations for parameter Comment
 func (o *PostAdmGrandsonParams) validateComment(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("comment", "formData", (*o.Comment), 1000); err != nil {
+	if err := validate.MaxLength("comment", "formData", *o.Comment, 1000); err != nil {
 		return err
 	}
 
@@ -240,7 +244,6 @@ func (o *PostAdmGrandsonParams) bindCountry(rawData []string, hasKey bool, forma
 	if err := validate.RequiredString("country", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Country = raw
 
 	if err := o.validateCountry(formats); err != nil {
@@ -275,7 +278,6 @@ func (o *PostAdmGrandsonParams) bindName(rawData []string, hasKey bool, formats 
 	if err := validate.RequiredString("name", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {
@@ -310,7 +312,6 @@ func (o *PostAdmGrandsonParams) bindPostcode(rawData []string, hasKey bool, form
 	if err := validate.RequiredString("postcode", "formData", raw); err != nil {
 		return err
 	}
-
 	o.Postcode = raw
 
 	if err := o.validatePostcode(formats); err != nil {

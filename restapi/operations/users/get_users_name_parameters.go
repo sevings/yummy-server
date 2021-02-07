@@ -15,7 +15,8 @@ import (
 )
 
 // NewGetUsersNameParams creates a new GetUsersNameParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetUsersNameParams() GetUsersNameParams {
 
 	return GetUsersNameParams{}
@@ -53,7 +54,6 @@ func (o *GetUsersNameParams) BindRequest(r *http.Request, route *middleware.Matc
 	if err := o.bindName(rName, rhkName, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -69,7 +69,6 @@ func (o *GetUsersNameParams) bindName(rawData []string, hasKey bool, formats str
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Name = raw
 
 	if err := o.validateName(formats); err != nil {

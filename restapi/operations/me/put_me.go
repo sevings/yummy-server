@@ -31,7 +31,7 @@ func NewPutMe(ctx *middleware.Context, handler PutMeHandler) *PutMe {
 	return &PutMe{Context: ctx, Handler: handler}
 }
 
-/*PutMe swagger:route PUT /me me putMe
+/* PutMe swagger:route PUT /me me putMe
 
 PutMe put me API
 
@@ -47,7 +47,6 @@ func (o *PutMe) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewPutMeParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *PutMe) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

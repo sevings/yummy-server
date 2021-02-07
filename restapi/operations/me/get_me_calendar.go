@@ -31,7 +31,7 @@ func NewGetMeCalendar(ctx *middleware.Context, handler GetMeCalendarHandler) *Ge
 	return &GetMeCalendar{Context: ctx, Handler: handler}
 }
 
-/*GetMeCalendar swagger:route GET /me/calendar me getMeCalendar
+/* GetMeCalendar swagger:route GET /me/calendar me getMeCalendar
 
 GetMeCalendar get me calendar API
 
@@ -47,7 +47,6 @@ func (o *GetMeCalendar) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetMeCalendarParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetMeCalendar) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

@@ -6,6 +6,7 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/go-openapi/errors"
@@ -62,7 +63,6 @@ func (m *Design) Validate(formats strfmt.Registry) error {
 }
 
 func (m *Design) validateBackgroundColor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.BackgroundColor) { // not required
 		return nil
 	}
@@ -113,7 +113,6 @@ func (m *Design) validateTextAlignmentEnum(path, location string, value string) 
 }
 
 func (m *Design) validateTextAlignment(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.TextAlignment) { // not required
 		return nil
 	}
@@ -127,12 +126,53 @@ func (m *Design) validateTextAlignment(formats strfmt.Registry) error {
 }
 
 func (m *Design) validateTextColor(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.TextColor) { // not required
 		return nil
 	}
 
 	if err := m.TextColor.Validate(formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("textColor")
+		}
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this design based on the context it is used
+func (m *Design) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateBackgroundColor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.contextValidateTextColor(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *Design) contextValidateBackgroundColor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.BackgroundColor.ContextValidate(ctx, formats); err != nil {
+		if ve, ok := err.(*errors.Validation); ok {
+			return ve.ValidateName("backgroundColor")
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (m *Design) contextValidateTextColor(ctx context.Context, formats strfmt.Registry) error {
+
+	if err := m.TextColor.ContextValidate(ctx, formats); err != nil {
 		if ve, ok := err.(*errors.Validation); ok {
 			return ve.ValidateName("textColor")
 		}

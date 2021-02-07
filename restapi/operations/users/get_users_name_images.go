@@ -31,7 +31,7 @@ func NewGetUsersNameImages(ctx *middleware.Context, handler GetUsersNameImagesHa
 	return &GetUsersNameImages{Context: ctx, Handler: handler}
 }
 
-/*GetUsersNameImages swagger:route GET /users/{name}/images users getUsersNameImages
+/* GetUsersNameImages swagger:route GET /users/{name}/images users getUsersNameImages
 
 GetUsersNameImages get users name images API
 
@@ -47,7 +47,6 @@ func (o *GetUsersNameImages) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 		r = rCtx
 	}
 	var Params = NewGetUsersNameImagesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetUsersNameImages) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

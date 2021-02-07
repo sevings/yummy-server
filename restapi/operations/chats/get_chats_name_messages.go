@@ -31,7 +31,7 @@ func NewGetChatsNameMessages(ctx *middleware.Context, handler GetChatsNameMessag
 	return &GetChatsNameMessages{Context: ctx, Handler: handler}
 }
 
-/*GetChatsNameMessages swagger:route GET /chats/{name}/messages chats getChatsNameMessages
+/* GetChatsNameMessages swagger:route GET /chats/{name}/messages chats getChatsNameMessages
 
 GetChatsNameMessages get chats name messages API
 
@@ -47,7 +47,6 @@ func (o *GetChatsNameMessages) ServeHTTP(rw http.ResponseWriter, r *http.Request
 		r = rCtx
 	}
 	var Params = NewGetChatsNameMessagesParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *GetChatsNameMessages) ServeHTTP(rw http.ResponseWriter, r *http.Request
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

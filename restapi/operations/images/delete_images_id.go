@@ -31,7 +31,7 @@ func NewDeleteImagesID(ctx *middleware.Context, handler DeleteImagesIDHandler) *
 	return &DeleteImagesID{Context: ctx, Handler: handler}
 }
 
-/*DeleteImagesID swagger:route DELETE /images/{id} images deleteImagesId
+/* DeleteImagesID swagger:route DELETE /images/{id} images deleteImagesId
 
 DeleteImagesID delete images ID API
 
@@ -47,7 +47,6 @@ func (o *DeleteImagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDeleteImagesIDParams()
-
 	uprinc, aCtx, err := o.Context.Authorize(r, route)
 	if err != nil {
 		o.Context.Respond(rw, r, route.Produces, route, err)
@@ -67,7 +66,6 @@ func (o *DeleteImagesID) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	res := o.Handler.Handle(Params, principal) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
