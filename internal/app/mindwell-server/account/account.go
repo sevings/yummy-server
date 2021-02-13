@@ -25,15 +25,10 @@ import (
 )
 
 var centSecret []byte
-var apiSecret []byte
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	centSecret = []byte(srv.ConfigString("centrifugo.secret"))
-	apiSecret = []byte(srv.ConfigString("server.api_secret"))
-
-	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
-	srv.API.NoAPIKeyAuth = utils.NoApiKeyAuth
 
 	srv.API.AccountGetAccountEmailEmailHandler = account.GetAccountEmailEmailHandlerFunc(newEmailChecker(srv))
 	srv.API.AccountGetAccountNameNameHandler = account.GetAccountNameNameHandlerFunc(newNameChecker(srv))

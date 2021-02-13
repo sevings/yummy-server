@@ -14,6 +14,22 @@ securityDefinitions:
     type: apiKey
     in: header
     name: X-User-Key
+  OAuth2App:
+    type: oauth2
+    flow: application
+    tokenUrl: "/oauth2/token"
+  OAuth2Password:
+    type: oauth2
+    flow: password
+    tokenUrl: "/oauth2/token"
+  OAuth2Code:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: "/oauth2/auth"
+    tokenUrl: "/oauth2/token"
+    scopes:
+      read: base read access
+      writeEntries: create and edit tlog entries
 definitions:
   UserID:
     type: object
@@ -52,6 +68,23 @@ definitions:
         type: string
     example:
       message: Access denied
+  OAuth2Error:
+    type: object
+    properties:
+      error:
+        type: string
+        enum:
+          - access_denied
+          - invalid_client
+          - invalid_grant
+          - invalid_redirect
+          - invalid_request
+          - invalid_scope
+          - server_error
+          - temporarily_unavailable
+          - unauthorized_client
+          - unsupported_grant_type
+          - unsupported_response_type
   Color:
     type: string
     pattern: '^#[0-9a-fA-F]{6}$'
@@ -1168,6 +1201,133 @@ paths:
       responses:
         204:
           description: OK
+  /oauth2/auth:
+    get:
+      tags:
+        - oauth2
+      security:
+        - OAuth2Password: []
+      consumes:
+        - application/x-www-form-urlencoded
+      parameters:
+        - in: query
+          name: response_type
+          type: string
+          required: true
+          enum: [ code ]
+        - in: query
+          name: client_id
+          type: integer
+          required: true
+        - in: query
+          name: redirect_uri
+          type: string
+          required: true
+        - in: query
+          name: scope
+          type: array
+          items:
+            type: string
+          default: [ read ]
+        - in: query
+          name: state
+          type: string
+        - in: query
+          name: code_challenge
+          type: string
+        - in: query
+          name: code_challenge_method
+          type: string
+          enum: [ S256 ]
+      responses:
+        400:
+          description: some error happened
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        401:
+          description: invalid client
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        200:
+          description: auth code
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+              state:
+                type: string
+  /oauth2/token:
+    post:
+      tags:
+        - oauth2
+      security:
+        - NoApiKey: []
+        - OAUth2App: []
+        - OAuth2Password: []
+        - OAth2Code: []
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: grant_type
+          type: string
+          enum: [ authorization_code, client_credentials, password, refresh_token ]
+          required: true
+        - in: formData
+          name: client_id
+          type: integer
+          required: true
+        - in: formData
+          name: code
+          type: string
+        - in: formData
+          name: client_secret
+          type: string
+        - in: formData
+          name: redirect_uri
+          type: string
+        - in: formData
+          name: code_verifier
+          type: string
+        - in: formData
+          name: refresh_token
+          type: string
+        - in: formData
+          name: username
+          type: string
+          maxLength: 500
+        - in: formData
+          name: password
+          type: string
+          minLength: 6
+          maxLength: 100
+      responses:
+        400:
+          description: some error happened
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        401:
+          description: invalid client
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        200:
+          description: authorized
+          schema:
+            type: object
+            properties:
+              access_token:
+                type: string
+              token_type:
+                type: string
+                enum: [ bearer ]
+              expires_in:
+                type: integer
+                format: int64
+              refresh_token:
+                type: string
+              scope:
+                type: string
   /notifications:
     get:
       security:
@@ -2182,6 +2342,9 @@ paths:
       - $ref: '#/parameters/pathId'
     get:
       security:
+        - Oauth2App: [ ]
+        - OAuth2Password: []
+        - OAuth2Code: [ read ]
         - ApiKeyHeader: []
         - NoApiKey: []
       tags:
@@ -2201,6 +2364,8 @@ paths:
             $ref: '#/definitions/Error'
     put:
       security:
+        - OAuth2Password: [ all ]
+        - OAuth2Code: [ writeEntries ]
         - ApiKeyHeader: []
       tags:
         - entries
@@ -2277,6 +2442,8 @@ paths:
             $ref: '#/definitions/Error'
     delete:
       security:
+        - OAuth2Password: [ all ]
+        - OAuth2Code: [ writeEntries ]
         - ApiKeyHeader: []
       tags:
         - entries

@@ -17,6 +17,7 @@ import (
 	entriesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/entries"
 	favoritesImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/favorites"
 	notificationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/notifications"
+	oauth2Impl "github.com/sevings/mindwell-server/internal/app/mindwell-server/oauth2"
 	relationsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/relations"
 	tagsImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/tags"
 	usersImpl "github.com/sevings/mindwell-server/internal/app/mindwell-server/users"
@@ -63,6 +64,7 @@ func TestMain(m *testing.M) {
 	complainsImpl.ConfigureAPI(srv)
 	chatsImpl.ConfigureAPI(srv)
 	tagsImpl.ConfigureAPI(srv)
+	oauth2Impl.ConfigureAPI(srv)
 
 	userIDs, profiles = registerTestUsers(db)
 

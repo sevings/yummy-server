@@ -1937,18 +1937,14 @@ func init() {
       "get": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "Oauth2App": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
               "read"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -1992,11 +1988,6 @@ func init() {
           {
             "OAuth2Code": [
               "writeEntries"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -2124,11 +2115,6 @@ func init() {
           {
             "OAuth2Code": [
               "writeEntries"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -3546,7 +3532,7 @@ func init() {
           "application/x-www-form-urlencoded"
         ],
         "tags": [
-          "account"
+          "oauth2"
         ],
         "parameters": [
           {
@@ -3559,7 +3545,7 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
+            "type": "integer",
             "name": "client_id",
             "in": "query",
             "required": true
@@ -3571,8 +3557,13 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
-            "default": "read",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "read"
+            ],
             "name": "scope",
             "in": "query"
           },
@@ -3613,36 +3604,13 @@ func init() {
           "400": {
             "description": "some error happened",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_redirect",
-                    "access_denied",
-                    "invalid_request",
-                    "unauthorized_client",
-                    "unsupported_response_type",
-                    "invalid_scope",
-                    "server_error",
-                    "temporarily_unavailable"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           },
           "401": {
             "description": "invalid client",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_client"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           }
         }
@@ -3655,6 +3623,9 @@ func init() {
             "NoApiKey": []
           },
           {
+            "OAUth2App": []
+          },
+          {
             "OAuth2Password": []
           },
           {
@@ -3665,22 +3636,23 @@ func init() {
           "multipart/form-data"
         ],
         "tags": [
-          "account"
+          "oauth2"
         ],
         "parameters": [
           {
             "enum": [
               "authorization_code",
-              "password",
               "client_credentials",
+              "password",
               "refresh_token"
             ],
             "type": "string",
             "name": "grant_type",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
-            "type": "string",
+            "type": "integer",
             "name": "client_id",
             "in": "formData",
             "required": true
@@ -3755,33 +3727,13 @@ func init() {
           "400": {
             "description": "some error happened",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_request",
-                    "invalid_grant",
-                    "invalid_scope",
-                    "unauthorized_client",
-                    "unsupported_grant_type"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           },
           "401": {
             "description": "invalid client",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_client"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           }
         }
@@ -5281,6 +5233,27 @@ func init() {
         }
       }
     },
+    "OAuth2Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "enum": [
+            "access_denied",
+            "invalid_client",
+            "invalid_grant",
+            "invalid_redirect",
+            "invalid_request",
+            "invalid_scope",
+            "server_error",
+            "temporarily_unavailable",
+            "unauthorized_client",
+            "unsupported_grant_type",
+            "unsupported_response_type"
+          ]
+        }
+      }
+    },
     "Profile": {
       "allOf": [
         {
@@ -5638,10 +5611,7 @@ func init() {
       "type": "oauth2",
       "flow": "application",
       "authorizationUrl": "",
-      "tokenUrl": "/oauth2/token",
-      "scopes": {
-        "all": "access all data"
-      }
+      "tokenUrl": "/oauth2/token"
     },
     "OAuth2Code": {
       "type": "oauth2",
@@ -5657,10 +5627,7 @@ func init() {
       "type": "oauth2",
       "flow": "password",
       "authorizationUrl": "",
-      "tokenUrl": "/oauth2/token",
-      "scopes": {
-        "all": "access all data"
-      }
+      "tokenUrl": "/oauth2/token"
     }
   }
 }`))
@@ -7771,18 +7738,14 @@ func init() {
       "get": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "Oauth2App": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
               "read"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -7826,11 +7789,6 @@ func init() {
           {
             "OAuth2Code": [
               "writeEntries"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -7958,11 +7916,6 @@ func init() {
           {
             "OAuth2Code": [
               "writeEntries"
-            ]
-          },
-          {
-            "Oauth2App": [
-              "all"
             ]
           },
           {
@@ -9579,7 +9532,7 @@ func init() {
           "application/x-www-form-urlencoded"
         ],
         "tags": [
-          "account"
+          "oauth2"
         ],
         "parameters": [
           {
@@ -9592,7 +9545,7 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
+            "type": "integer",
             "name": "client_id",
             "in": "query",
             "required": true
@@ -9604,8 +9557,13 @@ func init() {
             "required": true
           },
           {
-            "type": "string",
-            "default": "read",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "read"
+            ],
             "name": "scope",
             "in": "query"
           },
@@ -9646,36 +9604,13 @@ func init() {
           "400": {
             "description": "some error happened",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_redirect",
-                    "access_denied",
-                    "invalid_request",
-                    "unauthorized_client",
-                    "unsupported_response_type",
-                    "invalid_scope",
-                    "server_error",
-                    "temporarily_unavailable"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           },
           "401": {
             "description": "invalid client",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_client"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           }
         }
@@ -9688,6 +9623,9 @@ func init() {
             "NoApiKey": []
           },
           {
+            "OAUth2App": []
+          },
+          {
             "OAuth2Password": []
           },
           {
@@ -9698,22 +9636,23 @@ func init() {
           "multipart/form-data"
         ],
         "tags": [
-          "account"
+          "oauth2"
         ],
         "parameters": [
           {
             "enum": [
               "authorization_code",
-              "password",
               "client_credentials",
+              "password",
               "refresh_token"
             ],
             "type": "string",
             "name": "grant_type",
-            "in": "formData"
+            "in": "formData",
+            "required": true
           },
           {
-            "type": "string",
+            "type": "integer",
             "name": "client_id",
             "in": "formData",
             "required": true
@@ -9788,33 +9727,13 @@ func init() {
           "400": {
             "description": "some error happened",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_request",
-                    "invalid_grant",
-                    "invalid_scope",
-                    "unauthorized_client",
-                    "unsupported_grant_type"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           },
           "401": {
             "description": "invalid client",
             "schema": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "string",
-                  "enum": [
-                    "invalid_client"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Error"
             }
           }
         }
@@ -11626,6 +11545,27 @@ func init() {
         }
       }
     },
+    "OAuth2Error": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "enum": [
+            "access_denied",
+            "invalid_client",
+            "invalid_grant",
+            "invalid_redirect",
+            "invalid_request",
+            "invalid_scope",
+            "server_error",
+            "temporarily_unavailable",
+            "unauthorized_client",
+            "unsupported_grant_type",
+            "unsupported_response_type"
+          ]
+        }
+      }
+    },
     "Profile": {
       "allOf": [
         {
@@ -12031,10 +11971,7 @@ func init() {
       "type": "oauth2",
       "flow": "application",
       "authorizationUrl": "",
-      "tokenUrl": "/oauth2/token",
-      "scopes": {
-        "all": "access all data"
-      }
+      "tokenUrl": "/oauth2/token"
     },
     "OAuth2Code": {
       "type": "oauth2",
@@ -12050,10 +11987,7 @@ func init() {
       "type": "oauth2",
       "flow": "password",
       "authorizationUrl": "",
-      "tokenUrl": "/oauth2/token",
-      "scopes": {
-        "all": "access all data"
-      }
+      "tokenUrl": "/oauth2/token"
     }
   }
 }`))

@@ -71,6 +71,12 @@ func LoadUserIDByID(tx *AutoTx, id int64) (*models.UserID, error) {
 	return scanUserID(tx)
 }
 
+func LoadUserIDByName(tx *AutoTx, name string) (*models.UserID, error) {
+	const q = userIDQuery + "WHERE lower(name) = lower($1)"
+	tx.Query(q, name)
+	return scanUserID(tx)
+}
+
 func LoadUserIDByApiKey(tx *AutoTx, apiKey string) (*models.UserID, error) {
 	const q = userIDQuery + "WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
 	tx.Query(q, apiKey)
