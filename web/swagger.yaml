@@ -85,6 +85,19 @@ definitions:
           - unauthorized_client
           - unsupported_grant_type
           - unsupported_response_type
+  App:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      showName:
+        type: string
+      platform:
+        type: string
+      info:
+        type: string
   Color:
     type: string
     pattern: '^#[0-9a-fA-F]{6}$'
@@ -1328,6 +1341,23 @@ paths:
                 type: string
               scope:
                 type: string
+  /oauth2/apps/{id}:
+    get:
+      security:
+        - OAuth2Password: []
+      parameters:
+        - $ref: '#/parameters/pathId'
+      tags:
+        - oauth2
+      responses:
+        200:
+          description: app info
+          schema:
+            $ref: '#/definitions/App'
+        404:
+          description: not found
+          schema:
+            $ref: '#/definitions/Error'
   /notifications:
     get:
       security:

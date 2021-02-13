@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/patrickmn/go-cache"
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/oauth2"
@@ -35,6 +36,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.Oauth2GetOauth2AuthHandler = oauth2.GetOauth2AuthHandlerFunc(newOAuth2Auth(srv))
 	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
+
+	srv.API.Oauth2GetOauth2AppsIDHandler = oauth2.GetOauth2AppsIDHandlerFunc(newAppLoader(srv))
 }
 
 const accessTokenLifetime = 60 * 60 * 24
@@ -532,6 +535,33 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 			}
 
 			return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorUnsupportedGrantType)
+		})
+	}
+}
+
+func loadApp(tx *utils.AutoTx, appID int64) (*models.App, bool) {
+	const query = `
+SELECT name, show_name, platform, info
+FROM apps
+WHERE id = $1
+`
+
+	app := &models.App{ID: appID}
+	tx.Query(query, appID).Scan(&app.Name, &app.ShowName, &app.Platform, &app.Info)
+
+	return app, tx.Error() == nil
+}
+
+func newAppLoader(srv *utils.MindwellServer) func(oauth2.GetOauth2AppsIDParams, *models.UserID) middleware.Responder {
+	return func(params oauth2.GetOauth2AppsIDParams, userID *models.UserID) middleware.Responder {
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			app, ok := loadApp(tx, params.ID)
+			if !ok {
+				err := &i18n.Message{ID: "no_app", Other: "App not found."}
+				return oauth2.NewGetOauth2AppsIDNotFound().WithPayload(srv.NewError(err))
+			}
+
+			return oauth2.NewGetOauth2AppsIDOK().WithPayload(app)
 		})
 	}
 }

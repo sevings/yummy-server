@@ -237,6 +237,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		NotificationsGetNotificationsIDHandler: notifications.GetNotificationsIDHandlerFunc(func(params notifications.GetNotificationsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation notifications.GetNotificationsID has not yet been implemented")
 		}),
+		Oauth2GetOauth2AppsIDHandler: oauth2.GetOauth2AppsIDHandlerFunc(func(params oauth2.GetOauth2AppsIDParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation oauth2.GetOauth2AppsID has not yet been implemented")
+		}),
 		Oauth2GetOauth2AuthHandler: oauth2.GetOauth2AuthHandlerFunc(func(params oauth2.GetOauth2AuthParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.GetOauth2Auth has not yet been implemented")
 		}),
@@ -580,6 +583,8 @@ type MindwellAPI struct {
 	NotificationsGetNotificationsHandler notifications.GetNotificationsHandler
 	// NotificationsGetNotificationsIDHandler sets the operation handler for the get notifications ID operation
 	NotificationsGetNotificationsIDHandler notifications.GetNotificationsIDHandler
+	// Oauth2GetOauth2AppsIDHandler sets the operation handler for the get oauth2 apps ID operation
+	Oauth2GetOauth2AppsIDHandler oauth2.GetOauth2AppsIDHandler
 	// Oauth2GetOauth2AuthHandler sets the operation handler for the get oauth2 auth operation
 	Oauth2GetOauth2AuthHandler oauth2.GetOauth2AuthHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
@@ -949,6 +954,9 @@ func (o *MindwellAPI) Validate() error {
 	}
 	if o.NotificationsGetNotificationsIDHandler == nil {
 		unregistered = append(unregistered, "notifications.GetNotificationsIDHandler")
+	}
+	if o.Oauth2GetOauth2AppsIDHandler == nil {
+		unregistered = append(unregistered, "oauth2.GetOauth2AppsIDHandler")
 	}
 	if o.Oauth2GetOauth2AuthHandler == nil {
 		unregistered = append(unregistered, "oauth2.GetOauth2AuthHandler")
@@ -1453,6 +1461,10 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/notifications/{id}"] = notifications.NewGetNotificationsID(o.context, o.NotificationsGetNotificationsIDHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/oauth2/apps/{id}"] = oauth2.NewGetOauth2AppsID(o.context, o.Oauth2GetOauth2AppsIDHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

@@ -3521,6 +3521,37 @@ func init() {
         }
       }
     },
+    "/oauth2/apps/{id}": {
+      "get": {
+        "security": [
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/pathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "app info",
+            "schema": {
+              "$ref": "#/definitions/App"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/oauth2/auth": {
       "get": {
         "security": [
@@ -4429,6 +4460,26 @@ func init() {
     }
   },
   "definitions": {
+    "App": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "showName": {
+          "type": "string"
+        }
+      }
+    },
     "AuthProfile": {
       "allOf": [
         {
@@ -9521,6 +9572,42 @@ func init() {
         }
       }
     },
+    "/oauth2/apps/{id}": {
+      "get": {
+        "security": [
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "app info",
+            "schema": {
+              "$ref": "#/definitions/App"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
     "/oauth2/auth": {
       "get": {
         "security": [
@@ -10600,6 +10687,26 @@ func init() {
     }
   },
   "definitions": {
+    "App": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "info": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "showName": {
+          "type": "string"
+        }
+      }
+    },
     "AuthProfile": {
       "allOf": [
         {
