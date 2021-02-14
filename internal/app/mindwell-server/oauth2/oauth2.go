@@ -176,10 +176,10 @@ func createAccessToken(tx *utils.AutoTx, appID, userID int64, name string, scope
 
 	const query = `
 INSERT INTO access_tokens(app_id, user_id, token_hash, scope, valid_thru)
-VALUES($1, $2, $3, $4, $5
+VALUES($1, $2, $3, $4, $5)
 `
 
-	tx.Exec(query, appID, userID, hash, scope, thru)
+	tx.Exec(query, appID, userID, hash[:], scope, thru)
 
 	return name + "." + token, tx.Error()
 }
@@ -191,10 +191,10 @@ func createRefreshToken(tx *utils.AutoTx, appID, userID int64, scope uint32) (st
 
 	const query = `
 INSERT INTO refresh_tokens(app_id, user_id, token_hash, scope, valid_thru)
-VALUES($1, $2, $3, $4)
+VALUES($1, $2, $3, $4, $5)
 `
 
-	tx.Exec(query, appID, userID, hash, scope, thru)
+	tx.Exec(query, appID, userID, hash[:], scope, thru)
 
 	id := strconv.FormatInt(userID, 32)
 	return id + "." + token, tx.Error()
@@ -210,7 +210,7 @@ VALUES($1, $2, $3)
 	hash := sha256.Sum256([]byte(token))
 	thru := time.Now().Add(appTokenLifetime * time.Second)
 
-	tx.Exec(query, appID, hash, thru)
+	tx.Exec(query, appID, hash[:], thru)
 
 	return appName + "+" + token, tx.Error()
 }
@@ -284,6 +284,10 @@ func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *
 				return getOAuth2AuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
 
+			if auth.appSecret == "" && params.CodeChallenge == nil {
+				return getOAuth2AuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
+			}
+
 			resp := &oauth2.GetOauth2AuthOKBody{
 				Code: utils.GenerateString(codeLength),
 			}
@@ -349,7 +353,7 @@ func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int
 		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidGrant)
 	}
 
-	var scope uint32 = 1<<32 - 1
+	var scope uint32 = 1<<31 - 1
 	refreshToken, err := createRefreshToken(tx, appID, userID, scope)
 	if err != nil {
 		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
@@ -393,7 +397,7 @@ func requestAppToken(tx *utils.AutoTx, appID int64, appSecret string) middleware
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func requestAccessToken(tx *utils.AutoTx, appID int64, redirectUri, code string, appSecret, verifier *string) middleware.Responder {
+func requestAccessToken(tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
 	authValue, found := authCache.Get(code)
 	if !found {
 		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
@@ -404,17 +408,17 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, redirectUri, code string,
 		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 	}
 
-	if appSecret == nil && verifier == nil {
-		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
-	}
+	if auth.appSecret != "" {
+		if appSecret == nil {
+			return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+		}
 
-	if appSecret != nil {
 		if auth.appSecret != *appSecret {
 			return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
 	}
 
-	if auth.method != "" {
+	if auth.challenge != "" {
 		if verifier == nil {
 			return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
@@ -426,9 +430,9 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, redirectUri, code string,
 			if auth.challenge != ch {
 				return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
+		default:
+			return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
-
-		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 	}
 
 	refreshToken, err := createRefreshToken(tx, auth.appID, auth.userID, auth.scope)
@@ -447,6 +451,8 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, redirectUri, code string,
 		RefreshToken: refreshToken,
 		TokenType:    oauth2.PostOauth2TokenOKBodyTokenTypeBearer,
 	}
+
+	authCache.Delete(code)
 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
@@ -472,7 +478,7 @@ RETURNING scope, valid_thru
 
 	var scope uint32
 	var thru time.Time
-	tx.Query(query, appID, userID, hash).Scan(&scope, &thru)
+	tx.Query(query, appID, userID, hash[:]).Scan(&scope, &thru)
 
 	if scope == 0 || time.Now().After(thru) {
 		return postOAuth2TokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
@@ -500,7 +506,7 @@ RETURNING scope, valid_thru
 }
 
 func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams, *models.UserID) middleware.Responder {
-	return func(params oauth2.PostOauth2TokenParams, userID *models.UserID) middleware.Responder {
+	return func(params oauth2.PostOauth2TokenParams, _ *models.UserID) middleware.Responder {
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			if params.GrantType == "password" {
 				if params.Username == nil || params.Password == nil {
