@@ -330,7 +330,7 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation me.PostMeTlog has not yet been implemented")
 		}),
-		Oauth2PostOauth2TokenHandler: oauth2.PostOauth2TokenHandlerFunc(func(params oauth2.PostOauth2TokenParams, principal *models.UserID) middleware.Responder {
+		Oauth2PostOauth2TokenHandler: oauth2.PostOauth2TokenHandlerFunc(func(params oauth2.PostOauth2TokenParams) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.PostOauth2Token has not yet been implemented")
 		}),
 		RelationsPostRelationsInvitedNameHandler: relations.PostRelationsInvitedNameHandlerFunc(func(params relations.PostRelationsInvitedNameParams, principal *models.UserID) middleware.Responder {

@@ -102,7 +102,7 @@ func TestLoadApp(t *testing.T) {
 func loadOAuth2Token(t *testing.T, params oauth2.PostOauth2TokenParams, success bool) *oauth2.PostOauth2TokenOKBody {
 	req := require.New(t)
 	post := api.Oauth2PostOauth2TokenHandler.Handle
-	resp := post(params, nil)
+	resp := post(params)
 	body, ok := resp.(*oauth2.PostOauth2TokenOK)
 	req.Equal(success, ok)
 	if !ok {

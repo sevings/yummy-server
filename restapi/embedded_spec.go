@@ -3649,20 +3649,6 @@ func init() {
     },
     "/oauth2/token": {
       "post": {
-        "security": [
-          {
-            "NoApiKey": []
-          },
-          {
-            "OAUth2App": []
-          },
-          {
-            "OAuth2Password": []
-          },
-          {
-            "OAth2Code": []
-          }
-        ],
         "consumes": [
           "multipart/form-data"
         ],
@@ -9705,20 +9691,6 @@ func init() {
     },
     "/oauth2/token": {
       "post": {
-        "security": [
-          {
-            "NoApiKey": []
-          },
-          {
-            "OAUth2App": []
-          },
-          {
-            "OAuth2Password": []
-          },
-          {
-            "OAth2Code": []
-          }
-        ],
         "consumes": [
           "multipart/form-data"
         ],

@@ -1274,11 +1274,6 @@ paths:
     post:
       tags:
         - oauth2
-      security:
-        - NoApiKey: []
-        - OAUth2App: []
-        - OAuth2Password: []
-        - OAth2Code: []
       consumes:
         - multipart/form-data
       parameters:
