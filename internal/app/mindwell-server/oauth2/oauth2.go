@@ -83,9 +83,10 @@ func newOAuth2User(db *sql.DB, flowReq flow) func(string, []string) (*models.Use
 SELECT scope, flow
 FROM access_tokens
 JOIN users ON users.id = user_id
+JOIN apps ON apps.id = app_id
 WHERE lower(users.name) = lower($1) 
 	AND token_hash = $2
-	AND valid_thru > $3
+	AND access_tokens.valid_thru > $3
 `
 
 	return func(token string, scopes []string) (*models.UserID, error) {
@@ -113,7 +114,7 @@ WHERE lower(users.name) = lower($1)
 
 		var scopeEx uint32
 		var flowEx flow
-		tx.Query(query, name, hash, now).Scan(&scopeEx, &flowEx)
+		tx.Query(query, name, hash[:], now).Scan(&scopeEx, &flowEx)
 		if tx.Error() != nil {
 			return nil, fmt.Errorf("access token is invalid: %s", token)
 		}

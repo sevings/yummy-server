@@ -364,3 +364,96 @@ func TestRefreshToken(t *testing.T) {
 
 	removeOAuth2App(app)
 }
+
+func TestPasswordFlow(t *testing.T) {
+	req := require.New(t)
+	app := createOauth2App(4)
+
+	name := "test0"
+	pass := "test123"
+	params := oauth2.PostOauth2TokenParams{
+		GrantType: "password",
+		ClientID:  app.id,
+		Username:  &name,
+		Password:  &pass,
+	}
+
+	token := loadOAuth2Token(t, params, true)
+	auth := srv.API.OAuth2PasswordAuth
+
+	id, err := auth(token.AccessToken, []string{"read"})
+	req.Nil(err)
+	req.Equal(userIDs[0].ID, id.ID)
+
+	id, err = auth(token.AccessToken, []string{"wrong scope"})
+	req.NotNil(err)
+
+	authCode := srv.API.OAuth2CodeAuth
+	id, err = authCode(token.AccessToken, []string{"read"})
+	req.NotNil(err)
+
+	params.GrantType = "refresh_token"
+	params.RefreshToken = &token.RefreshToken
+	params.Username = nil
+	params.Password = nil
+
+	token = loadOAuth2Token(t, params, true)
+
+	id, err = auth(token.AccessToken, []string{"read"})
+	req.Nil(err)
+	req.Equal(userIDs[0].ID, id.ID)
+
+	removeOAuth2App(app)
+}
+
+func TestCodeFlow(t *testing.T) {
+	req := require.New(t)
+	app := createOauth2App(2)
+
+	codeParams := oauth2.GetOauth2AuthParams{
+		ClientID:     app.id,
+		RedirectURI:  app.redirectUri,
+		ResponseType: "code",
+		Scope:        []string{"read"},
+	}
+	get := api.Oauth2GetOauth2AuthHandler.Handle
+	resp := get(codeParams, userIDs[0])
+	body, ok := resp.(*oauth2.GetOauth2AuthOK)
+	req.True(ok)
+	code := body.Payload.Code
+
+	params := oauth2.PostOauth2TokenParams{
+		GrantType:    "authorization_code",
+		ClientID:     app.id,
+		ClientSecret: &app.secret,
+		Code:         &code,
+		RedirectURI:  &app.redirectUri,
+	}
+
+	token := loadOAuth2Token(t, params, true)
+	auth := srv.API.OAuth2CodeAuth
+
+	id, err := auth(token.AccessToken, []string{"read"})
+	req.Nil(err)
+	req.Equal(userIDs[0].ID, id.ID)
+
+	id, err = auth(token.AccessToken, []string{"wrong scope"})
+	req.NotNil(err)
+
+	authPass := srv.API.OAuth2PasswordAuth
+	id, err = authPass(token.AccessToken, []string{"read"})
+	req.NotNil(err)
+
+	params.GrantType = "refresh_token"
+	params.RefreshToken = &token.RefreshToken
+	params.Username = nil
+	params.Password = nil
+
+	token = loadOAuth2Token(t, params, true)
+
+	id, err = auth(token.AccessToken, []string{"read"})
+	req.Nil(err)
+	req.Equal(userIDs[0].ID, id.ID)
+
+	removeOAuth2App(app)
+}
