@@ -24,7 +24,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "Mindwell",
-    "version": "0.1.0"
+    "version": "1.0"
   },
   "basePath": "/api/v1",
   "paths": {
@@ -33,6 +33,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:write"
+            ]
           }
         ],
         "consumes": [
@@ -113,6 +121,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:read"
+            ]
           }
         ],
         "tags": [
@@ -212,6 +228,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:write"
+            ]
           }
         ],
         "consumes": [
@@ -406,6 +430,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:read"
+            ]
           }
         ],
         "tags": [
@@ -435,6 +467,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "consumes": [
@@ -476,6 +516,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:read"
+            ]
           }
         ],
         "tags": [
@@ -508,6 +556,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "consumes": [
@@ -555,6 +611,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "tags": [
@@ -578,6 +642,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "tags": [
@@ -595,6 +667,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -620,6 +700,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           }
         ],
         "tags": [
@@ -681,6 +764,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -733,6 +824,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -771,6 +870,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "tags": [
@@ -808,6 +915,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -858,6 +973,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "consumes": [
@@ -934,6 +1057,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -972,6 +1103,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "tags": [
@@ -1009,6 +1148,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -1046,6 +1193,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -1077,6 +1232,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -1108,6 +1271,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -1143,6 +1314,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "consumes": [
@@ -1202,6 +1381,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -1247,6 +1434,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -1277,6 +1472,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "consumes": [
@@ -1322,6 +1525,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "tags": [
@@ -1356,6 +1567,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "consumes": [
@@ -1403,6 +1620,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -1433,6 +1658,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -1471,6 +1704,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -1508,6 +1749,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -1526,6 +1775,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -1595,6 +1852,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -1623,6 +1888,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1658,6 +1931,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:write"
+            ]
           }
         ],
         "consumes": [
@@ -1730,6 +2011,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1771,6 +2060,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1808,6 +2105,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1856,6 +2161,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1882,6 +2195,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1907,6 +2228,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -1937,6 +2266,12 @@ func init() {
       "get": {
         "security": [
           {
+            "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
+          },
+          {
             "Oauth2App": []
           },
           {
@@ -1944,14 +2279,8 @@ func init() {
           },
           {
             "OAuth2Code": [
-              "read"
+              "entries:read"
             ]
-          },
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "NoApiKey": []
           }
         ],
         "tags": [
@@ -1981,17 +2310,15 @@ func init() {
       "put": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
-              "writeEntries"
+              "entries:write"
             ]
-          },
-          {
-            "ApiKeyHeader": []
           }
         ],
         "consumes": [
@@ -2108,17 +2435,15 @@ func init() {
       "delete": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
-              "writeEntries"
+              "entries:write"
             ]
-          },
-          {
-            "ApiKeyHeader": []
           }
         ],
         "tags": [
@@ -2153,6 +2478,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -2188,6 +2521,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "consumes": [
@@ -2240,6 +2581,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "consumes": [
@@ -2287,6 +2634,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -2311,6 +2666,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "favorites:write"
+            ]
           }
         ],
         "tags": [
@@ -2335,6 +2698,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "favorites:write"
+            ]
           }
         ],
         "tags": [
@@ -2366,6 +2737,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -2396,6 +2775,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -2434,6 +2821,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -2471,6 +2866,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -2495,6 +2898,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "watchings:write"
+            ]
           }
         ],
         "tags": [
@@ -2519,6 +2930,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "watchings:write"
+            ]
           }
         ],
         "tags": [
@@ -2550,6 +2969,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "consumes": [
@@ -2587,6 +3014,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -2617,6 +3052,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:write"
+            ]
           }
         ],
         "tags": [
@@ -2651,6 +3094,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -2669,6 +3120,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -2767,6 +3226,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -2801,6 +3268,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -2829,6 +3304,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -2863,6 +3346,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -2897,6 +3388,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -2928,6 +3427,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -2959,6 +3466,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -2990,6 +3505,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -3021,6 +3544,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -3058,6 +3589,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -3089,6 +3628,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "tags": [
@@ -3117,6 +3662,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -3148,6 +3701,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -3173,6 +3734,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -3211,6 +3780,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:write"
+            ]
           }
         ],
         "consumes": [
@@ -3317,6 +3894,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -3347,6 +3932,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "consumes": [
@@ -3391,6 +3984,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "tags": [
@@ -3425,6 +4026,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -3462,6 +4071,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -3495,6 +4112,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -3592,11 +4217,9 @@ func init() {
             "items": {
               "type": "string"
             },
-            "default": [
-              "read"
-            ],
             "name": "scope",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
@@ -3761,6 +4384,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -3785,6 +4416,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -3816,6 +4455,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -3854,6 +4501,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "consumes": [
@@ -3899,6 +4554,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -3923,6 +4586,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -3966,6 +4637,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -3997,6 +4676,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -4054,6 +4741,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -4088,6 +4786,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -4127,6 +4836,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -4172,6 +4889,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -4220,6 +4945,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -4268,6 +5001,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -4310,6 +5051,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -4361,6 +5110,14 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -4398,6 +5155,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -5656,8 +6424,27 @@ func init() {
       "authorizationUrl": "/oauth2/auth",
       "tokenUrl": "/oauth2/token",
       "scopes": {
-        "read": "base read access",
-        "writeEntries": "create and edit tlog entries"
+        "account:read": "read available invites, etc.",
+        "account:write": "change email, password, etc.",
+        "adm:read": "read adm info and statues",
+        "adm:write": "change adm info and update statuses",
+        "comments:read": "read comments and comment votes",
+        "comments:write": "create, edit and remove comments",
+        "entries:read": "read entries, entry votes, favorites, watchings, tags",
+        "entries:write": "create, edit and remove tlog entries",
+        "favotites:write": "add entries to favorites and remove",
+        "images:read": "get uploaded images",
+        "images:write": "upload new images",
+        "messages:read": "read chats and messages and set them read",
+        "messages:write": "create, edit and remove messages",
+        "notifications:read": "read notifications and set them read",
+        "relations:write": "follow, block, hide tlogs, accept followers, invite people",
+        "settings:read": "read account settings",
+        "settings:write": "change account settings",
+        "users:read": "read profile info, relations",
+        "users:write": "change profile info, avatar, etc.",
+        "votes:write": "vote and unvote entries and comments",
+        "watchings:write": "subscribe to entry comments and unsubscribe"
       }
     },
     "OAuth2Password": {
@@ -5675,7 +6462,7 @@ func init() {
   "swagger": "2.0",
   "info": {
     "title": "Mindwell",
-    "version": "0.1.0"
+    "version": "1.0"
   },
   "basePath": "/api/v1",
   "paths": {
@@ -5684,6 +6471,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:write"
+            ]
           }
         ],
         "consumes": [
@@ -5774,6 +6569,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:read"
+            ]
           }
         ],
         "tags": [
@@ -5884,6 +6687,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "account:write"
+            ]
           }
         ],
         "consumes": [
@@ -6103,6 +6914,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:read"
+            ]
           }
         ],
         "tags": [
@@ -6132,6 +6951,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "consumes": [
@@ -6173,6 +7000,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:read"
+            ]
           }
         ],
         "tags": [
@@ -6205,6 +7040,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "consumes": [
@@ -6252,6 +7095,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "tags": [
@@ -6275,6 +7126,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "settings:write"
+            ]
           }
         ],
         "tags": [
@@ -6292,6 +7151,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -6317,6 +7184,9 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           }
         ],
         "tags": [
@@ -6378,6 +7248,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -6430,6 +7308,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -6468,6 +7354,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "tags": [
@@ -6505,6 +7399,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -6555,6 +7457,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "consumes": [
@@ -6631,6 +7541,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -6669,6 +7587,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:write"
+            ]
           }
         ],
         "tags": [
@@ -6706,6 +7632,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "adm:read"
+            ]
           }
         ],
         "tags": [
@@ -6743,6 +7677,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -6785,6 +7727,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -6822,6 +7772,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -6868,6 +7826,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "consumes": [
@@ -6933,6 +7899,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -6984,6 +7958,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -7014,6 +7996,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "consumes": [
@@ -7059,6 +8049,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "tags": [
@@ -7098,6 +8096,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "consumes": [
@@ -7150,6 +8154,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -7180,6 +8192,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -7218,6 +8238,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -7260,6 +8288,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -7278,6 +8314,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -7347,6 +8391,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -7375,6 +8427,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7429,6 +8489,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:write"
+            ]
           }
         ],
         "consumes": [
@@ -7501,6 +8569,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7555,6 +8631,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7611,6 +8695,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7678,6 +8770,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7704,6 +8804,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7734,6 +8842,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -7775,6 +8891,12 @@ func init() {
       "get": {
         "security": [
           {
+            "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
+          },
+          {
             "Oauth2App": []
           },
           {
@@ -7782,14 +8904,8 @@ func init() {
           },
           {
             "OAuth2Code": [
-              "read"
+              "entries:read"
             ]
-          },
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "NoApiKey": []
           }
         ],
         "tags": [
@@ -7819,17 +8935,15 @@ func init() {
       "put": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
-              "writeEntries"
+              "entries:write"
             ]
-          },
-          {
-            "ApiKeyHeader": []
           }
         ],
         "consumes": [
@@ -7946,17 +9060,15 @@ func init() {
       "delete": {
         "security": [
           {
-            "OAuth2Password": [
-              "all"
-            ]
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
           },
           {
             "OAuth2Code": [
-              "writeEntries"
+              "entries:write"
             ]
-          },
-          {
-            "ApiKeyHeader": []
           }
         ],
         "tags": [
@@ -7996,6 +9108,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:read"
+            ]
           }
         ],
         "tags": [
@@ -8042,6 +9162,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "comments:write"
+            ]
           }
         ],
         "consumes": [
@@ -8099,6 +9227,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "consumes": [
@@ -8151,6 +9285,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -8175,6 +9317,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "favorites:write"
+            ]
           }
         ],
         "tags": [
@@ -8199,6 +9349,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "favorites:write"
+            ]
           }
         ],
         "tags": [
@@ -8235,6 +9393,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -8265,6 +9431,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -8303,6 +9477,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "votes:write"
+            ]
           }
         ],
         "tags": [
@@ -8345,6 +9527,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -8369,6 +9559,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "watchings:write"
+            ]
           }
         ],
         "tags": [
@@ -8393,6 +9591,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "watchings:write"
+            ]
           }
         ],
         "tags": [
@@ -8429,6 +9635,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "consumes": [
@@ -8466,6 +9680,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -8496,6 +9718,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:write"
+            ]
           }
         ],
         "tags": [
@@ -8535,6 +9765,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -8553,6 +9791,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -8651,6 +9897,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -8685,6 +9939,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -8721,6 +9983,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:write"
+            ]
           }
         ],
         "consumes": [
@@ -8755,6 +10025,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -8804,6 +10082,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -8846,6 +10132,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -8888,6 +10182,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -8930,6 +10232,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -8972,6 +10282,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -9020,6 +10338,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -9062,6 +10388,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": []
           }
         ],
         "tags": [
@@ -9090,6 +10422,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -9132,6 +10472,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -9162,6 +10510,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -9227,6 +10583,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:write"
+            ]
           }
         ],
         "consumes": [
@@ -9333,6 +10697,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:read"
+            ]
           }
         ],
         "tags": [
@@ -9363,6 +10735,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "consumes": [
@@ -9407,6 +10787,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "messages:write"
+            ]
           }
         ],
         "tags": [
@@ -9446,6 +10834,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -9494,6 +10890,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -9527,6 +10931,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "notifications:read"
+            ]
           }
         ],
         "tags": [
@@ -9634,11 +11046,9 @@ func init() {
             "items": {
               "type": "string"
             },
-            "default": [
-              "read"
-            ],
             "name": "scope",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
@@ -9803,6 +11213,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -9827,6 +11245,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -9858,6 +11284,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -9902,6 +11336,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "consumes": [
@@ -9953,6 +11395,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -9977,6 +11427,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -10020,6 +11478,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "relations:write"
+            ]
           }
         ],
         "tags": [
@@ -10057,6 +11523,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -10114,6 +11588,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -10154,6 +11639,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -10207,6 +11703,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -10273,6 +11777,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -10338,6 +11850,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -10403,6 +11923,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "images:read"
+            ]
           }
         ],
         "tags": [
@@ -10462,6 +11990,14 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "users:read"
+            ]
           }
         ],
         "tags": [
@@ -10530,6 +12066,14 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -10578,6 +12122,17 @@ func init() {
           },
           {
             "NoApiKey": []
+          },
+          {
+            "OAuth2App": []
+          },
+          {
+            "OAuth2Password": []
+          },
+          {
+            "OAuth2Code": [
+              "entries:read"
+            ]
           }
         ],
         "tags": [
@@ -12058,8 +13613,27 @@ func init() {
       "authorizationUrl": "/oauth2/auth",
       "tokenUrl": "/oauth2/token",
       "scopes": {
-        "read": "base read access",
-        "writeEntries": "create and edit tlog entries"
+        "account:read": "read available invites, etc.",
+        "account:write": "change email, password, etc.",
+        "adm:read": "read adm info and statues",
+        "adm:write": "change adm info and update statuses",
+        "comments:read": "read comments and comment votes",
+        "comments:write": "create, edit and remove comments",
+        "entries:read": "read entries, entry votes, favorites, watchings, tags",
+        "entries:write": "create, edit and remove tlog entries",
+        "favotites:write": "add entries to favorites and remove",
+        "images:read": "get uploaded images",
+        "images:write": "upload new images",
+        "messages:read": "read chats and messages and set them read",
+        "messages:write": "create, edit and remove messages",
+        "notifications:read": "read notifications and set them read",
+        "relations:write": "follow, block, hide tlogs, accept followers, invite people",
+        "settings:read": "read account settings",
+        "settings:write": "change account settings",
+        "users:read": "read profile info, relations",
+        "users:write": "change profile info, avatar, etc.",
+        "votes:write": "vote and unvote entries and comments",
+        "watchings:write": "subscribe to entry comments and unsubscribe"
       }
     },
     "OAuth2Password": {

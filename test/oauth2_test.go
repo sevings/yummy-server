@@ -228,7 +228,7 @@ func TestCodeToken(t *testing.T) {
 	scope = []string{"wrong scope"}
 	loadCode(false)
 
-	scope[0] = "read"
+	scope[0] = "entries:read"
 	code := loadCode(true)
 
 	loadToken := func(success bool) *oauth2.PostOauth2TokenOKBody {
@@ -281,7 +281,7 @@ func TestCodeChallengeToken(t *testing.T) {
 	sum := sha256.Sum256([]byte(verifier))
 	challenge := base64.URLEncoding.EncodeToString(sum[:])
 
-	scope := []string{"read"}
+	scope := []string{"entries:read"}
 	loadCode := func(success bool) string {
 		state := "test state"
 		method := "S256"
@@ -381,7 +381,7 @@ func TestPasswordFlow(t *testing.T) {
 	token := loadOAuth2Token(t, params, true)
 	auth := srv.API.OAuth2PasswordAuth
 
-	id, err := auth(token.AccessToken, []string{"read"})
+	id, err := auth(token.AccessToken, []string{"entries:read"})
 	req.Nil(err)
 	req.Equal(userIDs[0].ID, id.ID)
 
@@ -389,7 +389,7 @@ func TestPasswordFlow(t *testing.T) {
 	req.NotNil(err)
 
 	authCode := srv.API.OAuth2CodeAuth
-	id, err = authCode(token.AccessToken, []string{"read"})
+	id, err = authCode(token.AccessToken, []string{"entries:read"})
 	req.NotNil(err)
 
 	params.GrantType = "refresh_token"
@@ -399,7 +399,7 @@ func TestPasswordFlow(t *testing.T) {
 
 	token = loadOAuth2Token(t, params, true)
 
-	id, err = auth(token.AccessToken, []string{"read"})
+	id, err = auth(token.AccessToken, []string{"entries:read"})
 	req.Nil(err)
 	req.Equal(userIDs[0].ID, id.ID)
 
@@ -414,7 +414,7 @@ func TestCodeFlow(t *testing.T) {
 		ClientID:     app.id,
 		RedirectURI:  app.redirectUri,
 		ResponseType: "code",
-		Scope:        []string{"read"},
+		Scope:        []string{"entries:read"},
 	}
 	get := api.Oauth2GetOauth2AuthHandler.Handle
 	resp := get(codeParams, userIDs[0])
@@ -433,7 +433,7 @@ func TestCodeFlow(t *testing.T) {
 	token := loadOAuth2Token(t, params, true)
 	auth := srv.API.OAuth2CodeAuth
 
-	id, err := auth(token.AccessToken, []string{"read"})
+	id, err := auth(token.AccessToken, []string{"entries:read"})
 	req.Nil(err)
 	req.Equal(userIDs[0].ID, id.ID)
 
@@ -441,7 +441,7 @@ func TestCodeFlow(t *testing.T) {
 	req.NotNil(err)
 
 	authPass := srv.API.OAuth2PasswordAuth
-	id, err = authPass(token.AccessToken, []string{"read"})
+	id, err = authPass(token.AccessToken, []string{"entries:read"})
 	req.NotNil(err)
 
 	params.GrantType = "refresh_token"
@@ -451,7 +451,7 @@ func TestCodeFlow(t *testing.T) {
 
 	token = loadOAuth2Token(t, params, true)
 
-	id, err = auth(token.AccessToken, []string{"read"})
+	id, err = auth(token.AccessToken, []string{"entries:read"})
 	req.Nil(err)
 	req.Equal(userIDs[0].ID, id.ID)
 

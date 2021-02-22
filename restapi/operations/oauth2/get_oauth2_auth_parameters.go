@@ -17,18 +17,11 @@ import (
 )
 
 // NewGetOauth2AuthParams creates a new GetOauth2AuthParams object
-// with the default values initialized.
+//
+// There are no default values defined in the spec.
 func NewGetOauth2AuthParams() GetOauth2AuthParams {
 
-	var (
-		// initialize parameters with default values
-
-		scopeDefault = []string{"read"}
-	)
-
-	return GetOauth2AuthParams{
-		Scope: scopeDefault,
-	}
+	return GetOauth2AuthParams{}
 }
 
 // GetOauth2AuthParams contains all the bound params for the get oauth2 auth operation
@@ -64,8 +57,8 @@ type GetOauth2AuthParams struct {
 	*/
 	ResponseType string
 	/*
+	  Required: true
 	  In: query
-	  Default: []interface {}{"read"}
 	*/
 	Scope []string
 	/*
@@ -261,6 +254,9 @@ func (o *GetOauth2AuthParams) validateResponseType(formats strfmt.Registry) erro
 //
 // Arrays are parsed according to CollectionFormat: "" (defaults to "csv" when empty).
 func (o *GetOauth2AuthParams) bindScope(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	if !hasKey {
+		return errors.Required("scope", "query", rawData)
+	}
 	var qvScope string
 	if len(rawData) > 0 {
 		qvScope = rawData[len(rawData)-1]
@@ -269,8 +265,7 @@ func (o *GetOauth2AuthParams) bindScope(rawData []string, hasKey bool, formats s
 	// CollectionFormat:
 	scopeIC := swag.SplitByFormat(qvScope, "")
 	if len(scopeIC) == 0 {
-		// Default values have been previously initialized by NewGetOauth2AuthParams()
-		return nil
+		return errors.Required("scope", "query", scopeIC)
 	}
 
 	var scopeIR []string

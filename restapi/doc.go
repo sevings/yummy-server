@@ -6,7 +6,7 @@
 //    http
 //  Host: localhost
 //  BasePath: /api/v1
-//  Version: 0.1.0
+//  Version: 1.0
 //
 //  Consumes:
 //    - multipart/form-data

@@ -66,10 +66,69 @@ func scopeFromString(scopes []string) (uint32, error) {
 
 	for _, s := range scopes {
 		switch s {
-		case "read":
-			scope += 1
-		case "writeEntries":
-			scope += 2
+		case "account:read":
+			scope += 1 << 0
+			break
+		case "account:write":
+			scope += 1 << 1
+			break
+		case "adm:read":
+			scope += 1 << 2
+			break
+		case "adm:write":
+			scope += 1 << 3
+			break
+		case "comments:read":
+			scope += 1 << 4
+			break
+		case "comments:write":
+			scope += 1 << 5
+			break
+		case "entries:read":
+			scope += 1 << 6
+			break
+		case "entries:write":
+			scope += 1 << 7
+			break
+		case "favotites:write":
+			scope += 1 << 8
+			break
+		case "images:read":
+			scope += 1 << 9
+			break
+		case "images:write":
+			scope += 1 << 10
+			break
+		case "messages:read":
+			scope += 1 << 11
+			break
+		case "messages:write":
+			scope += 1 << 12
+			break
+		case "notifications:read":
+			scope += 1 << 13
+			break
+		case "relations:write":
+			scope += 1 << 14
+			break
+		case "settings:read":
+			scope += 1 << 15
+			break
+		case "settings:write":
+			scope += 1 << 16
+			break
+		case "users:read":
+			scope += 1 << 17
+			break
+		case "users:write":
+			scope += 1 << 18
+			break
+		case "votes:write":
+			scope += 1 << 19
+			break
+		case "watchings:write":
+			scope += 1 << 20
+			break
 		default:
 			return 0, fmt.Errorf("scope is invalid: %s", s)
 		}

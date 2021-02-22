@@ -399,6 +399,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		NoAPIKeyAuth: func(token string) (*models.UserID, error) {
 			return nil, errors.NotImplemented("api key auth (NoApiKey) X-User-Key from header param [X-User-Key] has not yet been implemented")
 		},
+		OAuth2AppAuth: func(token string, scopes []string) (*models.UserID, error) {
+			return nil, errors.NotImplemented("oauth2 bearer auth (OAuth2App) has not yet been implemented")
+		},
 		OAuth2CodeAuth: func(token string, scopes []string) (*models.UserID, error) {
 			return nil, errors.NotImplemented("oauth2 bearer auth (OAuth2Code) has not yet been implemented")
 		},
@@ -453,6 +456,10 @@ type MindwellAPI struct {
 	// NoAPIKeyAuth registers a function that takes a token and returns a principal
 	// it performs authentication based on an api key X-User-Key provided in the header
 	NoAPIKeyAuth func(string) (*models.UserID, error)
+
+	// OAuth2AppAuth registers a function that takes an access token and a collection of required scopes and returns a principal
+	// it performs authentication based on an oauth2 bearer token provided in the request
+	OAuth2AppAuth func(string, []string) (*models.UserID, error)
 
 	// OAuth2CodeAuth registers a function that takes an access token and a collection of required scopes and returns a principal
 	// it performs authentication based on an oauth2 bearer token provided in the request
@@ -770,6 +777,9 @@ func (o *MindwellAPI) Validate() error {
 	}
 	if o.NoAPIKeyAuth == nil {
 		unregistered = append(unregistered, "XUserKeyAuth")
+	}
+	if o.OAuth2AppAuth == nil {
+		unregistered = append(unregistered, "OAuth2AppAuth")
 	}
 	if o.OAuth2CodeAuth == nil {
 		unregistered = append(unregistered, "OAuth2CodeAuth")
@@ -1136,6 +1146,11 @@ func (o *MindwellAPI) AuthenticatorsFor(schemes map[string]spec.SecurityScheme) 
 			scheme := schemes[name]
 			result[name] = o.APIKeyAuthenticator(scheme.Name, scheme.In, func(token string) (interface{}, error) {
 				return o.NoAPIKeyAuth(token)
+			})
+
+		case "OAuth2App":
+			result[name] = o.BearerAuthenticator(name, func(token string, scopes []string) (interface{}, error) {
+				return o.OAuth2AppAuth(token, scopes)
 			})
 
 		case "OAuth2Code":
