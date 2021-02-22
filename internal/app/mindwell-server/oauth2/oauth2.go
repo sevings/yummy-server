@@ -61,80 +61,65 @@ type authData struct {
 
 var authCache = cache.New(15*time.Minute, time.Hour)
 
+var allScopes = [...]string{
+	"account:read",
+	"account:write",
+	"adm:read",
+	"adm:write",
+	"comments:read",
+	"comments:write",
+	"entries:read",
+	"entries:write",
+	"favotites:write",
+	"images:read",
+	"images:write",
+	"messages:read",
+	"messages:write",
+	"notifications:read",
+	"relations:write",
+	"settings:read",
+	"settings:write",
+	"users:read",
+	"users:write",
+	"votes:write",
+	"watchings:write",
+}
+
+func findScope(scope string) (uint32, error) {
+	for i, s := range allScopes {
+		if scope == s {
+			return 1 << i, nil
+		}
+	}
+
+	return 0, fmt.Errorf("scope is invalid: %s", scope)
+}
+
 func scopeFromString(scopes []string) (uint32, error) {
 	var scope uint32
 
 	for _, s := range scopes {
-		switch s {
-		case "account:read":
-			scope += 1 << 0
-			break
-		case "account:write":
-			scope += 1 << 1
-			break
-		case "adm:read":
-			scope += 1 << 2
-			break
-		case "adm:write":
-			scope += 1 << 3
-			break
-		case "comments:read":
-			scope += 1 << 4
-			break
-		case "comments:write":
-			scope += 1 << 5
-			break
-		case "entries:read":
-			scope += 1 << 6
-			break
-		case "entries:write":
-			scope += 1 << 7
-			break
-		case "favotites:write":
-			scope += 1 << 8
-			break
-		case "images:read":
-			scope += 1 << 9
-			break
-		case "images:write":
-			scope += 1 << 10
-			break
-		case "messages:read":
-			scope += 1 << 11
-			break
-		case "messages:write":
-			scope += 1 << 12
-			break
-		case "notifications:read":
-			scope += 1 << 13
-			break
-		case "relations:write":
-			scope += 1 << 14
-			break
-		case "settings:read":
-			scope += 1 << 15
-			break
-		case "settings:write":
-			scope += 1 << 16
-			break
-		case "users:read":
-			scope += 1 << 17
-			break
-		case "users:write":
-			scope += 1 << 18
-			break
-		case "votes:write":
-			scope += 1 << 19
-			break
-		case "watchings:write":
-			scope += 1 << 20
-			break
-		default:
-			return 0, fmt.Errorf("scope is invalid: %s", s)
+		n, err := findScope(s)
+		if err != nil {
+			return 0, err
 		}
+
+		scope += n
 	}
 
 	return scope, nil
+}
+
+func scopeToString(scope uint32) []string {
+	var scopes []string
+
+	for i, s := range allScopes {
+		if scope|1<<i == scope {
+			scopes = append(scopes, s)
+		}
+	}
+
+	return scopes
 }
 
 func newOAuth2User(db *sql.DB, flowReq flow) func(string, []string) (*models.UserID, error) {
@@ -276,6 +261,7 @@ func createTokens(tx *utils.AutoTx, appID, userID int64, scope uint32, userName 
 		ExpiresIn:    accessTokenLifetime,
 		RefreshToken: refreshToken,
 		TokenType:    oauth2.PostOauth2TokenOKBodyTokenTypeBearer,
+		Scope:        scopeToString(scope),
 	}
 
 	return resp

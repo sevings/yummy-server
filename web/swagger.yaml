@@ -1375,7 +1375,9 @@ paths:
               refresh_token:
                 type: string
               scope:
-                type: string
+                type: array
+                items:
+                  type: string
   /oauth2/apps/{id}:
     get:
       security:

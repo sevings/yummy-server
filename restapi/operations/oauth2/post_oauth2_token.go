@@ -76,7 +76,7 @@ type PostOauth2TokenOKBody struct {
 	RefreshToken string `json:"refresh_token,omitempty"`
 
 	// scope
-	Scope string `json:"scope,omitempty"`
+	Scope []string `json:"scope"`
 
 	// token type
 	// Enum: [bearer]

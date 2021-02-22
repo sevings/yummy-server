@@ -116,6 +116,7 @@ func loadOAuth2Token(t *testing.T, params oauth2.PostOauth2TokenParams, success 
 
 	if params.GrantType != "client_credentials" {
 		req.NotEmpty(token.RefreshToken)
+		req.NotEmpty(token.Scope)
 	}
 
 	return token
@@ -261,7 +262,8 @@ func TestCodeToken(t *testing.T) {
 	loadCode(false)
 	app.redirectUri = uri
 
-	loadToken(true)
+	token := loadToken(true)
+	req.Equal(scope, token.Scope)
 
 	loadToken(false)
 
@@ -327,7 +329,9 @@ func TestCodeChallengeToken(t *testing.T) {
 	loadToken(false)
 	verifier = ver
 
-	loadToken(true)
+	token := loadToken(true)
+	req.Equal(scope, token.Scope)
+
 	loadToken(false)
 
 	removeOAuth2App(app)

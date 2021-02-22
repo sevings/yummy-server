@@ -4353,7 +4353,10 @@ func init() {
                   "type": "string"
                 },
                 "scope": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "token_type": {
                   "type": "string",
@@ -11182,7 +11185,10 @@ func init() {
                   "type": "string"
                 },
                 "scope": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "token_type": {
                   "type": "string",
