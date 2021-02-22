@@ -6053,9 +6053,11 @@ func init() {
             "invalid_redirect",
             "invalid_request",
             "invalid_scope",
+            "invalid_token",
             "server_error",
             "temporarily_unavailable",
             "unauthorized_client",
+            "unrecognized_client",
             "unsupported_grant_type",
             "unsupported_response_type"
           ]
@@ -13197,9 +13199,11 @@ func init() {
             "invalid_redirect",
             "invalid_request",
             "invalid_scope",
+            "invalid_token",
             "server_error",
             "temporarily_unavailable",
             "unauthorized_client",
+            "unrecognized_client",
             "unsupported_grant_type",
             "unsupported_response_type"
           ]

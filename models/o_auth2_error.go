@@ -21,7 +21,7 @@ import (
 type OAuth2Error struct {
 
 	// error
-	// Enum: [access_denied invalid_client invalid_grant invalid_redirect invalid_request invalid_scope server_error temporarily_unavailable unauthorized_client unsupported_grant_type unsupported_response_type]
+	// Enum: [access_denied invalid_client invalid_grant invalid_redirect invalid_request invalid_scope invalid_token server_error temporarily_unavailable unauthorized_client unrecognized_client unsupported_grant_type unsupported_response_type]
 	Error string `json:"error,omitempty"`
 }
 
@@ -43,7 +43,7 @@ var oAuth2ErrorTypeErrorPropEnum []interface{}
 
 func init() {
 	var res []string
-	if err := json.Unmarshal([]byte(`["access_denied","invalid_client","invalid_grant","invalid_redirect","invalid_request","invalid_scope","server_error","temporarily_unavailable","unauthorized_client","unsupported_grant_type","unsupported_response_type"]`), &res); err != nil {
+	if err := json.Unmarshal([]byte(`["access_denied","invalid_client","invalid_grant","invalid_redirect","invalid_request","invalid_scope","invalid_token","server_error","temporarily_unavailable","unauthorized_client","unrecognized_client","unsupported_grant_type","unsupported_response_type"]`), &res); err != nil {
 		panic(err)
 	}
 	for _, v := range res {
@@ -71,6 +71,9 @@ const (
 	// OAuth2ErrorErrorInvalidScope captures enum value "invalid_scope"
 	OAuth2ErrorErrorInvalidScope string = "invalid_scope"
 
+	// OAuth2ErrorErrorInvalidToken captures enum value "invalid_token"
+	OAuth2ErrorErrorInvalidToken string = "invalid_token"
+
 	// OAuth2ErrorErrorServerError captures enum value "server_error"
 	OAuth2ErrorErrorServerError string = "server_error"
 
@@ -79,6 +82,9 @@ const (
 
 	// OAuth2ErrorErrorUnauthorizedClient captures enum value "unauthorized_client"
 	OAuth2ErrorErrorUnauthorizedClient string = "unauthorized_client"
+
+	// OAuth2ErrorErrorUnrecognizedClient captures enum value "unrecognized_client"
+	OAuth2ErrorErrorUnrecognizedClient string = "unrecognized_client"
 
 	// OAuth2ErrorErrorUnsupportedGrantType captures enum value "unsupported_grant_type"
 	OAuth2ErrorErrorUnsupportedGrantType string = "unsupported_grant_type"

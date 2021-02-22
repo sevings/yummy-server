@@ -342,17 +342,17 @@ func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *
 
 			auth, granted, err := checkCodeGrant(tx, params.ClientID)
 			if err != nil {
-				return getAuthBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+				return getAuthBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 			}
 			if auth.redirectUri != params.RedirectURI {
 				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
 			}
 			if !granted {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidGrant)
 			}
 
 			if auth.appSecret == "" && params.CodeChallenge == nil {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
+				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
 
 			resp := &oauth2.GetOauth2AuthOKBody{
@@ -409,12 +409,12 @@ func postTokenBadRequest(err string) middleware.Responder {
 func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64, name, password string) middleware.Responder {
 	userID, userName := loadUserByPassword(srv, tx, name, password)
 	if userID == 0 {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 	}
 
 	granted, err := checkPasswordGrant(tx, appID)
 	if err != nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 	}
 	if !granted {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidGrant)
@@ -423,7 +423,7 @@ func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int
 	var scope uint32 = 1<<31 - 1
 	resp := createTokens(tx, appID, userID, scope, userName)
 	if resp == nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
@@ -432,7 +432,7 @@ func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int
 func requestAppToken(tx *utils.AutoTx, appID int64, appSecret string) middleware.Responder {
 	appName, granted, err := checkAppGrant(tx, appID, appSecret)
 	if err != nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 	}
 	if !granted {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidGrant)
@@ -440,7 +440,7 @@ func requestAppToken(tx *utils.AutoTx, appID int64, appSecret string) middleware
 
 	appToken, err := createAppToken(tx, appID, appName)
 	if err != nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
 	resp := &oauth2.PostOauth2TokenOKBody{
@@ -459,8 +459,11 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, code, redirectUri string,
 	}
 
 	auth := authValue.(authData)
-	if auth.appID != appID || auth.redirectUri != redirectUri {
-		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+	if auth.appID != appID {
+		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+	}
+	if auth.redirectUri != redirectUri {
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
 	}
 
 	if auth.appSecret != "" {
@@ -492,7 +495,7 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, code, redirectUri string,
 
 	resp := createTokens(tx, auth.appID, auth.userID, auth.scope, auth.userName)
 	if resp == nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
 	authCache.Delete(code)
@@ -509,12 +512,12 @@ RETURNING scope, valid_thru
 
 	idToken := strings.Split(token, ".")
 	if len(idToken) != 2 {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidToken)
 	}
 
 	userID, err := strconv.ParseInt(idToken[0], 32, 32)
 	if err != nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidToken)
 	}
 
 	hash := sha256.Sum256([]byte(idToken[1]))
@@ -524,13 +527,13 @@ RETURNING scope, valid_thru
 	tx.Query(query, appID, userID, hash[:]).Scan(&scope, &thru)
 
 	if scope == 0 || time.Now().After(thru) {
-		return postTokenBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidToken)
 	}
 
 	userName := tx.QueryString("SELECT name FROM users WHERE id = $1", userID)
 	resp := createTokens(tx, appID, userID, scope, userName)
 	if resp == nil {
-		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
