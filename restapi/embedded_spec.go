@@ -4299,12 +4299,13 @@ func init() {
           },
           {
             "type": "string",
-            "name": "code",
+            "default": "",
+            "name": "client_secret",
             "in": "formData"
           },
           {
             "type": "string",
-            "name": "client_secret",
+            "name": "code",
             "in": "formData"
           },
           {
@@ -11133,12 +11134,13 @@ func init() {
           },
           {
             "type": "string",
-            "name": "code",
+            "default": "",
+            "name": "client_secret",
             "in": "formData"
           },
           {
             "type": "string",
-            "name": "client_secret",
+            "name": "code",
             "in": "formData"
           },
           {

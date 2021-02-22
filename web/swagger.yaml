@@ -1329,10 +1329,11 @@ paths:
           type: integer
           required: true
         - in: formData
-          name: code
-          type: string
-        - in: formData
           name: client_secret
+          type: string
+          default: ""
+        - in: formData
+          name: code
           type: string
         - in: formData
           name: redirect_uri

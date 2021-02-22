@@ -128,10 +128,11 @@ func TestPasswordToken(t *testing.T) {
 	name := "test0"
 	pass := "test123"
 	params := oauth2.PostOauth2TokenParams{
-		GrantType: "password",
-		ClientID:  app.id,
-		Username:  &name,
-		Password:  &pass,
+		GrantType:    "password",
+		ClientID:     app.id,
+		ClientSecret: &app.secret,
+		Username:     &name,
+		Password:     &pass,
 	}
 
 	load := func(success bool) *oauth2.PostOauth2TokenOKBody {
@@ -143,6 +144,10 @@ func TestPasswordToken(t *testing.T) {
 	params.ClientID++
 	load(false)
 	params.ClientID--
+
+	params.ClientSecret = &name
+	load(false)
+	params.ClientSecret = &app.secret
 
 	name = "TesT0"
 	load(true)
@@ -343,10 +348,11 @@ func TestRefreshToken(t *testing.T) {
 	name := "test0"
 	pass := "test123"
 	params := oauth2.PostOauth2TokenParams{
-		GrantType: "password",
-		ClientID:  app.id,
-		Username:  &name,
-		Password:  &pass,
+		GrantType:    "password",
+		ClientID:     app.id,
+		ClientSecret: &app.secret,
+		Username:     &name,
+		Password:     &pass,
 	}
 
 	token := loadOAuth2Token(t, params, true)
@@ -357,6 +363,11 @@ func TestRefreshToken(t *testing.T) {
 	params.Password = nil
 
 	time.Sleep(10 * time.Millisecond)
+
+	params.ClientSecret = &name
+	loadOAuth2Token(t, params, false)
+	params.ClientSecret = &app.secret
+
 	token2 := loadOAuth2Token(t, params, true)
 
 	req := require.New(t)
@@ -376,10 +387,11 @@ func TestPasswordFlow(t *testing.T) {
 	name := "test0"
 	pass := "test123"
 	params := oauth2.PostOauth2TokenParams{
-		GrantType: "password",
-		ClientID:  app.id,
-		Username:  &name,
-		Password:  &pass,
+		GrantType:    "password",
+		ClientID:     app.id,
+		ClientSecret: &app.secret,
+		Username:     &name,
+		Password:     &pass,
 	}
 
 	token := loadOAuth2Token(t, params, true)

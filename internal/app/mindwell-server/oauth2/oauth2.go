@@ -298,15 +298,15 @@ WHERE id = $1
 	return auth, granted, tx.Error()
 }
 
-func checkPasswordGrant(tx *utils.AutoTx, appID int64) (bool, error) {
+func checkPasswordGrant(tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
 	const grantQuery = `
 SELECT flow, ban
 FROM apps
-WHERE id = $1
+WHERE id = $1 AND secret = $2
 `
 	var ban bool
 	var f flow
-	tx.Query(grantQuery, appID).Scan(&f, &ban)
+	tx.Query(grantQuery, appID, appSecret).Scan(&f, &ban)
 
 	granted := !ban && f&passwordFlow == passwordFlow
 	return granted, tx.Error()
@@ -325,6 +325,17 @@ WHERE id = $1 AND secret = $2
 
 	granted := !ban && f&appFlow == appFlow
 	return name, granted, tx.Error()
+}
+
+func checkRefreshGrant(tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
+	const query = `
+SELECT ban
+FROM apps
+WHERE id = $1 AND secret = $2
+`
+
+	ban := tx.QueryBool(query, appID, appSecret)
+	return !ban, tx.Error()
 }
 
 func getAuthBadRequest(err string) middleware.Responder {
@@ -406,13 +417,13 @@ func postTokenBadRequest(err string) middleware.Responder {
 	return oauth2.NewPostOauth2TokenBadRequest().WithPayload(&body)
 }
 
-func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64, name, password string) middleware.Responder {
+func requestPasswordToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64, appSecret, name, password string) middleware.Responder {
 	userID, userName := loadUserByPassword(srv, tx, name, password)
 	if userID == 0 {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 	}
 
-	granted, err := checkPasswordGrant(tx, appID)
+	granted, err := checkPasswordGrant(tx, appID, appSecret)
 	if err != nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 	}
@@ -503,12 +514,20 @@ func requestAccessToken(tx *utils.AutoTx, appID int64, code, redirectUri string,
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func requestRefreshToken(tx *utils.AutoTx, appID int64, token string) middleware.Responder {
+func requestRefreshToken(tx *utils.AutoTx, appID int64, appSecret, token string) middleware.Responder {
 	const query = `
 DELETE FROM refresh_tokens
 WHERE app_id = $1 AND user_id = $2 AND token_hash = $3
 RETURNING scope, valid_thru
 `
+
+	granted, err := checkRefreshGrant(tx, appID, appSecret)
+	if err != nil {
+		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+	}
+	if !granted {
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+	}
 
 	idToken := strings.Split(token, ".")
 	if len(idToken) != 2 {
@@ -547,7 +566,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestPasswordToken(srv, tx, params.ClientID, *params.Username, *params.Password)
+				return requestPasswordToken(srv, tx, params.ClientID, *params.ClientSecret, *params.Username, *params.Password)
 			}
 
 			if params.GrantType == "authorization_code" {
@@ -559,7 +578,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 			}
 
 			if params.GrantType == "client_credentials" {
-				if params.ClientSecret == nil {
+				if *params.ClientSecret == "" {
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
@@ -571,7 +590,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestRefreshToken(tx, params.ClientID, *params.RefreshToken)
+				return requestRefreshToken(tx, params.ClientID, *params.ClientSecret, *params.RefreshToken)
 			}
 
 			return postTokenBadRequest(models.OAuth2ErrorErrorUnsupportedGrantType)

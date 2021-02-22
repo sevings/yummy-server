@@ -24,11 +24,18 @@ import (
 var PostOauth2TokenMaxParseMemory int64 = 32 << 20
 
 // NewPostOauth2TokenParams creates a new PostOauth2TokenParams object
-//
-// There are no default values defined in the spec.
+// with the default values initialized.
 func NewPostOauth2TokenParams() PostOauth2TokenParams {
 
-	return PostOauth2TokenParams{}
+	var (
+		// initialize parameters with default values
+
+		clientSecretDefault = string("")
+	)
+
+	return PostOauth2TokenParams{
+		ClientSecret: &clientSecretDefault,
+	}
 }
 
 // PostOauth2TokenParams contains all the bound params for the post oauth2 token operation
@@ -47,6 +54,7 @@ type PostOauth2TokenParams struct {
 	ClientID int64
 	/*
 	  In: formData
+	  Default: ""
 	*/
 	ClientSecret *string
 	/*
@@ -186,6 +194,7 @@ func (o *PostOauth2TokenParams) bindClientSecret(rawData []string, hasKey bool, 
 	// Required: false
 
 	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewPostOauth2TokenParams()
 		return nil
 	}
 	o.ClientSecret = &raw
