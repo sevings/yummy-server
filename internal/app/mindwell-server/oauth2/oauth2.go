@@ -3,7 +3,6 @@ package oauth2
 import (
 	"bytes"
 	"crypto/sha256"
-	"database/sql"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -32,8 +31,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 	srv.API.NoAPIKeyAuth = utils.NoApiKeyAuth
-	srv.API.OAuth2PasswordAuth = newOAuth2User(srv.DB, passwordFlow)
-	srv.API.OAuth2CodeAuth = newOAuth2User(srv.DB, codeFlow)
+	srv.API.OAuth2PasswordAuth = newOAuth2User(srv, passwordFlow)
+	srv.API.OAuth2CodeAuth = newOAuth2User(srv, codeFlow)
 
 	srv.API.Oauth2GetOauth2AuthHandler = oauth2.GetOauth2AuthHandlerFunc(newOAuth2Auth(srv))
 	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
@@ -64,6 +63,9 @@ var authCache = cache.New(15*time.Minute, time.Hour)
 
 type hasher interface {
 	AppSecretHash(secret string) []byte
+	AppTokenHash(secret string) []byte
+	AccessTokenHash(secret string) []byte
+	RefreshTokenHash(secret string) []byte
 	PasswordHash(password string) []byte
 }
 
@@ -128,7 +130,7 @@ func scopeToString(scope uint32) []string {
 	return scopes
 }
 
-func newOAuth2User(db *sql.DB, flowReq flow) func(string, []string) (*models.UserID, error) {
+func newOAuth2User(srv *utils.MindwellServer, flowReq flow) func(string, []string) (*models.UserID, error) {
 	const query = `
 SELECT scope, flow, ban
 FROM access_tokens
@@ -156,10 +158,10 @@ WHERE lower(users.name) = lower($1)
 		}
 
 		name := nameToken[0]
-		hash := sha256.Sum256([]byte(accessToken))
+		hash := srv.AccessTokenHash(nameToken[1])
 		now := time.Now()
 
-		tx := utils.NewAutoTx(db)
+		tx := utils.NewAutoTx(srv.DB)
 		defer tx.Finish()
 
 		var scopeEx uint32
@@ -178,7 +180,7 @@ WHERE lower(users.name) = lower($1)
 	}
 }
 
-func newOAuth2App(db *sql.DB) func(string) error {
+func newOAuth2App(srv *utils.MindwellServer) func(string) error {
 	const query = `
 SELECT ban, flow
 FROM app_tokens
@@ -196,14 +198,14 @@ WHERE lower(apps.name) = lower($1)
 
 		appToken := nameToken[1]
 		if len(appToken) != appTokenLength {
-			return fmt.Errorf("access token is invalid: %s", token)
+			return fmt.Errorf("app token is invalid: %s", token)
 		}
 
 		name := nameToken[0]
-		hash := sha256.Sum256([]byte(appToken))
+		hash := srv.AppTokenHash(appToken)
 		now := time.Now()
 
-		tx := utils.NewAutoTx(db)
+		tx := utils.NewAutoTx(srv.DB)
 		defer tx.Finish()
 
 		var ban bool
@@ -221,9 +223,9 @@ WHERE lower(apps.name) = lower($1)
 	}
 }
 
-func createAccessToken(tx *utils.AutoTx, appID, userID int64, scope uint32, name string) (string, error) {
+func createAccessToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, name string) (string, error) {
 	token := utils.GenerateString(accessTokenLength)
-	hash := sha256.Sum256([]byte(token))
+	hash := h.AccessTokenHash(token)
 	thru := time.Now().Add(accessTokenLifetime * time.Second)
 
 	const query = `
@@ -236,9 +238,9 @@ VALUES($1, $2, $3, $4, $5)
 	return name + "." + token, tx.Error()
 }
 
-func createRefreshToken(tx *utils.AutoTx, appID, userID int64, scope uint32) (string, error) {
+func createRefreshToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32) (string, error) {
 	token := utils.GenerateString(refreshTokenLength)
-	hash := sha256.Sum256([]byte(token))
+	hash := h.RefreshTokenHash(token)
 	thru := time.Now().Add(refreshTokenLifetime * time.Second)
 
 	const query = `
@@ -252,13 +254,13 @@ VALUES($1, $2, $3, $4, $5)
 	return id + "." + token, tx.Error()
 }
 
-func createTokens(tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *oauth2.PostOauth2TokenOKBody {
-	refreshToken, err := createRefreshToken(tx, appID, userID, scope)
+func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *oauth2.PostOauth2TokenOKBody {
+	refreshToken, err := createRefreshToken(h, tx, appID, userID, scope)
 	if err != nil {
 		return nil
 	}
 
-	accessToken, err := createAccessToken(tx, appID, userID, scope, userName)
+	accessToken, err := createAccessToken(h, tx, appID, userID, scope, userName)
 	if err != nil {
 		return nil
 	}
@@ -274,14 +276,14 @@ func createTokens(tx *utils.AutoTx, appID, userID int64, scope uint32, userName 
 	return resp
 }
 
-func createAppToken(tx *utils.AutoTx, appID int64, appName string) (string, error) {
+func createAppToken(h hasher, tx *utils.AutoTx, appID int64, appName string) (string, error) {
 	const query = `
 INSERT INTO app_tokens(app_id, token_hash, valid_thru)
 VALUES($1, $2, $3)
 `
 
 	token := utils.GenerateString(appTokenLength)
-	hash := sha256.Sum256([]byte(token))
+	hash := h.AppTokenHash(token)
 	thru := time.Now().Add(appTokenLifetime * time.Second)
 
 	tx.Exec(query, appID, hash[:], thru)
@@ -452,7 +454,7 @@ func requestPasswordToken(h hasher, tx *utils.AutoTx, appID int64, appSecret, na
 	}
 
 	var scope uint32 = 1<<31 - 1
-	resp := createTokens(tx, appID, userID, scope, userName)
+	resp := createTokens(h, tx, appID, userID, scope, userName)
 	if resp == nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
@@ -469,7 +471,7 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidGrant)
 	}
 
-	appToken, err := createAppToken(tx, appID, appName)
+	appToken, err := createAppToken(h, tx, appID, appName)
 	if err != nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
@@ -483,7 +485,7 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func requestAccessToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
+func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
 	authValue, found := authCache.Get(code)
 	if !found {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
@@ -502,7 +504,7 @@ func requestAccessToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64
 			return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
 
-		sum := srv.AppSecretHash(*appSecret)
+		sum := h.AppSecretHash(*appSecret)
 		if !bytes.Equal(auth.secretHash, sum) {
 			return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
@@ -525,7 +527,7 @@ func requestAccessToken(srv *utils.MindwellServer, tx *utils.AutoTx, appID int64
 		}
 	}
 
-	resp := createTokens(tx, auth.appID, auth.userID, auth.scope, auth.userName)
+	resp := createTokens(h, tx, auth.appID, auth.userID, auth.scope, auth.userName)
 	if resp == nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
@@ -560,7 +562,7 @@ RETURNING scope, valid_thru
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidToken)
 	}
 
-	hash := sha256.Sum256([]byte(idToken[1]))
+	hash := h.RefreshTokenHash(idToken[1])
 
 	var scope uint32
 	var thru time.Time
@@ -571,7 +573,7 @@ RETURNING scope, valid_thru
 	}
 
 	userName := tx.QueryString("SELECT name FROM users WHERE id = $1", userID)
-	resp := createTokens(tx, appID, userID, scope, userName)
+	resp := createTokens(h, tx, appID, userID, scope, userName)
 	if resp == nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
