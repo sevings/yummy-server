@@ -124,7 +124,7 @@ func scopeToString(scope uint32) []string {
 
 func newOAuth2User(db *sql.DB, flowReq flow) func(string, []string) (*models.UserID, error) {
 	const query = `
-SELECT scope, flow
+SELECT scope, flow, ban
 FROM access_tokens
 JOIN users ON users.id = user_id
 JOIN apps ON apps.id = app_id
@@ -158,12 +158,13 @@ WHERE lower(users.name) = lower($1)
 
 		var scopeEx uint32
 		var flowEx flow
-		tx.Query(query, name, hash[:], now).Scan(&scopeEx, &flowEx)
+		var ban bool
+		tx.Query(query, name, hash[:], now).Scan(&scopeEx, &flowEx, &ban)
 		if tx.Error() != nil {
 			return nil, fmt.Errorf("access token is invalid: %s", token)
 		}
 
-		if scopeEx&scopeReq != scopeReq || flowEx&flowReq != flowReq {
+		if ban || scopeEx&scopeReq != scopeReq || flowEx&flowReq != flowReq {
 			return nil, errors.New("access denied")
 		}
 
