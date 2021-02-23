@@ -4190,6 +4190,7 @@ func init() {
         "tags": [
           "oauth2"
         ],
+        "summary": "only for internal usage",
         "parameters": [
           {
             "enum": [
@@ -11025,6 +11026,7 @@ func init() {
         "tags": [
           "oauth2"
         ],
+        "summary": "only for internal usage",
         "parameters": [
           {
             "enum": [

@@ -354,7 +354,17 @@ func getAuthBadRequest(err string) middleware.Responder {
 }
 
 func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *models.UserID) middleware.Responder {
+	webIP := srv.ConfigString("web.ip")
+
 	return func(params oauth2.GetOauth2AuthParams, userID *models.UserID) middleware.Responder {
+		if params.HTTPRequest != nil {
+			addr := params.HTTPRequest.RemoteAddr
+			ip := strings.Split(addr, ":")[0]
+			if ip != webIP {
+				return getAuthBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+			}
+		}
+
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			scope, err := scopeFromString(params.Scope)
 			if err != nil {

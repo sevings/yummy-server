@@ -36,7 +36,7 @@ func NewGetOauth2Auth(ctx *middleware.Context, handler GetOauth2AuthHandler) *Ge
 
 /* GetOauth2Auth swagger:route GET /oauth2/auth oauth2 getOauth2Auth
 
-GetOauth2Auth get oauth2 auth API
+only for internal usage
 
 */
 type GetOauth2Auth struct {
