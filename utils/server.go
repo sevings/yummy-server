@@ -204,6 +204,12 @@ func (srv *MindwellServer) Transact(txFunc func(*AutoTx) middleware.Responder) m
 	return Transact(srv.DB, txFunc)
 }
 
+func (srv *MindwellServer) AppSecretHash(secret string) []byte {
+	salt := srv.ConfigString("server.app_salt")
+	sum := sha256.Sum256([]byte(secret + salt))
+	return sum[:]
+}
+
 func (srv *MindwellServer) PasswordHash(password string) []byte {
 	salt := srv.ConfigString("server.pass_salt")
 	sum := sha256.Sum256([]byte(password + salt))

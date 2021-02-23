@@ -27,7 +27,7 @@ type appData struct {
 
 func createOauth2AppSecret(flow uint8, genSecret bool) *appData {
 	const query = `
-INSERT INTO apps(id, secret, redirect_uri, developer_id, flow, name, show_name, platform, info)
+INSERT INTO apps(id, secret_hash, redirect_uri, developer_id, flow, name, show_name, platform, info)
 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
 `
 
@@ -42,11 +42,14 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		info:        "Test application.",
 	}
 
+	var secretHash []byte
+
 	if genSecret {
 		app.secret = utils.GenerateString(64)
+		secretHash = srv.AppSecretHash(app.secret)
 	}
 
-	_, err := db.Exec(query, app.id, app.secret, app.redirectUri, app.devID, app.flow,
+	_, err := db.Exec(query, app.id, secretHash, app.redirectUri, app.devID, app.flow,
 		app.name, app.showName, app.platform, app.info)
 	if err != nil {
 		log.Println(err)

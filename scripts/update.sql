@@ -1,6 +1,6 @@
 CREATE TABLE "mindwell"."apps" (
     "id" Integer UNIQUE NOT NULL,
-    "secret" Text NOT NULL,
+    "secret_hash" Bytea NOT NULL,
     "redirect_uri" Text NOT NULL,
     "developer_id" Integer NOT NULL,
     "flow" Smallint NOT NULL,
