@@ -57,6 +57,8 @@ type authData struct {
 	scope       uint32
 	challenge   string
 	method      string
+	access      string
+	refresh     string
 }
 
 var authCache = cache.New(15*time.Minute, time.Hour)
@@ -158,7 +160,7 @@ WHERE lower(users.name) = lower($1)
 		}
 
 		name := nameToken[0]
-		hash := srv.AccessTokenHash(nameToken[1])
+		hash := srv.AccessTokenHash(token)
 		now := time.Now()
 
 		tx := utils.NewAutoTx(srv.DB)
@@ -202,7 +204,7 @@ WHERE lower(apps.name) = lower($1)
 		}
 
 		name := nameToken[0]
-		hash := srv.AppTokenHash(appToken)
+		hash := srv.AppTokenHash(token)
 		now := time.Now()
 
 		tx := utils.NewAutoTx(srv.DB)
@@ -224,7 +226,7 @@ WHERE lower(apps.name) = lower($1)
 }
 
 func createAccessToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, name string) (string, error) {
-	token := utils.GenerateString(accessTokenLength)
+	token := name + "." + utils.GenerateString(accessTokenLength)
 	hash := h.AccessTokenHash(token)
 	thru := time.Now().Add(accessTokenLifetime * time.Second)
 
@@ -235,11 +237,12 @@ VALUES($1, $2, $3, $4, $5)
 
 	tx.Exec(query, appID, userID, hash[:], scope, thru)
 
-	return name + "." + token, tx.Error()
+	return token, tx.Error()
 }
 
 func createRefreshToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32) (string, error) {
-	token := utils.GenerateString(refreshTokenLength)
+	id := strconv.FormatInt(userID, 32)
+	token := id + "." + utils.GenerateString(refreshTokenLength)
 	hash := h.RefreshTokenHash(token)
 	thru := time.Now().Add(refreshTokenLifetime * time.Second)
 
@@ -250,8 +253,7 @@ VALUES($1, $2, $3, $4, $5)
 
 	tx.Exec(query, appID, userID, hash[:], scope, thru)
 
-	id := strconv.FormatInt(userID, 32)
-	return id + "." + token, tx.Error()
+	return token, tx.Error()
 }
 
 func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *oauth2.PostOauth2TokenOKBody {
@@ -282,13 +284,13 @@ INSERT INTO app_tokens(app_id, token_hash, valid_thru)
 VALUES($1, $2, $3)
 `
 
-	token := utils.GenerateString(appTokenLength)
+	token := appName + "+" + utils.GenerateString(appTokenLength)
 	hash := h.AppTokenHash(token)
 	thru := time.Now().Add(appTokenLifetime * time.Second)
 
 	tx.Exec(query, appID, hash[:], thru)
 
-	return appName + "+" + token, tx.Error()
+	return token, tx.Error()
 }
 
 func checkCodeGrant(tx *utils.AutoTx, appID int64) (authData, bool, error) {
@@ -408,7 +410,7 @@ func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *
 				auth.method = *params.CodeChallengeMethod
 			}
 
-			authCache.SetDefault(resp.Code, auth)
+			authCache.SetDefault(resp.Code, &auth)
 
 			return oauth2.NewGetOauth2AuthOK().WithPayload(resp)
 		})
@@ -485,13 +487,21 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
+func revokeTokens(h hasher, tx *utils.AutoTx, userID int64, access, refresh string) {
+	const accessQuery = `DELETE FROM access_tokens WHERE user_id = $1 AND token_hash = $2`
+	tx.Exec(accessQuery, userID, h.AccessTokenHash(access))
+
+	const refreshQuery = `DELETE FROM refresh_tokens WHERE user_id = $1 AND token_hash = $2`
+	tx.Exec(refreshQuery, userID, h.RefreshTokenHash(refresh))
+}
+
 func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
 	authValue, found := authCache.Get(code)
 	if !found {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 	}
 
-	auth := authValue.(authData)
+	auth := authValue.(*authData)
 	if auth.appID != appID {
 		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 	}
@@ -527,12 +537,18 @@ func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectU
 		}
 	}
 
+	if len(auth.access) > 0 {
+		revokeTokens(h, tx, auth.userID, auth.access, auth.refresh)
+		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+	}
+
 	resp := createTokens(h, tx, auth.appID, auth.userID, auth.scope, auth.userName)
 	if resp == nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
-	authCache.Delete(code)
+	auth.access = resp.AccessToken
+	auth.refresh = resp.RefreshToken
 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
@@ -562,7 +578,7 @@ RETURNING scope, valid_thru
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidToken)
 	}
 
-	hash := h.RefreshTokenHash(idToken[1])
+	hash := h.RefreshTokenHash(token)
 
 	var scope uint32
 	var thru time.Time

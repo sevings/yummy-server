@@ -273,7 +273,13 @@ func TestCodeToken(t *testing.T) {
 	token := loadToken(true)
 	req.Equal(scope, token.Scope)
 
+	_, err := srv.API.OAuth2CodeAuth(token.AccessToken, []string{})
+	req.Nil(err)
+
 	loadToken(false)
+
+	_, err = srv.API.OAuth2CodeAuth(token.AccessToken, []string{})
+	req.NotNil(err)
 
 	removeOAuth2App(app)
 
