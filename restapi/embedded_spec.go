@@ -4208,12 +4208,14 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
             "in": "query",
             "required": true
           },
           {
+            "maxLength": 50,
             "type": "array",
             "items": {
               "type": "string"
@@ -4223,17 +4225,21 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "state",
             "in": "query"
           },
           {
+            "maxLength": 128,
+            "minLength": 43,
             "type": "string",
             "name": "code_challenge",
             "in": "query"
           },
           {
             "enum": [
+              "plain",
               "S256"
             ],
             "type": "string",
@@ -4299,27 +4305,32 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 32,
             "type": "string",
             "default": "",
             "name": "client_secret",
             "in": "formData"
           },
           {
+            "maxLength": 32,
             "type": "string",
             "name": "code",
             "in": "formData"
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
             "in": "formData"
           },
           {
+            "maxLength": 128,
             "type": "string",
             "name": "code_verifier",
             "in": "formData"
           },
           {
+            "maxLength": 48,
             "type": "string",
             "name": "refresh_token",
             "in": "formData"
@@ -11044,12 +11055,14 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
             "in": "query",
             "required": true
           },
           {
+            "maxLength": 50,
             "type": "array",
             "items": {
               "type": "string"
@@ -11059,17 +11072,21 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "state",
             "in": "query"
           },
           {
+            "maxLength": 128,
+            "minLength": 43,
             "type": "string",
             "name": "code_challenge",
             "in": "query"
           },
           {
             "enum": [
+              "plain",
               "S256"
             ],
             "type": "string",
@@ -11135,27 +11152,32 @@ func init() {
             "required": true
           },
           {
+            "maxLength": 32,
             "type": "string",
             "default": "",
             "name": "client_secret",
             "in": "formData"
           },
           {
+            "maxLength": 32,
             "type": "string",
             "name": "code",
             "in": "formData"
           },
           {
+            "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
             "in": "formData"
           },
           {
+            "maxLength": 128,
             "type": "string",
             "name": "code_verifier",
             "in": "formData"
           },
           {
+            "maxLength": 48,
             "type": "string",
             "name": "refresh_token",
             "in": "formData"

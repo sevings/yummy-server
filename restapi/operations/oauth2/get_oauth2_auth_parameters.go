@@ -39,6 +39,8 @@ type GetOauth2AuthParams struct {
 	*/
 	ClientID int64
 	/*
+	  Max Length: 128
+	  Min Length: 43
 	  In: query
 	*/
 	CodeChallenge *string
@@ -48,6 +50,7 @@ type GetOauth2AuthParams struct {
 	CodeChallengeMethod *string
 	/*
 	  Required: true
+	  Max Length: 500
 	  In: query
 	*/
 	RedirectURI string
@@ -62,6 +65,7 @@ type GetOauth2AuthParams struct {
 	*/
 	Scope []string
 	/*
+	  Max Length: 500
 	  In: query
 	*/
 	State *string
@@ -159,6 +163,24 @@ func (o *GetOauth2AuthParams) bindCodeChallenge(rawData []string, hasKey bool, f
 	}
 	o.CodeChallenge = &raw
 
+	if err := o.validateCodeChallenge(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateCodeChallenge carries on validations for parameter CodeChallenge
+func (o *GetOauth2AuthParams) validateCodeChallenge(formats strfmt.Registry) error {
+
+	if err := validate.MinLength("code_challenge", "query", *o.CodeChallenge, 43); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("code_challenge", "query", *o.CodeChallenge, 128); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -187,7 +209,7 @@ func (o *GetOauth2AuthParams) bindCodeChallengeMethod(rawData []string, hasKey b
 // validateCodeChallengeMethod carries on validations for parameter CodeChallengeMethod
 func (o *GetOauth2AuthParams) validateCodeChallengeMethod(formats strfmt.Registry) error {
 
-	if err := validate.EnumCase("code_challenge_method", "query", *o.CodeChallengeMethod, []interface{}{"S256"}, true); err != nil {
+	if err := validate.EnumCase("code_challenge_method", "query", *o.CodeChallengeMethod, []interface{}{"plain", "S256"}, true); err != nil {
 		return err
 	}
 
@@ -211,6 +233,20 @@ func (o *GetOauth2AuthParams) bindRedirectURI(rawData []string, hasKey bool, for
 		return err
 	}
 	o.RedirectURI = raw
+
+	if err := o.validateRedirectURI(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateRedirectURI carries on validations for parameter RedirectURI
+func (o *GetOauth2AuthParams) validateRedirectURI(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("redirect_uri", "query", o.RedirectURI, 500); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -294,6 +330,20 @@ func (o *GetOauth2AuthParams) bindState(rawData []string, hasKey bool, formats s
 		return nil
 	}
 	o.State = &raw
+
+	if err := o.validateState(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateState carries on validations for parameter State
+func (o *GetOauth2AuthParams) validateState(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("state", "query", *o.State, 500); err != nil {
+		return err
+	}
 
 	return nil
 }

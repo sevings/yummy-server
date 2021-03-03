@@ -53,15 +53,18 @@ type PostOauth2TokenParams struct {
 	*/
 	ClientID int64
 	/*
+	  Max Length: 32
 	  In: formData
 	  Default: ""
 	*/
 	ClientSecret *string
 	/*
+	  Max Length: 32
 	  In: formData
 	*/
 	Code *string
 	/*
+	  Max Length: 128
 	  In: formData
 	*/
 	CodeVerifier *string
@@ -77,10 +80,12 @@ type PostOauth2TokenParams struct {
 	*/
 	Password *string
 	/*
+	  Max Length: 500
 	  In: formData
 	*/
 	RedirectURI *string
 	/*
+	  Max Length: 48
 	  In: formData
 	*/
 	RefreshToken *string
@@ -199,6 +204,20 @@ func (o *PostOauth2TokenParams) bindClientSecret(rawData []string, hasKey bool, 
 	}
 	o.ClientSecret = &raw
 
+	if err := o.validateClientSecret(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateClientSecret carries on validations for parameter ClientSecret
+func (o *PostOauth2TokenParams) validateClientSecret(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("client_secret", "formData", *o.ClientSecret, 32); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -216,6 +235,20 @@ func (o *PostOauth2TokenParams) bindCode(rawData []string, hasKey bool, formats 
 	}
 	o.Code = &raw
 
+	if err := o.validateCode(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateCode carries on validations for parameter Code
+func (o *PostOauth2TokenParams) validateCode(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("code", "formData", *o.Code, 32); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -232,6 +265,20 @@ func (o *PostOauth2TokenParams) bindCodeVerifier(rawData []string, hasKey bool, 
 		return nil
 	}
 	o.CodeVerifier = &raw
+
+	if err := o.validateCodeVerifier(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateCodeVerifier carries on validations for parameter CodeVerifier
+func (o *PostOauth2TokenParams) validateCodeVerifier(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("code_verifier", "formData", *o.CodeVerifier, 128); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -319,6 +366,20 @@ func (o *PostOauth2TokenParams) bindRedirectURI(rawData []string, hasKey bool, f
 	}
 	o.RedirectURI = &raw
 
+	if err := o.validateRedirectURI(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateRedirectURI carries on validations for parameter RedirectURI
+func (o *PostOauth2TokenParams) validateRedirectURI(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("redirect_uri", "formData", *o.RedirectURI, 500); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -335,6 +396,20 @@ func (o *PostOauth2TokenParams) bindRefreshToken(rawData []string, hasKey bool, 
 		return nil
 	}
 	o.RefreshToken = &raw
+
+	if err := o.validateRefreshToken(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateRefreshToken carries on validations for parameter RefreshToken
+func (o *PostOauth2TokenParams) validateRefreshToken(formats strfmt.Registry) error {
+
+	if err := validate.MaxLength("refresh_token", "formData", *o.RefreshToken, 48); err != nil {
+		return err
+	}
 
 	return nil
 }

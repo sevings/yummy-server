@@ -1279,22 +1279,27 @@ paths:
           name: redirect_uri
           type: string
           required: true
+          maxLength: 500
         - in: query
           name: scope
           type: array
           required: true
           items:
             type: string
+          maxLength: 50
         - in: query
           name: state
           type: string
+          maxLength: 500
         - in: query
           name: code_challenge
           type: string
+          minLength: 43
+          maxLength: 128
         - in: query
           name: code_challenge_method
           type: string
-          enum: [ S256 ]
+          enum: [ plain, S256 ]
       responses:
         400:
           description: some error happened
@@ -1333,18 +1338,23 @@ paths:
           name: client_secret
           type: string
           default: ""
+          maxLength: 32
         - in: formData
           name: code
           type: string
+          maxLength: 32
         - in: formData
           name: redirect_uri
           type: string
+          maxLength: 500
         - in: formData
           name: code_verifier
           type: string
+          maxLength: 128
         - in: formData
           name: refresh_token
           type: string
+          maxLength: 48
         - in: formData
           name: username
           type: string
