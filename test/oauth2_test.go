@@ -293,14 +293,14 @@ func TestCodeChallengeToken(t *testing.T) {
 	req := require.New(t)
 	app := createOauth2AppSecret(2, false)
 
-	verifier := utils.GenerateString(32)
+	verifier := utils.GenerateString(48)
 	sum := sha256.Sum256([]byte(verifier))
 	challenge := base64.URLEncoding.EncodeToString(sum[:])
 
 	scope := []string{"entries:read"}
+	method := "S256"
 	loadCode := func(success bool) string {
 		state := "test state"
-		method := "S256"
 		params := oauth2.GetOauth2AuthParams{
 			ClientID:            app.id,
 			RedirectURI:         app.redirectUri,
@@ -347,6 +347,18 @@ func TestCodeChallengeToken(t *testing.T) {
 	req.Equal(scope, token.Scope)
 
 	loadToken(false)
+
+	verifier = utils.GenerateString(48)
+	challenge = verifier
+	method = "plain"
+
+	code = loadCode(true)
+
+	verifier = "wrong verifier"
+	loadToken(false)
+	verifier = challenge
+
+	loadToken(true)
 
 	removeOAuth2App(app)
 }

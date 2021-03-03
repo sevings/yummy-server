@@ -532,6 +532,12 @@ func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectU
 			if auth.challenge != ch {
 				return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
+		case "plain":
+			fallthrough
+		case "":
+			if auth.challenge != *verifier {
+				return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+			}
 		default:
 			return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 		}
