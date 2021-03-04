@@ -4150,6 +4150,9 @@ func init() {
       "get": {
         "security": [
           {
+            "ApiKeyHeader": []
+          },
+          {
             "OAuth2Password": []
           }
         ],
@@ -4180,6 +4183,9 @@ func init() {
     "/oauth2/auth": {
       "get": {
         "security": [
+          {
+            "ApiKeyHeader": []
+          },
           {
             "OAuth2Password": []
           }
@@ -6444,13 +6450,13 @@ func init() {
       "scopes": {
         "account:read": "read available invites, etc.",
         "account:write": "change email, password, etc.",
-        "adm:read": "read adm info and statues",
+        "adm:read": "read adm info and statuses",
         "adm:write": "change adm info and update statuses",
         "comments:read": "read comments and comment votes",
         "comments:write": "create, edit and remove comments",
         "entries:read": "read entries, entry votes, favorites, watchings, tags",
         "entries:write": "create, edit and remove tlog entries",
-        "favotites:write": "add entries to favorites and remove",
+        "favorites:write": "add entries to favorites and remove",
         "images:read": "get uploaded images",
         "images:write": "upload new images",
         "messages:read": "read chats and messages and set them read",
@@ -10992,6 +10998,9 @@ func init() {
       "get": {
         "security": [
           {
+            "ApiKeyHeader": []
+          },
+          {
             "OAuth2Password": []
           }
         ],
@@ -11027,6 +11036,9 @@ func init() {
     "/oauth2/auth": {
       "get": {
         "security": [
+          {
+            "ApiKeyHeader": []
+          },
           {
             "OAuth2Password": []
           }
@@ -13651,13 +13663,13 @@ func init() {
       "scopes": {
         "account:read": "read available invites, etc.",
         "account:write": "change email, password, etc.",
-        "adm:read": "read adm info and statues",
+        "adm:read": "read adm info and statuses",
         "adm:write": "change adm info and update statuses",
         "comments:read": "read comments and comment votes",
         "comments:write": "create, edit and remove comments",
         "entries:read": "read entries, entry votes, favorites, watchings, tags",
         "entries:write": "create, edit and remove tlog entries",
-        "favotites:write": "add entries to favorites and remove",
+        "favorites:write": "add entries to favorites and remove",
         "images:read": "get uploaded images",
         "images:write": "upload new images",
         "messages:read": "read chats and messages and set them read",
