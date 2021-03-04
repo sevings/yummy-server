@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/leporo/sqlf"
 	"go.uber.org/zap"
+	"math/rand"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -183,6 +184,8 @@ func (bot *TelegramBot) run() {
 				reply = bot.ban(&upd)
 			case "unban":
 				reply = bot.unban(&upd)
+			case "create":
+				reply = bot.create(&upd)
 			case "info":
 				reply = bot.info(&upd)
 			case "stat":
@@ -305,6 +308,7 @@ func (bot *TelegramBot) help(upd *tgbotapi.Update) string {
 <code>/unban {login или ссылка}</code> — разблокировать пользователя.
 <code>/info {email, login или ссылка}</code> — информация о пользователе.
 <code>/delete {email}</code> — удалить пользователя.
+<code>/create app {dev_name} {public | private} {code | password} {redirect_uri} {name} {show_name} {platform} {info}</code> - создать приложение.
 /stat — статистика сервера.
 `
 	}
@@ -455,6 +459,112 @@ func (bot *TelegramBot) unban(upd *tgbotapi.Update) string {
 
 	return "Пользователь " + login +
 		" разблокирован. Теперь можно запросить сброс пароля на почту " + email + "."
+}
+
+func (bot *TelegramBot) create(upd *tgbotapi.Update) string {
+	if !bot.isAdmin(upd) {
+		return unrecognisedText
+	}
+
+	if upd.Message.From == nil {
+		return errorText
+	}
+
+	args := strings.Split(upd.Message.CommandArguments(), "\n")
+	if len(args) < 2 {
+		return "Укажи необходимые аргументы."
+	}
+
+	if args[0] == "app" {
+		return bot.createApp(args[1:])
+	}
+
+	return unrecognisedText
+}
+
+func (bot *TelegramBot) createApp(args []string) string {
+	if len(args) < 8 {
+		return "Укажи необходимые аргументы."
+	}
+
+	devName := args[0]
+	appType := args[1]
+	appFlow := args[2]
+	redirectUri := args[3]
+	appName := args[4]
+	showName := args[5]
+	platform := args[6]
+	info := args[7]
+
+	var secretHash []byte
+	var secret string
+
+	switch appType {
+	case "private":
+		secret = GenerateString(64)
+		secretHash = bot.srv.AppSecretHash(secret)
+	case "public":
+		secret = "(не сгенерирован)"
+	default:
+		return "Тип приложения может быть только public или private."
+	}
+
+	flow := 1
+	switch appFlow {
+	case "code":
+		flow += 2
+	case "password":
+		flow += 4
+	default:
+		return "Тип авторизации может быть только code или password."
+	}
+
+	uriRe := regexp.MustCompile(`^\w+://[^#]+$`)
+	if !uriRe.MatchString(redirectUri) {
+		return "Redirect uri должен содержать схему и не содержать якорь."
+	}
+
+	appName = strings.TrimSpace(appName)
+	nameRe := regexp.MustCompile(`^\w+$`)
+	if !nameRe.MatchString(appName) {
+		return "Название приложения может содержать только латинские буквы, цифры и знак подчеркивания."
+	}
+
+	tx := NewAutoTx(bot.srv.DB)
+	defer tx.Finish()
+
+	devName = strings.TrimSpace(devName)
+	dev, err := LoadUserIDByName(tx, devName)
+	if err != nil {
+		return "Пользователь " + devName + " не найден."
+	}
+
+	appID := int64(rand.Int31())
+
+	const query = `
+INSERT INTO apps(id, secret_hash, redirect_uri, developer_id, flow, name, show_name, platform, info)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+`
+
+	tx.Exec(query, appID, secretHash, redirectUri, dev.ID, flow,
+		appName, showName, platform, info)
+	if tx.Error() != nil {
+		bot.log.Error(tx.Error().Error())
+		return "Не удалось создать приложение."
+	}
+
+	text := "Приложение создано."
+	text += "\n<b>client id</b>: " + strconv.FormatInt(appID, 10)
+	text += "\n<b>client secret</b>: " + secret
+	text += "\n<b>app name</b>: " + appName
+	text += "\n<b>app show name</b>: " + showName
+	text += "\n<b>developer name</b>: " + dev.Name
+	text += "\n<b>redirect uri</b>: " + redirectUri
+	text += "\n<b>flow</b>: " + appFlow
+	text += "\n<b>platform</b>: " + platform
+	text += "\n<b>info</b>: " + info
+
+	return text
 }
 
 func (bot *TelegramBot) info(upd *tgbotapi.Update) string {
