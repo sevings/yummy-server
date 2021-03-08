@@ -34,7 +34,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.OAuth2PasswordAuth = newOAuth2User(srv, passwordFlow)
 	srv.API.OAuth2CodeAuth = newOAuth2User(srv, codeFlow)
 
-	srv.API.Oauth2PostOauth2AuthHandler = oauth2.PostOauth2AuthHandlerFunc(newOAuth2Auth(srv))
+	srv.API.Oauth2PostOauth2AllowHandler = oauth2.PostOauth2AllowHandlerFunc(newOAuth2Allow(srv))
+	srv.API.Oauth2GetOauth2DenyHandler = oauth2.GetOauth2DenyHandlerFunc(newOAuth2Deny(srv))
 	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
 
 	srv.API.Oauth2GetOauth2AppsIDHandler = oauth2.GetOauth2AppsIDHandlerFunc(newAppLoader(srv))
@@ -352,49 +353,45 @@ WHERE id = $1 AND secret_hash = $2
 	return !ban, tx.Error()
 }
 
-func postAuthBadRequest(err string) middleware.Responder {
+func postAllowBadRequest(err string) middleware.Responder {
 	body := models.OAuth2Error{Error: err}
-	return oauth2.NewPostOauth2AuthBadRequest().WithPayload(&body)
+	return oauth2.NewPostOauth2AllowBadRequest().WithPayload(&body)
 }
 
-func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.PostOauth2AuthParams, *models.UserID) middleware.Responder {
+func newOAuth2Allow(srv *utils.MindwellServer) func(oauth2.PostOauth2AllowParams, *models.UserID) middleware.Responder {
 	webIP := srv.ConfigString("web.ip")
 
-	return func(params oauth2.PostOauth2AuthParams, userID *models.UserID) middleware.Responder {
+	return func(params oauth2.PostOauth2AllowParams, userID *models.UserID) middleware.Responder {
 		if params.HTTPRequest != nil {
 			addr := params.HTTPRequest.RemoteAddr
 			ip := strings.Split(addr, ":")[0]
 			if ip != webIP {
-				return postAuthBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+				return postAllowBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
 			}
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
 			auth, granted, err := checkCodeGrant(tx, params.ClientID)
 			if err != nil {
-				return postAuthBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+				return postAllowBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 			}
 			if auth.redirectUri != params.RedirectURI {
-				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
+				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
 			}
 			if !granted {
-				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidGrant)
 			}
 
 			scope, err := scopeFromString(params.Scope)
 			if err != nil {
-				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidScope)
+				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidScope)
 			}
 
 			if len(auth.secretHash) == 0 && params.CodeChallenge == nil {
-				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
 
-			if !*params.Allowed {
-				return postAuthBadRequest(models.OAuth2ErrorErrorAccessDenied)
-			}
-
-			resp := &oauth2.PostOauth2AuthOKBody{
+			resp := &oauth2.PostOauth2AllowOKBody{
 				Code: utils.GenerateString(codeLength),
 			}
 
@@ -416,7 +413,41 @@ func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.PostOauth2AuthParams, 
 
 			authCache.SetDefault(resp.Code, &auth)
 
-			return oauth2.NewPostOauth2AuthOK().WithPayload(resp)
+			return oauth2.NewPostOauth2AllowOK().WithPayload(resp)
+		})
+	}
+}
+
+func getDenyBadRequest(err string) middleware.Responder {
+	body := models.OAuth2Error{Error: err}
+	return oauth2.NewGetOauth2DenyBadRequest().WithPayload(&body)
+}
+
+func newOAuth2Deny(srv *utils.MindwellServer) func(oauth2.GetOauth2DenyParams, *models.UserID) middleware.Responder {
+	webIP := srv.ConfigString("web.ip")
+
+	return func(params oauth2.GetOauth2DenyParams, userID *models.UserID) middleware.Responder {
+		if params.HTTPRequest != nil {
+			addr := params.HTTPRequest.RemoteAddr
+			ip := strings.Split(addr, ":")[0]
+			if ip != webIP {
+				return getDenyBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+			}
+		}
+
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			auth, granted, err := checkCodeGrant(tx, params.ClientID)
+			if err != nil {
+				return getDenyBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+			}
+			if auth.redirectUri != params.RedirectURI {
+				return getDenyBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
+			}
+			if !granted {
+				return getDenyBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+			}
+
+			return getDenyBadRequest(models.OAuth2ErrorErrorAccessDenied)
 		})
 	}
 }

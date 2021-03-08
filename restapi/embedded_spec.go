@@ -4146,41 +4146,7 @@ func init() {
         }
       }
     },
-    "/oauth2/apps/{id}": {
-      "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "OAuth2Password": []
-          }
-        ],
-        "tags": [
-          "oauth2"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/parameters/pathId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "app info",
-            "schema": {
-              "$ref": "#/definitions/App"
-            }
-          },
-          "404": {
-            "description": "not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/oauth2/auth": {
+    "/oauth2/allow": {
       "post": {
         "security": [
           {
@@ -4191,6 +4157,7 @@ func init() {
           }
         ],
         "consumes": [
+          "multipart/form-data",
           "application/x-www-form-urlencoded"
         ],
         "tags": [
@@ -4252,12 +4219,6 @@ func init() {
             "type": "string",
             "name": "code_challenge_method",
             "in": "formData"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "name": "allowed",
-            "in": "formData"
           }
         ],
         "responses": {
@@ -4290,10 +4251,84 @@ func init() {
         }
       }
     },
+    "/oauth2/apps/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/parameters/pathId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "app info",
+            "schema": {
+              "$ref": "#/definitions/App"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/deny": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "summary": "only for internal usage",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          }
+        }
+      }
+    },
     "/oauth2/token": {
       "post": {
         "consumes": [
-          "multipart/form-data"
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
         ],
         "tags": [
           "oauth2"
@@ -6452,7 +6487,7 @@ func init() {
     "OAuth2Code": {
       "type": "oauth2",
       "flow": "accessCode",
-      "authorizationUrl": "/oauth2/auth",
+      "authorizationUrl": "/oauth",
       "tokenUrl": "/oauth2/token",
       "scopes": {
         "account:read": "read available invites, etc.",
@@ -11001,46 +11036,7 @@ func init() {
         }
       }
     },
-    "/oauth2/apps/{id}": {
-      "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "OAuth2Password": []
-          }
-        ],
-        "tags": [
-          "oauth2"
-        ],
-        "parameters": [
-          {
-            "minimum": 1,
-            "type": "integer",
-            "format": "int64",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "app info",
-            "schema": {
-              "$ref": "#/definitions/App"
-            }
-          },
-          "404": {
-            "description": "not found",
-            "schema": {
-              "$ref": "#/definitions/Error"
-            }
-          }
-        }
-      }
-    },
-    "/oauth2/auth": {
+    "/oauth2/allow": {
       "post": {
         "security": [
           {
@@ -11051,7 +11047,8 @@ func init() {
           }
         ],
         "consumes": [
-          "application/x-www-form-urlencoded"
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
         ],
         "tags": [
           "oauth2"
@@ -11112,12 +11109,6 @@ func init() {
             "type": "string",
             "name": "code_challenge_method",
             "in": "formData"
-          },
-          {
-            "type": "boolean",
-            "default": false,
-            "name": "allowed",
-            "in": "formData"
           }
         ],
         "responses": {
@@ -11150,9 +11141,88 @@ func init() {
         }
       }
     },
+    "/oauth2/apps/{id}": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "parameters": [
+          {
+            "minimum": 1,
+            "type": "integer",
+            "format": "int64",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "app info",
+            "schema": {
+              "$ref": "#/definitions/App"
+            }
+          },
+          "404": {
+            "description": "not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/deny": {
+      "get": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          },
+          {
+            "OAuth2Password": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "summary": "only for internal usage",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "maxLength": 500,
+            "type": "string",
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          }
+        }
+      }
+    },
     "/oauth2/token": {
       "post": {
         "consumes": [
+          "application/x-www-form-urlencoded",
           "multipart/form-data"
         ],
         "tags": [
@@ -13672,7 +13742,7 @@ func init() {
     "OAuth2Code": {
       "type": "oauth2",
       "flow": "accessCode",
-      "authorizationUrl": "/oauth2/auth",
+      "authorizationUrl": "/oauth",
       "tokenUrl": "/oauth2/token",
       "scopes": {
         "account:read": "read available invites, etc.",

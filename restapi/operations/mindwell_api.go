@@ -240,6 +240,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		Oauth2GetOauth2AppsIDHandler: oauth2.GetOauth2AppsIDHandlerFunc(func(params oauth2.GetOauth2AppsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.GetOauth2AppsID has not yet been implemented")
 		}),
+		Oauth2GetOauth2DenyHandler: oauth2.GetOauth2DenyHandlerFunc(func(params oauth2.GetOauth2DenyParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation oauth2.GetOauth2Deny has not yet been implemented")
+		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation relations.GetRelationsFromName has not yet been implemented")
 		}),
@@ -327,8 +330,8 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		MePostMeTlogHandler: me.PostMeTlogHandlerFunc(func(params me.PostMeTlogParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation me.PostMeTlog has not yet been implemented")
 		}),
-		Oauth2PostOauth2AuthHandler: oauth2.PostOauth2AuthHandlerFunc(func(params oauth2.PostOauth2AuthParams, principal *models.UserID) middleware.Responder {
-			return middleware.NotImplemented("operation oauth2.PostOauth2Auth has not yet been implemented")
+		Oauth2PostOauth2AllowHandler: oauth2.PostOauth2AllowHandlerFunc(func(params oauth2.PostOauth2AllowParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation oauth2.PostOauth2Allow has not yet been implemented")
 		}),
 		Oauth2PostOauth2TokenHandler: oauth2.PostOauth2TokenHandlerFunc(func(params oauth2.PostOauth2TokenParams) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.PostOauth2Token has not yet been implemented")
@@ -592,6 +595,8 @@ type MindwellAPI struct {
 	NotificationsGetNotificationsIDHandler notifications.GetNotificationsIDHandler
 	// Oauth2GetOauth2AppsIDHandler sets the operation handler for the get oauth2 apps ID operation
 	Oauth2GetOauth2AppsIDHandler oauth2.GetOauth2AppsIDHandler
+	// Oauth2GetOauth2DenyHandler sets the operation handler for the get oauth2 deny operation
+	Oauth2GetOauth2DenyHandler oauth2.GetOauth2DenyHandler
 	// RelationsGetRelationsFromNameHandler sets the operation handler for the get relations from name operation
 	RelationsGetRelationsFromNameHandler relations.GetRelationsFromNameHandler
 	// RelationsGetRelationsToNameHandler sets the operation handler for the get relations to name operation
@@ -650,8 +655,8 @@ type MindwellAPI struct {
 	ImagesPostImagesHandler images.PostImagesHandler
 	// MePostMeTlogHandler sets the operation handler for the post me tlog operation
 	MePostMeTlogHandler me.PostMeTlogHandler
-	// Oauth2PostOauth2AuthHandler sets the operation handler for the post oauth2 auth operation
-	Oauth2PostOauth2AuthHandler oauth2.PostOauth2AuthHandler
+	// Oauth2PostOauth2AllowHandler sets the operation handler for the post oauth2 allow operation
+	Oauth2PostOauth2AllowHandler oauth2.PostOauth2AllowHandler
 	// Oauth2PostOauth2TokenHandler sets the operation handler for the post oauth2 token operation
 	Oauth2PostOauth2TokenHandler oauth2.PostOauth2TokenHandler
 	// RelationsPostRelationsInvitedNameHandler sets the operation handler for the post relations invited name operation
@@ -968,6 +973,9 @@ func (o *MindwellAPI) Validate() error {
 	if o.Oauth2GetOauth2AppsIDHandler == nil {
 		unregistered = append(unregistered, "oauth2.GetOauth2AppsIDHandler")
 	}
+	if o.Oauth2GetOauth2DenyHandler == nil {
+		unregistered = append(unregistered, "oauth2.GetOauth2DenyHandler")
+	}
 	if o.RelationsGetRelationsFromNameHandler == nil {
 		unregistered = append(unregistered, "relations.GetRelationsFromNameHandler")
 	}
@@ -1055,8 +1063,8 @@ func (o *MindwellAPI) Validate() error {
 	if o.MePostMeTlogHandler == nil {
 		unregistered = append(unregistered, "me.PostMeTlogHandler")
 	}
-	if o.Oauth2PostOauth2AuthHandler == nil {
-		unregistered = append(unregistered, "oauth2.PostOauth2AuthHandler")
+	if o.Oauth2PostOauth2AllowHandler == nil {
+		unregistered = append(unregistered, "oauth2.PostOauth2AllowHandler")
 	}
 	if o.Oauth2PostOauth2TokenHandler == nil {
 		unregistered = append(unregistered, "oauth2.PostOauth2TokenHandler")
@@ -1483,6 +1491,10 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
+	o.handlers["GET"]["/oauth2/deny"] = oauth2.NewGetOauth2Deny(o.context, o.Oauth2GetOauth2DenyHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
 	o.handlers["GET"]["/relations/from/{name}"] = relations.NewGetRelationsFromName(o.context, o.RelationsGetRelationsFromNameHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
@@ -1599,7 +1611,7 @@ func (o *MindwellAPI) initHandlerCache() {
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
-	o.handlers["POST"]["/oauth2/auth"] = oauth2.NewPostOauth2Auth(o.context, o.Oauth2PostOauth2AuthHandler)
+	o.handlers["POST"]["/oauth2/allow"] = oauth2.NewPostOauth2Allow(o.context, o.Oauth2PostOauth2AllowHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}

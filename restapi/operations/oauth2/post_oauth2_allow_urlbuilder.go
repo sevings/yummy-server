@@ -11,15 +11,15 @@ import (
 	golangswaggerpaths "path"
 )
 
-// PostOauth2AuthURL generates an URL for the post oauth2 auth operation
-type PostOauth2AuthURL struct {
+// PostOauth2AllowURL generates an URL for the post oauth2 allow operation
+type PostOauth2AllowURL struct {
 	_basePath string
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostOauth2AuthURL) WithBasePath(bp string) *PostOauth2AuthURL {
+func (o *PostOauth2AllowURL) WithBasePath(bp string) *PostOauth2AllowURL {
 	o.SetBasePath(bp)
 	return o
 }
@@ -27,15 +27,15 @@ func (o *PostOauth2AuthURL) WithBasePath(bp string) *PostOauth2AuthURL {
 // SetBasePath sets the base path for this url builder, only required when it's different from the
 // base path specified in the swagger spec.
 // When the value of the base path is an empty string
-func (o *PostOauth2AuthURL) SetBasePath(bp string) {
+func (o *PostOauth2AllowURL) SetBasePath(bp string) {
 	o._basePath = bp
 }
 
 // Build a url path and query string
-func (o *PostOauth2AuthURL) Build() (*url.URL, error) {
+func (o *PostOauth2AllowURL) Build() (*url.URL, error) {
 	var _result url.URL
 
-	var _path = "/oauth2/auth"
+	var _path = "/oauth2/allow"
 
 	_basePath := o._basePath
 	if _basePath == "" {
@@ -47,7 +47,7 @@ func (o *PostOauth2AuthURL) Build() (*url.URL, error) {
 }
 
 // Must is a helper function to panic when the url builder returns an error
-func (o *PostOauth2AuthURL) Must(u *url.URL, err error) *url.URL {
+func (o *PostOauth2AllowURL) Must(u *url.URL, err error) *url.URL {
 	if err != nil {
 		panic(err)
 	}
@@ -58,17 +58,17 @@ func (o *PostOauth2AuthURL) Must(u *url.URL, err error) *url.URL {
 }
 
 // String returns the string representation of the path with query string
-func (o *PostOauth2AuthURL) String() string {
+func (o *PostOauth2AllowURL) String() string {
 	return o.Must(o.Build()).String()
 }
 
 // BuildFull builds a full url with scheme, host, path and query string
-func (o *PostOauth2AuthURL) BuildFull(scheme, host string) (*url.URL, error) {
+func (o *PostOauth2AllowURL) BuildFull(scheme, host string) (*url.URL, error) {
 	if scheme == "" {
-		return nil, errors.New("scheme is required for a full url on PostOauth2AuthURL")
+		return nil, errors.New("scheme is required for a full url on PostOauth2AllowURL")
 	}
 	if host == "" {
-		return nil, errors.New("host is required for a full url on PostOauth2AuthURL")
+		return nil, errors.New("host is required for a full url on PostOauth2AllowURL")
 	}
 
 	base, err := o.Build()
@@ -82,6 +82,6 @@ func (o *PostOauth2AuthURL) BuildFull(scheme, host string) (*url.URL, error) {
 }
 
 // StringFull returns the string representation of a complete url
-func (o *PostOauth2AuthURL) StringFull(scheme, host string) string {
+func (o *PostOauth2AllowURL) StringFull(scheme, host string) string {
 	return o.Must(o.BuildFull(scheme, host)).String()
 }

@@ -25,7 +25,7 @@ securityDefinitions:
   OAuth2Code:
     type: oauth2
     flow: accessCode
-    authorizationUrl: "/oauth2/auth"
+    authorizationUrl: "/oauth"
     tokenUrl: "/oauth2/token"
     scopes:
       "account:read": read available invites, etc.
@@ -1256,7 +1256,7 @@ paths:
       responses:
         204:
           description: OK
-  /oauth2/auth:
+  /oauth2/allow:
     post:
       summary: only for internal usage
       tags:
@@ -1265,6 +1265,7 @@ paths:
         - ApiKeyHeader: [ ]
         - OAuth2Password: []
       consumes:
+        - multipart/form-data
         - application/x-www-form-urlencoded
       parameters:
         - in: formData
@@ -1302,10 +1303,6 @@ paths:
           name: code_challenge_method
           type: string
           enum: [ plain, S256 ]
-        - in: formData
-          name: allowed
-          type: boolean
-          default: false
       responses:
         400:
           description: some error happened
@@ -1324,12 +1321,36 @@ paths:
                 type: string
               state:
                 type: string
+  /oauth2/deny:
+    get:
+      summary: only for internal usage
+      tags:
+        - oauth2
+      security:
+        - ApiKeyHeader: [ ]
+        - OAuth2Password: []
+      parameters:
+        - in: query
+          name: client_id
+          type: integer
+          required: true
+        - in: query
+          name: redirect_uri
+          type: string
+          required: true
+          maxLength: 500
+      responses:
+        400:
+          description: some error happened
+          schema:
+            $ref: '#/definitions/OAuth2Error'
   /oauth2/token:
     post:
       tags:
         - oauth2
       consumes:
         - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
         - in: formData
           name: grant_type

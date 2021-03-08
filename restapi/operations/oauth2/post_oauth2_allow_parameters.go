@@ -16,42 +16,30 @@ import (
 	"github.com/go-openapi/validate"
 )
 
-// PostOauth2AuthMaxParseMemory sets the maximum size in bytes for
+// PostOauth2AllowMaxParseMemory sets the maximum size in bytes for
 // the multipart form parser for this operation.
 //
 // The default value is 32 MB.
 // The multipart parser stores up to this + 10MB.
-var PostOauth2AuthMaxParseMemory int64 = 32 << 20
+var PostOauth2AllowMaxParseMemory int64 = 32 << 20
 
-// NewPostOauth2AuthParams creates a new PostOauth2AuthParams object
-// with the default values initialized.
-func NewPostOauth2AuthParams() PostOauth2AuthParams {
+// NewPostOauth2AllowParams creates a new PostOauth2AllowParams object
+//
+// There are no default values defined in the spec.
+func NewPostOauth2AllowParams() PostOauth2AllowParams {
 
-	var (
-		// initialize parameters with default values
-
-		allowedDefault = bool(false)
-	)
-
-	return PostOauth2AuthParams{
-		Allowed: &allowedDefault,
-	}
+	return PostOauth2AllowParams{}
 }
 
-// PostOauth2AuthParams contains all the bound params for the post oauth2 auth operation
+// PostOauth2AllowParams contains all the bound params for the post oauth2 allow operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters PostOauth2Auth
-type PostOauth2AuthParams struct {
+// swagger:parameters PostOauth2Allow
+type PostOauth2AllowParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
 
-	/*
-	  In: formData
-	  Default: false
-	*/
-	Allowed *bool
 	/*
 	  Required: true
 	  In: formData
@@ -94,13 +82,13 @@ type PostOauth2AuthParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewPostOauth2AuthParams() beforehand.
-func (o *PostOauth2AuthParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewPostOauth2AllowParams() beforehand.
+func (o *PostOauth2AllowParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r
 
-	if err := r.ParseMultipartForm(PostOauth2AuthMaxParseMemory); err != nil {
+	if err := r.ParseMultipartForm(PostOauth2AllowMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
 		} else if err := r.ParseForm(); err != nil {
@@ -108,11 +96,6 @@ func (o *PostOauth2AuthParams) BindRequest(r *http.Request, route *middleware.Ma
 		}
 	}
 	fds := runtime.Values(r.Form)
-
-	fdAllowed, fdhkAllowed, _ := fds.GetOK("allowed")
-	if err := o.bindAllowed(fdAllowed, fdhkAllowed, route.Formats); err != nil {
-		res = append(res, err)
-	}
 
 	fdClientID, fdhkClientID, _ := fds.GetOK("client_id")
 	if err := o.bindClientID(fdClientID, fdhkClientID, route.Formats); err != nil {
@@ -154,31 +137,8 @@ func (o *PostOauth2AuthParams) BindRequest(r *http.Request, route *middleware.Ma
 	return nil
 }
 
-// bindAllowed binds and validates parameter Allowed from formData.
-func (o *PostOauth2AuthParams) bindAllowed(rawData []string, hasKey bool, formats strfmt.Registry) error {
-	var raw string
-	if len(rawData) > 0 {
-		raw = rawData[len(rawData)-1]
-	}
-
-	// Required: false
-
-	if raw == "" { // empty values pass all other validations
-		// Default values have been previously initialized by NewPostOauth2AuthParams()
-		return nil
-	}
-
-	value, err := swag.ConvertBool(raw)
-	if err != nil {
-		return errors.InvalidType("allowed", "formData", "bool", raw)
-	}
-	o.Allowed = &value
-
-	return nil
-}
-
 // bindClientID binds and validates parameter ClientID from formData.
-func (o *PostOauth2AuthParams) bindClientID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindClientID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("client_id", "formData", rawData)
 	}
@@ -203,7 +163,7 @@ func (o *PostOauth2AuthParams) bindClientID(rawData []string, hasKey bool, forma
 }
 
 // bindCodeChallenge binds and validates parameter CodeChallenge from formData.
-func (o *PostOauth2AuthParams) bindCodeChallenge(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindCodeChallenge(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -224,7 +184,7 @@ func (o *PostOauth2AuthParams) bindCodeChallenge(rawData []string, hasKey bool, 
 }
 
 // validateCodeChallenge carries on validations for parameter CodeChallenge
-func (o *PostOauth2AuthParams) validateCodeChallenge(formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) validateCodeChallenge(formats strfmt.Registry) error {
 
 	if err := validate.MinLength("code_challenge", "formData", *o.CodeChallenge, 43); err != nil {
 		return err
@@ -238,7 +198,7 @@ func (o *PostOauth2AuthParams) validateCodeChallenge(formats strfmt.Registry) er
 }
 
 // bindCodeChallengeMethod binds and validates parameter CodeChallengeMethod from formData.
-func (o *PostOauth2AuthParams) bindCodeChallengeMethod(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindCodeChallengeMethod(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -259,7 +219,7 @@ func (o *PostOauth2AuthParams) bindCodeChallengeMethod(rawData []string, hasKey 
 }
 
 // validateCodeChallengeMethod carries on validations for parameter CodeChallengeMethod
-func (o *PostOauth2AuthParams) validateCodeChallengeMethod(formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) validateCodeChallengeMethod(formats strfmt.Registry) error {
 
 	if err := validate.EnumCase("code_challenge_method", "formData", *o.CodeChallengeMethod, []interface{}{"plain", "S256"}, true); err != nil {
 		return err
@@ -269,7 +229,7 @@ func (o *PostOauth2AuthParams) validateCodeChallengeMethod(formats strfmt.Regist
 }
 
 // bindRedirectURI binds and validates parameter RedirectURI from formData.
-func (o *PostOauth2AuthParams) bindRedirectURI(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindRedirectURI(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("redirect_uri", "formData", rawData)
 	}
@@ -293,7 +253,7 @@ func (o *PostOauth2AuthParams) bindRedirectURI(rawData []string, hasKey bool, fo
 }
 
 // validateRedirectURI carries on validations for parameter RedirectURI
-func (o *PostOauth2AuthParams) validateRedirectURI(formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) validateRedirectURI(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("redirect_uri", "formData", o.RedirectURI, 500); err != nil {
 		return err
@@ -303,7 +263,7 @@ func (o *PostOauth2AuthParams) validateRedirectURI(formats strfmt.Registry) erro
 }
 
 // bindResponseType binds and validates parameter ResponseType from formData.
-func (o *PostOauth2AuthParams) bindResponseType(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindResponseType(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("response_type", "formData", rawData)
 	}
@@ -327,7 +287,7 @@ func (o *PostOauth2AuthParams) bindResponseType(rawData []string, hasKey bool, f
 }
 
 // validateResponseType carries on validations for parameter ResponseType
-func (o *PostOauth2AuthParams) validateResponseType(formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) validateResponseType(formats strfmt.Registry) error {
 
 	if err := validate.EnumCase("response_type", "formData", o.ResponseType, []interface{}{"code"}, true); err != nil {
 		return err
@@ -339,7 +299,7 @@ func (o *PostOauth2AuthParams) validateResponseType(formats strfmt.Registry) err
 // bindScope binds and validates array parameter Scope from formData.
 //
 // Arrays are parsed according to CollectionFormat: "multi" (defaults to "csv" when empty).
-func (o *PostOauth2AuthParams) bindScope(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindScope(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
 		return errors.Required("scope", "formData", rawData)
 	}
@@ -362,7 +322,7 @@ func (o *PostOauth2AuthParams) bindScope(rawData []string, hasKey bool, formats 
 }
 
 // bindState binds and validates parameter State from formData.
-func (o *PostOauth2AuthParams) bindState(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) bindState(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -383,7 +343,7 @@ func (o *PostOauth2AuthParams) bindState(rawData []string, hasKey bool, formats 
 }
 
 // validateState carries on validations for parameter State
-func (o *PostOauth2AuthParams) validateState(formats strfmt.Registry) error {
+func (o *PostOauth2AllowParams) validateState(formats strfmt.Registry) error {
 
 	if err := validate.MaxLength("state", "formData", *o.State, 500); err != nil {
 		return err
