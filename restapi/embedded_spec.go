@@ -4181,7 +4181,7 @@ func init() {
       }
     },
     "/oauth2/auth": {
-      "get": {
+      "post": {
         "security": [
           {
             "ApiKeyHeader": []
@@ -4204,20 +4204,20 @@ func init() {
             ],
             "type": "string",
             "name": "response_type",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "type": "integer",
             "name": "client_id",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
@@ -4226,22 +4226,23 @@ func init() {
             "items": {
               "type": "string"
             },
+            "collectionFormat": "multi",
             "name": "scope",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "maxLength": 500,
             "type": "string",
             "name": "state",
-            "in": "query"
+            "in": "formData"
           },
           {
             "maxLength": 128,
             "minLength": 43,
             "type": "string",
             "name": "code_challenge",
-            "in": "query"
+            "in": "formData"
           },
           {
             "enum": [
@@ -4250,7 +4251,13 @@ func init() {
             ],
             "type": "string",
             "name": "code_challenge_method",
-            "in": "query"
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "allowed",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -4311,7 +4318,7 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 32,
+            "maxLength": 64,
             "type": "string",
             "default": "",
             "name": "client_secret",
@@ -11034,7 +11041,7 @@ func init() {
       }
     },
     "/oauth2/auth": {
-      "get": {
+      "post": {
         "security": [
           {
             "ApiKeyHeader": []
@@ -11057,20 +11064,20 @@ func init() {
             ],
             "type": "string",
             "name": "response_type",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "type": "integer",
             "name": "client_id",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "maxLength": 500,
             "type": "string",
             "name": "redirect_uri",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
@@ -11079,22 +11086,23 @@ func init() {
             "items": {
               "type": "string"
             },
+            "collectionFormat": "multi",
             "name": "scope",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "maxLength": 500,
             "type": "string",
             "name": "state",
-            "in": "query"
+            "in": "formData"
           },
           {
             "maxLength": 128,
             "minLength": 43,
             "type": "string",
             "name": "code_challenge",
-            "in": "query"
+            "in": "formData"
           },
           {
             "enum": [
@@ -11103,7 +11111,13 @@ func init() {
             ],
             "type": "string",
             "name": "code_challenge_method",
-            "in": "query"
+            "in": "formData"
+          },
+          {
+            "type": "boolean",
+            "default": false,
+            "name": "allowed",
+            "in": "formData"
           }
         ],
         "responses": {
@@ -11164,7 +11178,7 @@ func init() {
             "required": true
           },
           {
-            "maxLength": 32,
+            "maxLength": 64,
             "type": "string",
             "default": "",
             "name": "client_secret",

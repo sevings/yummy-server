@@ -53,7 +53,7 @@ type PostOauth2TokenParams struct {
 	*/
 	ClientID int64
 	/*
-	  Max Length: 32
+	  Max Length: 64
 	  In: formData
 	  Default: ""
 	*/
@@ -214,7 +214,7 @@ func (o *PostOauth2TokenParams) bindClientSecret(rawData []string, hasKey bool, 
 // validateClientSecret carries on validations for parameter ClientSecret
 func (o *PostOauth2TokenParams) validateClientSecret(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("client_secret", "formData", *o.ClientSecret, 32); err != nil {
+	if err := validate.MaxLength("client_secret", "formData", *o.ClientSecret, 64); err != nil {
 		return err
 	}
 

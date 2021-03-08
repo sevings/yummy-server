@@ -1257,7 +1257,7 @@ paths:
         204:
           description: OK
   /oauth2/auth:
-    get:
+    post:
       summary: only for internal usage
       tags:
         - oauth2
@@ -1267,40 +1267,45 @@ paths:
       consumes:
         - application/x-www-form-urlencoded
       parameters:
-        - in: query
+        - in: formData
           name: response_type
           type: string
           required: true
           enum: [ code ]
-        - in: query
+        - in: formData
           name: client_id
           type: integer
           required: true
-        - in: query
+        - in: formData
           name: redirect_uri
           type: string
           required: true
           maxLength: 500
-        - in: query
+        - in: formData
           name: scope
           type: array
           required: true
           items:
             type: string
           maxLength: 50
-        - in: query
+          collectionFormat: multi
+        - in: formData
           name: state
           type: string
           maxLength: 500
-        - in: query
+        - in: formData
           name: code_challenge
           type: string
           minLength: 43
           maxLength: 128
-        - in: query
+        - in: formData
           name: code_challenge_method
           type: string
           enum: [ plain, S256 ]
+        - in: formData
+          name: allowed
+          type: boolean
+          default: false
       responses:
         400:
           description: some error happened
@@ -1339,7 +1344,7 @@ paths:
           name: client_secret
           type: string
           default: ""
-          maxLength: 32
+          maxLength: 64
         - in: formData
           name: code
           type: string

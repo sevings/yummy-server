@@ -34,7 +34,7 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.OAuth2PasswordAuth = newOAuth2User(srv, passwordFlow)
 	srv.API.OAuth2CodeAuth = newOAuth2User(srv, codeFlow)
 
-	srv.API.Oauth2GetOauth2AuthHandler = oauth2.GetOauth2AuthHandlerFunc(newOAuth2Auth(srv))
+	srv.API.Oauth2PostOauth2AuthHandler = oauth2.PostOauth2AuthHandlerFunc(newOAuth2Auth(srv))
 	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
 
 	srv.API.Oauth2GetOauth2AppsIDHandler = oauth2.GetOauth2AppsIDHandlerFunc(newAppLoader(srv))
@@ -352,45 +352,49 @@ WHERE id = $1 AND secret_hash = $2
 	return !ban, tx.Error()
 }
 
-func getAuthBadRequest(err string) middleware.Responder {
+func postAuthBadRequest(err string) middleware.Responder {
 	body := models.OAuth2Error{Error: err}
-	return oauth2.NewGetOauth2AuthBadRequest().WithPayload(&body)
+	return oauth2.NewPostOauth2AuthBadRequest().WithPayload(&body)
 }
 
-func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *models.UserID) middleware.Responder {
+func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.PostOauth2AuthParams, *models.UserID) middleware.Responder {
 	webIP := srv.ConfigString("web.ip")
 
-	return func(params oauth2.GetOauth2AuthParams, userID *models.UserID) middleware.Responder {
+	return func(params oauth2.PostOauth2AuthParams, userID *models.UserID) middleware.Responder {
 		if params.HTTPRequest != nil {
 			addr := params.HTTPRequest.RemoteAddr
 			ip := strings.Split(addr, ":")[0]
 			if ip != webIP {
-				return getAuthBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
+				return postAuthBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
 			}
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			scope, err := scopeFromString(params.Scope)
-			if err != nil {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidScope)
-			}
-
 			auth, granted, err := checkCodeGrant(tx, params.ClientID)
 			if err != nil {
-				return getAuthBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+				return postAuthBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 			}
 			if auth.redirectUri != params.RedirectURI {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
+				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidRedirect)
 			}
 			if !granted {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+			}
+
+			scope, err := scopeFromString(params.Scope)
+			if err != nil {
+				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidScope)
 			}
 
 			if len(auth.secretHash) == 0 && params.CodeChallenge == nil {
-				return getAuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
+				return postAuthBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 			}
 
-			resp := &oauth2.GetOauth2AuthOKBody{
+			if !*params.Allowed {
+				return postAuthBadRequest(models.OAuth2ErrorErrorAccessDenied)
+			}
+
+			resp := &oauth2.PostOauth2AuthOKBody{
 				Code: utils.GenerateString(codeLength),
 			}
 
@@ -412,7 +416,7 @@ func newOAuth2Auth(srv *utils.MindwellServer) func(oauth2.GetOauth2AuthParams, *
 
 			authCache.SetDefault(resp.Code, &auth)
 
-			return oauth2.NewGetOauth2AuthOK().WithPayload(resp)
+			return oauth2.NewPostOauth2AuthOK().WithPayload(resp)
 		})
 	}
 }
