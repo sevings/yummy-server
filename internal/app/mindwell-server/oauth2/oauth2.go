@@ -140,12 +140,12 @@ func scopeToString(scope uint32) []string {
 func newOAuth2User(srv *utils.MindwellServer, flowReq flow) func(string, []string) (*models.UserID, error) {
 	const query = `
 SELECT scope, flow, ban
-FROM access_tokens
+FROM sessions
 JOIN users ON users.id = user_id
 JOIN apps ON apps.id = app_id
 WHERE lower(users.name) = lower($1) 
-	AND token_hash = $2
-	AND access_tokens.valid_thru > $3
+	AND access_hash = $2
+	AND access_thru > $3
 `
 
 	return func(token string, scopes []string) (*models.UserID, error) {
@@ -230,57 +230,31 @@ WHERE lower(apps.name) = lower($1)
 	}
 }
 
-func createAccessToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, name string) (string, error) {
-	token := name + "." + utils.GenerateString(accessTokenLength)
-	hash := h.AccessTokenHash(token)
-	thru := time.Now().Add(accessTokenLifetime * time.Second)
-
-	const query = `
-INSERT INTO access_tokens(app_id, user_id, token_hash, scope, valid_thru)
-VALUES($1, $2, $3, $4, $5)
-`
-
-	tx.Exec(query, appID, userID, hash[:], scope, thru)
-
-	return token, tx.Error()
-}
-
-func createRefreshToken(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32) (string, error) {
-	id := strconv.FormatInt(userID, 32)
-	token := id + "." + utils.GenerateString(refreshTokenLength)
-	hash := h.RefreshTokenHash(token)
-	thru := time.Now().Add(refreshTokenLifetime * time.Second)
-
-	const query = `
-INSERT INTO refresh_tokens(app_id, user_id, token_hash, scope, valid_thru)
-VALUES($1, $2, $3, $4, $5)
-`
-
-	tx.Exec(query, appID, userID, hash[:], scope, thru)
-
-	return token, tx.Error()
-}
-
 func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *models.OAuth2Token {
-	refreshToken, err := createRefreshToken(h, tx, appID, userID, scope)
-	if err != nil {
-		return nil
-	}
-
-	accessToken, err := createAccessToken(h, tx, appID, userID, scope, userName)
-	if err != nil {
-		return nil
-	}
-
-	resp := &models.OAuth2Token{
-		AccessToken:  accessToken,
+	token := &models.OAuth2Token{
+		AccessToken:  userName + "." + utils.GenerateString(accessTokenLength),
 		ExpiresIn:    accessTokenLifetime,
-		RefreshToken: refreshToken,
-		TokenType:    models.OAuth2TokenTokenTypeBearer,
+		RefreshToken: strconv.FormatInt(userID, 32) + "." + utils.GenerateString(refreshTokenLength),
 		Scope:        scopeToString(scope),
+		TokenType:    models.OAuth2TokenTokenTypeBearer,
 	}
 
-	return resp
+	accessHash := h.AccessTokenHash(token.AccessToken)
+	refreshHash := h.RefreshTokenHash(token.RefreshToken)
+	accessThru := time.Now().Add(accessTokenLifetime * time.Second)
+	refreshThru := time.Now().Add(refreshTokenLifetime * time.Second)
+
+	const query = `
+INSERT INTO sessions(app_id, user_id, scope, access_hash, refresh_hash, access_thru, refresh_thru)
+VALUES($1, $2, $3, $4, $5, $6, $7)
+`
+
+	tx.Exec(query, appID, userID, scope, accessHash[:], refreshHash[:], accessThru, refreshThru)
+	if tx.Error() != nil {
+		return nil
+	}
+
+	return token
 }
 
 func createAppToken(h hasher, tx *utils.AutoTx, appID int64, appName string) (string, error) {
@@ -561,11 +535,15 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 }
 
 func revokeTokens(h hasher, tx *utils.AutoTx, userID int64, access, refresh string) {
-	const accessQuery = `DELETE FROM access_tokens WHERE user_id = $1 AND token_hash = $2`
-	tx.Exec(accessQuery, userID, h.AccessTokenHash(access))
+	const query = `
+DELETE FROM sessions
+WHERE user_id = $1
+	AND access_hash = $2 AND refresh_hash = $3
+`
+	accessHash := h.AccessTokenHash(access)
+	refreshHash := h.RefreshTokenHash(refresh)
 
-	const refreshQuery = `DELETE FROM refresh_tokens WHERE user_id = $1 AND token_hash = $2`
-	tx.Exec(refreshQuery, userID, h.RefreshTokenHash(refresh))
+	tx.Exec(query, userID, accessHash, refreshHash)
 }
 
 func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
@@ -634,9 +612,9 @@ func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectU
 
 func requestRefreshToken(h hasher, tx *utils.AutoTx, appID int64, appSecret, token string) middleware.Responder {
 	const query = `
-DELETE FROM refresh_tokens
-WHERE app_id = $1 AND user_id = $2 AND token_hash = $3
-RETURNING scope, valid_thru
+DELETE FROM sessions
+WHERE app_id = $1 AND user_id = $2 AND refresh_hash = $3
+RETURNING scope, refresh_thru
 `
 
 	granted, err := checkRefreshGrant(h, tx, appID, appSecret)

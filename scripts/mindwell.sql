@@ -2328,29 +2328,22 @@ CREATE TABLE "mindwell"."apps" (
      CONSTRAINT "app_developer_id" FOREIGN KEY("developer_id") REFERENCES "mindwell"."users"("id") ON DELETE CASCADE
 );
 
-CREATE TABLE "mindwell"."access_tokens" (
+CREATE TABLE "mindwell"."sessions" (
+    "id" Bigserial,
     "app_id" Integer NOT NULL,
     "user_id" Integer NOT NULL,
-    "token_hash" Bytea NOT NULL,
     "scope" Integer NOT NULL,
-    "valid_thru" Timestamp With Time Zone NOT NULL,
-     CONSTRAINT "access_token_app_id" FOREIGN KEY("app_id") REFERENCES "mindwell"."apps"("id") ON DELETE CASCADE,
-     CONSTRAINT "access_token_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id") ON DELETE CASCADE
+    "access_hash" Bytea NOT NULL,
+    "refresh_hash" Bytea NOT NULL,
+    "access_thru" Timestamp With Time Zone NOT NULL,
+    "refresh_thru" Timestamp With Time Zone NOT NULL,
+    CONSTRAINT "session_id" PRIMARY KEY("id"),
+    CONSTRAINT "session_app_id" FOREIGN KEY("app_id") REFERENCES "mindwell"."apps"("id") ON DELETE CASCADE,
+    CONSTRAINT "session_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id") ON DELETE CASCADE
 );
 
-CREATE INDEX "index_access_token_hash" ON "mindwell"."access_tokens" USING btree( "token_hash" );
-
-CREATE TABLE "mindwell"."refresh_tokens" (
-    "app_id" Integer NOT NULL,
-    "user_id" Integer NOT NULL,
-    "token_hash" Bytea NOT NULL,
-    "scope" Integer NOT NULL,
-    "valid_thru" Timestamp With Time Zone NOT NULL,
-     CONSTRAINT "refresh_token_app_id" FOREIGN KEY("app_id") REFERENCES "mindwell"."apps"("id") ON DELETE CASCADE,
-     CONSTRAINT "refresh_token_user_id" FOREIGN KEY("user_id") REFERENCES "mindwell"."users"("id") ON DELETE CASCADE
-);
-
-CREATE INDEX "index_refresh_token_hash" ON "mindwell"."refresh_tokens" USING btree( "token_hash" );
+CREATE INDEX "index_access_hash" ON "mindwell"."sessions" USING btree( "access_hash" );
+CREATE INDEX "index_refresh_hash" ON "mindwell"."sessions" USING btree( "refresh_hash" );
 
 CREATE TABLE "mindwell"."app_tokens" (
     "app_id" Integer NOT NULL,
