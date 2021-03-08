@@ -119,6 +119,23 @@ definitions:
         type: string
       info:
         type: string
+  OAuth2Token:
+    type: object
+    properties:
+      access_token:
+        type: string
+      token_type:
+        type: string
+        enum: [ bearer ]
+      expires_in:
+        type: integer
+        format: int64
+      refresh_token:
+        type: string
+      scope:
+        type: array
+        items:
+          type: string
   Color:
     type: string
     pattern: '^#[0-9a-fA-F]{6}$'
@@ -1326,9 +1343,6 @@ paths:
       summary: only for internal usage
       tags:
         - oauth2
-      security:
-        - ApiKeyHeader: [ ]
-        - OAuth2Password: []
       parameters:
         - in: query
           name: client_id
@@ -1344,6 +1358,36 @@ paths:
           description: some error happened
           schema:
             $ref: '#/definitions/OAuth2Error'
+  /oauth2/upgrade:
+    post:
+      summary: only for internal usage
+      tags:
+        - oauth2
+      security:
+        - ApiKeyHeader: [ ]
+      parameters:
+        - in: query
+          name: client_id
+          type: integer
+          required: true
+        - in: formData
+          name: client_secret
+          type: string
+          required: true
+          maxLength: 64
+      responses:
+        400:
+          description: some error happened
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        401:
+          description: invalid client
+          schema:
+            $ref: '#/definitions/OAuth2Error'
+        200:
+          description: authorized
+          schema:
+            $ref: '#/definitions/OAuth2Token'
   /oauth2/token:
     post:
       tags:
@@ -1403,22 +1447,7 @@ paths:
         200:
           description: authorized
           schema:
-            type: object
-            properties:
-              access_token:
-                type: string
-              token_type:
-                type: string
-                enum: [ bearer ]
-              expires_in:
-                type: integer
-                format: int64
-              refresh_token:
-                type: string
-              scope:
-                type: array
-                items:
-                  type: string
+            $ref: '#/definitions/OAuth2Token'
   /oauth2/apps/{id}:
     get:
       security:

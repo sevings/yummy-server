@@ -3,6 +3,7 @@ package test
 import (
 	"crypto/sha256"
 	"encoding/base64"
+	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/oauth2"
 	"github.com/sevings/mindwell-server/utils"
 	"github.com/stretchr/testify/require"
@@ -102,7 +103,7 @@ func TestLoadApp(t *testing.T) {
 	removeOAuth2App(data)
 }
 
-func loadOAuth2Token(t *testing.T, params oauth2.PostOauth2TokenParams, success bool) *oauth2.PostOauth2TokenOKBody {
+func loadOAuth2Token(t *testing.T, params oauth2.PostOauth2TokenParams, success bool) *models.OAuth2Token {
 	req := require.New(t)
 	post := api.Oauth2PostOauth2TokenHandler.Handle
 	resp := post(params)
@@ -138,7 +139,7 @@ func TestPasswordToken(t *testing.T) {
 		Password:     &pass,
 	}
 
-	load := func(success bool) *oauth2.PostOauth2TokenOKBody {
+	load := func(success bool) *models.OAuth2Token {
 		return loadOAuth2Token(t, params, success)
 	}
 
@@ -178,7 +179,7 @@ func TestAppToken(t *testing.T) {
 		ClientSecret: &app.secret,
 	}
 
-	load := func(success bool) *oauth2.PostOauth2TokenOKBody {
+	load := func(success bool) *models.OAuth2Token {
 		return loadOAuth2Token(t, params, success)
 	}
 
@@ -204,16 +205,16 @@ func TestCodeToken(t *testing.T) {
 	var scope []string
 	loadCode := func(success bool) string {
 		state := "test state"
-		params := oauth2.GetOauth2AuthParams{
+		params := oauth2.PostOauth2AllowParams{
 			ClientID:     app.id,
 			RedirectURI:  app.redirectUri,
 			ResponseType: "code",
 			Scope:        scope,
 			State:        &state,
 		}
-		get := api.Oauth2GetOauth2AuthHandler.Handle
+		get := api.Oauth2PostOauth2AllowHandler.Handle
 		resp := get(params, userIDs[0])
-		body, ok := resp.(*oauth2.GetOauth2AuthOK)
+		body, ok := resp.(*oauth2.PostOauth2AllowOK)
 		require.Equal(t, success, ok)
 		if !ok {
 			return ""
@@ -240,7 +241,7 @@ func TestCodeToken(t *testing.T) {
 	scope[0] = "entries:read"
 	code := loadCode(true)
 
-	loadToken := func(success bool) *oauth2.PostOauth2TokenOKBody {
+	loadToken := func(success bool) *models.OAuth2Token {
 		params := oauth2.PostOauth2TokenParams{
 			GrantType:    "authorization_code",
 			ClientID:     app.id,
@@ -301,7 +302,7 @@ func TestCodeChallengeToken(t *testing.T) {
 	method := "S256"
 	loadCode := func(success bool) string {
 		state := "test state"
-		params := oauth2.GetOauth2AuthParams{
+		params := oauth2.PostOauth2AllowParams{
 			ClientID:            app.id,
 			RedirectURI:         app.redirectUri,
 			ResponseType:        "code",
@@ -310,9 +311,9 @@ func TestCodeChallengeToken(t *testing.T) {
 			CodeChallenge:       &challenge,
 			CodeChallengeMethod: &method,
 		}
-		get := api.Oauth2GetOauth2AuthHandler.Handle
+		get := api.Oauth2PostOauth2AllowHandler.Handle
 		resp := get(params, userIDs[0])
-		body, ok := resp.(*oauth2.GetOauth2AuthOK)
+		body, ok := resp.(*oauth2.PostOauth2AllowOK)
 		require.Equal(t, success, ok)
 		if !ok {
 			return ""
@@ -326,7 +327,7 @@ func TestCodeChallengeToken(t *testing.T) {
 
 	code := loadCode(true)
 
-	loadToken := func(success bool) *oauth2.PostOauth2TokenOKBody {
+	loadToken := func(success bool) *models.OAuth2Token {
 		params := oauth2.PostOauth2TokenParams{
 			GrantType:    "authorization_code",
 			ClientID:     app.id,
@@ -359,6 +360,22 @@ func TestCodeChallengeToken(t *testing.T) {
 	verifier = challenge
 
 	loadToken(true)
+
+	removeOAuth2App(app)
+}
+
+func TestOAuthDeny(t *testing.T) {
+	app := createOauth2App(2)
+
+	params := oauth2.GetOauth2DenyParams{
+		ClientID:    app.id,
+		RedirectURI: app.redirectUri,
+	}
+
+	get := api.Oauth2GetOauth2DenyHandler.Handle
+	resp := get(params)
+	_, ok := resp.(*oauth2.GetOauth2DenyBadRequest)
+	require.True(t, ok)
 
 	removeOAuth2App(app)
 }
@@ -398,6 +415,47 @@ func TestRefreshToken(t *testing.T) {
 
 	loadOAuth2Token(t, params, false)
 
+	removeOAuth2App(app)
+}
+
+func TestUpgradeToken(t *testing.T) {
+	app := createOauth2App(4)
+
+	params := oauth2.PostOauth2UpgradeParams{
+		ClientID:     app.id,
+		ClientSecret: app.secret,
+	}
+
+	req := require.New(t)
+
+	upgrade := func(success bool) *models.OAuth2Token {
+		post := api.Oauth2PostOauth2UpgradeHandler.Handle
+		resp := post(params, userIDs[0])
+		body, ok := resp.(*oauth2.PostOauth2UpgradeOK)
+		req.Equal(success, ok)
+		if !ok {
+			return nil
+		}
+
+		return body.Payload
+	}
+
+	params.ClientID++
+	upgrade(false)
+	params.ClientID--
+
+	params.ClientSecret = app.redirectUri
+	upgrade(false)
+	params.ClientSecret = app.secret
+
+	upgrade(true)
+
+	removeOAuth2App(app)
+
+	app = createOauth2App(3)
+	params.ClientID = app.id
+	params.ClientSecret = app.secret
+	upgrade(false)
 	removeOAuth2App(app)
 }
 
@@ -447,15 +505,15 @@ func TestCodeFlow(t *testing.T) {
 	req := require.New(t)
 	app := createOauth2App(2)
 
-	codeParams := oauth2.GetOauth2AuthParams{
+	codeParams := oauth2.PostOauth2AllowParams{
 		ClientID:     app.id,
 		RedirectURI:  app.redirectUri,
 		ResponseType: "code",
 		Scope:        []string{"entries:read"},
 	}
-	get := api.Oauth2GetOauth2AuthHandler.Handle
+	get := api.Oauth2PostOauth2AllowHandler.Handle
 	resp := get(codeParams, userIDs[0])
-	body, ok := resp.(*oauth2.GetOauth2AuthOK)
+	body, ok := resp.(*oauth2.PostOauth2AllowOK)
 	req.True(ok)
 	code := body.Payload.Code
 

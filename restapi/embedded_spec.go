@@ -4287,14 +4287,6 @@ func init() {
     },
     "/oauth2/deny": {
       "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "OAuth2Password": []
-          }
-        ],
         "tags": [
           "oauth2"
         ],
@@ -4401,31 +4393,55 @@ func init() {
           "200": {
             "description": "authorized",
             "schema": {
-              "type": "object",
-              "properties": {
-                "access_token": {
-                  "type": "string"
-                },
-                "expires_in": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "refresh_token": {
-                  "type": "string"
-                },
-                "scope": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "token_type": {
-                  "type": "string",
-                  "enum": [
-                    "bearer"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Token"
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/upgrade": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "summary": "only for internal usage",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "maxLength": 64,
+            "type": "string",
+            "name": "client_secret",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authorized",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Token"
             }
           },
           "400": {
@@ -6121,6 +6137,33 @@ func init() {
             "unrecognized_client",
             "unsupported_grant_type",
             "unsupported_response_type"
+          ]
+        }
+      }
+    },
+    "OAuth2Token": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "refresh_token": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "token_type": {
+          "type": "string",
+          "enum": [
+            "bearer"
           ]
         }
       }
@@ -11182,14 +11225,6 @@ func init() {
     },
     "/oauth2/deny": {
       "get": {
-        "security": [
-          {
-            "ApiKeyHeader": []
-          },
-          {
-            "OAuth2Password": []
-          }
-        ],
         "tags": [
           "oauth2"
         ],
@@ -11296,31 +11331,55 @@ func init() {
           "200": {
             "description": "authorized",
             "schema": {
-              "type": "object",
-              "properties": {
-                "access_token": {
-                  "type": "string"
-                },
-                "expires_in": {
-                  "type": "integer",
-                  "format": "int64"
-                },
-                "refresh_token": {
-                  "type": "string"
-                },
-                "scope": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "token_type": {
-                  "type": "string",
-                  "enum": [
-                    "bearer"
-                  ]
-                }
-              }
+              "$ref": "#/definitions/OAuth2Token"
+            }
+          },
+          "400": {
+            "description": "some error happened",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          },
+          "401": {
+            "description": "invalid client",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Error"
+            }
+          }
+        }
+      }
+    },
+    "/oauth2/upgrade": {
+      "post": {
+        "security": [
+          {
+            "ApiKeyHeader": []
+          }
+        ],
+        "tags": [
+          "oauth2"
+        ],
+        "summary": "only for internal usage",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "client_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "maxLength": 64,
+            "type": "string",
+            "name": "client_secret",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "authorized",
+            "schema": {
+              "$ref": "#/definitions/OAuth2Token"
             }
           },
           "400": {
@@ -13328,6 +13387,33 @@ func init() {
             "unrecognized_client",
             "unsupported_grant_type",
             "unsupported_response_type"
+          ]
+        }
+      }
+    },
+    "OAuth2Token": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "refresh_token": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "token_type": {
+          "type": "string",
+          "enum": [
+            "bearer"
           ]
         }
       }

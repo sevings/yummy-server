@@ -25,7 +25,7 @@ type PostOauth2TokenOK struct {
 	/*
 	  In: Body
 	*/
-	Payload *PostOauth2TokenOKBody `json:"body,omitempty"`
+	Payload *models.OAuth2Token `json:"body,omitempty"`
 }
 
 // NewPostOauth2TokenOK creates PostOauth2TokenOK with default headers values
@@ -35,13 +35,13 @@ func NewPostOauth2TokenOK() *PostOauth2TokenOK {
 }
 
 // WithPayload adds the payload to the post oauth2 token o k response
-func (o *PostOauth2TokenOK) WithPayload(payload *PostOauth2TokenOKBody) *PostOauth2TokenOK {
+func (o *PostOauth2TokenOK) WithPayload(payload *models.OAuth2Token) *PostOauth2TokenOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post oauth2 token o k response
-func (o *PostOauth2TokenOK) SetPayload(payload *PostOauth2TokenOKBody) {
+func (o *PostOauth2TokenOK) SetPayload(payload *models.OAuth2Token) {
 	o.Payload = payload
 }
 

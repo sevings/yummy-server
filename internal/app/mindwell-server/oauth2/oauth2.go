@@ -12,6 +12,7 @@ import (
 	"github.com/sevings/mindwell-server/models"
 	"github.com/sevings/mindwell-server/restapi/operations/oauth2"
 	"github.com/sevings/mindwell-server/utils"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -27,6 +28,8 @@ const (
 
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
+	webIP = srv.ConfigString("web.ip")
+
 	apiSecret := []byte(srv.ConfigString("server.api_secret"))
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
@@ -36,8 +39,9 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.Oauth2PostOauth2AllowHandler = oauth2.PostOauth2AllowHandlerFunc(newOAuth2Allow(srv))
 	srv.API.Oauth2GetOauth2DenyHandler = oauth2.GetOauth2DenyHandlerFunc(newOAuth2Deny(srv))
-	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
+	srv.API.Oauth2PostOauth2UpgradeHandler = oauth2.PostOauth2UpgradeHandlerFunc(newOAuth2Upgrade(srv))
 
+	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
 	srv.API.Oauth2GetOauth2AppsIDHandler = oauth2.GetOauth2AppsIDHandlerFunc(newAppLoader(srv))
 }
 
@@ -257,7 +261,7 @@ VALUES($1, $2, $3, $4, $5)
 	return token, tx.Error()
 }
 
-func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *oauth2.PostOauth2TokenOKBody {
+func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *models.OAuth2Token {
 	refreshToken, err := createRefreshToken(h, tx, appID, userID, scope)
 	if err != nil {
 		return nil
@@ -268,11 +272,11 @@ func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32,
 		return nil
 	}
 
-	resp := &oauth2.PostOauth2TokenOKBody{
+	resp := &models.OAuth2Token{
 		AccessToken:  accessToken,
 		ExpiresIn:    accessTokenLifetime,
 		RefreshToken: refreshToken,
-		TokenType:    oauth2.PostOauth2TokenOKBodyTokenTypeBearer,
+		TokenType:    models.OAuth2TokenTokenTypeBearer,
 		Scope:        scopeToString(scope),
 	}
 
@@ -353,21 +357,30 @@ WHERE id = $1 AND secret_hash = $2
 	return !ban, tx.Error()
 }
 
+var webIP string
+
+func checkWebRequest(req *http.Request) (string, bool) {
+	if req == nil {
+		return "", true
+	}
+
+	ip := strings.Split(req.RemoteAddr, ":")[0]
+	if ip == webIP {
+		return "", true
+	}
+
+	return models.OAuth2ErrorErrorUnauthorizedClient, false
+}
+
 func postAllowBadRequest(err string) middleware.Responder {
 	body := models.OAuth2Error{Error: err}
 	return oauth2.NewPostOauth2AllowBadRequest().WithPayload(&body)
 }
 
 func newOAuth2Allow(srv *utils.MindwellServer) func(oauth2.PostOauth2AllowParams, *models.UserID) middleware.Responder {
-	webIP := srv.ConfigString("web.ip")
-
 	return func(params oauth2.PostOauth2AllowParams, userID *models.UserID) middleware.Responder {
-		if params.HTTPRequest != nil {
-			addr := params.HTTPRequest.RemoteAddr
-			ip := strings.Split(addr, ":")[0]
-			if ip != webIP {
-				return postAllowBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
-			}
+		if err, ok := checkWebRequest(params.HTTPRequest); !ok {
+			return postAllowBadRequest(err)
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -423,16 +436,10 @@ func getDenyBadRequest(err string) middleware.Responder {
 	return oauth2.NewGetOauth2DenyBadRequest().WithPayload(&body)
 }
 
-func newOAuth2Deny(srv *utils.MindwellServer) func(oauth2.GetOauth2DenyParams, *models.UserID) middleware.Responder {
-	webIP := srv.ConfigString("web.ip")
-
-	return func(params oauth2.GetOauth2DenyParams, userID *models.UserID) middleware.Responder {
-		if params.HTTPRequest != nil {
-			addr := params.HTTPRequest.RemoteAddr
-			ip := strings.Split(addr, ":")[0]
-			if ip != webIP {
-				return getDenyBadRequest(models.OAuth2ErrorErrorUnauthorizedClient)
-			}
+func newOAuth2Deny(srv *utils.MindwellServer) func(oauth2.GetOauth2DenyParams) middleware.Responder {
+	return func(params oauth2.GetOauth2DenyParams) middleware.Responder {
+		if err, ok := checkWebRequest(params.HTTPRequest); !ok {
+			return getDenyBadRequest(err)
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
@@ -448,6 +455,37 @@ func newOAuth2Deny(srv *utils.MindwellServer) func(oauth2.GetOauth2DenyParams, *
 			}
 
 			return getDenyBadRequest(models.OAuth2ErrorErrorAccessDenied)
+		})
+	}
+}
+
+func postUpgradeBadRequest(err string) middleware.Responder {
+	body := models.OAuth2Error{Error: err}
+	return oauth2.NewPostOauth2UpgradeBadRequest().WithPayload(&body)
+}
+
+func newOAuth2Upgrade(srv *utils.MindwellServer) func(oauth2.PostOauth2UpgradeParams, *models.UserID) middleware.Responder {
+	return func(params oauth2.PostOauth2UpgradeParams, userID *models.UserID) middleware.Responder {
+		if err, ok := checkWebRequest(params.HTTPRequest); !ok {
+			return postUpgradeBadRequest(err)
+		}
+
+		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
+			granted, err := checkPasswordGrant(srv, tx, params.ClientID, params.ClientSecret)
+			if err != nil {
+				return postUpgradeBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
+			}
+			if !granted {
+				return postUpgradeBadRequest(models.OAuth2ErrorErrorInvalidGrant)
+			}
+
+			var scope uint32 = 1<<31 - 1
+			resp := createTokens(srv, tx, params.ClientID, userID.ID, scope, userID.Name)
+			if resp == nil {
+				return postUpgradeBadRequest(models.OAuth2ErrorErrorServerError)
+			}
+
+			return oauth2.NewPostOauth2UpgradeOK().WithPayload(resp)
 		})
 	}
 }
@@ -513,10 +551,10 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 		return postTokenBadRequest(models.OAuth2ErrorErrorServerError)
 	}
 
-	resp := &oauth2.PostOauth2TokenOKBody{
+	resp := &models.OAuth2Token{
 		AccessToken: appToken,
 		ExpiresIn:   accessTokenLifetime,
-		TokenType:   oauth2.PostOauth2TokenOKBodyTokenTypeBearer,
+		TokenType:   models.OAuth2TokenTokenTypeBearer,
 	}
 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)

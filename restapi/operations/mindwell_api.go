@@ -240,7 +240,7 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		Oauth2GetOauth2AppsIDHandler: oauth2.GetOauth2AppsIDHandlerFunc(func(params oauth2.GetOauth2AppsIDParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.GetOauth2AppsID has not yet been implemented")
 		}),
-		Oauth2GetOauth2DenyHandler: oauth2.GetOauth2DenyHandlerFunc(func(params oauth2.GetOauth2DenyParams, principal *models.UserID) middleware.Responder {
+		Oauth2GetOauth2DenyHandler: oauth2.GetOauth2DenyHandlerFunc(func(params oauth2.GetOauth2DenyParams) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.GetOauth2Deny has not yet been implemented")
 		}),
 		RelationsGetRelationsFromNameHandler: relations.GetRelationsFromNameHandlerFunc(func(params relations.GetRelationsFromNameParams, principal *models.UserID) middleware.Responder {
@@ -335,6 +335,9 @@ func NewMindwellAPI(spec *loads.Document) *MindwellAPI {
 		}),
 		Oauth2PostOauth2TokenHandler: oauth2.PostOauth2TokenHandlerFunc(func(params oauth2.PostOauth2TokenParams) middleware.Responder {
 			return middleware.NotImplemented("operation oauth2.PostOauth2Token has not yet been implemented")
+		}),
+		Oauth2PostOauth2UpgradeHandler: oauth2.PostOauth2UpgradeHandlerFunc(func(params oauth2.PostOauth2UpgradeParams, principal *models.UserID) middleware.Responder {
+			return middleware.NotImplemented("operation oauth2.PostOauth2Upgrade has not yet been implemented")
 		}),
 		RelationsPostRelationsInvitedNameHandler: relations.PostRelationsInvitedNameHandlerFunc(func(params relations.PostRelationsInvitedNameParams, principal *models.UserID) middleware.Responder {
 			return middleware.NotImplemented("operation relations.PostRelationsInvitedName has not yet been implemented")
@@ -659,6 +662,8 @@ type MindwellAPI struct {
 	Oauth2PostOauth2AllowHandler oauth2.PostOauth2AllowHandler
 	// Oauth2PostOauth2TokenHandler sets the operation handler for the post oauth2 token operation
 	Oauth2PostOauth2TokenHandler oauth2.PostOauth2TokenHandler
+	// Oauth2PostOauth2UpgradeHandler sets the operation handler for the post oauth2 upgrade operation
+	Oauth2PostOauth2UpgradeHandler oauth2.PostOauth2UpgradeHandler
 	// RelationsPostRelationsInvitedNameHandler sets the operation handler for the post relations invited name operation
 	RelationsPostRelationsInvitedNameHandler relations.PostRelationsInvitedNameHandler
 	// AccountPutAccountSettingsEmailHandler sets the operation handler for the put account settings email operation
@@ -1068,6 +1073,9 @@ func (o *MindwellAPI) Validate() error {
 	}
 	if o.Oauth2PostOauth2TokenHandler == nil {
 		unregistered = append(unregistered, "oauth2.PostOauth2TokenHandler")
+	}
+	if o.Oauth2PostOauth2UpgradeHandler == nil {
+		unregistered = append(unregistered, "oauth2.PostOauth2UpgradeHandler")
 	}
 	if o.RelationsPostRelationsInvitedNameHandler == nil {
 		unregistered = append(unregistered, "relations.PostRelationsInvitedNameHandler")
@@ -1616,6 +1624,10 @@ func (o *MindwellAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/oauth2/token"] = oauth2.NewPostOauth2Token(o.context, o.Oauth2PostOauth2TokenHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/oauth2/upgrade"] = oauth2.NewPostOauth2Upgrade(o.context, o.Oauth2PostOauth2UpgradeHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
