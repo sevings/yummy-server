@@ -47,12 +47,17 @@ func ClearDatabase(db *sql.DB) {
 	dropTable(tx, "complains")
 	dropTable(tx, "talkers")
 	dropTable(tx, "chats")
-	dropTable(tx, "apps")
 
 	_, err = tx.Exec("delete from users where id != 1")
 	if err != nil {
 		tx.Rollback()
 		log.Fatal("cannot clear table users: " + err.Error())
+	}
+
+	_, err = tx.Exec("delete from apps where flow < 4")
+	if err != nil {
+		tx.Rollback()
+		log.Fatal("cannot clear table apps: " + err.Error())
 	}
 
 	tx.Exec("INSERT INTO invites (referrer_id, word1, word2, word3) VALUES(1, 1, 1, 1);")
