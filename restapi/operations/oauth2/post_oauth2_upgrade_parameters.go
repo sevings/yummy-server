@@ -42,7 +42,7 @@ type PostOauth2UpgradeParams struct {
 
 	/*
 	  Required: true
-	  In: query
+	  In: formData
 	*/
 	ClientID int64
 	/*
@@ -62,8 +62,6 @@ func (o *PostOauth2UpgradeParams) BindRequest(r *http.Request, route *middleware
 
 	o.HTTPRequest = r
 
-	qs := runtime.Values(r.URL.Query())
-
 	if err := r.ParseMultipartForm(PostOauth2UpgradeMaxParseMemory); err != nil {
 		if err != http.ErrNotMultipart {
 			return errors.New(400, "%v", err)
@@ -73,8 +71,8 @@ func (o *PostOauth2UpgradeParams) BindRequest(r *http.Request, route *middleware
 	}
 	fds := runtime.Values(r.Form)
 
-	qClientID, qhkClientID, _ := qs.GetOK("client_id")
-	if err := o.bindClientID(qClientID, qhkClientID, route.Formats); err != nil {
+	fdClientID, fdhkClientID, _ := fds.GetOK("client_id")
+	if err := o.bindClientID(fdClientID, fdhkClientID, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -88,10 +86,10 @@ func (o *PostOauth2UpgradeParams) BindRequest(r *http.Request, route *middleware
 	return nil
 }
 
-// bindClientID binds and validates parameter ClientID from query.
+// bindClientID binds and validates parameter ClientID from formData.
 func (o *PostOauth2UpgradeParams) bindClientID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	if !hasKey {
-		return errors.Required("client_id", "query", rawData)
+		return errors.Required("client_id", "formData", rawData)
 	}
 	var raw string
 	if len(rawData) > 0 {
@@ -99,15 +97,14 @@ func (o *PostOauth2UpgradeParams) bindClientID(rawData []string, hasKey bool, fo
 	}
 
 	// Required: true
-	// AllowEmptyValue: false
 
-	if err := validate.RequiredString("client_id", "query", raw); err != nil {
+	if err := validate.RequiredString("client_id", "formData", raw); err != nil {
 		return err
 	}
 
 	value, err := swag.ConvertInt64(raw)
 	if err != nil {
-		return errors.InvalidType("client_id", "query", "int64", raw)
+		return errors.InvalidType("client_id", "formData", "int64", raw)
 	}
 	o.ClientID = value
 

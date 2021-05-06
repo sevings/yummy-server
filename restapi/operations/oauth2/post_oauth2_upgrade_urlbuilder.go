@@ -9,17 +9,11 @@ import (
 	"errors"
 	"net/url"
 	golangswaggerpaths "path"
-
-	"github.com/go-openapi/swag"
 )
 
 // PostOauth2UpgradeURL generates an URL for the post oauth2 upgrade operation
 type PostOauth2UpgradeURL struct {
-	ClientID int64
-
 	_basePath string
-	// avoid unkeyed usage
-	_ struct{}
 }
 
 // WithBasePath sets the base path for this url builder, only required when it's different from the
@@ -48,15 +42,6 @@ func (o *PostOauth2UpgradeURL) Build() (*url.URL, error) {
 		_basePath = "/api/v1"
 	}
 	_result.Path = golangswaggerpaths.Join(_basePath, _path)
-
-	qs := make(url.Values)
-
-	clientIDQ := swag.FormatInt64(o.ClientID)
-	if clientIDQ != "" {
-		qs.Set("client_id", clientIDQ)
-	}
-
-	_result.RawQuery = qs.Encode()
 
 	return &_result, nil
 }

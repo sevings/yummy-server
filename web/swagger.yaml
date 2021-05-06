@@ -1365,8 +1365,11 @@ paths:
         - oauth2
       security:
         - ApiKeyHeader: [ ]
+      consumes:
+        - multipart/form-data
+        - application/x-www-form-urlencoded
       parameters:
-        - in: query
+        - in: formData
           name: client_id
           type: integer
           required: true

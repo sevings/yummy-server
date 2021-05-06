@@ -4418,6 +4418,10 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
+        "consumes": [
+          "multipart/form-data",
+          "application/x-www-form-urlencoded"
+        ],
         "tags": [
           "oauth2"
         ],
@@ -4426,7 +4430,7 @@ func init() {
           {
             "type": "integer",
             "name": "client_id",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
@@ -11356,6 +11360,10 @@ func init() {
             "ApiKeyHeader": []
           }
         ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
         "tags": [
           "oauth2"
         ],
@@ -11364,7 +11372,7 @@ func init() {
           {
             "type": "integer",
             "name": "client_id",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
