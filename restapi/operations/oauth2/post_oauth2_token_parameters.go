@@ -85,7 +85,8 @@ type PostOauth2TokenParams struct {
 	*/
 	RedirectURI *string
 	/*
-	  Max Length: 48
+	  Max Length: 60
+	  Min Length: 50
 	  In: formData
 	*/
 	RefreshToken *string
@@ -407,7 +408,11 @@ func (o *PostOauth2TokenParams) bindRefreshToken(rawData []string, hasKey bool, 
 // validateRefreshToken carries on validations for parameter RefreshToken
 func (o *PostOauth2TokenParams) validateRefreshToken(formats strfmt.Registry) error {
 
-	if err := validate.MaxLength("refresh_token", "formData", *o.RefreshToken, 48); err != nil {
+	if err := validate.MinLength("refresh_token", "formData", *o.RefreshToken, 50); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("refresh_token", "formData", *o.RefreshToken, 60); err != nil {
 		return err
 	}
 

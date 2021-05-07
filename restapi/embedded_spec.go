@@ -4370,7 +4370,8 @@ func init() {
             "in": "formData"
           },
           {
-            "maxLength": 48,
+            "maxLength": 60,
+            "minLength": 50,
             "type": "string",
             "name": "refresh_token",
             "in": "formData"
@@ -11312,7 +11313,8 @@ func init() {
             "in": "formData"
           },
           {
-            "maxLength": 48,
+            "maxLength": 60,
+            "minLength": 50,
             "type": "string",
             "name": "refresh_token",
             "in": "formData"

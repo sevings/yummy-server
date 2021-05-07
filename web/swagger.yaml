@@ -1428,7 +1428,8 @@ paths:
         - in: formData
           name: refresh_token
           type: string
-          maxLength: 48
+          minLength: 50
+          maxLength: 60
         - in: formData
           name: username
           type: string
