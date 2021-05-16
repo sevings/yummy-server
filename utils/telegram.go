@@ -100,8 +100,8 @@ func (bot *TelegramBot) isAdmin(upd *tgbotapi.Update) bool {
 
 func (bot *TelegramBot) connectToProxy() *http.Client {
 	auth := proxy.Auth{
-		User:     bot.srv.ConfigString("proxy.user"),
-		Password: bot.srv.ConfigString("proxy.password"),
+		User:     bot.srv.ConfigOptString("proxy.user"),
+		Password: bot.srv.ConfigOptString("proxy.password"),
 	}
 
 	if len(auth.User) == 0 {
