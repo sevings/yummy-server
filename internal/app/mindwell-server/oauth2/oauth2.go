@@ -20,7 +20,7 @@ import (
 func ConfigureAPI(srv *utils.MindwellServer) {
 	webIP = srv.ConfigString("web.ip")
 
-	apiSecret := []byte(srv.ConfigString("server.api_secret"))
+	apiSecret := srv.ConfigBytes("server.api_secret")
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 	srv.API.NoAPIKeyAuth = utils.NoApiKeyAuth

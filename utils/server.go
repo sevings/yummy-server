@@ -136,6 +136,10 @@ func (srv *MindwellServer) ConfigOptString(field string) string {
 	return value
 }
 
+func (srv *MindwellServer) ConfigBytes(field string) []byte {
+	return []byte(srv.ConfigString(field))
+}
+
 func (srv *MindwellServer) ConfigInt(field string) int {
 	value, err := srv.cfg.Int(field)
 	if err != nil {
