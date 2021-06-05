@@ -49,15 +49,7 @@ type authData struct {
 
 var authCache = cache.New(15*time.Minute, time.Hour)
 
-type hasher interface {
-	AppSecretHash(secret string) []byte
-	AppTokenHash(secret string) []byte
-	AccessTokenHash(secret string) []byte
-	RefreshTokenHash(secret string) []byte
-	PasswordHash(password string) []byte
-}
-
-func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *models.OAuth2Token {
+func createTokens(h utils.TokenHash, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *models.OAuth2Token {
 	token := &models.OAuth2Token{
 		AccessToken:  userName + "." + utils.GenerateString(utils.AccessTokenLength),
 		ExpiresIn:    utils.AccessTokenLifetime,
@@ -84,7 +76,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7)
 	return token
 }
 
-func createAppToken(h hasher, tx *utils.AutoTx, appID int64, appName string) (string, error) {
+func createAppToken(h utils.TokenHash, tx *utils.AutoTx, appID int64, appName string) (string, error) {
 	const query = `
 INSERT INTO app_tokens(app_id, token_hash, valid_thru)
 VALUES($1, $2, $3)
@@ -115,7 +107,7 @@ WHERE id = $1
 	return auth, granted, tx.Error()
 }
 
-func checkPasswordGrant(h hasher, tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
+func checkPasswordGrant(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
 	const grantQuery = `
 SELECT flow, ban
 FROM apps
@@ -130,7 +122,7 @@ WHERE id = $1 AND secret_hash = $2
 	return granted, tx.Error()
 }
 
-func checkAppGrant(h hasher, tx *utils.AutoTx, appID int64, appSecret string) (string, bool, error) {
+func checkAppGrant(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret string) (string, bool, error) {
 	const query = `
 SELECT name, flow, ban
 FROM apps
@@ -146,7 +138,7 @@ WHERE id = $1 AND secret_hash = $2
 	return name, granted, tx.Error()
 }
 
-func checkRefreshGrant(h hasher, tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
+func checkRefreshGrant(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret string) (bool, error) {
 	const query = `
 SELECT ban
 FROM apps
@@ -291,7 +283,7 @@ func newOAuth2Upgrade(srv *utils.MindwellServer) func(oauth2.PostOauth2UpgradePa
 	}
 }
 
-func loadUserByPassword(h hasher, tx *utils.AutoTx, name, password string) (int64, string) {
+func loadUserByPassword(h utils.TokenHash, tx *utils.AutoTx, name, password string) (int64, string) {
 	name = strings.TrimSpace(name)
 	password = strings.TrimSpace(password)
 	hash := h.PasswordHash(password)
@@ -315,7 +307,7 @@ func postTokenBadRequest(err string) middleware.Responder {
 	return oauth2.NewPostOauth2TokenBadRequest().WithPayload(&body)
 }
 
-func requestPasswordToken(h hasher, tx *utils.AutoTx, appID int64, appSecret, name, password string) middleware.Responder {
+func requestPasswordToken(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret, name, password string) middleware.Responder {
 	userID, userName := loadUserByPassword(h, tx, name, password)
 	if userID == 0 {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
@@ -338,7 +330,7 @@ func requestPasswordToken(h hasher, tx *utils.AutoTx, appID int64, appSecret, na
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) middleware.Responder {
+func requestAppToken(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret string) middleware.Responder {
 	appName, granted, err := checkAppGrant(h, tx, appID, appSecret)
 	if err != nil {
 		return postTokenBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
@@ -361,7 +353,7 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func revokeTokens(h hasher, tx *utils.AutoTx, userID int64, access, refresh string) {
+func revokeTokens(h utils.TokenHash, tx *utils.AutoTx, userID int64, access, refresh string) {
 	const query = `
 DELETE FROM sessions
 WHERE user_id = $1
@@ -373,7 +365,7 @@ WHERE user_id = $1
 	tx.Exec(query, userID, accessHash, refreshHash)
 }
 
-func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
+func requestAccessToken(h utils.TokenHash, tx *utils.AutoTx, appID int64, code, redirectUri string, appSecret, verifier *string) middleware.Responder {
 	authValue, found := authCache.Get(code)
 	if !found {
 		return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
@@ -437,7 +429,7 @@ func requestAccessToken(h hasher, tx *utils.AutoTx, appID int64, code, redirectU
 	return oauth2.NewPostOauth2TokenOK().WithPayload(resp)
 }
 
-func requestRefreshToken(h hasher, tx *utils.AutoTx, appID int64, appSecret, token string) middleware.Responder {
+func requestRefreshToken(h utils.TokenHash, tx *utils.AutoTx, appID int64, appSecret, token string) middleware.Responder {
 	const query = `
 DELETE FROM sessions
 WHERE app_id = $1 AND user_id = $2 AND refresh_hash = $3
