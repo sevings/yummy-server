@@ -502,7 +502,7 @@ func (bot *TelegramBot) createApp(args []string) string {
 	switch appType {
 	case "private":
 		secret = GenerateString(64)
-		secretHash = bot.srv.AppSecretHash(secret)
+		secretHash = bot.srv.TokenHash().AppSecretHash(secret)
 	case "public":
 		secret = "(не сгенерирован)"
 	default:

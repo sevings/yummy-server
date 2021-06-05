@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"crypto/sha256"
 	"database/sql"
-	"encoding/hex"
 	"go.uber.org/zap"
 	"log"
 	"strconv"
@@ -217,60 +215,8 @@ func (srv *MindwellServer) Transact(txFunc func(*AutoTx) middleware.Responder) m
 	return Transact(srv.DB, txFunc)
 }
 
-func (srv *MindwellServer) tokenHash(token, config string) []byte {
-	salt := srv.ConfigString(config)
-	sum := sha256.Sum256([]byte(token + salt))
-	return sum[:]
-}
-
-func (srv *MindwellServer) AppSecretHash(secret string) []byte {
-	return srv.tokenHash(secret, "server.app_salt")
-}
-
-func (srv *MindwellServer) AppTokenHash(token string) []byte {
-	return srv.tokenHash(token, "server.app_salt")
-}
-
-func (srv *MindwellServer) AccessTokenHash(token string) []byte {
-	return srv.tokenHash(token, "server.at_salt")
-}
-
-func (srv *MindwellServer) RefreshTokenHash(token string) []byte {
-	return srv.tokenHash(token, "server.rt_salt")
-}
-
-func (srv *MindwellServer) PasswordHash(password string) []byte {
-	return srv.tokenHash(password, "server.pass_salt")
-}
-
-func (srv *MindwellServer) VerificationCode(email string) string {
-	hash := srv.tokenHash(email, "server.mail_salt")
-	return hex.EncodeToString(hash)
-}
-
-func (srv *MindwellServer) resetCode(email string, date int64) string {
-	str := email + strconv.FormatInt(date, 16)
-	hash := srv.tokenHash(str, "server.mail_salt")
-	return hex.EncodeToString(hash)
-}
-
-func (srv *MindwellServer) ResetPasswordCode(email string) (string, int64) {
-	date := time.Now().Unix()
-	code := srv.resetCode(email, date)
-	return code, date
-}
-
-func (srv *MindwellServer) CheckResetPasswordCode(email, code string, date int64) bool {
-	now := time.Now().Unix()
-	if (now - date) >= 60*60 {
-		return false
-	}
-
-	if date > now {
-		return false
-	}
-
-	return srv.resetCode(email, date) == code
+func (srv *MindwellServer) TokenHash() TokenHash {
+	return NewTokenHash(srv)
 }
 
 // NewError returns error object with some message

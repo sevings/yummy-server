@@ -19,13 +19,12 @@ import (
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	webIP = srv.ConfigString("web.ip")
-
 	apiSecret := srv.ConfigBytes("server.api_secret")
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 	srv.API.NoAPIKeyAuth = utils.NoApiKeyAuth
-	srv.API.OAuth2PasswordAuth = utils.NewOAuth2User(srv, srv.DB, utils.PasswordFlow)
-	srv.API.OAuth2CodeAuth = utils.NewOAuth2User(srv, srv.DB, utils.CodeFlow)
+	srv.API.OAuth2PasswordAuth = utils.NewOAuth2User(srv.TokenHash(), srv.DB, utils.PasswordFlow)
+	srv.API.OAuth2CodeAuth = utils.NewOAuth2User(srv.TokenHash(), srv.DB, utils.CodeFlow)
 
 	srv.API.Oauth2PostOauth2AllowHandler = oauth2.PostOauth2AllowHandlerFunc(newOAuth2Allow(srv))
 	srv.API.Oauth2GetOauth2DenyHandler = oauth2.GetOauth2DenyHandlerFunc(newOAuth2Deny(srv))
@@ -273,7 +272,7 @@ func newOAuth2Upgrade(srv *utils.MindwellServer) func(oauth2.PostOauth2UpgradePa
 		}
 
 		return srv.Transact(func(tx *utils.AutoTx) middleware.Responder {
-			granted, err := checkPasswordGrant(srv, tx, params.ClientID, params.ClientSecret)
+			granted, err := checkPasswordGrant(srv.TokenHash(), tx, params.ClientID, params.ClientSecret)
 			if err != nil {
 				return postUpgradeBadRequest(models.OAuth2ErrorErrorUnrecognizedClient)
 			}
@@ -282,7 +281,7 @@ func newOAuth2Upgrade(srv *utils.MindwellServer) func(oauth2.PostOauth2UpgradePa
 			}
 
 			var scope uint32 = 1<<31 - 1
-			resp := createTokens(srv, tx, params.ClientID, userID.ID, scope, userID.Name)
+			resp := createTokens(srv.TokenHash(), tx, params.ClientID, userID.ID, scope, userID.Name)
 			if resp == nil {
 				return postUpgradeBadRequest(models.OAuth2ErrorErrorServerError)
 			}
@@ -490,7 +489,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestPasswordToken(srv, tx, params.ClientID, *params.ClientSecret, *params.Username, *params.Password)
+				return requestPasswordToken(srv.TokenHash(), tx, params.ClientID, *params.ClientSecret, *params.Username, *params.Password)
 			}
 
 			if params.GrantType == "authorization_code" {
@@ -498,7 +497,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestAccessToken(srv, tx, params.ClientID, *params.Code, *params.RedirectURI, params.ClientSecret, params.CodeVerifier)
+				return requestAccessToken(srv.TokenHash(), tx, params.ClientID, *params.Code, *params.RedirectURI, params.ClientSecret, params.CodeVerifier)
 			}
 
 			if params.GrantType == "client_credentials" {
@@ -506,7 +505,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestAppToken(srv, tx, params.ClientID, *params.ClientSecret)
+				return requestAppToken(srv.TokenHash(), tx, params.ClientID, *params.ClientSecret)
 			}
 
 			if params.GrantType == "refresh_token" {
@@ -514,7 +513,7 @@ func newOAuth2Token(srv *utils.MindwellServer) func(oauth2.PostOauth2TokenParams
 					return postTokenBadRequest(models.OAuth2ErrorErrorInvalidRequest)
 				}
 
-				return requestRefreshToken(srv, tx, params.ClientID, *params.ClientSecret, *params.RefreshToken)
+				return requestRefreshToken(srv.TokenHash(), tx, params.ClientID, *params.ClientSecret, *params.RefreshToken)
 			}
 
 			return postTokenBadRequest(models.OAuth2ErrorErrorUnsupportedGrantType)

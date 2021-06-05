@@ -78,7 +78,7 @@ func (ntf *CompositeNotifier) SendEmailChanged(tx *AutoTx, userID *models.UserID
 		ntf.Mail.SendEmailChanged(oldEmail, name)
 	}
 
-	code := ntf.srv.VerificationCode(newEmail)
+	code := ntf.srv.TokenHash().VerificationCode(newEmail)
 	ntf.Mail.SendGreeting(newEmail, name, code)
 
 	if tg.Valid {
@@ -115,12 +115,12 @@ func (ntf *CompositeNotifier) SendPasswordChanged(tx *AutoTx, userID *models.Use
 }
 
 func (ntf *CompositeNotifier) SendGreeting(address, showName string) {
-	code := ntf.srv.VerificationCode(address)
+	code := ntf.srv.TokenHash().VerificationCode(address)
 	ntf.Mail.SendGreeting(address, showName, code)
 }
 
 func (ntf *CompositeNotifier) SendResetPassword(email, showName, gender string) {
-	code, date := ntf.srv.ResetPasswordCode(email)
+	code, date := ntf.srv.TokenHash().ResetPasswordCode(email)
 	ntf.Mail.SendResetPassword(email, showName, gender, code, date)
 }
 

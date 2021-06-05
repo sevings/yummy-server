@@ -47,7 +47,7 @@ VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
 
 	if genSecret {
 		app.secret = utils.GenerateString(64)
-		secretHash = srv.AppSecretHash(app.secret)
+		secretHash = srv.TokenHash().AppSecretHash(app.secret)
 	}
 
 	_, err := db.Exec(query, app.id, secretHash, app.redirectUri, app.devID, app.flow,

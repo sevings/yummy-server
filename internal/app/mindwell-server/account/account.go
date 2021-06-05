@@ -159,7 +159,7 @@ func generateAvatar(srv *utils.MindwellServer, name, gender string) string {
 }
 
 func createUser(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAccountRegisterParams) int64 {
-	hash := srv.PasswordHash(params.Password)
+	hash := srv.TokenHash().PasswordHash(params.Password)
 	apiKey := utils.GenerateString(32)
 
 	const q = `
@@ -382,7 +382,7 @@ func newLoginer(srv *utils.MindwellServer) func(account.PostAccountLoginParams) 
 			params.Name = strings.TrimSpace(params.Name)
 			params.Password = strings.TrimSpace(params.Password)
 
-			hash := srv.PasswordHash(params.Password)
+			hash := srv.TokenHash().PasswordHash(params.Password)
 			user := loadAuthProfile(srv, tx, authProfileQueryByPassword, params.Name, hash)
 			if tx.Error() != nil {
 				err := srv.NewError(&i18n.Message{ID: "invalid_name_or_password", Other: "Name or password is invalid."})
@@ -402,8 +402,8 @@ func setPassword(srv *utils.MindwellServer, tx *utils.AutoTx, params account.Pos
         set password_hash = $1
         where password_hash = $2 and id = $3`
 
-	oldHash := srv.PasswordHash(params.OldPassword)
-	newHash := srv.PasswordHash(params.NewPassword)
+	oldHash := srv.TokenHash().PasswordHash(params.OldPassword)
+	newHash := srv.TokenHash().PasswordHash(params.NewPassword)
 
 	tx.Exec(q, newHash, oldHash, userID.ID)
 
@@ -463,7 +463,7 @@ func setEmail(srv *utils.MindwellServer, tx *utils.AutoTx, params account.PostAc
         set email = $1, verified = false
         where password_hash = $2 and id = $3`
 
-	hash := srv.PasswordHash(params.Password)
+	hash := srv.TokenHash().PasswordHash(params.Password)
 	tx.Exec(q, newEmail, hash, userID.ID)
 
 	if tx.RowsAffected() < 1 {
@@ -572,7 +572,7 @@ func newEmailVerifier(srv *utils.MindwellServer) func(account.GetAccountVerifica
 			params.Email = strings.TrimSpace(params.Email)
 			params.Code = strings.TrimSpace(params.Code)
 
-			code := srv.VerificationCode(params.Email)
+			code := srv.TokenHash().VerificationCode(params.Email)
 			if params.Code != code {
 				return account.NewGetAccountVerificationEmailBadRequest()
 			}
@@ -621,7 +621,7 @@ func resetPassword(srv *utils.MindwellServer, tx *utils.AutoTx, email, password 
         set password_hash = $2
         where lower(email) = lower($1)`
 
-	hash := srv.PasswordHash(password)
+	hash := srv.TokenHash().PasswordHash(password)
 	tx.Exec(q, email, hash)
 
 	return tx.RowsAffected() == 1
@@ -634,7 +634,7 @@ func newPasswordResetter(srv *utils.MindwellServer) func(account.PostAccountReco
 			params.Password = strings.TrimSpace(params.Password)
 			params.Code = strings.TrimSpace(params.Code)
 
-			if !srv.CheckResetPasswordCode(params.Email, params.Code, params.Date) {
+			if !srv.TokenHash().CheckResetPasswordCode(params.Email, params.Code, params.Date) {
 				err := srv.NewError(&i18n.Message{ID: "invalid_code", Other: "Invalid reset link."})
 				return account.NewPostAccountRecoverPasswordBadRequest().WithPayload(err)
 			}
