@@ -3,19 +3,15 @@ package utils
 import (
 	"bytes"
 	crypto "crypto/rand"
-	"database/sql"
 	"encoding/base64"
-	"fmt"
 	"log"
 	"math/rand"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/dgrijalva/jwt-go"
 	goconf "github.com/zpatrick/go-config"
 
 	"github.com/go-openapi/errors"
@@ -56,140 +52,6 @@ func CanViewEntry(tx *AutoTx, userID, entryID int64) bool {
 // IsOpenForMe returns true if you can see \param name tlog
 func IsOpenForMe(tx *AutoTx, userID *models.UserID, name interface{}) bool {
 	return tx.QueryBool("SELECT can_view_tlog($1, $2)", userID.ID, name)
-}
-
-const userIDQuery = `
-			SELECT id, name, followers_count, 
-				invited_by is not null, karma < -1, verified,
-				invite_ban > CURRENT_DATE, vote_ban > CURRENT_DATE, 
-				comment_ban > CURRENT_DATE, live_ban > CURRENT_DATE
-			FROM users `
-
-func LoadUserIDByID(tx *AutoTx, id int64) (*models.UserID, error) {
-	const q = userIDQuery + "WHERE id = $1"
-	tx.Query(q, id)
-	return scanUserID(tx)
-}
-
-func LoadUserIDByName(tx *AutoTx, name string) (*models.UserID, error) {
-	const q = userIDQuery + "WHERE lower(name) = lower($1)"
-	tx.Query(q, name)
-	return scanUserID(tx)
-}
-
-func LoadUserIDByApiKey(tx *AutoTx, apiKey string) (*models.UserID, error) {
-	const q = userIDQuery + "WHERE api_key = $1 AND valid_thru > CURRENT_TIMESTAMP"
-	tx.Query(q, apiKey)
-	return scanUserID(tx)
-}
-
-func scanUserID(tx *AutoTx) (*models.UserID, error) {
-	var user models.UserID
-	user.Ban = &models.UserIDBan{}
-	tx.Scan(&user.ID, &user.Name, &user.FollowersCount,
-		&user.IsInvited, &user.NegKarma, &user.Verified,
-		&user.Ban.Invite, &user.Ban.Vote, &user.Ban.Comment, &user.Ban.Live)
-	if tx.Error() != nil {
-		return nil, errUnauthorized
-	}
-
-	user.Ban.Invite = user.Ban.Invite || !user.IsInvited || !user.Verified
-	user.Ban.Vote = user.Ban.Vote || !user.IsInvited || user.NegKarma || !user.Verified
-	user.Ban.Comment = user.Ban.Comment || !user.IsInvited || !user.Verified
-	user.Ban.Live = user.Ban.Live || !user.Verified
-
-	return &user, nil
-}
-
-func readUserID(secret []byte, tokenString string) (int64, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		return secret, nil
-	})
-
-	if err != nil {
-		log.Println(err)
-		return 0, errUnauthorized
-	}
-
-	if !token.Valid {
-		log.Printf("Invalid token: %s\n", tokenString)
-		return 0, errUnauthorized
-
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		log.Printf("Error get claims: %s\n", tokenString)
-		return 0, errUnauthorized
-	}
-
-	if claims.Valid() != nil {
-		return 0, errUnauthorized
-	}
-
-	id, err := strconv.ParseInt(claims["sub"].(string), 32, 64)
-	if err != nil {
-		log.Println(err)
-		return 0, errUnauthorized
-	}
-
-	return id, nil
-}
-
-func NewKeyAuth(db *sql.DB, secret []byte) func(apiKey string) (*models.UserID, error) {
-	return func(apiKey string) (*models.UserID, error) {
-		if len(apiKey) < 32 {
-			return nil, fmt.Errorf("api token is invalid: %s", apiKey)
-		}
-
-		tx := NewAutoTx(db)
-		defer tx.Finish()
-
-		if len(apiKey) == 32 {
-			return LoadUserIDByApiKey(tx, apiKey)
-		}
-
-		id, err := readUserID(secret, apiKey)
-		if err != nil {
-			return nil, err
-		}
-
-		return LoadUserIDByID(tx, id)
-	}
-}
-
-func NoApiKeyAuth(string) (*models.UserID, error) {
-	return &models.UserID{
-		Ban: &models.UserIDBan{
-			Comment: true,
-			Invite:  true,
-			Live:    true,
-			Vote:    true,
-		},
-	}, nil
-}
-
-func BuildApiToken(secret []byte, userID int64) (string, int64) {
-	now := time.Now().Unix()
-	exp := now + 60*60*24*365
-	sub := strconv.FormatInt(userID, 32)
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"iat": now,
-		"exp": exp,
-		"sub": sub,
-	})
-
-	tokenString, err := token.SignedString(secret)
-	if err != nil {
-		log.Print(err)
-	}
-
-	return tokenString, exp
 }
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

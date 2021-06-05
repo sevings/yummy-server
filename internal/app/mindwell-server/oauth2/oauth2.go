@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
-	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/patrickmn/go-cache"
@@ -18,14 +16,6 @@ import (
 	"time"
 )
 
-type flow uint8
-
-const (
-	appFlow      flow = 1
-	codeFlow     flow = 2
-	passwordFlow flow = 4
-)
-
 // ConfigureAPI creates operations handlers
 func ConfigureAPI(srv *utils.MindwellServer) {
 	webIP = srv.ConfigString("web.ip")
@@ -34,8 +24,8 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 
 	srv.API.APIKeyHeaderAuth = utils.NewKeyAuth(srv.DB, apiSecret)
 	srv.API.NoAPIKeyAuth = utils.NoApiKeyAuth
-	srv.API.OAuth2PasswordAuth = newOAuth2User(srv, passwordFlow)
-	srv.API.OAuth2CodeAuth = newOAuth2User(srv, codeFlow)
+	srv.API.OAuth2PasswordAuth = utils.NewOAuth2User(srv, srv.DB, utils.PasswordFlow)
+	srv.API.OAuth2CodeAuth = utils.NewOAuth2User(srv, srv.DB, utils.CodeFlow)
 
 	srv.API.Oauth2PostOauth2AllowHandler = oauth2.PostOauth2AllowHandlerFunc(newOAuth2Allow(srv))
 	srv.API.Oauth2GetOauth2DenyHandler = oauth2.GetOauth2DenyHandlerFunc(newOAuth2Deny(srv))
@@ -44,14 +34,6 @@ func ConfigureAPI(srv *utils.MindwellServer) {
 	srv.API.Oauth2PostOauth2TokenHandler = oauth2.PostOauth2TokenHandlerFunc(newOAuth2Token(srv))
 	srv.API.Oauth2GetOauth2AppsIDHandler = oauth2.GetOauth2AppsIDHandlerFunc(newAppLoader(srv))
 }
-
-const accessTokenLifetime = 60 * 60 * 24
-const refreshTokenLifetime = 60 * 60 * 24 * 30
-const appTokenLifetime = 60 * 60 * 24
-const accessTokenLength = 32
-const refreshTokenLength = 48
-const appTokenLength = 32
-const codeLength = 32
 
 type authData struct {
 	appID       int64
@@ -76,173 +58,19 @@ type hasher interface {
 	PasswordHash(password string) []byte
 }
 
-var allScopes = [...]string{
-	"account:read",
-	"account:write",
-	"adm:read",
-	"adm:write",
-	"comments:read",
-	"comments:write",
-	"entries:read",
-	"entries:write",
-	"favotites:write",
-	"images:read",
-	"images:write",
-	"messages:read",
-	"messages:write",
-	"notifications:read",
-	"relations:write",
-	"settings:read",
-	"settings:write",
-	"users:read",
-	"users:write",
-	"votes:write",
-	"watchings:write",
-}
-
-func findScope(scope string) (uint32, error) {
-	for i, s := range allScopes {
-		if scope == s {
-			return 1 << i, nil
-		}
-	}
-
-	return 0, fmt.Errorf("scope is invalid: %s", scope)
-}
-
-func scopeFromString(scopes []string) (uint32, error) {
-	var scope uint32
-
-	for _, s := range scopes {
-		n, err := findScope(s)
-		if err != nil {
-			return 0, err
-		}
-
-		scope += n
-	}
-
-	return scope, nil
-}
-
-func scopeToString(scope uint32) []string {
-	var scopes []string
-
-	for i, s := range allScopes {
-		if scope|1<<i == scope {
-			scopes = append(scopes, s)
-		}
-	}
-
-	return scopes
-}
-
-func newOAuth2User(srv *utils.MindwellServer, flowReq flow) func(string, []string) (*models.UserID, error) {
-	const query = `
-SELECT scope, flow, ban
-FROM sessions
-JOIN users ON users.id = user_id
-JOIN apps ON apps.id = app_id
-WHERE lower(users.name) = lower($1) 
-	AND access_hash = $2
-	AND access_thru > $3
-`
-
-	return func(token string, scopes []string) (*models.UserID, error) {
-		scopeReq, err := scopeFromString(scopes)
-		if err != nil {
-			return nil, err
-		}
-
-		nameToken := strings.Split(token, ".")
-		if len(nameToken) < 2 {
-			return nil, fmt.Errorf("access token is invalid: %s", token)
-		}
-
-		accessToken := nameToken[1]
-		if len(accessToken) != accessTokenLength {
-			return nil, fmt.Errorf("access token is invalid: %s", token)
-		}
-
-		name := nameToken[0]
-		hash := srv.AccessTokenHash(token)
-		now := time.Now()
-
-		tx := utils.NewAutoTx(srv.DB)
-		defer tx.Finish()
-
-		var scopeEx uint32
-		var flowEx flow
-		var ban bool
-		tx.Query(query, name, hash[:], now).Scan(&scopeEx, &flowEx, &ban)
-		if tx.Error() != nil {
-			return nil, fmt.Errorf("access token is invalid: %s", token)
-		}
-
-		if ban || scopeEx&scopeReq != scopeReq || flowEx&flowReq != flowReq {
-			return nil, errors.New("access denied")
-		}
-
-		return utils.LoadUserIDByName(tx, name)
-	}
-}
-
-func newOAuth2App(srv *utils.MindwellServer) func(string) error {
-	const query = `
-SELECT ban, flow
-FROM app_tokens
-JOIN apps ON apps.id = app_id
-WHERE lower(apps.name) = lower($1) 
-	AND token_hash = $2
-	AND valid_thru > $3
-`
-
-	return func(token string) error {
-		nameToken := strings.Split(token, "+")
-		if len(nameToken) < 2 {
-			return fmt.Errorf("app token is invalid: %s", token)
-		}
-
-		appToken := nameToken[1]
-		if len(appToken) != appTokenLength {
-			return fmt.Errorf("app token is invalid: %s", token)
-		}
-
-		name := nameToken[0]
-		hash := srv.AppTokenHash(token)
-		now := time.Now()
-
-		tx := utils.NewAutoTx(srv.DB)
-		defer tx.Finish()
-
-		var ban bool
-		var flowEx flow
-		tx.Query(query, name, hash, now).Scan(&ban, &flowEx)
-		if tx.Error() != nil {
-			return fmt.Errorf("app token is invalid: %s", token)
-		}
-
-		if ban || flowEx&appFlow != appFlow {
-			return errors.New("access denied")
-		}
-
-		return nil
-	}
-}
-
 func createTokens(h hasher, tx *utils.AutoTx, appID, userID int64, scope uint32, userName string) *models.OAuth2Token {
 	token := &models.OAuth2Token{
-		AccessToken:  userName + "." + utils.GenerateString(accessTokenLength),
-		ExpiresIn:    accessTokenLifetime,
-		RefreshToken: strconv.FormatInt(userID, 32) + "." + utils.GenerateString(refreshTokenLength),
-		Scope:        scopeToString(scope),
+		AccessToken:  userName + "." + utils.GenerateString(utils.AccessTokenLength),
+		ExpiresIn:    utils.AccessTokenLifetime,
+		RefreshToken: strconv.FormatInt(userID, 32) + "." + utils.GenerateString(utils.RefreshTokenLength),
+		Scope:        utils.ScopeToString(scope),
 		TokenType:    models.OAuth2TokenTokenTypeBearer,
 	}
 
 	accessHash := h.AccessTokenHash(token.AccessToken)
 	refreshHash := h.RefreshTokenHash(token.RefreshToken)
-	accessThru := time.Now().Add(accessTokenLifetime * time.Second)
-	refreshThru := time.Now().Add(refreshTokenLifetime * time.Second)
+	accessThru := time.Now().Add(utils.AccessTokenLifetime * time.Second)
+	refreshThru := time.Now().Add(utils.RefreshTokenLifetime * time.Second)
 
 	const query = `
 INSERT INTO sessions(app_id, user_id, scope, access_hash, refresh_hash, access_thru, refresh_thru)
@@ -263,9 +91,9 @@ INSERT INTO app_tokens(app_id, token_hash, valid_thru)
 VALUES($1, $2, $3)
 `
 
-	token := appName + "+" + utils.GenerateString(appTokenLength)
+	token := appName + "+" + utils.GenerateString(utils.AppTokenLength)
 	hash := h.AppTokenHash(token)
-	thru := time.Now().Add(appTokenLifetime * time.Second)
+	thru := time.Now().Add(utils.AppTokenLifetime * time.Second)
 
 	tx.Exec(query, appID, hash[:], thru)
 
@@ -281,10 +109,10 @@ WHERE id = $1
 
 	auth := authData{appID: appID}
 	var ban bool
-	var f flow
+	var f utils.AuthFlow
 	tx.Query(query, appID).Scan(&auth.secretHash, &auth.redirectUri, &f, &ban)
 
-	granted := !ban && f&codeFlow == codeFlow
+	granted := !ban && f&utils.CodeFlow == utils.CodeFlow
 	return auth, granted, tx.Error()
 }
 
@@ -295,11 +123,11 @@ FROM apps
 WHERE id = $1 AND secret_hash = $2
 `
 	var ban bool
-	var f flow
+	var f utils.AuthFlow
 	secretHash := h.AppSecretHash(appSecret)
 	tx.Query(grantQuery, appID, secretHash).Scan(&f, &ban)
 
-	granted := !ban && f&passwordFlow == passwordFlow
+	granted := !ban && f&utils.PasswordFlow == utils.PasswordFlow
 	return granted, tx.Error()
 }
 
@@ -311,11 +139,11 @@ WHERE id = $1 AND secret_hash = $2
 `
 	var name string
 	var ban bool
-	var f flow
+	var f utils.AuthFlow
 	secretHash := h.AppSecretHash(appSecret)
 	tx.Query(query, appID, secretHash).Scan(&name, &f, &ban)
 
-	granted := !ban && f&appFlow == appFlow
+	granted := !ban && f&utils.AppFlow == utils.AppFlow
 	return name, granted, tx.Error()
 }
 
@@ -369,7 +197,7 @@ func newOAuth2Allow(srv *utils.MindwellServer) func(oauth2.PostOauth2AllowParams
 				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidGrant)
 			}
 
-			scope, err := scopeFromString(params.Scope)
+			scope, err := utils.ScopeFromString(params.Scope)
 			if err != nil {
 				return postAllowBadRequest(models.OAuth2ErrorErrorInvalidScope)
 			}
@@ -379,7 +207,7 @@ func newOAuth2Allow(srv *utils.MindwellServer) func(oauth2.PostOauth2AllowParams
 			}
 
 			resp := &oauth2.PostOauth2AllowOKBody{
-				Code: utils.GenerateString(codeLength),
+				Code: utils.GenerateString(utils.CodeLength),
 			}
 
 			if params.State != nil {
@@ -527,7 +355,7 @@ func requestAppToken(h hasher, tx *utils.AutoTx, appID int64, appSecret string) 
 
 	resp := &models.OAuth2Token{
 		AccessToken: appToken,
-		ExpiresIn:   accessTokenLifetime,
+		ExpiresIn:   utils.AccessTokenLifetime,
 		TokenType:   models.OAuth2TokenTokenTypeBearer,
 	}
 
