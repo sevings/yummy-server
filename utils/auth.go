@@ -223,12 +223,7 @@ const RefreshTokenLength = 48
 const AppTokenLength = 32
 const CodeLength = 32
 
-type AuthTokenHasher interface {
-	AccessTokenHash(token string) []byte
-	AppTokenHash(token string) []byte
-}
-
-func NewOAuth2User(h AuthTokenHasher, db *sql.DB, flowReq AuthFlow) func(string, []string) (*models.UserID, error) {
+func NewOAuth2User(h TokenHash, db *sql.DB, flowReq AuthFlow) func(string, []string) (*models.UserID, error) {
 	const query = `
 SELECT scope, flow, ban
 FROM sessions
@@ -278,7 +273,7 @@ WHERE lower(users.name) = lower($1)
 	}
 }
 
-func NewOAuth2App(h AuthTokenHasher, db *sql.DB) func(string) error {
+func NewOAuth2App(h TokenHash, db *sql.DB) func(string) error {
 	const query = `
 SELECT ban, AuthFlow
 FROM app_tokens
