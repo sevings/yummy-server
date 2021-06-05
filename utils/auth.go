@@ -230,7 +230,7 @@ type AuthTokenHasher interface {
 
 func NewOAuth2User(h AuthTokenHasher, db *sql.DB, flowReq AuthFlow) func(string, []string) (*models.UserID, error) {
 	const query = `
-SELECT scope, AuthFlow, ban
+SELECT scope, flow, ban
 FROM sessions
 JOIN users ON users.id = user_id
 JOIN apps ON apps.id = app_id
