@@ -38,3 +38,7 @@ CREATE TABLE "mindwell"."app_tokens" (
 );
 
 CREATE INDEX "index_app_token_hash" ON "mindwell"."app_tokens" USING btree( "token_hash" );
+
+UPDATE users
+SET valid_thru = '01.09.2021'
+WHERE valid_thru > CURRENT_TIMESTAMP;
