@@ -493,6 +493,8 @@ definitions:
       end:
         type: number
         format: int64
+      limit:
+        type: integer
   Rating:
     type: object
     properties:
@@ -837,6 +839,13 @@ parameters:
     type: integer
     format: int64
     default: 0
+  bigLimit:
+    in: query
+    name: limit
+    type: integer
+    minimum: 1
+    maximum: 1000
+    default: 1000
   tag:
     in: query
     name: tag
@@ -1701,6 +1710,7 @@ paths:
       parameters:
         - $ref: '#/parameters/start'
         - $ref: '#/parameters/end'
+        - $ref: '#/parameters/bigLimit'
       security:
         - ApiKeyHeader: [ ]
         - NoApiKey: []
@@ -2119,6 +2129,7 @@ paths:
       parameters:
         - $ref: '#/parameters/start'
         - $ref: '#/parameters/end'
+        - $ref: '#/parameters/bigLimit'
       security:
         - ApiKeyHeader: [ ]
         - OAuth2Password: [ ]

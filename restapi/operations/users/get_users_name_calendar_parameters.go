@@ -23,13 +23,16 @@ func NewGetUsersNameCalendarParams() GetUsersNameCalendarParams {
 	var (
 		// initialize parameters with default values
 
-		endDefault = int64(0)
+		endDefault   = int64(0)
+		limitDefault = int64(1000)
 
 		startDefault = int64(0)
 	)
 
 	return GetUsersNameCalendarParams{
 		End: &endDefault,
+
+		Limit: &limitDefault,
 
 		Start: &startDefault,
 	}
@@ -49,6 +52,13 @@ type GetUsersNameCalendarParams struct {
 	  Default: 0
 	*/
 	End *int64
+	/*
+	  Maximum: 1000
+	  Minimum: 1
+	  In: query
+	  Default: 1000
+	*/
+	Limit *int64
 	/*
 	  Required: true
 	  Max Length: 20
@@ -77,6 +87,11 @@ func (o *GetUsersNameCalendarParams) BindRequest(r *http.Request, route *middlew
 
 	qEnd, qhkEnd, _ := qs.GetOK("end")
 	if err := o.bindEnd(qEnd, qhkEnd, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -115,6 +130,48 @@ func (o *GetUsersNameCalendarParams) bindEnd(rawData []string, hasKey bool, form
 		return errors.InvalidType("end", "query", "int64", raw)
 	}
 	o.End = &value
+
+	return nil
+}
+
+// bindLimit binds and validates parameter Limit from query.
+func (o *GetUsersNameCalendarParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetUsersNameCalendarParams()
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("limit", "query", "int64", raw)
+	}
+	o.Limit = &value
+
+	if err := o.validateLimit(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateLimit carries on validations for parameter Limit
+func (o *GetUsersNameCalendarParams) validateLimit(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 1000, false); err != nil {
+		return err
+	}
 
 	return nil
 }

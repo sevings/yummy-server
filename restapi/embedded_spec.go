@@ -3287,6 +3287,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/end"
+          },
+          {
+            "$ref": "#/parameters/bigLimit"
           }
         ],
         "responses": {
@@ -4893,6 +4896,9 @@ func init() {
           },
           {
             "$ref": "#/parameters/end"
+          },
+          {
+            "$ref": "#/parameters/bigLimit"
           }
         ],
         "responses": {
@@ -5430,6 +5436,9 @@ func init() {
               }
             }
           }
+        },
+        "limit": {
+          "type": "integer"
         },
         "start": {
           "type": "number",
@@ -6432,6 +6441,14 @@ func init() {
       "type": "string",
       "default": "",
       "name": "before",
+      "in": "query"
+    },
+    "bigLimit": {
+      "maximum": 1000,
+      "minimum": 1,
+      "type": "integer",
+      "default": 1000,
+      "name": "limit",
       "in": "query"
     },
     "end": {
@@ -10080,6 +10097,14 @@ func init() {
             "default": 0,
             "name": "end",
             "in": "query"
+          },
+          {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer",
+            "default": 1000,
+            "name": "limit",
+            "in": "query"
           }
         ],
         "responses": {
@@ -11868,6 +11893,14 @@ func init() {
             "default": 0,
             "name": "end",
             "in": "query"
+          },
+          {
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer",
+            "default": 1000,
+            "name": "limit",
+            "in": "query"
           }
         ],
         "responses": {
@@ -12570,6 +12603,9 @@ func init() {
           "items": {
             "$ref": "#/definitions/CalendarEntriesItems0"
           }
+        },
+        "limit": {
+          "type": "integer"
         },
         "start": {
           "type": "number",
@@ -13735,6 +13771,14 @@ func init() {
       "type": "string",
       "default": "",
       "name": "before",
+      "in": "query"
+    },
+    "bigLimit": {
+      "maximum": 1000,
+      "minimum": 1,
+      "type": "integer",
+      "default": 1000,
+      "name": "limit",
       "in": "query"
     },
     "end": {

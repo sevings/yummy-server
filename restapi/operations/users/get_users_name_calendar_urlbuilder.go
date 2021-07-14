@@ -19,6 +19,7 @@ type GetUsersNameCalendarURL struct {
 	Name string
 
 	End   *int64
+	Limit *int64
 	Start *int64
 
 	_basePath string
@@ -68,6 +69,14 @@ func (o *GetUsersNameCalendarURL) Build() (*url.URL, error) {
 	}
 	if endQ != "" {
 		qs.Set("end", endQ)
+	}
+
+	var limitQ string
+	if o.Limit != nil {
+		limitQ = swag.FormatInt64(*o.Limit)
+	}
+	if limitQ != "" {
+		qs.Set("limit", limitQ)
 	}
 
 	var startQ string

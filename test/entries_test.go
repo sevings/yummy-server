@@ -1486,10 +1486,12 @@ func TestLoadTlogCalendar(t *testing.T) {
 	req := require.New(t)
 
 	load := func(userID *models.UserID, tlog *models.AuthProfile, start, end int64, count int) []*models.CalendarEntriesItems0 {
+		var limit int64 = 1000
 		params := users.GetUsersNameCalendarParams{
 			Name:  tlog.Name,
 			Start: &start,
 			End:   &end,
+			Limit: &limit,
 		}
 
 		get := api.UsersGetUsersNameCalendarHandler.Handle
@@ -1505,7 +1507,7 @@ func TestLoadTlogCalendar(t *testing.T) {
 		cal := body.Payload
 
 		createdAt := int64(tlog.CreatedAt)
-		if start < createdAt {
+		if start > 0 && start < createdAt {
 			req.Equal(createdAt, cal.Start)
 		} else {
 			req.Equal(start, cal.Start)
@@ -1527,22 +1529,22 @@ func TestLoadTlogCalendar(t *testing.T) {
 	load(userIDs[0], profiles[0], now+10, now-10, 0)
 
 	cal := load(userIDs[0], profiles[0], 0, 0, 3)
-	req.Equal(e1, cal[0].ID)
+	req.Equal(e3, cal[0].ID)
 	req.Equal(e2, cal[1].ID)
-	req.Equal(e3, cal[2].ID)
+	req.Equal(e1, cal[2].ID)
 
 	cal = load(userIDs[1], profiles[0], 0, 0, 2)
-	req.Equal(e1, cal[0].ID)
-	req.Equal(e3, cal[1].ID)
+	req.Equal(e3, cal[0].ID)
+	req.Equal(e1, cal[1].ID)
 
 	cal = load(noAuthUser, profiles[0], 0, 0, 2)
-	req.Equal(e1, cal[0].ID)
-	req.Equal(e3, cal[1].ID)
+	req.Equal(e3, cal[0].ID)
+	req.Equal(e1, cal[1].ID)
 
-	last := int64(cal[1].CreatedAt)
+	last := int64(cal[0].CreatedAt)
 	cal = load(userIDs[0], profiles[0], 0, last, 2)
-	req.Equal(e1, cal[0].ID)
-	req.Equal(e2, cal[1].ID)
+	req.Equal(e2, cal[0].ID)
+	req.Equal(e1, cal[1].ID)
 
 	cal = load(userIDs[0], profiles[0], last, 0, 1)
 	req.Equal(e3, cal[0].ID)

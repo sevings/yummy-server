@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NewGetMeCalendarParams creates a new GetMeCalendarParams object
@@ -23,11 +24,14 @@ func NewGetMeCalendarParams() GetMeCalendarParams {
 		// initialize parameters with default values
 
 		endDefault   = int64(0)
+		limitDefault = int64(1000)
 		startDefault = int64(0)
 	)
 
 	return GetMeCalendarParams{
 		End: &endDefault,
+
+		Limit: &limitDefault,
 
 		Start: &startDefault,
 	}
@@ -48,6 +52,13 @@ type GetMeCalendarParams struct {
 	*/
 	End *int64
 	/*
+	  Maximum: 1000
+	  Minimum: 1
+	  In: query
+	  Default: 1000
+	*/
+	Limit *int64
+	/*
 	  In: query
 	  Default: 0
 	*/
@@ -67,6 +78,11 @@ func (o *GetMeCalendarParams) BindRequest(r *http.Request, route *middleware.Mat
 
 	qEnd, qhkEnd, _ := qs.GetOK("end")
 	if err := o.bindEnd(qEnd, qhkEnd, route.Formats); err != nil {
+		res = append(res, err)
+	}
+
+	qLimit, qhkLimit, _ := qs.GetOK("limit")
+	if err := o.bindLimit(qLimit, qhkLimit, route.Formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -100,6 +116,48 @@ func (o *GetMeCalendarParams) bindEnd(rawData []string, hasKey bool, formats str
 		return errors.InvalidType("end", "query", "int64", raw)
 	}
 	o.End = &value
+
+	return nil
+}
+
+// bindLimit binds and validates parameter Limit from query.
+func (o *GetMeCalendarParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
+	var raw string
+	if len(rawData) > 0 {
+		raw = rawData[len(rawData)-1]
+	}
+
+	// Required: false
+	// AllowEmptyValue: false
+
+	if raw == "" { // empty values pass all other validations
+		// Default values have been previously initialized by NewGetMeCalendarParams()
+		return nil
+	}
+
+	value, err := swag.ConvertInt64(raw)
+	if err != nil {
+		return errors.InvalidType("limit", "query", "int64", raw)
+	}
+	o.Limit = &value
+
+	if err := o.validateLimit(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateLimit carries on validations for parameter Limit
+func (o *GetMeCalendarParams) validateLimit(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 1, false); err != nil {
+		return err
+	}
+
+	if err := validate.MaximumInt("limit", "query", *o.Limit, 1000, false); err != nil {
+		return err
+	}
 
 	return nil
 }

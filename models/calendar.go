@@ -25,6 +25,9 @@ type Calendar struct {
 	// entries
 	Entries []*CalendarEntriesItems0 `json:"entries"`
 
+	// limit
+	Limit int64 `json:"limit,omitempty"`
+
 	// start
 	Start int64 `json:"start,omitempty"`
 }
