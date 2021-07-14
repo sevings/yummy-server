@@ -2433,7 +2433,9 @@ paths:
           enum: [entries, comments, waiting]
           default: entries
       security:
-        - ApiKeyHeader: []
+        - ApiKeyHeader: [ ]
+        - NoApiKey: [ ]
+        - Oauth2App: [ ]
         - OAuth2Password: [ ]
         - OAuth2Code: [ "entries:read" ]
       tags:

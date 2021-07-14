@@ -2107,6 +2107,12 @@ func init() {
             "ApiKeyHeader": []
           },
           {
+            "NoApiKey": []
+          },
+          {
+            "Oauth2App": []
+          },
+          {
             "OAuth2Password": []
           },
           {
@@ -8826,6 +8832,12 @@ func init() {
         "security": [
           {
             "ApiKeyHeader": []
+          },
+          {
+            "NoApiKey": []
+          },
+          {
+            "Oauth2App": []
           },
           {
             "OAuth2Password": []
