@@ -22,14 +22,6 @@ func LogHandler(tpe string, nextHandler http.Handler) (http.Handler, error) {
 		lw := &loggedWriter{ResponseWriter: w, status: 200}
 		nextHandler.ServeHTTP(lw, r)
 
-		apiToken := r.Header.Get("X-User-Key")
-		if apiToken == "" {
-			tok, err := r.Cookie("api_token")
-			if err == nil {
-				apiToken = tok.Value
-			}
-		}
-
 		token := r.Header.Get("Authorization")
 		if token == "" {
 			tok, err := r.Cookie("at")
@@ -48,8 +40,6 @@ func LogHandler(tpe string, nextHandler http.Handler) (http.Handler, error) {
 			zap.String("method", r.Method),
 			zap.String("url", r.RequestURI),
 			zap.String("user_agent", r.UserAgent()),
-			zap.String("api_key", apiToken),
-			zap.String("access_token", token),
 			zap.String("user", user),
 			zap.String("ip", r.Header.Get("X-Forwarded-For")),
 			zap.Int64("request_size", r.ContentLength),
