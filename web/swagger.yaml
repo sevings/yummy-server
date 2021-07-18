@@ -2080,7 +2080,7 @@ paths:
         - in: formData
           name: images
           type: array
-          maxItems: 5
+          maxItems: 10
           uniqueItems: true
           items:
             type: integer
@@ -2640,7 +2640,7 @@ paths:
         - in: formData
           name: images
           type: array
-          maxItems: 5
+          maxItems: 10
           uniqueItems: true
           items:
             type: integer

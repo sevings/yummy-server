@@ -2352,7 +2352,7 @@ func init() {
             "required": true
           },
           {
-            "maxItems": 5,
+            "maxItems": 10,
             "uniqueItems": true,
             "type": "array",
             "items": {
@@ -3824,7 +3824,7 @@ func init() {
             "required": true
           },
           {
-            "maxItems": 5,
+            "maxItems": 10,
             "uniqueItems": true,
             "type": "array",
             "items": {
@@ -9114,7 +9114,7 @@ func init() {
             "required": true
           },
           {
-            "maxItems": 5,
+            "maxItems": 10,
             "uniqueItems": true,
             "type": "array",
             "items": {
@@ -10769,7 +10769,7 @@ func init() {
             "required": true
           },
           {
-            "maxItems": 5,
+            "maxItems": 10,
             "uniqueItems": true,
             "type": "array",
             "items": {

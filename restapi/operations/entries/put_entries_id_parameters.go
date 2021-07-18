@@ -79,7 +79,7 @@ type PutEntriesIDParams struct {
 	*/
 	ID int64
 	/*
-	  Max Items: 5
+	  Max Items: 10
 	  Unique: true
 	  In: formData
 	*/
@@ -331,8 +331,8 @@ func (o *PutEntriesIDParams) validateImages(formats strfmt.Registry) error {
 
 	imagesSize := int64(len(o.Images))
 
-	// maxItems: 5
-	if err := validate.MaxItems("images", "formData", imagesSize, 5); err != nil {
+	// maxItems: 10
+	if err := validate.MaxItems("images", "formData", imagesSize, 10); err != nil {
 		return err
 	}
 
