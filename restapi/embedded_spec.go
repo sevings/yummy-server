@@ -2981,7 +2981,7 @@ func init() {
           },
           {
             "OAuth2Code": [
-              "images:read"
+              "images:write"
             ]
           }
         ],
@@ -9784,7 +9784,7 @@ func init() {
           },
           {
             "OAuth2Code": [
-              "images:read"
+              "images:write"
             ]
           }
         ],

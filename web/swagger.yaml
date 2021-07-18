@@ -3589,7 +3589,7 @@ paths:
       security:
         - ApiKeyHeader: []
         - OAuth2Password: [ ]
-        - OAuth2Code: [ "images:read" ]
+        - OAuth2Code: [ "images:write" ]
       tags:
         - images
       consumes:
