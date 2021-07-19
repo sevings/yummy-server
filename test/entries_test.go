@@ -380,6 +380,12 @@ func TestLoadLive(t *testing.T) {
 	compareEntries(t, e1, feed.Entries[1], userIDs[0])
 	compareEntries(t, e2, feed.Entries[2], userIDs[0])
 
+	noAuthUser, _ := api.NoAPIKeyAuth("no auth")
+	feed = checkLoadLive(t, noAuthUser, 10, "entries", "", "", 3)
+	compareEntries(t, e0, feed.Entries[0], noAuthUser)
+	compareEntries(t, e1, feed.Entries[1], noAuthUser)
+	compareEntries(t, e2, feed.Entries[2], noAuthUser)
+
 	req := require.New(t)
 	req.False(feed.HasBefore)
 	req.False(feed.HasAfter)
@@ -424,9 +430,23 @@ func TestLoadLive(t *testing.T) {
 	compareEntries(t, e3, feed.Entries[0], userIDs[0])
 
 	setUserPrivacy(t, userIDs[0], "invited")
+
 	feed = checkLoadLive(t, userIDs[3], 10, "entries", "", "", 2)
 	compareEntries(t, e0, feed.Entries[0], userIDs[3])
 	compareEntries(t, e1, feed.Entries[1], userIDs[3])
+
+	feed = checkLoadLive(t, noAuthUser, 10, "entries", "", "", 2)
+	compareEntries(t, e0, feed.Entries[0], noAuthUser)
+	compareEntries(t, e1, feed.Entries[1], noAuthUser)
+
+	setUserPrivacy(t, userIDs[0], "registered")
+
+	checkLoadLive(t, userIDs[3], 10, "entries", "", "", 3)
+
+	feed = checkLoadLive(t, noAuthUser, 10, "entries", "", "", 2)
+	compareEntries(t, e0, feed.Entries[0], noAuthUser)
+	compareEntries(t, e1, feed.Entries[1], noAuthUser)
+
 	setUserPrivacy(t, userIDs[0], "all")
 
 	checkFollow(t, userIDs[0], userIDs[2], profiles[2], models.RelationshipRelationIgnored, true)
@@ -888,7 +908,7 @@ func compareEntries(t *testing.T, exp, act *models.Entry, user *models.UserID) {
 	req.Equal(exp.VisibleFor, act.VisibleFor)
 	req.Equal(exp.WordCount, act.WordCount)
 
-	req.Equal(exp.ID, exp.Rating.ID)
+	req.Equal(act.ID, act.Rating.ID)
 	req.Equal(exp.Rating.ID, act.Rating.ID)
 	req.Equal(exp.Rating.DownCount, act.Rating.DownCount)
 	req.Equal(exp.Rating.UpCount, act.Rating.UpCount)
